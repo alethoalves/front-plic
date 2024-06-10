@@ -1,0 +1,93 @@
+*,*::after, *::before{
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+a{
+text-decoration: none;
+}
+.disabled-link {
+pointer-events: none;
+}
+img {
+max-width: 100%; /* Garante que a imagem não ultrapasse o tamanho do contêiner */
+height: auto; /* Mantém a proporção original da imagem */
+}
+ul, ol {
+list-style-type: none; /* Remove os marcadores (pontos) da lista */
+padding: 0; /* Remove o preenchimento padrão da lista */
+margin: 0; /* Remove as margens padrão da lista */
+}
+
+@import "partials/colors";
+@import "partials/layout";
+@import "partials/spacing";
+@import "partials/typography";
+@import "partials/buttons";
+
+
+html{
+  scroll-behavior: smooth;
+}
+
+
+body{
+width: 100%;
+height: 100vh;
+position: relative;
+scroll-behavior: smooth;
+background-color: $white-dark;
+}
+.border{
+border: 1px solid red;
+}
+
+.border-radius{
+border-radius: 8px;
+}
+
+.block{
+display: block;
+}
+
+.hidden{
+overflow: hidden;
+}
+
+.relative{
+position: relative;
+}
+
+svg,img{
+width: 100%;
+//height: auto;
+}
+
+svg, img{
+  display: block;
+  width: 100%;
+}
+
+
+@import "partials/icons";
+@import "partials/input";
+@import "partials/auth";
+@import "partials/notifications";
+
+$topLarge:88px;
+$topSmall:60px;
+$leftLarge:210px;
+$leftSmall:88px;
+.container-app{
+position: absolute;
+top:$topLarge;
+left: $leftLarge;
+width: calc(100vw - $leftLarge);
+height: calc(100vh - $topLarge);
+@include responsive(s){
+  top:$topSmall;
+  left: $leftSmall;
+  width: calc(100vw - $leftSmall);
+  height: calc(100vh - $topSmall);
+}
+}

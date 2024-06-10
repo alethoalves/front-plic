@@ -1,0 +1,27 @@
+.notification{
+    border: 1px solid red;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: $gap-1 $gap-2;
+    margin: $gap-2 0;
+    border-radius: 4px;
+    transition: 0.4s ease; /* Adicionando uma transição para a propriedade opacity */
+    opacity: 0; /* Inicia o elemento com opacidade 0 */
+}
+.notification.visible {
+    opacity: 1; /* Define a opacidade como 1 para tornar o elemento visível */
+  }
+.notification.none {
+    display: none;
+}
+.notification-error{
+    background-color: $error-normal;
+    color: #F7F9FC;
+    .p5{
+        color: #F7F9FC;
+    }
+    svg{
+        cursor: pointer;
+    }
+}

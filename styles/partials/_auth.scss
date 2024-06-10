@@ -1,0 +1,76 @@
+.main-auth{
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    
+    .logo{
+        background-color: $primary-dark;
+        padding: 150px $gap-3 $gap-1 $gap-3;
+        border-bottom-right-radius: $gap-2;
+        border-bottom-left-radius: $gap-2;
+        margin-bottom: $gap-5;
+        @include responsive (s){
+            margin-bottom: $gap-2;
+        }
+    }
+    h3{
+        font-size: 48px;
+        color:$primary-light;
+    }
+    .container{
+        max-width: 450px;
+        width: 100%;
+        padding: 0 $gap-2;
+        
+        @include responsive(xs){
+            width: 100%;
+            min-width: 280px;
+        }
+    }
+    .actions{
+        margin-top: $gap-3;
+    }
+    .content-item-1{
+        margin-bottom: $gap-2;
+    }
+    .auth{
+        .trigger{
+            display: flex;
+            justify-content: space-between;
+            background-color: $white-light;
+            padding: 6px;
+            border-radius: $gap-1;
+            
+            p{
+                color: $primary-dark;
+                padding: $gap-1 ;
+            }
+        }
+        .trigger-btn{
+            transition: .2s;
+            border-radius: 6px;
+            width: 50%;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .active{
+            background-color: $primary-light;
+            p{
+                color: $white-light;
+            }
+        }
+        .card{
+            margin-top: $gap-2;
+            background-color: $white-light;
+            padding: $gap-3;
+            border-radius: $gap-1;
+            margin-bottom: $gap-2;
+        }
+    }
+    
+    span{color:$white-normal}
+}

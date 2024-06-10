@@ -1,0 +1,110 @@
+.nav-bar{
+    padding: $gap-1;
+    width: 230px;
+    height: 100vh;
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    .logo{
+        padding: 100px 18px 8px 18px;
+        background-color: $primary-dark;
+        border-radius: $gap-1;
+        h4{
+            color:$primary-light;
+        }
+        span{color:$white-normal}
+    }
+    nav{
+        margin-top: $gap-1;
+        li{
+            margin-bottom: $gap-1
+        }  
+    }
+     
+    a{
+        display: flex;
+        align-items: center;
+        background-color: $white-light;
+        padding: $gap-2 $gap-3;
+        border-radius: $gap-1;
+        transition: .3s ease;
+        
+    }
+    a:hover, .active{
+        background-color: $primary-light;
+        p,svg{
+            color:$white-light
+        }
+    }
+    svg{
+        width: 24px;
+        height: 24px;
+        margin-right: $gap-2;
+    }
+    p, svg{
+        color: $gray-600;
+    }
+    .space{
+        flex: 1;
+        background-color: $white-light;
+        border-radius: $gap-1;
+        margin-bottom: $gap-1;
+    }
+    .li-logout{
+        display: none;
+    }
+    .logout svg{
+        color: $error-light;
+    }
+}
+
+@include responsive (s){
+    .logout{display: none;}
+    .li-logout{
+        display: block;
+        svg{
+            color: $error-light;
+        }
+    }
+    .space{
+        display: none;
+    }
+    .nav-bar{
+        width: 100vw;
+        height: auto;
+        position: relative;
+
+        .logo{
+            padding: 20px 16px 8px 16px;
+        }
+        nav{
+            li{
+                margin-bottom: 0;
+                flex: 1;
+            }  
+            ul{
+                display: flex;
+                li:not(:last-child){
+                    margin-right: $gap-1;
+                }
+            }
+            p{display: none;}
+        }
+         
+        a{
+            justify-content: center;
+            padding: $gap-2 0;
+        }
+        svg{
+            margin-right: 0;
+            @include responsive (xs){
+                width: 18px;
+            }
+        }
+
+        .li-logout{
+            display: block;
+        }
+    }
+}

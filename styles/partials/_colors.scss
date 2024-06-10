@@ -1,0 +1,75 @@
+// Colors of project
+
+// Brand-colors
+
+$primary-darken:#083B7F;
+$primary-dark:#0F4EA2;
+$primary-normal:#1B69D2;
+$primary-light:#4587DF;
+.primary-darken{
+    color:$primary-darken;
+};
+
+// Neutral-colors
+$white-darken:#DAF0FF;
+$white-dark:#E8F6FF;
+$white-normal:#F4FBFF;
+$white-light:#FFFFFF;
+
+$black-dark:#041123;
+$black-normal:#07172E;
+$black-light:#0C1F38;
+
+// Gray Scale
+$gray-600:#505C68;
+$gray-500:#6C7781;
+$gray-400:#89919A;
+$gray-300:#A6ACB3;
+$gray-200:#C3C7CC;
+$gray-100:#E0E2E5;
+
+
+// Auxiliary colors
+$neutral:#D8DBE3;
+
+$error-normal: #F03D3D;
+$error-dark: #d03333;
+$error-light: rgb(240, 84, 84);
+$error-lighten: rgba(240, 84, 84,0.1);;
+
+$success-normal: #0BB07B;
+$success-dark: #28bb49;
+$success-light: #50e170;
+
+$warning-normal: #FFCE52;
+$warning-dark: #d9b043;
+$warning-light: #ffd76b;
+
+
+
+.color-white{
+    color: $white-normal;
+}
+
+.color-black{
+    color: $black-light;
+}
+
+.color-primary{
+    color: $primary-normal;
+}
+
+.color-gradient{
+    display: inline-block; 
+    background: linear-gradient(224.78deg, #1B69D2 8.12%, #0E366C 92.21%);
+    -webkit-text-fill-color: transparent;
+}
+
+.bg-gradient{
+    background: linear-gradient(224.78deg, #1B69D2 8.12%, #0E366C 92.21%);
+}
+
+
+
+
+

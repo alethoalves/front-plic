@@ -1,0 +1,119 @@
+
+.input-container{
+    
+    p{
+        color: $black-light;
+        margin-bottom: $gap-1;
+        
+    }
+    position: relative;
+    input{
+        border: 1px solid $gray-300;
+    }
+    
+    
+    input[type="text"], input[type="password"], input[type="number"], input[type="tel"]{
+        position: relative;
+        height: $gap-5;
+        width: 100%;
+        //border: 1px solid $gray-300;
+       
+        border-radius: 4px;
+        background-color: $white-light;
+        color: $black-light;
+        transition: all .3s ease;
+        &:hover{
+            border-color: $primary-normal;
+        }
+        &:focus{
+            outline:1px solid $primary-normal;
+            border: 1px solid $primary-normal;
+        }
+        &::placeholder{
+            color: $gray-300;
+        }
+    }
+    .error-msg{
+        color: $error-light;
+        text-align: right;
+        font-size: 14px;
+    }
+    input.input-error{
+        border: 1px solid $error-light;
+        &:hover{
+            border-color: $error-light;
+        }
+        &:focus{
+            outline:1px solid $error-light;
+            border: 1px solid $error-light;
+        }
+    }
+    
+    
+    .input-with-icon-left{
+        padding-left: 43px;
+    }
+    .input-without-icon-left{
+        padding: 14px;
+    }
+    input[type="password"]{
+        padding-right: 43px;
+    }
+    input[type="text"]{
+        padding-right: $gap-2;
+    }
+    .input-icon, .input-icon-hiddenText{
+        color: $primary-normal;
+        width: 20px;
+        position: absolute;
+        margin: 12px;
+        z-index: 999;
+    }
+    
+    .input-icon-hiddenText{
+        right: 0;
+        cursor: pointer;
+    }
+    
+
+    
+}
+
+.checkbox-container{
+    display: flex;
+    align-items: center;
+    p{
+        cursor: pointer;
+        color: $gray-500;
+    }
+    input{
+        width: 18px;
+        height: 18px;
+        appearance: none; /* Remove a aparência padrão */
+        -webkit-appearance: none; /* Para o Safari */
+        -moz-appearance: none; /* Para o Firefox */
+        width: 20px; /* Define a largura desejada para o checkbox */
+        height: 20px; /* Define a altura desejada para o checkbox */
+        border: 1px solid $gray-300; /* Adiciona uma borda ao redor do checkbox */
+        border-radius: 3px; /* Arredonda as bordas */
+        outline: none; /* Remove a borda de foco padrão */
+        cursor: pointer; /* Muda o cursor para indicar que é clicável */
+        transition: all .3s ease;
+    }
+        /* Estilo quando o checkbox está marcado */
+    input:checked {
+        background-color: $primary-normal; /* Altera a cor de fundo quando marcado */
+        border-color: $white-darken; /* Altera a cor da borda quando marcado */
+    }
+
+    //Estilo para o hover do checkbox 
+    input:hover {
+        border-color: $primary-normal; /* Altera a cor da borda ao passar o mouse */
+    }
+
+    
+    
+    
+}
+
+
