@@ -79,16 +79,6 @@ $topLarge:88px;
 $topSmall:60px;
 $leftLarge:210px;
 $leftSmall:88px;
-.container-app{
-position: absolute;
-top:$topLarge;
-left: $leftLarge;
-width: calc(100vw - $leftLarge);
-height: calc(100vh - $topLarge);
-@include responsive(s){
-  top:$topSmall;
-  left: $leftSmall;
-  width: calc(100vw - $leftSmall);
-  height: calc(100vh - $topSmall);
-}
-}
+
+// COMPONENTES
+@import "partials/components/LogoMenu";
