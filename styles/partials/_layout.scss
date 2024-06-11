@@ -88,32 +88,7 @@ $gutter: 32px;
   }
 }
 
-.container {
-  max-width: $container-l;
-  margin: 0 auto;
 
-  //padding: 128px 24px;
-
-  /*display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: row;*/
-  //overflow: hidden;
-  //position: sticky;
-
-  // clearfix
-  &::after{
-    content: '';
-    display: table;
-    clear: both;
-  }
-
-  @include responsive(s) {
-    flex-direction: column;
-
-    padding: 96px 16px;
-  }
-}
 
 
 

@@ -1,0 +1,58 @@
+.dashboard{
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    .side-nav{
+        width: 210px;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        @include responsive(s){
+            width: 80px;
+        }
+        @include responsive(xs){
+            display: none;
+        }
+        .logo{
+            height: 88px;
+            background-color: green;
+            @include responsive(s){
+                height: 70px;
+                padding: $gap-1;
+            }  
+        }
+        .menu{
+            background-color: $gray-200;
+            flex-grow: 1;
+        }  
+        .suporte{
+            height: 100px;
+            background-color: cadetblue;
+        }
+    }
+    .item-2{
+        flex: 1;
+        .nav-bar{
+            height: 88px;
+            background-color: $gray-200;
+            display: flex;
+            
+            @include responsive(s){
+                height: 70px;
+            }
+            .item-1{
+                background-color: red;
+                width: 100px;
+            }
+            .item-2{
+                background-color: rgb(77, 170, 77);
+                display: flex;
+                width: 300px;
+            }
+        }
+        .content{
+            padding: $gap-3 $gap-2 0 $gap-2;
+        }
+    }
+}
+
