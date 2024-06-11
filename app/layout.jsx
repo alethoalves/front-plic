@@ -1,7 +1,6 @@
-import { Inter } from "next/font/google";
+import { lato, kanit } from "@/styles/fonts";
 import "@/styles/globals.scss";
 
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
   title: "Create Next App",
@@ -11,7 +10,7 @@ export const metadata = {
 const RootLayout = ({ children }) => {
   return (
     <html lang="pt-br">
-      <body className={inter.className}>{children}</body>
+      <body className={`${lato.variable} ${kanit.variable}`}>{children}</body>
     </html>
   );
 }

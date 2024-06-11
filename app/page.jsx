@@ -7,6 +7,7 @@ const Page = () => {
         <p>
           Get started by editing
         </p>
+        <h1>TESTE</h1>
       </div>
     </main>
   );

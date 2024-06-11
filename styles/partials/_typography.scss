@@ -1,10 +1,8 @@
 // Typography of project
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 
 @mixin typeface-1($size, $device: desktop) {
-  font-family: "Montserrat", sans-serif;;
 
-
+  font-family: var(--font-kanit);
   @if $size == hbig and $device == desktop {
     font-size: 80px;
     line-height: 120%;
@@ -122,7 +120,7 @@
 }
 
 @mixin typeface-2($size: p2, $device: desktop) {
-  font-family: "Montserrat", sans-serif;;
+  font-family: var(--font-lato);
   @if $size == p1 and $device == desktop {
     font-size: 26px;
     line-height: 30px;
