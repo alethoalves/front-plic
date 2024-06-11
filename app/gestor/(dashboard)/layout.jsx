@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "Login | PLIC",
+  title: "Dashboard | PLIC",
 };
 
 const Layout = ({ children }) => {

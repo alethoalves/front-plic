@@ -4,10 +4,13 @@ const Page = () => {
   return (
     <main className={styles.main}>
       <div className={styles.description}>
-        <p>
-          Get started by editing
-        </p>
-        <h1>TESTE</h1>
+        <h1>
+          Página inicial 
+        </h1>
+        <ul>
+          <li><p>Gestor</p></li>
+          <li><p>Participante</p></li>
+        </ul>
       </div>
     </main>
   );

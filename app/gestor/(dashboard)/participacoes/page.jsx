@@ -1,7 +1,7 @@
 const Page = () => {
   return (
    <main>
-    Olá
+    <p>Participações</p>
    </main>
   );
 }
