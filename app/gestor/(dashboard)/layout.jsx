@@ -1,8 +1,10 @@
 
+import LogoMenu from "@/components/LogoMenu";
 import Logo from "@/components/LogoMenu";
+import Menu from "@/components/Menu";
 import "@/styles/globals.scss";
-import { RiQuestionAnswerLine } from "@remixicon/react";
-import Image from "next/image";
+import { RiFile2Line, RiFoldersLine, RiGroupLine, RiHomeLine, RiListCheck2, RiQuestionAnswerLine, RiSettings3Line, RiSurveyLine, RiTodoLine, RiUserLine } from "@remixicon/react";
+
 
 export const metadata = {
   title: "Dashboard | PLIC",
@@ -14,9 +16,11 @@ const Layout = ({ children }) => {
       <div className="dashboard-item-1">
         <div className="side-nav">
           <div className="side-nav-item-1">
-            <Logo/>
+            <LogoMenu/>
           </div>
-          <div className="side-nav-item-2">MENU</div>
+          <div className="side-nav-item-2">
+            <Menu/>
+          </div>
           <div className="side-nav-item-3">
             <div className="item-1">
               <RiQuestionAnswerLine/>

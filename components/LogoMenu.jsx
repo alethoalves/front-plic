@@ -1,8 +1,7 @@
 import Image from "next/image";
 import logo from "@/public/logo.svg"
-import "@/styles/globals.scss";
 
-const Logo = () => {
+const LogoMenu = () => {
     return (
       <div className="LogoMenu">
         <div className="logo-img">
@@ -14,4 +13,4 @@ const Logo = () => {
     );
   };
   
-  export default Logo;
+  export default LogoMenu;
