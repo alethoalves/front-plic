@@ -73,7 +73,6 @@ svg, img{
 @import "partials/input";
 @import "partials/auth";
 @import "partials/notifications";
-@import "partials/dashboard";
 
 $topLarge:88px;
 $topSmall:60px;
@@ -81,5 +80,3 @@ $leftLarge:210px;
 $leftSmall:88px;
 
 // COMPONENTES
-@import "partials/components/LogoMenu";
-@import "partials/components/Menu";

@@ -1,0 +1,21 @@
+@import "../../../styles/partials/colors";
+@import "../../../styles/partials/layout";
+@import "../../../styles/partials/spacing";
+
+.dashboard{
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    .item1{
+        background-color: $white-light;
+    }
+    .item2{
+        flex: 1;
+        
+        .content{
+            padding: $gap-3 $gap-2 0 $gap-2;
+        }
+    }
+}
+
+

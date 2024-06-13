@@ -1,6 +1,13 @@
-.Menu{
+@import "./../styles/partials/colors";
+@import "./../styles/partials/layout";
+@import "./../styles/partials/spacing";
+
+.menu{
     width: 100%;
-    
+    a:not(:last-child){
+        display: block;
+        margin-bottom: 4px;
+    }
     li{
         padding: $gap-2 $gap-2;
         border-top: 1px solid $white-darken;
@@ -13,13 +20,6 @@
         cursor: pointer;
         p{
             margin-left: $gap-2;
-        }
-        @include responsive(s){
-            justify-content: center;
-            p{display: none;}
-        }
-        &:not(:last-child){
-            margin-bottom: 4px;
         }
         &::before{
             content: '';
@@ -50,5 +50,4 @@
             border-bottom: 1px solid $primary-dark;
         }
     }
-    
 }

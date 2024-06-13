@@ -3,17 +3,18 @@
 import itensMenu from "@/lib/menuItens";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import styles from './Menu.module.scss'
 
 const Menu = () => {
   const pathname = usePathname();
     return (
-      <ul className="Menu">
+      <ul className={styles.menu}>
         {itensMenu.map((item, i) => {
           const Icon = item.icon;
           return (
             <Link key={i} href={item.path}>
-            <li className={`${pathname === item.path && 'active'}`} >
-              <div className="icon">
+            <li className={`${pathname === item.path && styles.active}`} >
+              <div className={styles.icon}>
                 {Icon && <Icon />}
               </div>
               <p>{item.title}</p>

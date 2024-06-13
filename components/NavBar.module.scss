@@ -1,0 +1,18 @@
+@import "./../styles/partials/colors";
+@import "./../styles/partials/layout";
+@import "./../styles/partials/spacing";
+
+.navBar{
+    height: 70px;
+    display: flex;
+    background-color: $white-light;
+    .navBarItem1{
+        width: 100px;
+        flex: 1;
+    }
+    .navBarItem2{
+        display: flex;
+        width: 300px;
+        flex: 1;
+    }
+}
