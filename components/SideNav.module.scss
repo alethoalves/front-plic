@@ -7,6 +7,9 @@
     height: 100vh;
     display: flex;
     flex-direction: column;
+    position: fixed;
+    z-index: 1200;
+    background-color: $white-light;
     .logoMenu{
         height: 100%;
         display: flex;
@@ -74,22 +77,42 @@
 //Responsividade (s)
 @include responsive(s){
     .sideNav{
-        .logoMenu p{
-            display: none;
-        }
-        .sideNavItem3{
-            .item2{
-                display: none;
+        top: 0;
+        left: -250px; // Sidebar desliza para fora da tela
+        width: 250px;
+        transition: left 0.3s ease-in-out; // Animação suave
+        z-index: 1200;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0px 6px 12px rgba(5, 17, 34, 0.1);
+        .hamburguerIcon{
+            position: fixed;
+            top: 17px;
+            left: 17px;//230px;
+            padding: 8px;
+            width: 35px;
+            height: 35px;
+            z-index: 1100;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            cursor: pointer;
+            background-color: $white-dark;
+            transition: .3s ease;
+            &:hover{
+                opacity: 0.7; 
             }
+            border-radius: 4px;
+            .line{
+                width: 20px;
+                height: 2px;
+                background-color: $primary-dark;
+                border-radius: 1.5px;
+            } 
         }
-    }
-}
-//Responsividade (xs)
-@include responsive(xs){
-    .sideNav{
-        position: absolute;
-        background-color: $white-light;
-        width: 100vw;
+        
+        width: 210px;
         .logoMenu p{
             display: block;
         }
@@ -97,6 +120,21 @@
             .item2{
                 display: block;
             }
+        }
+    }
+    .open{
+        left: 0;
+        .hamburguerIcon{
+            left: 230px;
+        }
+        .line1 {
+            transform: rotate(45deg) translate(4px, 4px);
+        }
+        .line2{
+            opacity: 0;
+        }
+        .line3 {
+            transform: rotate(-45deg) translate(5px, -5px);
         }
     }
 }

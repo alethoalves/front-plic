@@ -13,7 +13,19 @@
         flex: 1;
         
         .content{
-            padding: $gap-3 $gap-2 0 $gap-2;
+            margin-top: 70px;
+            margin-left: 210px;
+            padding: $gap-5 $gap-4;
+        }
+    }
+}
+@include responsive(s){
+    .dashboard{
+        .item2{            
+            .content{
+                margin-left: 0;
+                padding: $gap-4 $gap-3;
+            }
         }
     }
 }

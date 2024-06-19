@@ -6,6 +6,8 @@
     height: 70px;
     display: flex;
     background-color: $white-light;
+    width: 100vw;
+    position: fixed;
     .navBarItem1{
         width: 100px;
         flex: 1;
@@ -14,5 +16,11 @@
         display: flex;
         width: 300px;
         flex: 1;
+    }
+}
+
+@include responsive(s){
+    .navBar{
+        padding-left: 66px;
     }
 }

@@ -5,14 +5,14 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import styles from './Menu.module.scss'
 
-const Menu = () => {
+const Menu = ({onClick}) => {
   const pathname = usePathname();
     return (
       <ul className={styles.menu}>
         {itensMenu.map((item, i) => {
           const Icon = item.icon;
           return (
-            <Link key={i} href={item.path}>
+            <Link key={i} href={item.path} onClick={onClick}>
             <li className={`${pathname === item.path && styles.active}`} >
               <div className={styles.icon}>
                 {Icon && <Icon />}
