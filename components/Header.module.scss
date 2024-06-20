@@ -1,0 +1,16 @@
+@import "./../styles/partials/colors";
+@import "./../styles/partials/layout";
+@import "./../styles/partials/spacing";
+
+.header{
+    h4{
+        margin-bottom: $gap-2;
+    }
+    h5{
+        color: $primary-dark;
+        margin-bottom: $gap-1;
+    }
+    .p3{
+        color: $gray-500;
+    }
+}

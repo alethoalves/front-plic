@@ -79,7 +79,7 @@
     line-height: 120%;
     font-weight: 400;
   } @else if $size == h4 and $device == mobile {
-    font-size: 28px;
+    font-size: 26px;
     line-height: 130%;
     font-weight: 400;
   } @else if $size == h4 and $device == smallmobile {
@@ -94,7 +94,7 @@
     font-weight: 400;
   } @else if $size == h5 and $device == mobile {
     font-size: 20px;
-    line-height: 140%;
+    line-height: 100%;
     font-weight: 400;
   }
 
@@ -150,11 +150,11 @@
     line-height: 17px;
     font-weight: 400;
   } @else if $size == p3 and $device == mobile {
-    font-size: 16px;
+    font-size: 14px;
     line-height: 17px;
     font-weight: 400;
   } @else if $size == p3 and $device == smallmobile {
-    font-size: 14px;
+    font-size: 12px;
     line-height: 15px;
     font-weight: 400;
   }
