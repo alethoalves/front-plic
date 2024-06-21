@@ -1,6 +1,6 @@
 'use client'
 import Header from "@/components/Header";
-import { RiAddCircleLine, RiAtLine } from '@remixicon/react';
+import { RiAddCircleLine, RiAtLine, RiSearchLine } from '@remixicon/react';
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import styles from "./page.module.scss";
@@ -53,27 +53,61 @@ const Page = () => {
                 name="value"
                 label='Buscar'
                 inputType="text" // text, password
-                placeholder='Digite aqui para pesquisar'
-                autoFocus
+                placeholder='Pesquise aqui'
+                //autoFocus
                 disabled={loading}
               />
             </div>
             <div className={`${styles.btnBuscador}`}>
               <Button
+                  icon={RiSearchLine}
                   className="btn-primary"
                   type="submit" // submit, reset, button
                   disabled={loading}
                 >{loading ? 'Carregando...' : 'Pesquisar'}
               </Button>
             </div>
+            
         </form>
     </div>
     <div className={`${styles.content}`}>
-      <div className={`${styles.btnNewItem} ${styles.btnItem}`}>
+      <div className={`${styles.btnNewItem}`}>
         <div className={`${styles.icon}`}>
           <RiAddCircleLine/>
         </div>
         <p>Criar novo</p>
+      </div>
+      
+      <div className={`${styles.btnItem}`}>
+        <div className={styles.header}>
+          <div className="h7">Formulário de participação</div>
+          <p>Inscrição de aluno do PIBIC e PIBITI</p>
+        </div>
+        <div className={styles.actions}>
+          <div className={`${styles.group1} mr-3`}>
+            <Button
+              icon={RiSearchLine}
+              className="btn-primary "
+              type="submit" // submit, reset, button
+              disabled={loading}
+            >{loading ? 'Carregando...' : 'Pesquisar'}</Button>
+          </div>
+          <div className={styles.group2}>
+            <Button
+              icon={RiSearchLine}
+              className="btn-primary mr-1"
+              type="submit" // submit, reset, button
+              disabled={loading}
+            ></Button>
+            <Button
+              icon={RiSearchLine}
+              className="btn-primary"
+              type="submit" // submit, reset, button
+              disabled={loading}
+            ></Button>
+          </div>
+          
+        </div>
       </div>
     </div>
   </main>

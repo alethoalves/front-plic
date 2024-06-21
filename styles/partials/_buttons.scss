@@ -2,6 +2,11 @@
 .button{
     width: 100%;
     height: $gap-5;
+    padding: 0 $gap-2;
+    @include responsive(s){
+        padding: 0 $gap-1;
+        
+    }
     cursor: pointer;
     border: 1px solid $primary-normal;
     border-radius: 4px;
