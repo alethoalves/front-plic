@@ -18,12 +18,12 @@ const Input = (props) => {
 
     const handleChange = (event) => {
         let inputValue = event.target.value;
-        if (props.className.includes("phone-input")) {
+        if (props.className?.includes("phone-input")) {
             inputValue = inputValue.replace(/\D/g, '');
             if (inputValue.length <= 11) {
                 inputValue = inputValue.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
             }
-        } else if (props.className.includes("cpf-input")) {
+        } else if (props.className?.includes("cpf-input")) {
             inputValue = inputValue.replace(/\D/g, '');
             if (inputValue.length <= 11) {
                 inputValue = inputValue.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');

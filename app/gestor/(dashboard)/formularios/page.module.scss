@@ -7,6 +7,9 @@
     display: flex;
     .input{
         max-width: 470px;
+        @include responsive(s){
+            max-width: none;
+        }
         flex: 1;
     }
     .btnBuscador{
@@ -26,26 +29,29 @@
     margin-top: $gap-3;
     display: flex;
     flex-wrap: wrap;
-    .btnItem{
-        max-width: 370px;
-        flex: 1;
-        height: 227px;
-        border-radius: $gap-1;
-        background-color: $white-light;
-        padding: $gap-3;
-        box-shadow: 0px 6px 12px rgba(5, 17, 34, 0.1);
-        display: flex;
+    @include responsive(s){
         flex-direction: column;
-        justify-content: space-between;
-        .header p{
-            margin-top: $gap-1;
+    }
+    .card{
+        margin-right: $gap-3;
+        margin-bottom: $gap-3;
+        @include responsive(s){
+            margin-right: 0;
         }
     }
     .btnNewItem{
         margin-right: $gap-3;
-        flex: 1;
-        max-width: 370px;
+        width: 338.29px;
         height: 227px;
+        padding: $gap-1;
+        @include responsive(s){
+            max-width: none;
+            margin-right: 0;
+            margin-bottom: $gap-3;
+            width: auto;
+            height: auto;
+        }
+        
         border-radius: $gap-1;
         cursor: pointer;
         border: 1px dashed  $primary-normal;
@@ -57,21 +63,18 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        .icon svg{
-            width: 50px;
-            height: 50px;
-            color: $primary-normal;
-        }
-    }
-    .actions{
-        display: flex;
-        justify-content: space-between;
-        
-        .group2{
-            display: flex;
-            p{
-                display: none;
+        .icon {
+            
+            svg{
+                width: 50px;
+                height: 50px;
+                color: $primary-normal;
             }
         }
-    }
+    } 
+}
+
+.icon{
+    width: 24px;
+    color: $primary-normal;
 }

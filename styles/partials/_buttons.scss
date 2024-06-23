@@ -23,6 +23,7 @@
     }
     
     .btn-icon-green{
+        
         color: $success-normal;
     }
     .btn-icon-red{
@@ -51,6 +52,29 @@
     }
     &:hover{
         background-color: lighten($white-normal, 5%);
+    }
+}
+
+.btn-error{
+    background-color: $error-lighten;
+    border: 1px solid $error-lighten;
+    transition: all .3s ease;
+    p, .btn-icon{
+        color: $error-normal;
+    }
+    &:hover{
+        background-color: lighten($error-lighten, 5%);
+    }
+}
+.btn-blue{
+    background-color: $primary-lighten;
+    border: 1px solid $primary-lighten;
+    transition: all .3s ease;
+    p, .btn-icon{
+        color: $primary-normal;
+    }
+    &:hover{
+        background-color: lighten($primary-lighten, 5%);
     }
 }
 

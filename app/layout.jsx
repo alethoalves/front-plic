@@ -9,8 +9,9 @@ export const metadata = {
 
 const RootLayout = ({ children }) => {
   return (
-    <html lang="pt-br" suppressHydrationWarning={true}>
-      <body className={`${lato.variable} ${kanit.variable}`}>{children}</body>
+    <html lang="pt-br" //
+    >
+      <body className={`${lato.variable} ${kanit.variable}`} suppressHydrationWarning={true}>{children}</body>
     </html>
   );
 }

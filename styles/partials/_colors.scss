@@ -4,8 +4,10 @@
 
 $primary-darken:#083B7F;
 $primary-dark:#0F4EA2;
-$primary-normal:#1B69D2;
+$primary-normal:rgb(27, 105, 210);
 $primary-light:#4587DF;
+$primary-lighten: rgba(27, 105, 210, 0.4);;
+
 .primary-darken{
     color:$primary-darken;
 };
@@ -36,7 +38,7 @@ $neutral:#D8DBE3;
 $error-normal: #F03D3D;
 $error-dark: #d03333;
 $error-light: rgb(240, 84, 84);
-$error-lighten: rgba(240, 84, 84,0.1);;
+$error-lighten: rgba(240, 84, 84,0.4);;
 
 $success-normal: #0BB07B;
 $success-dark: #28bb49;

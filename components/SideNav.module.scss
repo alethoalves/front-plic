@@ -43,7 +43,10 @@
     .sideNavItem2{
         flex: 1;
         display: flex;
-        align-items: center;
+        //align-items: center;
+        padding-top: 70px;
+        overflow-y: scroll;
+
     }  
     .sideNavItem3{
         border-top: 1px solid $gray-50;
