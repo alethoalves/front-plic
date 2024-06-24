@@ -1,0 +1,25 @@
+@import "./../styles/partials/colors";
+@import "./../styles/partials/layout";
+@import "./../styles/partials/spacing";
+
+.formulario{
+    margin-top: $gap-3;
+    .input{
+        max-width: 470px;
+        @include responsive(s){
+            max-width: none;
+        }
+        flex: 1;
+    }
+    .btnSubmit{
+        display: flex;
+        align-items: flex-end;
+        margin-top: $gap-3;
+        @include responsive (s){
+            p{
+                display: none;
+            }
+        }
+    }
+    
+}

@@ -2,7 +2,7 @@ import styles from './Card.module.scss'
 import Button from "@/components/Button";
 import { RiDeleteBin6Line, RiEditLine, RiLogoutBoxRLine } from '@remixicon/react';
 
-const Card = ({loading, tipoForm, tituloForm}) => {
+const Card = ({tipoForm, tituloForm}) => {
     return (
         <div className={`${styles.btnItem}`}>
         <div className={`${styles.header} mr-2`}>
@@ -15,21 +15,19 @@ const Card = ({loading, tipoForm, tituloForm}) => {
               icon={RiLogoutBoxRLine}
               className="btn-primary"
               type="submit" // submit, reset, button
-              disabled={loading}
-            >{loading ? 'Carregando...' : 'Acessar'}</Button>
+              
+            >Acessar</Button>
           </div>
           <div className={styles.group2}>
             <Button
               icon={RiEditLine}
               className="btn-blue mr-1"
               type="submit" // submit, reset, button
-              disabled={loading}
             ></Button>
             <Button
               icon={RiDeleteBin6Line}
               className="btn-error "
               type="submit" // submit, reset, button
-              disabled={loading}
             ></Button>
           </div>
           

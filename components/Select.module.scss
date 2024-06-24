@@ -1,0 +1,72 @@
+@import "./../styles/partials/colors";
+@import "./../styles/partials/layout";
+@import "./../styles/partials/spacing";
+
+.selectContainer {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    cursor: pointer;
+    p{
+        color: $black-light;       
+    }
+   
+}
+
+
+.selectedOption {
+    background-color: $white-light;
+    color: $black-light;
+    transition: all .3s ease;
+    border: 1px solid $gray-300;
+    height: $gap-5;
+    padding: 10px;
+    border-radius: 4px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.selectedOption.open {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.optionsList {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    border: 1px solid #ccc;
+    border-top: none;
+    background-color: #fff;
+    position: absolute;
+    width: 100%;
+    z-index: 10;
+    max-height: 200px; /* Optional: Limit the height */
+    overflow-y: auto;  /* Optional: Add scroll if the list is long */
+}
+
+.optionItem {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+}
+
+.optionItem:hover {
+    background-color: #f0f0f0;
+}
+
+.optionItem:last-child {
+    border-bottom: none;
+}
+
+/* Additional Styles */
+.inputError {
+    border-color: red;
+}
+
+.errorMsg {
+    color: red;
+    font-size: 12px;
+    margin: 5px 0 0;
+}
