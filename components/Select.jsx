@@ -20,20 +20,20 @@ const Select = (props) => {
             <div className={`flex-space ${styles.label}`}>
                 <p>{props.label}</p>
                 {fieldState.error?.message && 
-                    <p className={styles.errorMsg}>{fieldState.error.message}</p>
+                    <div className={styles.errorMsg}>{fieldState.error.message}</div>
                 }
             </div>
 
             <div
-                className={`${styles.selectContainer} ${props.className} ${fieldState.invalid && styles.inputError}`}
+                className={`${styles.selectContainer} ${props.className} `}
                 onClick={() => setIsOpen(!isOpen)}
             >
-                <div className={`${styles.selectedOption} ${isOpen ? styles.open : ''}`}>
+                <div className={`${styles.selectedOption} ${isOpen ? styles.open : ''} ${fieldState.invalid && styles.inputError}`}>
                     {selectedOption.label}
                     <div className={`${styles.arrow} ${isOpen ? styles.open : ''}`}></div>
                 </div>
                 {isOpen && !props.disabled && (
-                    <ul className={styles.optionsList}>
+                    <ul className={`${styles.optionsList} ${fieldState.invalid && styles.inputError}`}>
                         {props.options.map(option => (
                             <li 
                                 key={option.value}

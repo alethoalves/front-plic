@@ -89,7 +89,8 @@
 }
 
 .errorMsg {
-    color: red;
-    font-size: 12px;
-    margin: 5px 0 0;
-}
+    display: inline-block;
+        color: $error-light;
+        text-align: right;
+        font-size: 14px;
+    }

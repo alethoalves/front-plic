@@ -17,7 +17,7 @@ const Page = () => {
       isOpen={isModalOpen}
       onClose={()=>{setIsModalOpen(false)}}
     >
-      <div className={styles.icon}><RiEditLine/></div>
+      <div className={`${styles.icon} mb-2`}><RiEditLine/></div>
       <h4>Novo formulário</h4>
       <p>Preencha os dados abaixo para criar um novo formulário.</p>
       <FormNewFormulario/>

@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import Button from "@/components/Button";
-import { RiSearchLine } from '@remixicon/react';
+import { RiSave2Line, RiSearchLine } from '@remixicon/react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { buscador } from '@/lib/zodSchemas/buscador';
@@ -44,6 +44,7 @@ const FormNewFormulario = () => {
       <form className={`${styles.formulario}`} onSubmit={handleSubmit(handleFormSubmit)}>
           <div className={`${styles.input}`}>
             <Input
+              className="mb-2"
               control={control}
               name="titulo"
               label='Título do formulário'
@@ -62,11 +63,11 @@ const FormNewFormulario = () => {
           </div>
           <div className={`${styles.btnSubmit}`}>
             <Button
-                icon={RiSearchLine}
+                icon={RiSave2Line}
                 className="btn-primary"
                 type="submit" // submit, reset, button
                 disabled={loading}
-              >{loading ? 'Carregando...' : 'Pesquisar'}
+              >{loading ? 'Carregando...' : 'Criar formulário'}
             </Button>
           </div>
       </form>

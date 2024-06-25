@@ -24,8 +24,17 @@
         width: 80%;
         max-width: 500px;
         position: relative;
+        @include responsive(xs){
+            &{
+                width: 100%;
+                height: 100%;
+                border-radius: 0;
+            }
+            
+        }
     }
 }
+
 .closeIcon{
     position: absolute;
     top: $gap-4;
