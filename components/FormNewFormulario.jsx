@@ -55,11 +55,8 @@ const FormNewFormulario = () => {
             <Select
               control={control}
               name="tipo"
-              label='Título do formulário'
-              inputType="text" // text, password
-              placeholder='Digite aqui o título do formulário'
+              label='Escolha o tipo do formulário'
               options={[{label:"Selecione uma opção", value:""},{label:"option 1", value:"option1"},{label:"option 2", value:"option2"}]}
-              //autoFocus
               disabled={loading}
             />
           </div>

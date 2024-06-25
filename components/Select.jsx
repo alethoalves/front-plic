@@ -16,8 +16,8 @@ const Select = (props) => {
     };
 
     return (
-        <label className={styles.select}>
-            <div className="flex-space">
+        <label className={`${styles.select} select`}>
+            <div className={`flex-space ${styles.label}`}>
                 <p>{props.label}</p>
                 {fieldState.error?.message && 
                     <p className={styles.errorMsg}>{fieldState.error.message}</p>
@@ -29,17 +29,18 @@ const Select = (props) => {
                 onClick={() => setIsOpen(!isOpen)}
             >
                 <div className={`${styles.selectedOption} ${isOpen ? styles.open : ''}`}>
-                    <p>{selectedOption.label}</p>
+                    {selectedOption.label}
+                    <div className={`${styles.arrow} ${isOpen ? styles.open : ''}`}></div>
                 </div>
-                {isOpen && (
+                {isOpen && !props.disabled && (
                     <ul className={styles.optionsList}>
                         {props.options.map(option => (
-                            <li
+                            <li 
                                 key={option.value}
                                 className={styles.optionItem}
                                 onClick={() => handleSelect(option)}
                             >
-                                <p>{option.label}</p>
+                                {option.label}
                             </li>
                         ))}
                     </ul>
