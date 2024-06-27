@@ -4,12 +4,13 @@ const Page = () => {
   return (
     <main className={styles.main}>
       <div className={styles.description}>
-        <h1>
-          Página inicial 
-        </h1>
+        <h4>
+          Selecione a sua instituição 
+        </h4>
         <ul>
-          <li><p>Gestor</p></li>
-          <li><p>Participante</p></li>
+          <li><p>UnB</p></li>
+          <li><p>Ceub</p></li>
+          <li><p>UDF</p></li>
         </ul>
       </div>
     </main>
