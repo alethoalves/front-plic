@@ -25,6 +25,9 @@ const Input = (props) => {
             }
         } else if (props.className?.includes("cpf-input")) {
             inputValue = inputValue.replace(/\D/g, '');
+            if (inputValue.length > 11) {
+                inputValue = inputValue.slice(0, 11); // Limita o comprimento a 11 caracteres
+            }
             if (inputValue.length <= 11) {
                 inputValue = inputValue.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
             }

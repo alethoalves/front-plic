@@ -34,9 +34,8 @@ const Page = () => {
   const { control, handleSubmit} = useForm({
     resolver: zodResolver(signinSchema),
     defaultValues: {
-      email: '',
+      cpf: '',
       senha: '',
-      manterLogado:true
     },
   });
   return (
@@ -45,35 +44,39 @@ const Page = () => {
       <div className={styles.logo}>
       ...
       </div>
-      <div className="header">
+      <div className={styles.header}>
         <h4>Faça o login para acessar a plataforma</h4>
       </div>
       {errorMessage&&
         <Notification className="notification-error">{errorMessage}</Notification>
       }
       <form onSubmit={handleSubmit(handleFormSubmit)}>
-          <div className="content">
-            <Input
-              control={control}
-              name="email"
-              className='content-item-1'
-              label='E-mail'
-              icon={RiAtLine} 
-              inputType="text" // text, password
-              placeholder='Digite seu email'
-              autoFocus
-              disabled={loading}
-            />
-            <Input
-              control={control}
-              name="senha"
-              className='content-item-2'
-              label='Senha'
-              icon={RiLock2Line} 
-              inputType="password" // text, password 
-              placeholder='Digite sua senha'
-              disabled={loading}
-            />
+          <div className={styles.form}>
+            <div className={styles.formInput}>
+              <Input
+                control={control}
+                className="cpf-input"
+                name="cpf"
+                label='CPF'
+                icon={RiAtLine} 
+                inputType="text" // text, password
+                placeholder='Digite seu CPF'
+                autoFocus
+                disabled={loading}
+              />
+            </div>
+            <div className={styles.formInput}>
+              <Input
+                control={control}
+                name="senha"
+                label='Senha'
+                icon={RiLock2Line} 
+                inputType="password" // text, password 
+                placeholder='Digite sua senha'
+                disabled={loading}
+              />
+            </div>
+            
           </div>
           <div className="actions">
             <div className="actions-item-2">
