@@ -2,9 +2,10 @@ export const metadata = {
   title: "Login | PLIC",
 };
 
-const Layout = ({ children }) => {
+const Layout = ({ children, params }) => {
   return (
     <div>
+      {params.tenant}
       {children}
     </div>
   );

@@ -1,4 +1,4 @@
-import { req } from "@/api/axios.js";
+import { req } from "./axios.js";
 import { setCookie,getCookie, deleteCookie } from 'cookies-next';
 
 

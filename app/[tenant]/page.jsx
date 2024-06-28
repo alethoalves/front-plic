@@ -7,7 +7,8 @@ import Input from "@/components/Input";
 import { signinSchema } from "@/lib/zodSchemas/authSchema";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RiAtLine, RiLock2Line } from "@remixicon/react";
+import { RiAtLine, RiIdCardLine, RiLock2Line } from "@remixicon/react";
+import { signin } from "../api/clientReq";
 
 const Page = () => {
   const [errorMessage, setErrorMessage] = useState('');
@@ -19,9 +20,9 @@ const Page = () => {
     setErrorMessage('');
     
     try {
-      const response = true//await signin(data);
+      const response = await signin(data);
       if(response.success){
-        //router.push('/home')
+        router.push('/gestor')
       }
     } catch (error) {
       console.error('Error:', error);
@@ -42,7 +43,7 @@ const Page = () => {
    <main className={styles.container}>
     <div className={styles.auth}>
       <div className={styles.logo}>
-      ...
+      <p>...</p>
       </div>
       <div className={styles.header}>
         <h4>Faça o login para acessar a plataforma</h4>
@@ -58,7 +59,7 @@ const Page = () => {
                 className="cpf-input"
                 name="cpf"
                 label='CPF'
-                icon={RiAtLine} 
+                icon={RiIdCardLine} 
                 inputType="text" // text, password
                 placeholder='Digite seu CPF'
                 autoFocus
