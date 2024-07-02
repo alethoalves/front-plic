@@ -5,11 +5,11 @@ import { getTenant } from "../api/serverReq";
 const Page = async ({params}) => {
   const tenant = params.tenant;
   const tenantExists = await getTenant({ slug: tenant });
-  const {pathLogo} = tenantExists.tenant;
-  
+  const pathLogo = tenantExists.tenant ? tenantExists.tenant.pathLogo :'/';
+  const slug = tenantExists.tenant ? tenantExists.tenant.slug :'';
   return (
    <main className={styles.container} > 
-    <Auth params={params}  pathLogo={pathLogo}/>
+    <Auth params={params} slug={slug}  pathLogo={pathLogo}/>
    </main>
   );
 }

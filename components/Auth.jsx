@@ -1,6 +1,6 @@
 'use client'
 import { Notification } from "@/components/Notification";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "@/components/Button";
 import Input from "@/components/Input";
 import { signinSchema } from "@/lib/zodSchemas/authSchema";
@@ -8,12 +8,15 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RiIdCardLine, RiLock2Line } from "@remixicon/react";
 import styles from './Auth.module.scss'
-import { signin } from "@/app/api/clientReq";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { signin } from "@/app/api/clientReq";
 
-const Auth = ({params, color, pathLogo}) => {
+const Auth = ({ slug, pathLogo}) => {
     const [errorMessage, setErrorMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
 
   const handleFormSubmit = async (data) => {
     
@@ -22,8 +25,10 @@ const Auth = ({params, color, pathLogo}) => {
     
     try {
       const response = await signin(data);
+      console.log(response)
       if(response.success){
-        console.log('logado')
+        //Redirecionar o usuário para a página /slug/gestor
+        router.push(`/${slug}/gestor`);
       }
     } catch (error) {
       console.error('Error:', error);
@@ -38,6 +43,7 @@ const Auth = ({params, color, pathLogo}) => {
     defaultValues: {
       cpf: '',
       senha: '',
+      slug: slug
     },
   });
     return (
