@@ -5,9 +5,13 @@
 .navBar{
     height: 70px;
     display: flex;
-    background-color: $white-light;
+    //background-color: $primary-darken;//#fff;//$white-light;
+    border-bottom: 1px solid $white-darken;
     width: 100vw;
     position: fixed;
+    color: $primary-darken;
+    padding-left: 218px;
+    //box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
     .navBarItem1{
         width: 100px;
         flex: 1;

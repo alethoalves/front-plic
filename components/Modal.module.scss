@@ -9,7 +9,8 @@
     z-index: 1250;
     width: 100vw;
     height: 100vh;
-    background-color: rgba($color: $primary-darken, $alpha: 0.5);
+    //background-color: red;
+    background-color: rgba(#000, 0.2); 
     backdrop-filter: blur(5px);
     display: flex;
     justify-content: center;

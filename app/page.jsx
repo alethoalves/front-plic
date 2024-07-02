@@ -2,7 +2,7 @@ import styles from "./page.module.scss";
 
 const Page = () => {
   return (
-    <main className={styles.main}>
+    <main className={styles.main} >
       <div className={styles.description}>
         <h4>
           Selecione a sua instituição 

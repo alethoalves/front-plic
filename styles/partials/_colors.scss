@@ -2,21 +2,21 @@
 
 // Brand-colors
 
-$primary-darken:#083B7F;
-$primary-dark:#0F4EA2;
-$primary-normal:rgb(27, 105, 210);
-$primary-light:#4587DF;
-$primary-lighten: rgba(27, 105, 210, 0.4);;
+$primary-darken:var(--primary-darken);
+$primary-dark:var(--primary-dark);
+$primary-normal:var(--primary-normal);
+$primary-light:var(--primary-light);
+$primary-lighten: var(--primary-lighten);
 
 .primary-darken{
     color:$primary-darken;
 };
 
 // Neutral-colors
-$white-darken:#DAF0FF;
-$white-dark:#E8F6FF;
-$white-normal:#F4FBFF;
-$white-light:#FFFFFF;
+$white-darken:var(--white-darken);
+$white-dark:var(--white-dark);
+$white-normal:var(--white-normal);;
+$white-light:var(--white-light);
 
 $black-dark:#041123;
 $black-normal:#07172E;

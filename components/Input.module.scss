@@ -11,7 +11,7 @@
     }
     position: relative;
     input{
-        border: 1px solid $gray-300;
+        border: 1px solid $primary-normal;
     }
     
     
@@ -23,7 +23,7 @@
         border-radius: 4px;
         background-color: $white-light;
         color: $black-light;
-        transition: all .3s ease;
+        //transition: all .3s ease;
         &:hover{
             border-color: $primary-normal;
         }

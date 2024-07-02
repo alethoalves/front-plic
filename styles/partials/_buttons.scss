@@ -32,38 +32,41 @@
 }
 
 .btn-primary{
-    background-color: $primary-normal;
+    background-color: $primary-dark;
     transition: all .3s ease;
     p,.btn-icon{
         color: $white-light;
     }
     
     &:hover{
-        background-color: lighten($primary-normal, 5%);
+        opacity: 0.8;
     }
     
 }
 
 .btn-secondary{
-    background-color: $white-normal;
+    background-color: $white-light;
     transition: all .3s ease;
     p{
         color: $black-normal;
     }
     &:hover{
-        background-color: lighten($white-normal, 5%);
+        opacity: 0.8;
+        background-color: $white-darken;
+
     }
 }
 
 .btn-error{
-    background-color: $error-lighten;
+    background-color: $white-light;
     border: 1px solid $error-lighten;
     transition: all .3s ease;
     p, .btn-icon{
         color: $error-normal;
     }
     &:hover{
-        background-color: lighten($error-lighten, 5%);
+        opacity: 0.8;
+        background-color: $error-lighten;
     }
 }
 .btn-blue{
@@ -74,7 +77,7 @@
         color: $primary-normal;
     }
     &:hover{
-        background-color: lighten($primary-lighten, 5%);
+        opacity: 0.8;
     }
 }
 

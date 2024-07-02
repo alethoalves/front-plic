@@ -21,7 +21,7 @@ const Card = ({tipoForm, tituloForm}) => {
           <div className={styles.group2}>
             <Button
               icon={RiEditLine}
-              className="btn-blue mr-1"
+              className="btn-secondary mr-1"
               type="submit" // submit, reset, button
             ></Button>
             <Button

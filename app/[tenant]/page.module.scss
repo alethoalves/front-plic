@@ -3,40 +3,14 @@
 @import "./../../styles/partials/spacing";
 
 .container{
-    max-width: $container-l;
+    width: 100vw;
     display:flex ;
     align-items:center;
     justify-content:space-around;
     margin: 0 auto;
-    padding-top: $gap-6;
+    
     height: 100vh;
+    background-color: #fff;//$white-dark;
+    
 }
 
-.auth{
-    width: 416px;
-    margin: $gap-2;
-    .logo{
-        width: 100%;
-        height: 142px;
-        border: 1px solid red;
-        margin-bottom: $gap-3;
-        @include responsive(s){
-            margin-bottom: $gap-2;
-        }
-    }
-    .header{
-        margin-bottom: $gap-3;
-    }
-    .form{
-        margin-bottom: $gap-3;
-    }
-    .form .formInput:not(:last-child){
-        margin-bottom: $gap-2;
-    }
-    @include responsive(s){
-        .header, .form .formInput:not(:last-child){
-            margin-bottom: $gap-1;
-        }
-        
-    }
-}

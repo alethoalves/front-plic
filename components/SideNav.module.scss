@@ -9,26 +9,34 @@
     flex-direction: column;
     position: fixed;
     z-index: 1200;
-    background-color: $white-light;
+    background-color: #fff;
+    box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+
     .logoMenu{
         height: 100%;
         display: flex;
         align-items: center;
         padding: $gap-1;
+        //border-bottom: 1px solid $white-darken;
         .logoImg{
-            height: 35px;
-            width: 45px;
+            width: auto;
+            flex: 1;
+            height: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
             margin-right: $gap-1;
             position: relative;
+            img{
+                object-fit: contain;
+                //object-position: left bottom;
+            }
         }
         p, strong{
             font-family: var(--font-kanit);
             font-weight: 400;
             letter-spacing: 3px;
-            color: $white-light;
+            color: $primary-darken;
             text-transform: uppercase;
         }
         strong{
@@ -38,25 +46,22 @@
     .sideNavItem1{
         height: 70px;
         width: 100%;
-        background: linear-gradient(to right, #1B69D2, #0E366C) ;
+        //background: linear-gradient(to right, $primary-dark, $primary-darken) ;
     }
     .sideNavItem2{
         flex: 1;
         display: flex;
         //align-items: center;
-        padding-top: 70px;
+        padding-top: 4px;
         overflow-y: scroll;
 
     }  
     .sideNavItem3{
-        border-top: 1px solid $gray-50;
+        border-top: 1px solid $white-darken;
         display: flex;
         padding: $gap-2;
-        background-color: $white-light;
         cursor: pointer;
-            &:hover{
-                background-color: rgba($color: $gray-100, $alpha: 0.15);
-            }
+            
         .item1{
             width: 50px;
             display: flex;
@@ -67,13 +72,18 @@
                 width: 24px;
             }
         }
+        
         .item2{
             h6{
                 color: $black-light;
             }
             p{
-                color: $gray-300;
+                color: $gray-500;
             }
+        }
+        &:hover{
+            background-color: $white-darken;
+            
         }
     }
 }
@@ -88,6 +98,7 @@
         display: flex;
         flex-direction: column;
         box-shadow: 0px 6px 12px rgba(5, 17, 34, 0.1);
+        
         .hamburguerIcon{
             position: fixed;
             top: 17px;

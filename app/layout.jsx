@@ -11,7 +11,7 @@ const RootLayout = ({ children }) => {
   return (
     <html lang="pt-br" //
     >
-      <body className={`${lato.variable} ${kanit.variable}`} suppressHydrationWarning={true}>{children}</body>
+      <body className={`${lato.variable} ${kanit.variable}`}  suppressHydrationWarning={true}>{children}</body>
     </html>
   );
 }

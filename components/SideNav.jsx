@@ -7,7 +7,7 @@ import styles from './SideNav.module.scss'
 import { RiQuestionAnswerLine } from '@remixicon/react';
 import { useState } from 'react';
 
-const SideNav = () => {
+const SideNav = ({pathLogo}) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const toggleSidebar = () => {
@@ -23,9 +23,9 @@ const SideNav = () => {
         <div className={styles.sideNavItem1}>
           <div className={styles.logoMenu}>
             <div className={styles.logoImg}>
-              <Image src={logo} fill={true} alt="Logomarca da PLIC - Plataforma de Iniciação Científica"/>
+              <Image src={`/${pathLogo}`} fill={true} alt="Logomarca da PLIC - Plataforma de Iniciação Científica"/>
             </div>
-            <p>PLIC<strong>.gestor</strong></p>
+            
           </div>
         </div>
         <div className={styles.sideNavItem2}>

@@ -34,9 +34,9 @@
         border-radius: $gap-1;
         cursor: pointer;
         border: 1px dashed  $primary-normal;
-        background-color: $white-dark;
+        background-color: $white-light;
         &:hover{
-            background-color: $white-darken;
+            background-color: $white-normal;
         }
         display: flex;
         flex-direction: column;

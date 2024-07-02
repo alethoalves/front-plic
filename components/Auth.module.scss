@@ -1,0 +1,47 @@
+@import "./../styles/partials/colors";
+@import "./../styles/partials/layout";
+@import "./../styles/partials/spacing";
+
+.auth{
+    width: 416px;
+    margin: $gap-2;
+    .logo{
+        width: auto;
+        height: 142px;
+        margin-bottom: $gap-3;
+        position: relative;
+        img{
+            object-fit: contain;
+            object-position: left center;
+        }
+        @include responsive(s){
+            margin-bottom: $gap-2;
+        }
+    }
+    .header{
+        margin-bottom: $gap-3;
+    }
+    .form{
+        margin-bottom: $gap-3;
+    }
+    .form .formInput:not(:last-child){
+        margin-bottom: $gap-2;
+    }
+    @include responsive(s){
+        .header, .form .formInput:not(:last-child){
+            margin-bottom: $gap-1;
+        }
+        
+    }
+}
+.logoPlic{
+    width: auto;
+    height: 40px;
+    margin-top: $gap-3;
+    position: relative;
+    img{
+        object-fit: contain;
+        object-position: left center;
+    }
+    
+}

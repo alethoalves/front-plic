@@ -1,3 +1,16 @@
+:root {
+  --primary-darken: #083B7F; 
+  --primary-dark: #0F4EA2; 
+  --primary-normal: #1b69d2; 
+  --primary-light: #4587DF; 
+  --primary-lighten: #1b69d266; 
+
+  --white-darken:#DAF0FF;
+  --white-dark:#E8F6FF;
+  --white-normal:#F4FBFF;
+  --white-light:#FFFFFF;
+}
+
 *,*::after, *::before{
   padding: 0;
   margin: 0;

@@ -21,7 +21,7 @@ export function Notification({className, children}) {
         }, 400); // Tempo de espera após o desaparecimento da notificação antes de ocultar a div pai
       };
     return (
-        <div className={`${styles.notification} ${className} ${visible ? styles.visible : ''} ${parentDisplay}`}>
+        <div className={`${styles.notification} ${className} ${visible ? styles.visible : ''} ${parentDisplay==='none'?styles.none:''}`}>
             <p className="p5">{children}</p>
             <a onClick={handleDismiss}><RiCloseLine/></a>
         </div>
