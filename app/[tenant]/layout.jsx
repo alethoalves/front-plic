@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getTenant } from "../api/serverReq";
 import colorGenerate from '@/lib/colorGenerate';
+import styles from "./page.module.scss";
 
 export const generateMetadata = async ({ params }) => {
   const { tenant } = params;
@@ -24,7 +25,7 @@ const Layout = async ({ children, params }) => {
   const whiteVariants = colorGenerate.createWhiteColorVariants(primaryColor);
 
   return (
-    <div style={
+    <div className={styles.main} style={
       {
         '--primary-darken': primaryVariants.darken,
         '--primary-dark': primaryVariants.dark,

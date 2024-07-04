@@ -1,0 +1,17 @@
+@import "./../styles/partials/colors";
+@import "./../styles/partials/layout";
+@import "./../styles/partials/spacing";
+
+.actions{
+    display: flex;
+    justify-content: flex-end;
+    z-index: 999;
+    position: fixed;
+    bottom: 25px;
+    right: 35px;
+    @include responsive(s){
+        p{
+            display: none;
+        }
+    }
+}

@@ -1,13 +1,16 @@
 'use client'
 import { useEffect, useState } from 'react';
 import Header from "@/components/Header";
-import { RiAddCircleLine, RiEditLine, RiSearchLine } from '@remixicon/react';
+import { RiAddCircleLine, RiAddLine, RiEditLine, RiFileExcelLine, RiSearchLine } from '@remixicon/react';
 import styles from "./page.module.scss";
 import Card from "@/components/Card";
 import Modal from "@/components/Modal";
 import BuscadorFormularios from "@/components/BuscadorFormularios";
-import FormNewFormulario from "@/components/FormNewFormulario";
 import { getEditais } from '@/app/api/clientReq';
+import Button from '@/components/Button';
+import Actions from '@/components/Actions';
+import FormNewInscricao from '@/components/FormNewInscricao';
+import Table from '@/components/Table';
 
 const Page = ({ params }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -21,6 +24,7 @@ const Page = ({ params }) => {
         const fetchedEditais = await getEditais(params.tenant);
         fetchedEditais.sort((a, b) => b.ano - a.ano);
         setEditais(fetchedEditais || []);
+        console.log(fetchedEditais)
       } catch (error) {
         console.error("Erro ao buscar editais:", error);
       } finally {
@@ -38,46 +42,30 @@ const Page = ({ params }) => {
         onClose={() => { setIsModalOpen(false) }}
       >
         <div className={`${styles.icon} mb-2`}><RiEditLine /></div>
-        <h4>Novo Edital </h4>
-        <p>Preencha os dados abaixo para criar um novo edital.</p>
-        <FormNewFormulario />
+        <h4>Nova Inscrição</h4>
+        <p>Preencha os dados abaixo para iniciar o processo de inscrição.</p>
+        <FormNewInscricao data={{editais}}/>
       </Modal>
-      <main>
+      
+      <main className={styles.main}>
+      <Actions onClickPlus={() => { setIsModalOpen(true) }}/>
+        
         <Header
           className="mb-3"
-          titulo="Editais"
-          subtitulo="Crie e edite os editais de Iniciação Científica"
-          descricao="Aqui você gerencia os editais do seu programa de iniciação científica."
+          titulo="Inscrições"
+          subtitulo="Inscrições da Iniciação Científica"
+          descricao="Aqui você gerencia as inscrições nos editais da Iniciação Científica."
         />
+        
         <div>
           <BuscadorFormularios />
         </div>
+        
         <div className={`${styles.content}`}>
-          <div onClick={() => { setIsModalOpen(true) }} className={`${styles.btnNewItem}`}>
-            <div className={`${styles.icon}`}>
-              <RiAddCircleLine />
-            </div>
-            <p>Criar novo</p>
-          </div>
+       
+          <Table/>
 
-          {loading ? (
-            <p>Carregando...</p>
-          ) : (
-            < >
-              {editais.length > 0 ? (
-                editais.map(edital => (
-                  <div className={styles.card} key={edital.id}>
-                    <Card
-                      title={edital.titulo}
-                      subtitle={edital.ano.toString()}
-                    />
-                  </div>
-                ))
-              ) : (
-                <p>Nenhum edital encontrado</p>
-              )}
-            </>
-          )}
+         
         </div>
       </main>
     </>

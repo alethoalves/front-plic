@@ -1,0 +1,134 @@
+/* Estilos gerais para parágrafos e cabeçalhos dentro da tabela */
+table p, table h6 {
+    display: block;
+    max-width: 200px;
+    overflow: hidden;
+    white-space: nowrap; /* Evita que o texto quebre linha */
+    text-overflow: ellipsis;
+}
+/* Container da tabela */
+.table-container {
+    width: calc(100vw - 242px);
+    overflow-y: hidden;
+}
+
+@include responsive(s) {
+    .table-container {
+        width: calc(100vw - 48px);
+    }
+}
+
+/* Estilos da tabela */
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+/* Estilos para o primeiro cabeçalho */
+th:nth-child(1) {
+    width: 300px;
+    position: absolute;
+    z-index: 1;
+    background-color: rgba($white-light, 0.7);
+    backdrop-filter: blur(6px);
+    border-right: 1px solid #fff;
+    display: flex;
+}
+
+
+
+/* Estilos para o segundo cabeçalho */
+th:nth-child(2) {
+    display: flex;
+    justify-content: center;
+    margin-left: 300px;
+}
+
+/* Estilos para a primeira célula do corpo da tabela */
+td:nth-child(1) {
+    background-color: rgba($white-light, 0.2);
+    backdrop-filter: blur(6px);
+    border-right: 1px solid #fff;
+    width: 300px;
+    position: absolute;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+    justify-content: center;
+}
+
+/* Estilos para a segunda célula do corpo da tabela */
+td:nth-child(2) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 300px;
+}
+
+/* Estilos para as linhas do corpo da tabela */
+tbody tr {
+    cursor: pointer;
+}
+/* Alternando cores de fundo entre linhas ímpares e pares */
+tbody tr:nth-child(odd) {
+    background-color: $white-normal; /* Cor de fundo para linhas ímpares */
+}
+
+tbody tr:nth-child(even) {
+    background-color: #ffffff; /* Cor de fundo para linhas pares */
+}
+
+tbody tr:hover {
+    background-color: $white-darken;
+}
+
+tbody tr:hover th:first-child,
+tbody tr:hover td:first-child {
+    border-left: 4px solid $primary-dark;
+}
+
+/* Estilos para cabeçalhos e células */
+th, td {
+    padding: $gap-2 $gap-3;
+    border-left: 4px solid transparent;
+}
+
+td {
+    height: 90px;
+}
+
+td:not(:nth-child(1)):not(:nth-child(2)) {
+    text-align: center;
+}
+
+th p {
+    font-weight: 300;
+}
+
+/* Estilos para status */
+.status {
+    display: inline-block;
+    padding: $gap-1 $gap-3;
+    border-radius: $gap-1;
+    font-size: 12px;
+    color: #000;
+}
+
+.status.warning {
+    border: 1px solid $warning-dark;
+    background-color: $warning-light;
+}
+
+.status.green {
+    border: 1px solid $success-dark;
+    background-color: $success-light;
+}
+@include responsive(xs) {
+    th:nth-child(1),
+    th:nth-child(2),
+    td:nth-child(1),
+    td:nth-child(2) {
+        width: 200px;
+    }
+}

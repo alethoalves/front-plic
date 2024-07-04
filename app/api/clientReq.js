@@ -99,3 +99,29 @@ export const getTenant = async (reqParams) => {
         throw error;
     }
 };
+
+export const getEditais = async (tenantSlug) => {
+    try {
+        const token = getCookie('authToken');
+        if (!token) {
+            return false;
+        }
+        // Consulta a API de editais
+        const response = await req.get(`/private/${tenantSlug}/edital`, {
+            headers: {
+                "Authorization": `Token ${token}`
+            }
+        });
+        return response.data.editais;
+  
+    } catch (error) {
+        if (error.response && error.response.status === 404) {
+            // Trata o erro 404 de forma específica
+            console.error('Editais não encontrados:', error);
+            return null; // Retorna null ou algum valor padrão para indicar que os editais não foram encontrados
+        }
+        // Para outros erros, relança o erro para que o chamador possa tratá-lo
+        console.error('Erro ao obter os editais:', error);
+        throw error;
+    }
+  };

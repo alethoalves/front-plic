@@ -7,7 +7,7 @@ import Card from "@/components/Card";
 import Modal from "@/components/Modal";
 import BuscadorFormularios from "@/components/BuscadorFormularios";
 import FormNewFormulario from "@/components/FormNewFormulario";
-const Page = () => {
+const Page = ({params}) => {
   
   const [isModalOpen, setIsModalOpen] = useState(false)
     
@@ -18,7 +18,7 @@ const Page = () => {
       onClose={()=>{setIsModalOpen(false)}}
     >
       <div className={`${styles.icon} mb-2`}><RiEditLine/></div>
-      <h4>Novo formulário</h4>
+      <h4>Novo formulário </h4>
       <p>Preencha os dados abaixo para criar um novo formulário.</p>
       <FormNewFormulario/>
     </Modal>
@@ -43,8 +43,8 @@ const Page = () => {
       
       <div className={styles.card}>
         <Card 
-        tipoForm="atividade"
-        tituloForm="Resumo"
+        title="atividade"
+        subtitle="Resumo"
         />
       </div>
       

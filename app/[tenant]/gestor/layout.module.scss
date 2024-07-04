@@ -4,8 +4,9 @@
 
 .dashboard{
     display: flex;
+    
     width: 100vw;
-    height: 100vh;
+    min-height: 100vh;
     background-color:$white-light;
     .item1{
         background-color: $white-light;
@@ -17,7 +18,7 @@
         .content{
             margin-top: 70px;
             margin-left: 210px;
-            padding: $gap-5 $gap-4;
+            padding: $gap-5 0 0 $gap-4 ;
         }
     }
 }

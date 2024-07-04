@@ -2,12 +2,12 @@ import styles from './Card.module.scss'
 import Button from "@/components/Button";
 import { RiDeleteBin6Line, RiEditLine, RiLogoutBoxRLine } from '@remixicon/react';
 
-const Card = ({tipoForm, tituloForm}) => {
+const Card = ({title, subtitle}) => {
     return (
         <div className={`${styles.btnItem}`}>
         <div className={`${styles.header} mr-2`}>
-          <div className="h7">{tipoForm}</div>
-          <p>{tituloForm}</p>
+          <div className={`h7 ${styles.destaque}`}>{title}</div>
+          <p>{subtitle}</p>
         </div>
         <div className={styles.actions}>
           <div className={`${styles.group1} mr-1`}>

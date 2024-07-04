@@ -10,12 +10,17 @@ import Select from "@/components/Select";
 import styles from './Form.module.scss'
 import { formNewFormulario } from '@/lib/zodSchemas/formNewFormulario';
 
-const FormNewFormulario = () => {
+const FormNewInscricao =  ({data}) => {
+  console.log(data)
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-    
-    
-    
+  const editais = [
+    { label: "Selecione uma opção", value: "" },
+    ...data.editais.map(item => ({
+        label: `${item.titulo} - ${item.ano}`,
+        value: item.id
+    }))
+];
     const handleFormSubmit = async (data) => {
       setLoading(true);
       setErrorMessage('');
@@ -43,21 +48,12 @@ const FormNewFormulario = () => {
     return (
       <form className={`${styles.formulario}`} onSubmit={handleSubmit(handleFormSubmit)}>
           <div className={`${styles.input}`}>
-            <Input
-              className="mb-2"
-              control={control}
-              name="titulo"
-              label='Título do formulário'
-              inputType="text" // text, password
-              placeholder='Digite aqui o título do formulário'
-              //autoFocus
-              disabled={loading}
-            />
+            
             <Select
               control={control}
               name="tipo"
-              label='Escolha o tipo do formulário'
-              options={[{label:"Selecione uma opção", value:""},{label:"option 1", value:"option1"},{label:"option 2", value:"option2"}]}
+              label='Escolha o edital'
+              options={editais}
               disabled={loading}
             />
           </div>
@@ -67,11 +63,11 @@ const FormNewFormulario = () => {
                 className="btn-primary"
                 type="submit" // submit, reset, button
                 disabled={loading}
-              >{loading ? 'Carregando...' : 'Criar formulário'}
+              >{loading ? 'Carregando...' : 'Iniciar inscrição'}
             </Button>
           </div>
       </form>
     );
   };
   
-  export default FormNewFormulario;
+  export default FormNewInscricao;

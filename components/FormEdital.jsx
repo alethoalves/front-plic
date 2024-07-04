@@ -9,8 +9,10 @@ import Select from "@/components/Select";
 
 import styles from './Form.module.scss'
 import { formNewFormulario } from '@/lib/zodSchemas/formNewFormulario';
+import { z } from 'zod';
 
-const FormNewFormulario = () => {
+
+const FormEdital = () => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
     
@@ -32,9 +34,16 @@ const FormNewFormulario = () => {
         setLoading(false);
       }
     };
-   
+    const formEdital = z.object({
+      titulo: z
+        .string()
+        .min(1, 'Campo obrigatório!'),
+      tipo: z
+        .string()
+        .min(1, 'Campo obrigatório!'),
+      })
     const { control, handleSubmit} = useForm({
-      resolver: zodResolver(formNewFormulario),
+      resolver: zodResolver(formEdital),
       defaultValues: {
         titulo: '',
         tipo: ''
@@ -74,4 +83,4 @@ const FormNewFormulario = () => {
     );
   };
   
-  export default FormNewFormulario;
+  export default FormEdital;

@@ -55,5 +55,5 @@ const redirectToSignIn = (request) => {
 };
 
 export const config = {
-    matcher: ['/:tenant*/gestor/:path*', '/:tenant*']
+    matcher: ['/:tenant*/gestor/:path*']
 };

@@ -31,7 +31,12 @@ $gutter: 32px;
       @content;
     }
   } 
-  
+  @else if $device == less1140 {
+    // For resolutions between 1140px and 1440px
+    @media screen and (max-width: $container-l) {
+      @content;
+    }
+  } 
   
   @else if $device == m {
     // For resolutions between 960px and 1140px

@@ -80,6 +80,20 @@
         opacity: 0.8;
     }
 }
+.btn-green{
+    background-color: $white-light;
+    border: 1px solid $success-dark;
+    transition: all .3s ease;
+    p{
+        color: $primary-darken;
+    }
+    .btn-icon{
+        color: $success-dark;
+    }
+    &:hover{
+        opacity: 0.8;
+    }
+}
 
 button[type="submit"]:disabled{
     background-color: $gray-100;

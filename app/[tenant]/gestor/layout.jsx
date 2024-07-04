@@ -4,10 +4,6 @@ import NavBar from "@/components/NavBar";
 import styles from "./layout.module.scss"
 import { getTenant } from "@/app/api/serverReq";
 
-export const metadata = {
-  title: "Dashboard | PLIC",
-};
-
 const Layout = async ({ children,params }) => {
   const tenant = params.tenant;
   const tenantExists = await getTenant({ slug: tenant });
@@ -19,6 +15,7 @@ const Layout = async ({ children,params }) => {
   }
   const {primaryColor,whiteColor, pathLogo } = tenantExists.tenant;
   return (
+    
     <div className={styles.dashboard} style={{ '--primary-color': primaryColor,'--white-color': whiteColor }}>
       <div className={styles.item1}>
         <SideNav pathLogo={pathLogo}/>
@@ -28,6 +25,7 @@ const Layout = async ({ children,params }) => {
         <div className={styles.content}>{children}</div>
       </div>
     </div>
+
   );
 }
 
