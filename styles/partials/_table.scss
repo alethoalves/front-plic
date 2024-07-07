@@ -2,6 +2,7 @@
 table p, table h6 {
     display: block;
     max-width: 200px;
+    
     overflow: hidden;
     white-space: nowrap; /* Evita que o texto quebre linha */
     text-overflow: ellipsis;
@@ -26,13 +27,14 @@ table {
 
 /* Estilos para o primeiro cabeçalho */
 th:nth-child(1) {
-    width: 300px;
+    width: 100px;
     position: absolute;
     z-index: 1;
     background-color: rgba($white-light, 0.7);
     backdrop-filter: blur(6px);
     border-right: 1px solid #fff;
     display: flex;
+    justify-content: center;
 }
 
 
@@ -41,7 +43,8 @@ th:nth-child(1) {
 th:nth-child(2) {
     display: flex;
     justify-content: center;
-    margin-left: 300px;
+    margin-left: 100px;
+    min-width: 200px;
 }
 
 /* Estilos para a primeira célula do corpo da tabela */
@@ -49,12 +52,12 @@ td:nth-child(1) {
     background-color: rgba($white-light, 0.2);
     backdrop-filter: blur(6px);
     border-right: 1px solid #fff;
-    width: 300px;
+    width: 100px;
     position: absolute;
     z-index: 2;
     display: flex;
     flex-direction: column;
-    align-items: left;
+    align-items: center;
     justify-content: center;
 }
 
@@ -63,7 +66,8 @@ td:nth-child(2) {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-left: 300px;
+    margin-left: 100px;
+    min-width: 200px;
 }
 
 /* Estilos para as linhas do corpo da tabela */
@@ -129,6 +133,6 @@ th p {
     th:nth-child(2),
     td:nth-child(1),
     td:nth-child(2) {
-        width: 200px;
+        width: 100px;
     }
 }

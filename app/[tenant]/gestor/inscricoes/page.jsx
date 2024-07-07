@@ -1,13 +1,13 @@
+// page.jsx
+
 'use client'
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Header from "@/components/Header";
-import { RiAddCircleLine, RiAddLine, RiEditLine, RiFileExcelLine, RiSearchLine } from '@remixicon/react';
+import { RiEditLine } from '@remixicon/react';
 import styles from "./page.module.scss";
-import Card from "@/components/Card";
 import Modal from "@/components/Modal";
-import BuscadorFormularios from "@/components/BuscadorFormularios";
-import { getEditais } from '@/app/api/clientReq';
-import Button from '@/components/Button';
+import { getEditais, getInscricoes } from '@/app/api/clientReq';
 import Actions from '@/components/Actions';
 import FormNewInscricao from '@/components/FormNewInscricao';
 import Table from '@/components/Table';
@@ -15,25 +15,39 @@ import Table from '@/components/Table';
 const Page = ({ params }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editais, setEditais] = useState([]);
+  const [inscricoes, setInscricoes] = useState([]);
+  const [pageInfo, setPageInfo] = useState({ page: 1, limit: 10, total: 0 });
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    const fetchEditais = async () => {
+    const fetchData = async () => { 
+      setLoading(true);
       try {
-        console.log(params.tenant)
         const fetchedEditais = await getEditais(params.tenant);
-        fetchedEditais.sort((a, b) => b.ano - a.ano);
-        setEditais(fetchedEditais || []);
-        console.log(fetchedEditais)
+        const fetchedInscricoes = await getInscricoes(params.tenant, pageInfo.page, pageInfo.limit);
+        if (fetchedEditais) {
+          fetchedEditais.sort((a, b) => b.ano - a.ano);
+          setEditais(fetchedEditais);
+        }
+        if (fetchedInscricoes) {
+          setInscricoes(fetchedInscricoes.inscricoes);
+          setPageInfo(prev => ({ ...prev, total: fetchedInscricoes.total }));
+        }
       } catch (error) {
-        console.error("Erro ao buscar editais:", error);
+        console.error("Erro ao buscar dados:", error);
       } finally {
         setLoading(false);
       }
     };
+  
+    fetchData();
+  }, [params.tenant, pageInfo.page, pageInfo.limit]); 
+  const handleRowClick = (id) => {
+    // Navega para a página de detalhes da inscrição
+    router.push(`/${params.tenant}/gestor/inscricoes/${id}`);
+  };
 
-    fetchEditais();
-  }, [params.tenant]);
 
   return (
     <>
@@ -44,11 +58,11 @@ const Page = ({ params }) => {
         <div className={`${styles.icon} mb-2`}><RiEditLine /></div>
         <h4>Nova Inscrição</h4>
         <p>Preencha os dados abaixo para iniciar o processo de inscrição.</p>
-        <FormNewInscricao data={{editais}}/>
+        <FormNewInscricao data={{ editais }} tenant={params.tenant} />
       </Modal>
       
       <main className={styles.main}>
-      <Actions onClickPlus={() => { setIsModalOpen(true) }}/>
+        <Actions onClickPlus={() => { setIsModalOpen(true) }}/>
         
         <Header
           className="mb-3"
@@ -56,16 +70,14 @@ const Page = ({ params }) => {
           subtitulo="Inscrições da Iniciação Científica"
           descricao="Aqui você gerencia as inscrições nos editais da Iniciação Científica."
         />
-        
-        <div>
-          <BuscadorFormularios />
-        </div>
+      
         
         <div className={`${styles.content}`}>
-       
-          <Table/>
-
-         
+        {loading&&<p>Carregadno...</p>}
+        {!loading&&
+          <Table data={inscricoes} pageInfo={pageInfo} setPageInfo={setPageInfo} onRowClick={handleRowClick} />
+        }
+        
         </div>
       </main>
     </>

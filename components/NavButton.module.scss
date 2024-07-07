@@ -1,0 +1,31 @@
+@import "./../styles/partials/colors";
+@import "./../styles/partials/layout";
+@import "./../styles/partials/spacing";
+
+.btn{
+    flex: 1;
+    border: 1px solid transparent;
+    border-radius: $gap-1;
+    display: flex;
+    background-color: #fff;
+    align-items: center;
+    padding: $gap-2 $gap-3;
+    cursor: pointer;
+    p{
+        margin-left: $gap-1;
+        text-wrap: nowrap;
+    }
+    svg{
+        width: 20px;
+    }
+    &:hover{
+        background-color: $white-darken;
+    }
+}
+.btn.selected{
+    background-color: $primary-dark;
+    color: $white-darken; 
+    p{
+        color: $white-darken; 
+    }
+}
