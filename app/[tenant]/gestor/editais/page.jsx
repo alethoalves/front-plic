@@ -5,9 +5,9 @@ import { RiAddCircleLine, RiEditLine } from '@remixicon/react';
 import styles from "./page.module.scss";
 import Card from "@/components/Card";
 import Modal from "@/components/Modal";
-import BuscadorFormularios from "@/components/BuscadorFormularios";
 import { getEditais } from '@/app/api/clientReq';
 import FormEdital from '@/components/FormEdital';
+import BuscadorFront from '@/components/BuscadorFront';
 
 const Page = ({ params }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -61,7 +61,7 @@ const Page = ({ params }) => {
           descricao="Aqui você gerencia os editais do seu programa de iniciação científica."
         />
         <div>
-          <BuscadorFormularios />
+          <BuscadorFront />
         </div>
         <div className={`${styles.content}`}>
           <div onClick={() => { setIsModalOpen(true) }} className={`${styles.btnNewItem}`}>

@@ -83,12 +83,18 @@
 
 .checkboxContainer{
     display: flex;
+    flex-direction: row-reverse;
+    justify-content: left;
     align-items: center;
+    margin-bottom: $gap-2;
     p{
         cursor: pointer;
         color: $gray-500;
+        margin-bottom: 0;
+        margin-left: $gap-2;
     }
     input{
+        
         width: 18px;
         height: 18px;
         appearance: none; /* Remove a aparência padrão */
@@ -101,6 +107,7 @@
         outline: none; /* Remove a borda de foco padrão */
         cursor: pointer; /* Muda o cursor para indicar que é clicável */
         transition: all .3s ease;
+        margin-bottom: 0;
     }
         /* Estilo quando o checkbox está marcado */
     input:checked {

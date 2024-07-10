@@ -1,53 +1,60 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useController } from "react-hook-form";
 import styles from './Select.module.scss';
 
 const Select = (props) => {
-    const { field, fieldState } = useController(props);
-    const [isOpen, setIsOpen] = useState(false);
-    const [selectedOption, setSelectedOption] = useState(
-        props.options.find(option => option.value === field.value) || props.options[0]
-    );
+  const { field, fieldState } = useController(props);
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedOption, setSelectedOption] = useState(
+    props.options.find(option => option.value === field.value) || props.options[0]
+  );
 
-    const handleSelect = (option) => {
-        setSelectedOption(option);
-        setIsOpen(false);
-        field.onChange(option.value);
-    };
+  useEffect(() => {
+    const initialOption = props.options.find(option => option.value === field.value);
+    if (initialOption) {
+      setSelectedOption(initialOption);
+    }
+  }, [field.value, props.options]);
 
-    return (
-        <label className={`${styles.select} select`}>
-            <div className={`flex-space ${styles.label}`}>
-                <p>{props.label}</p>
-                {fieldState.error?.message && 
-                    <div className={styles.errorMsg}>{fieldState.error.message}</div>
-                }
-            </div>
+  const handleSelect = (option) => {
+    setSelectedOption(option);
+    setIsOpen(false);
+    field.onChange(option.value);
+  };
 
-            <div
-                className={`${styles.selectContainer} ${props.className} `}
-                onClick={() => setIsOpen(!isOpen)}
-            >
-                <div className={`${styles.selectedOption} ${isOpen ? styles.open : ''} ${fieldState.invalid && styles.inputError}`}>
-                    {selectedOption.label}
-                    <div className={`${styles.arrow} ${isOpen ? styles.open : ''}`}></div>
-                </div>
-                {isOpen && !props.disabled && (
-                    <ul className={`${styles.optionsList} ${fieldState.invalid && styles.inputError}`}>
-                        {props.options.map(option => (
-                            <li 
-                                key={option.value}
-                                className={styles.optionItem}
-                                onClick={() => handleSelect(option)}
-                            >
-                                {option.label}
-                            </li>
-                        ))}
-                    </ul>
-                )}
-            </div>
-        </label>
-    );
+  return (
+    <label className={`${styles.select} select`}>
+      <div className={`flex-space ${styles.label}`}>
+        <p>{props.label}</p>
+        {fieldState.error?.message && 
+          <div className={styles.errorMsg}>{fieldState.error.message}</div>
+        }
+      </div>
+
+      <div
+        className={`${styles.selectContainer} ${props.className} `}
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <div className={`${styles.selectedOption} ${isOpen ? styles.open : ''} ${fieldState.invalid && styles.inputError}`}>
+          {selectedOption.label}
+          <div className={`${styles.arrow} ${isOpen ? styles.open : ''}`}></div>
+        </div>
+        {isOpen && !props.disabled && (
+          <ul className={`${styles.optionsList} ${fieldState.invalid && styles.inputError}`}>
+            {props.options.map(option => (
+              <li 
+                key={option.value}
+                className={styles.optionItem}
+                onClick={() => handleSelect(option)}
+              >
+                {option.label}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </label>
+  );
 }
 
 export default Select;

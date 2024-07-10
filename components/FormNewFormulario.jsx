@@ -1,77 +1,126 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import Button from "@/components/Button";
-import { RiSave2Line, RiSearchLine } from '@remixicon/react';
-import { useState } from 'react';
+//HOOKS
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { buscador } from '@/lib/zodSchemas/buscador';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { formNewFormulario } from '@/lib/zodSchemas/formNewFormulario';
+
+//ESTILOS E ÍCONES
+import styles from './Form.module.scss'
+import { RiSave2Line } from '@remixicon/react';
+
+//COMPONENTES
+import Button from "@/components/Button";
 import Input from "@/components/Input";
 import Select from "@/components/Select";
 
-import styles from './Form.module.scss'
-import { formNewFormulario } from '@/lib/zodSchemas/formNewFormulario';
+//FUNÇÕES
+import { createFormulario, updateFormulario } from '@/app/api/clientReq';
 
-const FormNewFormulario = () => {
+const FormNewFormulario = ({ tenantSlug, initialData, onClose, onSuccess }) => {
+  //ESTADOS
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-    
-    
-    
-    const handleFormSubmit = async (data) => {
-      setLoading(true);
-      setErrorMessage('');
-      try {
-        console.log(data)
-        //const response = await signin(data);
-        //if(response.success){
-        //  console.log('sucesso')
-        //}
-      } catch (error) {
-        console.error('Error:', error);
-        setErrorMessage(error.response?.data?.error?.message ?? "Erro na conexão com o servidor.")
-      } finally {
-        setLoading(false);
+  const { control, handleSubmit, setValue, reset } = useForm({
+    resolver: zodResolver(formNewFormulario),
+    defaultValues: {
+      titulo: '',
+      descricao:'',
+      tipo:'',
+      onSubmitStatus: ''
+    },
+  });
+
+  useEffect(() => {
+    if (initialData) {
+      setValue('titulo', initialData.titulo);
+      setValue('descricao', initialData.descricao);
+      setValue('tipo', initialData.tipo);
+      setValue('onSubmitStatus', initialData.onSubmitStatus);
+    } else {
+      reset();
+    }
+  }, [initialData, setValue, reset]);
+
+  const handleFormSubmit = async (data) => {
+    setLoading(true);
+    setErrorMessage('');
+    try {
+      if (initialData) {
+        await updateFormulario(tenantSlug, initialData.id, data);
+      } else {
+        await createFormulario(tenantSlug, data);
       }
-    };
-   
-    const { control, handleSubmit} = useForm({
-      resolver: zodResolver(formNewFormulario),
-      defaultValues: {
-        titulo: '',
-        tipo: ''
-      },
-    });
-    return (
-      <form className={`${styles.formulario}`} onSubmit={handleSubmit(handleFormSubmit)}>
-          <div className={`${styles.input}`}>
-            <Input
-              className="mb-2"
-              control={control}
-              name="titulo"
-              label='Título do formulário'
-              inputType="text" // text, password
-              placeholder='Digite aqui o título do formulário'
-              //autoFocus
-              disabled={loading}
-            />
-            <Select
-              control={control}
-              name="tipo"
-              label='Escolha o tipo do formulário'
-              options={[{label:"Selecione uma opção", value:""},{label:"option 1", value:"option1"},{label:"option 2", value:"option2"}]}
-              disabled={loading}
-            />
-          </div>
-          <div className={`${styles.btnSubmit}`}>
-            <Button
-                icon={RiSave2Line}
-                className="btn-primary"
-                type="submit" // submit, reset, button
-                disabled={loading}
-              >{loading ? 'Carregando...' : 'Criar formulário'}
-            </Button>
-          </div>
-      </form>
-    );
+      onSuccess();
+      onClose();
+    } catch (error) {
+      console.error('Error:', error);
+      setErrorMessage(error.response?.data?.error?.message ?? "Erro na conexão com o servidor.")
+    } finally {
+      setLoading(false);
+    }
   };
-  
-  export default FormNewFormulario;
+
+  return (
+    <form className={`${styles.formulario}`} onSubmit={handleSubmit(handleFormSubmit)}>
+      <div className={`${styles.input}`}>
+        <Input
+          className="mb-2"
+          control={control}
+          name="titulo"
+          label='Título do formulário'
+          inputType="text"
+          placeholder='Digite aqui o título do formulário'
+          disabled={loading}
+        />
+        <Input
+          className="mb-2"
+          control={control}
+          name="descricao"
+          label='Descrição do formulário'
+          inputType="text"
+          placeholder='Digite aqui o título do formulário'
+          disabled={loading}
+        />
+        <Select
+          className="mb-2"
+          control={control}
+          name="tipo"
+          label='Tipo de formulário'
+          options={[
+            { label: "Selecione uma opção", value: "" },
+            { label: "orientador", value: "orientador" },
+            { label: "aluno", value: "aluno" },
+            { label: "projeto", value: "projeto" },
+            { label: "plano de trabalho", value: "planoDeTrabalho" },
+            { label: "atividade", value: "atividade" },
+            { label: "avaliacao", value: "avaliacao" }
+          ]}
+          disabled={loading}
+        />
+        <Select
+          control={control}
+          name="onSubmitStatus"
+          label='Status após submissão'
+          options={[
+            { label: "Selecione uma opção", value: "" },
+            { label: "Concluído", value: "concluido" },
+            { label: "Aguardando Avaliação", value: "aguardandoAvaliacao" }
+          ]}
+          disabled={loading}
+        />
+      </div>
+      <div className={`${styles.btnSubmit}`}>
+        <Button
+          icon={RiSave2Line}
+          className="btn-primary"
+          type="submit"
+          disabled={loading}
+        >{loading ? 'Carregando...' : 'Salvar formulário'}
+        </Button>
+      </div>
+      {errorMessage && <div className={`notification notification-error`}><p className='p5'>{errorMessage}</p></div> }
+    </form>
+  );
+};
+
+export default FormNewFormulario;
