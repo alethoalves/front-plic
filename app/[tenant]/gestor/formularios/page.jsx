@@ -12,22 +12,26 @@ import Header from "@/components/Header";
 import Button from "@/components/Button";
 import Modal from "@/components/Modal";
 import FormNewFormulario from "@/components/FormNewFormulario";
+import BuscadorFront from '@/components/BuscadorFront';
 import Card from "@/components/Card";
 
 //FUNÇÕES 
 import { getFormularios, deleteFormulario } from '@/app/api/clientReq';
-import BuscadorFront from '@/components/BuscadorFront';
 
 const Page = ({ params }) => {
   //ESTADOS
+  //de busca,loading ou erro
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [errorDelete, setErrorDelete] = useState(null);
+  //do modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  //de armazenamento de dados
   const [formularios, setFormularios] = useState([]);
   const [formularioToEdit, setFormularioToEdit] = useState(null);
   const [formularioToDelete, setFormularioToDelete] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
 
   //ROTEAMENTO
   const router = useRouter();
@@ -40,6 +44,7 @@ const Page = ({ params }) => {
         const formularios = await getFormularios(params.tenant);
         setFormularios(formularios);
       } catch (error) {
+        console.error('Erro ao buscar formulários:', error);
         setError('Erro ao buscar formulários.');
       } finally {
         setLoading(false);
@@ -59,13 +64,14 @@ const Page = ({ params }) => {
   }, [params.tenant]);
 
   const handleDelete = useCallback(async () => {
+    setErrorDelete('');
     try {
       await deleteFormulario(params.tenant, formularioToDelete.id);
       setFormularios(formularios.filter(f => f.id !== formularioToDelete.id));
       setDeleteModalOpen(false);
       setFormularioToDelete(null);
     } catch (error) {
-      console.error('Erro ao deletar formulário:', error);
+      setErrorDelete(error.response?.data?.error?.message ?? "Erro na conexão com o servidor.")
     }
   }, [params.tenant, formularioToDelete, formularios]);
 
@@ -99,11 +105,12 @@ const Page = ({ params }) => {
   const renderDeleteModalContent = () => (
     <Modal
       isOpen={deleteModalOpen}
-      onClose={() => setDeleteModalOpen(false)}
+      onClose={() => {setDeleteModalOpen(false);setErrorDelete('')}}
     >
       <div className={`${styles.icon} mb-2`}><RiDeleteBinLine /></div>
       <h4>Excluir formulário</h4>
       <p className='mt-1'>{`Tem certeza que deseja excluir o formulário ${formularioToDelete?.titulo}`}</p>
+      {errorDelete && <div className={`notification notification-error`}><p className='p5'>{errorDelete}</p></div> }
       <div className={styles.btnSubmit}>
         <Button
           className="btn-error mt-4"

@@ -9,7 +9,7 @@ table p, table h6 {
 }
 /* Container da tabela */
 .table-container {
-    width: calc(100vw - 242px);
+    width: calc(100vw - 272px);
     overflow-y: hidden;
 }
 
@@ -27,6 +27,7 @@ table {
 
 /* Estilos para o primeiro cabeçalho */
 th:nth-child(1) {
+
     width: 100px;
     position: absolute;
     z-index: 1;
@@ -68,6 +69,7 @@ td:nth-child(2) {
     justify-content: center;
     margin-left: 100px;
     min-width: 200px;
+    
 }
 
 /* Estilos para as linhas do corpo da tabela */
@@ -95,7 +97,6 @@ tbody tr:hover td:first-child {
 /* Estilos para cabeçalhos e células */
 th, td {
     padding: $gap-2 $gap-3;
-    border-left: 4px solid transparent;
 }
 
 td {
@@ -105,7 +106,19 @@ td {
 td:not(:nth-child(1)):not(:nth-child(2)) {
     text-align: center;
 }
-
+th, th:nth-child(1){
+    background-color: $primary-dark;
+    
+    p{
+        color: $white-darken;
+    }
+    &:first-child{
+        border-top-left-radius: 8px;
+    }
+    &:last-child{
+        border-top-right-radius: 8px;
+    }
+}
 th p {
     font-weight: 300;
 }
@@ -134,5 +147,25 @@ th p {
     td:nth-child(1),
     td:nth-child(2) {
         width: 100px;
+    }
+}
+
+.actions-table{
+    display: flex;
+    max-width: 230px;
+    margin-top: $gap-2;
+    margin-bottom: $gap-3;
+    .button{
+        &:first-child{
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+        &:last-child{
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            margin-left: -1px;
+        }
+        
+    
     }
 }

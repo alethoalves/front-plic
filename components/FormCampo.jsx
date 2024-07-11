@@ -1,20 +1,25 @@
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import Button from "@/components/Button";
-import { RiSave2Line } from '@remixicon/react';
+//HOOKS
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import Input from "@/components/Input";
-import Select from "@/components/Select";
-import styles from './Form.module.scss';
-import { createCampo, updateCampo } from '@/app/api/clientReq';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { campoSchema } from '@/lib/zodSchemas/campoSchema';
 
+//ESTILOS E ÍCONES
+import styles from './Form.module.scss';
+import { RiSave2Line } from '@remixicon/react';
 
+//COMPONENTES
+import Button from "@/components/Button";
+import Input from "@/components/Input";
+import Select from "@/components/Select";
+
+//FUNÇÕES
+import { createCampo, updateCampo } from '@/app/api/clientReq';
 
 const FormCampo = ({ tenantSlug, formularioId, initialData, onClose, onSuccess }) => {
+  //ESTADOS
   const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [error, setError] = useState('');
 
   const { control, handleSubmit, setValue, reset } = useForm({
     resolver: zodResolver(campoSchema),
@@ -41,9 +46,8 @@ const FormCampo = ({ tenantSlug, formularioId, initialData, onClose, onSuccess }
   }, [initialData, setValue, reset]);
 
   const handleFormSubmit = async (data) => {
-    console.log('Form Data:', data); // Adiciona log para verificar os dados do formulário
     setLoading(true);
-    setErrorMessage('');
+    setError('');
     try {
       if (initialData) {
         await updateCampo(tenantSlug, formularioId, initialData.id, data);
@@ -54,7 +58,7 @@ const FormCampo = ({ tenantSlug, formularioId, initialData, onClose, onSuccess }
       onClose();
     } catch (error) {
       console.error('Error:', error);
-      setErrorMessage(error.response?.data?.error?.message ?? "Erro na conexão com o servidor.");
+      setError(error.response?.data?.error?.message ?? "Erro na conexão com o servidor.");
     } finally {
       setLoading(false);
     }
@@ -114,7 +118,6 @@ const FormCampo = ({ tenantSlug, formularioId, initialData, onClose, onSuccess }
         />
         
       </div>
-      {errorMessage && <p className={styles.error}>{errorMessage}</p>}
       <div className={styles.btnSubmit}>
         <Button
           icon={RiSave2Line}
@@ -125,6 +128,7 @@ const FormCampo = ({ tenantSlug, formularioId, initialData, onClose, onSuccess }
           {loading ? 'Carregando...' : 'Salvar campo'}
         </Button>
       </div>
+      {error && <div className={`notification notification-error`}><p className='p5'>{error}</p></div> }
     </form>
   );
 };

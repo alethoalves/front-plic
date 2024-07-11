@@ -1,4 +1,4 @@
-//HOOKS
+//HOOKS 
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -19,7 +19,7 @@ import { createFormulario, updateFormulario } from '@/app/api/clientReq';
 const FormNewFormulario = ({ tenantSlug, initialData, onClose, onSuccess }) => {
   //ESTADOS
   const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [error, setError] = useState('');
   const { control, handleSubmit, setValue, reset } = useForm({
     resolver: zodResolver(formNewFormulario),
     defaultValues: {
@@ -43,7 +43,7 @@ const FormNewFormulario = ({ tenantSlug, initialData, onClose, onSuccess }) => {
 
   const handleFormSubmit = async (data) => {
     setLoading(true);
-    setErrorMessage('');
+    setError('');
     try {
       if (initialData) {
         await updateFormulario(tenantSlug, initialData.id, data);
@@ -54,7 +54,7 @@ const FormNewFormulario = ({ tenantSlug, initialData, onClose, onSuccess }) => {
       onClose();
     } catch (error) {
       console.error('Error:', error);
-      setErrorMessage(error.response?.data?.error?.message ?? "Erro na conexão com o servidor.")
+      setError(error.response?.data?.error?.message ?? "Erro na conexão com o servidor.")
     } finally {
       setLoading(false);
     }
@@ -118,7 +118,7 @@ const FormNewFormulario = ({ tenantSlug, initialData, onClose, onSuccess }) => {
         >{loading ? 'Carregando...' : 'Salvar formulário'}
         </Button>
       </div>
-      {errorMessage && <div className={`notification notification-error`}><p className='p5'>{errorMessage}</p></div> }
+      {error && <div className={`notification notification-error`}><p className='p5'>{error}</p></div> }
     </form>
   );
 };

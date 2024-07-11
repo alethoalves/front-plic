@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useController } from "react-hook-form";
 import styles from './Select.module.scss';
 
@@ -8,6 +8,7 @@ const Select = (props) => {
   const [selectedOption, setSelectedOption] = useState(
     props.options.find(option => option.value === field.value) || props.options[0]
   );
+  const selectRef = useRef(null);
 
   useEffect(() => {
     const initialOption = props.options.find(option => option.value === field.value);
@@ -16,6 +17,19 @@ const Select = (props) => {
     }
   }, [field.value, props.options]);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (selectRef.current && !selectRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const handleSelect = (option) => {
     setSelectedOption(option);
     setIsOpen(false);
@@ -23,7 +37,7 @@ const Select = (props) => {
   };
 
   return (
-    <label className={`${styles.select} select`}>
+    <label className={`${styles.select} select`} ref={selectRef}>
       <div className={`flex-space ${styles.label}`}>
         <p>{props.label}</p>
         {fieldState.error?.message && 

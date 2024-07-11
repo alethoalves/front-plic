@@ -1,10 +1,8 @@
-'use client'
+'use client';
 
 //HOOKS 
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { formEdital } from '@/lib/zodSchemas/formEdital';
 
 //ESTILOS E ÍCONES
 import styles from './Form.module.scss'
@@ -12,27 +10,24 @@ import { RiSave2Line } from '@remixicon/react';
 
 //COMPONENTES
 import Button from "@/components/Button";
-import Input from "@/components/Input";
+import Select from "@/components/Select";
 
 //FUNÇÕES
 import { createEdital, updateEdital } from '@/app/api/clientReq';
 
-const FormEdital = ({ tenantSlug, initialData, onClose, onSuccess }) => {
+const FormEditalSelectForm = ({ tenantSlug,editalId, initialData, arraySelect, keyFormulario, onClose, onSuccess }) => {
   //ESTADOS
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { control, handleSubmit, setValue, reset } = useForm({
-    resolver: zodResolver(formEdital),
     defaultValues: {
-      titulo: '',
-      ano: ''
+      value: '',
     },
   });
 
   useEffect(() => {
     if (initialData) {
-      setValue('titulo', initialData.titulo);
-      setValue('ano', initialData.ano);
+      setValue('value', initialData);
     } else {
       reset();
     }
@@ -41,12 +36,11 @@ const FormEdital = ({ tenantSlug, initialData, onClose, onSuccess }) => {
   const handleFormSubmit = async (data) => {
     setLoading(true);
     setError('');
+    console.log({ [keyFormulario]: data.value })
     try {
-      if (initialData) {
-        await updateEdital(tenantSlug, initialData.id, data);
-      } else {
-        await createEdital(tenantSlug, data);
-      }
+      
+        await updateEdital(tenantSlug, editalId, { [keyFormulario]: data.value?`${data.value}`:null} );
+      
       onSuccess();
       onClose();
     } catch (error) {
@@ -60,22 +54,15 @@ const FormEdital = ({ tenantSlug, initialData, onClose, onSuccess }) => {
   return (
     <form className={`${styles.formulario}`} onSubmit={handleSubmit(handleFormSubmit)}>
       <div className={`${styles.input}`}>
-        <Input
+        <Select
           className="mb-2"
           control={control}
-          name="titulo"
-          label='Título do edital'
-          inputType="text"
-          placeholder='Digite aqui o título do edital'
-          disabled={loading}
-        />
-        <Input
-          className="mb-2"
-          control={control}
-          name="ano"
-          label='Ano do edital'
-          inputType="number"
-          placeholder='Digite aqui o ano do edital'
+          name="value"
+          label='Tipo de campo'
+          options={[
+            { label: `${initialData?'Excluir formulário':'Escolha uma opção'}`, value: "" },
+            ...(arraySelect ? arraySelect.map(item => ({ label: item.titulo, value: item.id })) : [])
+          ]}
           disabled={loading}
         />
       </div>
@@ -93,4 +80,4 @@ const FormEdital = ({ tenantSlug, initialData, onClose, onSuccess }) => {
   );
 };
 
-export default FormEdital;
+export default FormEditalSelectForm;

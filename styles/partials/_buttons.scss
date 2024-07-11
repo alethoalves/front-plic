@@ -94,11 +94,15 @@
         opacity: 0.8;
     }
 }
-
-button[type="submit"]:disabled{
-    background-color: $gray-100;
+button[type="submit"]:disabled, button:disabled{
+    background-color: $white-light;
     border: 1px solid $gray-100;
+    cursor:default;
     p{
         color: $gray-600;
+    }
+    &:hover{
+        background-color: $white-light;
+        opacity: 1;
     }
 }

@@ -82,7 +82,6 @@ export const signup = async (data, reqParams) => {
     }
 };
 
-
 export const getTenant = async (reqParams) => {
     try {
         const response = await req.get(`/tenant/${reqParams.slug}`);
@@ -99,308 +98,377 @@ export const getTenant = async (reqParams) => {
         throw error;
     }
 };
+/************************** 
+ * EDITAL
+**************************/
+export const createEdital = async (tenantSlug, editalData) => {
+  try {
+    const token = getCookie('authToken');
+    if (!token) {
+      return false;
+    }
+    const response = await req.post(`/private/${tenantSlug}/edital`, editalData, {
+      headers: {
+        "Authorization": `Token ${token}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      console.error('Edital não cadastrado:', error);
+      return null;
+    }
+    console.error('Erro ao cadastrar edital:', error);
+    throw error;
+  }
+};
+
+export const updateEdital = async (tenantSlug, editalId, editalData) => {
+  try {
+    const token = getCookie('authToken');
+    if (!token) {
+      return false;
+    }
+    const response = await req.put(`/private/${tenantSlug}/edital/${editalId}`, editalData, {
+      headers: {
+        "Authorization": `Token ${token}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao atualizar edital:', error);
+    throw error;
+  }
+};
+
+export const deleteEdital = async (tenantSlug, editalId) => {
+  try {
+    const token = getCookie('authToken');
+    if (!token) {
+      return false;
+    }
+    const response = await req.delete(`/private/${tenantSlug}/edital/${editalId}`, {
+      headers: {
+        "Authorization": `Token ${token}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao deletar edital:', error);
+    throw error;
+  }
+};
 
 export const getEditais = async (tenantSlug) => {
-    try {
-        const token = getCookie('authToken');
-        if (!token) {
-            return false;
-        }
-        // Consulta a API de editais
-        const response = await req.get(`/private/${tenantSlug}/edital`, {
-            headers: {
-                "Authorization": `Token ${token}`
-            }
-        });
-        return response.data.editais;
-  
-    } catch (error) {
-        if (error.response && error.response.status === 404) {
-            // Trata o erro 404 de forma específica
-            console.error('Editais não encontrados:', error);
-            return null; // Retorna null ou algum valor padrão para indicar que os editais não foram encontrados
-        }
-        // Para outros erros, relança o erro para que o chamador possa tratá-lo
-        console.error('Erro ao obter os editais:', error);
-        throw error;
+  try {
+    const token = getCookie('authToken');
+    if (!token) {
+      return false;
     }
-  };
+    const response = await req.get(`/private/${tenantSlug}/edital`, {
+      headers: {
+        "Authorization": `Token ${token}`
+      }
+    });
+    return response.data.editais;
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      console.error('Editais não encontrados:', error);
+      return null;
+    }
+    console.error('Erro ao obter os editais:', error);
+    throw error;
+  }
+};
+
+export const getEdital = async (tenantSlug, editalId) => {
+  try {
+    const token = getCookie('authToken');
+    if (!token) {
+      return false;
+    }
+    const response = await req.get(`/private/${tenantSlug}/edital/${editalId}`, {
+      headers: {
+        "Authorization": `Token ${token}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      console.error('Edital não encontrado:', error);
+      return null;
+    }
+    console.error('Erro ao obter o edital:', error);
+    throw error;
+  }
+};
+
+/************************** 
+ * INSCRICAO
+**************************/
+export const createInscricao = async (tenantSlug, inscricaoData) => {
+  try {
+    const token = getCookie('authToken');
+    if (!token) {
+      return false;
+    }
+    // Consulta a API de inscrições com paginação
+    const response = await req.post(`/private/${tenantSlug}/inscricoes`, inscricaoData, {
+      headers: {
+        "Authorization": `Token ${token}`
+      }
+    });
+    return response.data;
+
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      console.error('Inscrições não encontradas:', error);
+      return null;
+    }
+    console.error('Erro ao obter as inscrições:', error);
+    throw error;
+  }
+};
+
+export const getInscricoes = async (tenantSlug, page = 1, limit = 10) => {
+  try {
+    const token = getCookie('authToken');
+    if (!token) {
+      return false;
+    }
+    // Consulta a API de inscrições com paginação
+    const response = await req.get(`/private/${tenantSlug}/inscricoes?page=${page}&limit=${limit}`, {
+      headers: {
+        "Authorization": `Token ${token}`
+      }
+    });
+    return response.data;
+
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      console.error('Inscrições não encontradas:', error);
+      return null;
+    }
+    console.error('Erro ao obter as inscrições:', error);
+    throw error;
+  }
+};
+
+export const getInscricao = async (tenantSlug, idInscricao) => {
+  try {
+    const token = getCookie('authToken');
+    if (!token) {
+      return false;
+    }
+    // Consulta a API de inscrições com paginação
+    const response = await req.get(`/private/${tenantSlug}/inscricoes/${idInscricao}`, {
+      headers: {
+        "Authorization": `Token ${token}`
+      }
+    });
+    return response.data;
+
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      console.error('Inscrições não encontradas:', error);
+      return null;
+    }
+    console.error('Erro ao obter as inscrições:', error);
+    throw error;
+  }
+};
 
 
-  export const getInscricoes = async (tenantSlug, page = 1, limit = 10) => {
-    try {
-      const token = getCookie('authToken');
-      if (!token) {
-        return false;
-      }
-      // Consulta a API de inscrições com paginação
-      const response = await req.get(`/private/${tenantSlug}/inscricoes?page=${page}&limit=${limit}`, {
-        headers: {
-          "Authorization": `Token ${token}`
-        }
-      });
-      return response.data;
-  
-    } catch (error) {
-      if (error.response && error.response.status === 404) {
-        console.error('Inscrições não encontradas:', error);
-        return null;
-      }
-      console.error('Erro ao obter as inscrições:', error);
-      throw error;
-    }
-  };
-
-  export const getInscricao = async (tenantSlug, idInscricao) => {
-    try {
-      const token = getCookie('authToken');
-      if (!token) {
-        return false;
-      }
-      // Consulta a API de inscrições com paginação
-      const response = await req.get(`/private/${tenantSlug}/inscricoes/${idInscricao}`, {
-        headers: {
-          "Authorization": `Token ${token}`
-        }
-      });
-      return response.data;
-  
-    } catch (error) {
-      if (error.response && error.response.status === 404) {
-        console.error('Inscrições não encontradas:', error);
-        return null;
-      }
-      console.error('Erro ao obter as inscrições:', error);
-      throw error;
-    }
-  };
-  export const createEdital = async (tenantSlug, editalData) => {
-    try {
-      const token = getCookie('authToken');
-      if (!token) {
-        return false;
-      }
-      // Consulta a API de inscrições com paginação
-      const response = await req.post(`/private/${tenantSlug}/edital`, editalData, {
-        headers: {
-          "Authorization": `Token ${token}`
-        }
-      });
-      return response.data;
-  
-    } catch (error) {
-      if (error.response && error.response.status === 404) {
-        console.error('Edital não cadastrado:', error);
-        return null;
-      }
-      console.error('Erro ao obter ao cadastrar Edital:', error);
-      throw error;
-    }
-  };
-  export const createInscricao = async (tenantSlug, inscricaoData) => {
-    try {
-      const token = getCookie('authToken');
-      if (!token) {
-        return false;
-      }
-      // Consulta a API de inscrições com paginação
-      const response = await req.post(`/private/${tenantSlug}/inscricoes`, inscricaoData, {
-        headers: {
-          "Authorization": `Token ${token}`
-        }
-      });
-      return response.data;
-  
-    } catch (error) {
-      if (error.response && error.response.status === 404) {
-        console.error('Inscrições não encontradas:', error);
-        return null;
-      }
-      console.error('Erro ao obter as inscrições:', error);
-      throw error;
-    }
-  };
-
-  export const getParticipacoes = async (tenantSlug, idInscricao) => {
-    try {
-      const token = getCookie('authToken');
-      if (!token) {
-        return false;
-      }
-      const response = await req.get(`/private/${tenantSlug}/participacoes?inscricaoId=${idInscricao}`, {
-        headers: {
-          "Authorization": `Token ${token}`
-        }
-      });
-      
-      return response.data.participacoes;
-    } catch (error) {
-      if (error.response && error.response.status === 404) {
-        console.error('Participações não encontradas:', error);
-        return null;
-      }
-      console.error('Erro ao obter as participações:', error);
-      throw error;
-    }
-  };
-  
-  export const createParticipacao = async (tenantSlug, idInscricao, participacaoData) => {
-    try {
-      const token = getCookie('authToken');
-      if (!token) {
-        return false;
-      }
-      const response = await req.post(`/private/${tenantSlug}/${idInscricao}/participacoes`, participacaoData, {
-        headers: {
-          "Authorization": `Token ${token}`
-        }
-      });
-      return response.data;
-    } catch (error) {
-      if (error.response && error.response.status === 404) {
-        console.error('Participação não criada:', error);
-        return null;
-      }
-      console.error('Erro ao criar participação:', error);
-      throw error;
-    }
-  };
-  
-  export const deleteParticipacao = async (tenantSlug, idInscricao, idParticipacao) => {
-    try {
-      const token = getCookie('authToken');
-      if (!token) {
-        return false;
-      }
-      const response = await req.delete(`/private/${tenantSlug}/participacoes/${idParticipacao}`, {
-        headers: {
-          "Authorization": `Token ${token}`
-        }
-      });
-      return response.data;
-    } catch (error) {
-      if (error.response && error.response.status === 404) {
-        console.error('Participação não deletada:', error);
-        return null;
-      }
-      console.error('Erro ao deletar participação:', error);
-      throw error;
-    }
-  };
 
 
-  export const createFormulario = async (tenantSlug, formularioData) => {
-    try {
-      
-      const token = getCookie('authToken');
-      if (!token) {
-        return false;
-      }
-      const response = await req.post(`/private/${tenantSlug}/formularios`, formularioData, {
-        headers: {
-          "Authorization": `Token ${token}`
-        }
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Erro ao criar formulário:', error);
-      throw error;
+/************************** 
+ * PARTICIPACAO
+**************************/
+export const getParticipacoes = async (tenantSlug, idInscricao) => {
+  try {
+    const token = getCookie('authToken');
+    if (!token) {
+      return false;
     }
-  };
+    const response = await req.get(`/private/${tenantSlug}/participacoes?inscricaoId=${idInscricao}`, {
+      headers: {
+        "Authorization": `Token ${token}`
+      }
+    });
+    
+    return response.data.participacoes;
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      console.error('Participações não encontradas:', error);
+      return null;
+    }
+    console.error('Erro ao obter as participações:', error);
+    throw error;
+  }
+};
   
-  export const updateFormulario = async (tenantSlug, formularioId, formularioData) => {
-    try {
-      const token = getCookie('authToken');
-      if (!token) {
-        return false;
-      }
-      const response = await req.put(`/private/${tenantSlug}/formularios/${formularioId}`, formularioData, {
-        headers: {
-          "Authorization": `Token ${token}`
-        }
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Erro ao atualizar formulário:', error);
-      throw error;
+export const createParticipacao = async (tenantSlug, idInscricao, participacaoData) => {
+  try {
+    const token = getCookie('authToken');
+    if (!token) {
+      return false;
     }
-  };
-  
-  export const deleteFormulario = async (tenantSlug, formularioId) => {
-    try {
-      const token = getCookie('authToken');
-      if (!token) {
-        return false;
+    const response = await req.post(`/private/${tenantSlug}/${idInscricao}/participacoes`, participacaoData, {
+      headers: {
+        "Authorization": `Token ${token}`
       }
-      const response = await req.delete(`/private/${tenantSlug}/formularios/${formularioId}`, {
-        headers: {
-          "Authorization": `Token ${token}`
-        }
-      });
-      console.log(response)
-      return response.data;
-    } catch (error) {
-      console.error('Erro ao deletar formulário:', error);
-      throw error;
+    });
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      console.error('Participação não criada:', error);
+      return null;
     }
-  };
-  
-  export const getFormularios = async (tenantSlug) => {
-    try {
-      const token = getCookie('authToken');
-      if (!token) {
-        return false;
-      }
-      const response = await req.get(`/private/${tenantSlug}/formularios`, {
-        headers: {
-          "Authorization": `Token ${token}`
-        }
-      });
-      return response.data.formularios;
-    } catch (error) {
-      console.error('Erro ao obter formulários:', error);
-      throw error;
-    }
-  };
-  export const getFormulario = async (tenantSlug, idFormulario) => {
-    try {
-      const token = getCookie('authToken');
-      if (!token) {
-        return false;
-      }
-      const response = await req.get(`/private/${tenantSlug}/formularios/${idFormulario}`, {
-        headers: {
-          "Authorization": `Token ${token}`
-        }
-      });
-      
-      return response.data;
-    } catch (error) {
-      if (error.response && error.response.status === 404) {
-        console.error('Participações não encontradas:', error);
-        return null;
-      }
-      console.error('Erro ao obter as participações:', error);
-      throw error;
-    }
-  };
+    console.error('Erro ao criar participação:', error);
+    throw error;
+  }
+};
 
-  export const createCampo = async (tenantSlug, formularioId, campoData) => {
-    try {
-        const token = getCookie('authToken');
-        if (!token) {
-            return false;
-        }
-        const response = await req.post(`/private/${tenantSlug}/formularios/${formularioId}/campos`, campoData, {
-            headers: {
-                "Authorization": `Token ${token}`
-            }
-        });
-        return response.data;
-    } catch (error) {
-        console.error('Erro ao criar campo:', error);
-        throw error;
+export const deleteParticipacao = async (tenantSlug, idInscricao, idParticipacao) => {
+  try {
+    const token = getCookie('authToken');
+    if (!token) {
+      return false;
     }
+    const response = await req.delete(`/private/${tenantSlug}/participacoes/${idParticipacao}`, {
+      headers: {
+        "Authorization": `Token ${token}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      console.error('Participação não deletada:', error);
+      return null;
+    }
+    console.error('Erro ao deletar participação:', error);
+    throw error;
+  }
+};
+/************************** 
+ * FORMULÁRIO
+**************************/
+export const createFormulario = async (tenantSlug, formularioData) => {
+  try {
+    
+    const token = getCookie('authToken');
+    if (!token) {
+      return false;
+    }
+    const response = await req.post(`/private/${tenantSlug}/formularios`, formularioData, {
+      headers: {
+        "Authorization": `Token ${token}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao criar formulário:', error);
+    throw error;
+  }
+};
+
+export const updateFormulario = async (tenantSlug, formularioId, formularioData) => {
+  try {
+    const token = getCookie('authToken');
+    if (!token) {
+      return false;
+    }
+    const response = await req.put(`/private/${tenantSlug}/formularios/${formularioId}`, formularioData, {
+      headers: {
+        "Authorization": `Token ${token}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao atualizar formulário:', error);
+    throw error;
+  }
+};
+
+export const deleteFormulario = async (tenantSlug, formularioId) => {
+  try {
+    const token = getCookie('authToken');
+    if (!token) {
+      return false;
+    }
+    const response = await req.delete(`/private/${tenantSlug}/formularios/${formularioId}`, {
+      headers: {
+        "Authorization": `Token ${token}`
+      }
+    });
+    console.log(response)
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao deletar formulário:', error);
+    throw error;
+  }
+};
+
+export const getFormularios = async (tenantSlug) => {
+  try {
+    const token = getCookie('authToken');
+    if (!token) {
+      return false;
+    }
+    const response = await req.get(`/private/${tenantSlug}/formularios`, {
+      headers: {
+        "Authorization": `Token ${token}`
+      }
+    });
+    return response.data.formularios;
+  } catch (error) {
+    console.error('Erro ao obter formulários:', error);
+    throw error;
+  }
+};
+
+export const getFormulario = async (tenantSlug, idFormulario) => {
+  try {
+    const token = getCookie('authToken');
+    if (!token) {
+      return false;
+    }
+    const response = await req.get(`/private/${tenantSlug}/formularios/${idFormulario}`, {
+      headers: {
+        "Authorization": `Token ${token}`
+      }
+    });
+    
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      console.error('Participações não encontradas:', error);
+      return null;
+    }
+    console.error('Erro ao obter as participações:', error);
+    throw error;
+  }
+};
+
+/************************** 
+ * CAMPO
+**************************/
+export const createCampo = async (tenantSlug, formularioId, campoData) => {
+  try {
+      const token = getCookie('authToken');
+      if (!token) {
+          return false;
+      }
+      const response = await req.post(`/private/${tenantSlug}/formularios/${formularioId}/campos`, campoData, {
+          headers: {
+              "Authorization": `Token ${token}`
+          }
+      });
+      return response.data;
+  } catch (error) {
+      console.error('Erro ao criar campo:', error);
+      throw error;
+  }
 };
 
 export const updateCampo = async (tenantSlug, formularioId, campoId, campoData) => {

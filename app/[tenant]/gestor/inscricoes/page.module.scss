@@ -6,6 +6,7 @@
 
 .content{
     margin-top: $gap-3;
+    
     display: flex;
     flex-wrap: wrap;
     @include responsive(s){

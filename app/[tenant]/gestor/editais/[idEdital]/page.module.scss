@@ -1,0 +1,51 @@
+@import "../../../../../styles/partials/colors";
+@import "../../../../../styles/partials/layout";
+@import "../../../../../styles/partials/spacing";
+
+
+
+.content{
+    margin-top: $gap-3;
+    margin-bottom: $gap-7;
+    @include responsive(s){
+        flex-direction: column;
+    }
+    flex: 1;
+    @include responsive(xs){
+        margin-left: 0;
+    }
+    h6{
+        font-size: 18px;
+    }
+    p{
+        color: $gray-400;
+        
+    }
+    .head{
+        display: flex;
+        @include responsive(xs){
+            flex-direction: column;
+        }
+        align-items:flex-start;
+        max-width: 600px;
+        color: $primary-darken;
+        .headIcon{
+            svg{
+                height: 35px;
+                
+                color: $primary-dark;
+            }
+        }
+    }  
+    .item{
+        margin-left: $gap-2;
+        @include responsive(xs){
+            margin-left: 0;
+            margin-top: $gap-1;
+        }
+    }
+}
+.icon{
+    width: 24px;
+    color: $primary-normal;
+}

@@ -53,9 +53,9 @@ const Table = ({ data, pageInfo, setPageInfo, onRowClick,  }) => {
           ))}
         </tbody>
       </table>
-      <div>
-        <button onClick={handlePrevious} disabled={pageInfo.page === 1}>Anterior</button>
-        <button onClick={handleNext} disabled={pageInfo.page * pageInfo.limit >= pageInfo.total}>Próximo</button>
+      <div className='actions-table'>
+        <button className='button btn-secondary' onClick={handlePrevious} disabled={pageInfo.page === 1}>Anterior</button>
+        <button className='button btn-secondary' onClick={handleNext} disabled={pageInfo.page * pageInfo.limit >= pageInfo.total}>Próximo</button>
       </div>
     </div>
   );
