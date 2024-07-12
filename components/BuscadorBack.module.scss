@@ -1,0 +1,25 @@
+@import "./../styles/partials/colors";
+@import "./../styles/partials/layout";
+@import "./../styles/partials/spacing";
+
+.buscador{
+    display: flex;
+    .input{
+        max-width: 470px;
+        @include responsive(s){
+            max-width: none;
+        }
+        flex: 1;
+    }
+    .btnBuscador{
+        display: flex;
+        align-items: flex-end;
+        margin-left: $gap-1;
+        @include responsive (s){
+            p{
+                display: none;
+            }
+        }
+    }
+    
+}

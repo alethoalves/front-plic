@@ -6,28 +6,34 @@ import { usePathname, useParams } from 'next/navigation';
 
 import styles from './Menu.module.scss'
 
-const Menu = ({onClick}) => {
+const Menu = ({ onClick }) => {
   const pathname = usePathname();
   const { tenant } = useParams();
-    return (
-      <ul className={styles.menu}>
-        {itensMenu.map((item, i) => {
-          const Icon = item.icon;
-          const resolvedPath = item.path.replace('[tenant]', tenant);
-          return (
-            <Link key={i} href={resolvedPath} onClick={onClick}>
-            <li className={`${pathname === resolvedPath && styles.active}`} >
+
+  return (
+    <ul className={styles.menu}>
+      {itensMenu.map((item, i) => {
+        const Icon = item.icon;
+        const resolvedPath = item.path.replace('[tenant]', tenant);
+
+        // Verificação específica para a rota "Home"
+        const isActive = i === 0
+          ? pathname === resolvedPath
+          : pathname.startsWith(resolvedPath) && pathname !== `/${tenant}/gestor`;
+
+        return (
+          <Link key={i} href={resolvedPath} onClick={onClick} passHref>
+            <li className={isActive ? styles.active : ''}>
               <div className={styles.icon}>
                 {Icon && <Icon />}
               </div>
               <p>{item.title}</p>
             </li>
-            </Link>
-            
-          );
-        })}
-      </ul>
-    );
-  };
-  
-  export default Menu;
+          </Link>
+        );
+      })}
+    </ul>
+  );
+};
+
+export default Menu;

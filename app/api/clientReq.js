@@ -212,20 +212,14 @@ export const createInscricao = async (tenantSlug, inscricaoData) => {
     if (!token) {
       return false;
     }
-    // Consulta a API de inscrições com paginação
     const response = await req.post(`/private/${tenantSlug}/inscricoes`, inscricaoData, {
       headers: {
         "Authorization": `Token ${token}`
       }
     });
     return response.data;
-
   } catch (error) {
-    if (error.response && error.response.status === 404) {
-      console.error('Inscrições não encontradas:', error);
-      return null;
-    }
-    console.error('Erro ao obter as inscrições:', error);
+    console.error('Erro ao criar inscrição:', error);
     throw error;
   }
 };
@@ -236,19 +230,13 @@ export const getInscricoes = async (tenantSlug, page = 1, limit = 10) => {
     if (!token) {
       return false;
     }
-    // Consulta a API de inscrições com paginação
     const response = await req.get(`/private/${tenantSlug}/inscricoes?page=${page}&limit=${limit}`, {
       headers: {
         "Authorization": `Token ${token}`
       }
     });
     return response.data;
-
   } catch (error) {
-    if (error.response && error.response.status === 404) {
-      console.error('Inscrições não encontradas:', error);
-      return null;
-    }
     console.error('Erro ao obter as inscrições:', error);
     throw error;
   }
@@ -260,20 +248,68 @@ export const getInscricao = async (tenantSlug, idInscricao) => {
     if (!token) {
       return false;
     }
-    // Consulta a API de inscrições com paginação
     const response = await req.get(`/private/${tenantSlug}/inscricoes/${idInscricao}`, {
       headers: {
         "Authorization": `Token ${token}`
       }
     });
     return response.data;
-
   } catch (error) {
-    if (error.response && error.response.status === 404) {
-      console.error('Inscrições não encontradas:', error);
-      return null;
+    console.error('Erro ao obter a inscrição:', error);
+    throw error;
+  }
+};
+
+export const updateInscricao = async (tenantSlug, idInscricao, inscricaoData) => {
+  try {
+    const token = getCookie('authToken');
+    if (!token) {
+      return false;
     }
-    console.error('Erro ao obter as inscrições:', error);
+    const response = await req.put(`/private/${tenantSlug}/inscricoes/${idInscricao}`, inscricaoData, {
+      headers: {
+        "Authorization": `Token ${token}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao atualizar a inscrição:', error);
+    throw error;
+  }
+};
+
+export const deleteInscricao = async (tenantSlug, idInscricao) => {
+  try {
+    const token = getCookie('authToken');
+    if (!token) {
+      return false;
+    }
+    const response = await req.delete(`/private/${tenantSlug}/inscricoes/${idInscricao}`, {
+      headers: {
+        "Authorization": `Token ${token}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao deletar a inscrição:', error);
+    throw error;
+  }
+};
+
+export const searchInscricoes = async (tenantSlug, query) => {
+  try {
+    const token = getCookie('authToken');
+    if (!token) {
+      return false;
+    }
+    const response = await req.get(`/private/${tenantSlug}/inscricoes/search?query=${query}`, {
+      headers: {
+        "Authorization": `Token ${token}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao buscar inscrições:', error);
     throw error;
   }
 };
