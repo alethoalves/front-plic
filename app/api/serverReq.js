@@ -3,33 +3,6 @@ import { cookies } from "next/headers"; //Funciona apenas do lado do servidor
 import { req } from "./axios";
 import { getAuthHeadersServer } from "@/lib/headers";
 
-export const pingGestor = async (token,tenant) => {
-  try {
-    const response = await req.get(`/private/${tenant}/ping/gestor`, {
-      headers: getAuthHeadersServer(token)
-    });
-    return response.data.pong
-  } catch (error) {
-    return false
-  }
-};//VALIDADO
-
-export const getTenant = async (tenant) => {
-  try {
-      const response = await req.get(`/tenant/${tenant}`);
-      return response.data.tenant;
-      
-  } catch (error) {
-      if (error.response && error.response.status === 404) {
-          // Trata o erro 404 de forma específica
-          console.error('Tenant não encontrado:', error);
-          return null; // Retorna null ou algum valor padrão para indicar que o tenant não foi encontrado
-      }
-      // Para outros erros, relança o erro para que o chamador possa tratá-lo
-      console.error('Erro ao obter o tenant:', error);
-      throw error;
-  }
-};//VALIDADO
 
 
 

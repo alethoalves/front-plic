@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
-import { getTenant, pingGestor } from "./app/api/serverReq";
+
 import { getCookie } from "cookies-next";
 import { cookies } from "next/headers";
+import { getTenant } from "./app/api/server/getTenant";
+import { pingGestor } from "./app/api/server/pings";
 
 export const middleware = async (request) => {
   // Recebe um request, extrai a URL e identifica o tenant a partir do caminho.

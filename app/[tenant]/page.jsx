@@ -10,7 +10,7 @@ const Page = async ({ params }) => {
 
   return (
     <main className={styles.container}>
-      <Signin params={params} slug={tenant} pathLogo={pathLogo} />
+      <Signin slug={tenant} pathLogo={pathLogo} />
     </main>
   );
 };
