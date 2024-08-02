@@ -1,4 +1,23 @@
 
+a.linkFile{
+        cursor: pointer;
+        border: 1px solid $primary-normal;
+        display: flex;
+        p{
+            color: $gray-300;
+        }
+        
+        display: inline-block;
+        padding: $gap-1 $gap-3;
+        border-radius: 4px;
+        &:hover{
+            background-color: $white-darken;
+            p{
+                color: $gray-600;
+            }
+        }
+    
+}
 .button{
     width: 100%;
     height: $gap-5;
@@ -34,6 +53,7 @@
 .btn-primary{
     background-color: $primary-dark;
     transition: all .3s ease;
+    
     p,.btn-icon{
         color: $white-light;
     }

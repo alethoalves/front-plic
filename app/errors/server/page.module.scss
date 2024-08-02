@@ -1,0 +1,15 @@
+@import "../../../styles/partials/colors";
+@import "../../../styles/partials/layout";
+@import "../../../styles/partials/spacing";
+
+.container{
+    width: 100vw;
+    display:flex ;
+    align-items:center;
+    justify-content:space-around;
+    margin: 0 auto;
+    height: 100vh;
+    background-color: $white-light;
+}
+
+

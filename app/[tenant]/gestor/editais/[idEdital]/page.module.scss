@@ -5,6 +5,7 @@
 
 
 .content{
+    
     margin-top: $gap-3;
     margin-bottom: $gap-7;
     @include responsive(s){
@@ -17,9 +18,9 @@
     h6{
         font-size: 18px;
     }
-    p{
-        color: $gray-400;
-        
+    
+    form button p{
+        color: $white-light;
     }
     .head{
         display: flex;
@@ -38,7 +39,9 @@
         }
     }  
     .item{
+        width: 100%;
         margin-left: $gap-2;
+        margin-bottom: $gap-3;
         @include responsive(xs){
             margin-left: 0;
             margin-top: $gap-1;

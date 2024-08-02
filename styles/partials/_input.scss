@@ -1,6 +1,5 @@
 
 .input-container{
-    
     p{
         color: $black-light;
         margin-bottom: $gap-1;
@@ -38,6 +37,7 @@
         text-align: right;
         font-size: 14px;
     }
+    
     input.input-error{
         border: 1px solid $error-light;
         &:hover{

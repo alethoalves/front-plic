@@ -1,17 +1,18 @@
 import styles from "./page.module.scss";
-import Auth from "@/components/Auth";
-import { getTenant } from "../api/serverReq";
+import Signin from "@/components/Signin";
+import { headers } from "next/headers";
 
-const Page = async ({params}) => {
+const Page = async ({ params }) => {
   const tenant = params.tenant;
-  const tenantExists = await getTenant({ slug: tenant });
-  const pathLogo = tenantExists.tenant ? tenantExists.tenant.pathLogo :'/';
-  const slug = tenantExists.tenant ? tenantExists.tenant.slug :'';
+  // Acessar os cabeçalhos da requisição
+  const headersList = headers();
+  const pathLogo = headersList.get("x-tenant-path-logo");
+
   return (
-   <main className={styles.container} > 
-    <Auth params={params} slug={slug}  pathLogo={pathLogo}/>
-   </main>
+    <main className={styles.container}>
+      <Signin params={params} slug={tenant} pathLogo={pathLogo} />
+    </main>
   );
-}
+};
 
 export default Page;

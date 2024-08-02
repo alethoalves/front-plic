@@ -1,0 +1,39 @@
+@import "./../styles/partials/colors";
+@import "./../styles/partials/layout";
+@import "./../styles/partials/spacing";
+.labelFile{
+    color:$black-light;
+}
+.linkFile{
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid $primary-normal;
+    padding: 4px $gap-3;
+    border-radius: 4px;
+    color: $primary-dark;
+    svg{width: 18px;margin-right: 4px;}
+    &:hover{
+        background-color: $white-darken;
+        p{
+            color: $gray-600;
+        }
+    }
+}
+.formulario{
+    
+    &:not(:last-child){
+        margin-bottom: $gap-2
+    };
+    display: flex;
+    align-items: flex-end;
+}
+.input{
+    width: 100%;
+}
+.actions{
+    margin-left: $gap-1;
+    display: flex;
+    button{
+        p{display: none;}
+    }
+}

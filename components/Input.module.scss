@@ -1,14 +1,54 @@
 @import "./../styles/partials/colors";
 @import "./../styles/partials/layout";
 @import "./../styles/partials/spacing";
-
+.fileName{
+    display: inline-flex;
+    margin-left: $gap-1;
+    @include responsive(xs){
+        display: none;
+    }
+}
 .inputContainer{
+    input[type="file"] {
+        
+        display: none; // Esconde o input file padrão
+        .label{
+            border: 1px solid red
+        }
+        & + label {
+          display: inline-block;
+          padding: $gap-1 $gap-3;
+          border: 1px solid $primary-normal;
+          color: $white-normal;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: background-color 0.3s ease;
+            p{
+                color: $gray-300;
+                margin-bottom: 0;
+            }
+          &:hover {
+            background-color: $primary-dark;
+            p{color:$white-dark}
+          }
+        }
+      }
     
+      input[type="file"] + label {
+        margin-top: $gap-2;
+        
+      }
+      
+      .file-name {
+        color: $black-light;
+        
+      }
     p{
         color: $black-light;
         margin-bottom: $gap-1;
         
     }
+    
     position: relative;
     input{
         border: 1px solid $primary-normal;
@@ -30,14 +70,25 @@
         &:focus{
             outline:1px solid $primary-normal;
             border: 1px solid $primary-normal;
+            background-color: $white-normal;
         }
         &::placeholder{
             color: $gray-300;
         }
     }
+    input:disabled {
+        background-color: $white-dark;
+        outline:1px solid  $white-dark;
+        border: 1px solid  $white-dark;
+        &:hover{
+            outline:1px solid  $white-dark;
+        border: 1px solid  $white-dark;
+        }
+    }
+
     .errorMsg{
         color: $error-light;
-        text-align: right;
+        text-align: left;
         font-size: 14px;
     }
     input.inputError{

@@ -69,10 +69,10 @@ const FormEditalSelectForm = ({ tenantSlug,editalId, initialData, arraySelect, k
       <div className={`${styles.btnSubmit}`}>
         <Button
           icon={RiSave2Line}
-          className="btn-primary"
+          className=" btn-primary"
           type="submit"
           disabled={loading}
-        >{loading ? 'Carregando...' : 'Salvar edital'}
+        >{loading ? 'Carregando...' : 'Salvar formulário'}
         </Button>
       </div>
       {error && <div className={`notification notification-error`}><p className='p5'>{error}</p></div>}

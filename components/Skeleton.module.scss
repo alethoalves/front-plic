@@ -1,0 +1,60 @@
+// styles/components/Skeleton.module.scss
+@import "./../styles/partials/colors";
+@import "./../styles/partials/layout";
+@import "./../styles/partials/spacing";
+
+.skeleton {
+  min-width: 338px;
+  max-width: 338px;
+  flex: 1;
+  height: 227px;
+  border-radius: $gap-1;
+  background-color: $white-light;
+  padding: $gap-3;
+  box-shadow: 0px 0px 12px rgba(5, 17, 34, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin-right: $gap-3;
+    margin-bottom: $gap-3;
+    @include responsive(s){
+        margin-right: 0;
+    }
+  .header, .body, .footer {
+    background-color: #e0e0e0; // Cor para indicar o carregamento
+    border-radius: 4px;
+  }
+  
+  .header {
+    height: 24px;
+    margin-bottom: $gap-2;
+  }
+  
+  .body {
+    flex: 1;
+    margin-bottom: $gap-2;
+  }
+  
+  .footer {
+    height: 16px;
+    width: 100px;
+    @include responsive(s){
+        margin-left: $gap-2;
+    }
+  }
+  
+  @include responsive(s) {
+    max-width: none;
+    flex-direction: row;
+    height: auto;
+  }
+  
+  @include responsive(xs) {
+    max-width: none;
+    min-width: 0;
+    flex-direction: column;
+    .footer{
+        margin-left: 0;
+    }
+  }
+}

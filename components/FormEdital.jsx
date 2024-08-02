@@ -1,38 +1,38 @@
-'use client'
+"use client";
 
-//HOOKS 
-import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { formEdital } from '@/lib/zodSchemas/formEdital';
+//HOOKS
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { formEdital } from "@/lib/zodSchemas/formEdital";
 
 //ESTILOS E ÍCONES
-import styles from './Form.module.scss'
-import { RiSave2Line } from '@remixicon/react';
+import styles from "./Form.module.scss";
+import { RiSave2Line } from "@remixicon/react";
 
 //COMPONENTES
 import Button from "@/components/Button";
 import Input from "@/components/Input";
+import { createEdital, updateEdital } from "@/app/api/client/edital";
 
 //FUNÇÕES
-import { createEdital, updateEdital } from '@/app/api/clientReq';
 
 const FormEdital = ({ tenantSlug, initialData, onClose, onSuccess }) => {
   //ESTADOS
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const { control, handleSubmit, setValue, reset } = useForm({
     resolver: zodResolver(formEdital),
     defaultValues: {
-      titulo: '',
-      ano: ''
+      titulo: "",
+      ano: "",
     },
   });
 
   useEffect(() => {
     if (initialData) {
-      setValue('titulo', initialData.titulo);
-      setValue('ano', initialData.ano);
+      setValue("titulo", initialData.titulo);
+      setValue("ano", initialData.ano.toString());
     } else {
       reset();
     }
@@ -40,7 +40,7 @@ const FormEdital = ({ tenantSlug, initialData, onClose, onSuccess }) => {
 
   const handleFormSubmit = async (data) => {
     setLoading(true);
-    setError('');
+    setError("");
     try {
       if (initialData) {
         await updateEdital(tenantSlug, initialData.id, data);
@@ -50,32 +50,38 @@ const FormEdital = ({ tenantSlug, initialData, onClose, onSuccess }) => {
       onSuccess();
       onClose();
     } catch (error) {
-      console.error('Error:', error);
-      setError(error.response?.data?.error?.message ?? "Erro na conexão com o servidor.")
+      console.error("Error:", error);
+      setError(
+        error.response?.data?.error?.message ??
+          "Erro na conexão com o servidor."
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form className={`${styles.formulario}`} onSubmit={handleSubmit(handleFormSubmit)}>
+    <form
+      className={`${styles.formulario}`}
+      onSubmit={handleSubmit(handleFormSubmit)}
+    >
       <div className={`${styles.input}`}>
         <Input
           className="mb-2"
           control={control}
           name="titulo"
-          label='Título do edital'
+          label="Título do edital"
           inputType="text"
-          placeholder='Digite aqui o título do edital'
+          placeholder="Digite aqui o título do edital"
           disabled={loading}
         />
         <Input
           className="mb-2"
           control={control}
           name="ano"
-          label='Ano do edital'
+          label="Ano do edital"
           inputType="number"
-          placeholder='Digite aqui o ano do edital'
+          placeholder="Digite aqui o ano do edital"
           disabled={loading}
         />
       </div>
@@ -85,10 +91,15 @@ const FormEdital = ({ tenantSlug, initialData, onClose, onSuccess }) => {
           className="btn-primary"
           type="submit"
           disabled={loading}
-        >{loading ? 'Carregando...' : 'Salvar edital'}
+        >
+          {loading ? "Carregando..." : "Salvar edital"}
         </Button>
       </div>
-      {error && <div className={`notification notification-error`}><p className='p5'>{error}</p></div>}
+      {error && (
+        <div className={`notification notification-error`}>
+          <p className="p5">{error}</p>
+        </div>
+      )}
     </form>
   );
 };

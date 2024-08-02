@@ -1,0 +1,142 @@
+@import "./../styles/partials/colors";
+@import "./../styles/partials/layout";
+@import "./../styles/partials/spacing";
+
+.itemList{
+    margin-top: $gap-1;
+    
+    .headItemList{
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: $gap-2 $gap-3;
+        background-color: $white-darken;
+        cursor: pointer;
+        border-radius: $gap-1;
+
+        @include responsive(xs){
+            flex-direction: column;
+           align-items: flex-start;
+        }
+        p.titulo{
+            color:$primary-darken;
+            font-weight: 600;
+            text-transform: uppercase;
+            
+            
+
+        }
+        p.subtitulo{
+            margin-top: $gap-2;
+            color:$gray-400;
+            span{
+                font-weight: 700;
+            }
+        }
+        p.descricao{
+            font-weight: 300;
+            margin-top: $gap-1;
+            color: $gray-400;
+        }
+        .actions{
+            display: flex;
+            align-items: center;
+            
+            @include responsive(xs){
+                width: 100%;
+                margin-top: $gap-2;
+                .delete, .navigate,.edit{
+                    flex: 1;
+                }
+            }
+            .delete, .navigate,.edit{
+                
+                cursor: pointer;
+                height: 42px;
+                width: 42px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                svg{
+                    height: 24px;
+                }
+            }
+            .delete{
+                color: $error-normal;
+                border-radius: $gap-1;
+                border: 1px solid transparent;
+                transition: .3s ease;
+                @include responsive(xs){
+                    border: 1px solid $error-dark;
+                }
+                &:hover{
+                    background-color: $error-lighten;
+                    border: 1px solid $error-dark;
+                }
+            }
+            .navigate{
+                border-radius: 50px;
+                
+                color: $primary-darken;
+                border: 1px solid transparent;
+                background-color: $white-light;
+                transition: .3s ease;
+                
+                &:hover{
+                    border: 1px solid $primary-normal;
+                    background-color: $white-darken;
+                }
+            }
+            .edit{
+                margin-right: $gap-1;
+                color: $primary-darken;
+                border-radius: $gap-1;
+                border: 1px solid transparent;
+                @include responsive(xs){
+                    border: 1px solid $primary-normal;
+                }
+                &:hover{
+                    border: 1px solid $primary-normal;
+                    background-color: $white-dark;
+                }
+            }
+        }
+        .head{
+            display: flex;
+            align-items: center;
+            @include responsive(xs){
+                flex-direction: column;
+                align-items: flex-start;
+                .status{
+                    margin-bottom: $gap-2;
+                }
+            }
+        }
+        .status{
+            display: inline-block;
+            padding: 4px $gap-2;
+            border-radius: 20px;
+            margin-right: $gap-1;
+            text-transform: lowercase;
+            p{
+                font-size: 12px;
+            }
+            @include responsive(xs){
+                margin-left: 0;
+            }
+        }
+        .warning{
+            background-color: $warning-light;
+            p{color:red}
+        }
+        .success{
+            background-color: $success-light;
+        }
+        .error{
+            p{color: $white-light;}
+            
+            background-color: $error-light;
+        }
+    }
+   
+}

@@ -1,8 +1,7 @@
-import styles from './Input.module.scss';
-import { RiEyeLine } from "@remixicon/react";
-import { RiEyeOffLine } from "@remixicon/react";
 import { useState } from "react";
 import { useController } from "react-hook-form";
+import { RiEyeLine, RiEyeOffLine } from "@remixicon/react";
+import styles from './Input.module.scss'; 
 
 const Input = (props) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -30,16 +29,21 @@ const Input = (props) => {
       if (inputValue.length <= 11) {
         inputValue = inputValue.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
       }
+    } else if (props.inputType === 'file') {
+      inputValue = event.target.files[0];
     }
     field.onChange(inputValue);
   };
 
   return (
     <label className={`${styles.inputContainer} ${props.inputType === 'checkbox' && styles.checkboxContainer}`}>
-      <div className="flex-space">
+      <div className={`${styles.label}`}>
+        {props.inputType !== 'file'&&
         <p>{props.label}</p>
+        }
+        
         {fieldState.error?.message &&
-          <p className={styles.errorMsg}>{fieldState.error.message}</p>
+          <p className={`${styles.errorMsg} ${styles.errorp}` }>{fieldState.error.message}</p>
         }
       </div>
 
@@ -54,16 +58,27 @@ const Input = (props) => {
       )}
       <input
         {...field}
-        checked={props.inputType === 'checkbox' ? field.value === "true" : undefined}
-        value={props.inputType !== 'checkbox' ? field.value : undefined}
+        checked={props.inputType === 'checkbox' ? field?.value === "true" : undefined}
+        value={props.inputType !== 'checkbox' && props.inputType !== 'file' ? field?.value || '' : undefined}
         className={`${props.className} ${props.icon ? styles.inputWithIconLeft : styles.inputWithoutIconLeft} ${fieldState.invalid && styles.inputError}`}
         type={props.inputType === 'password' && showPassword ? 'text' : (props.inputType === 'password' ? 'password' : props.inputType)}
         placeholder={props.placeholder}
         autoFocus={props.autoFocus}
         disabled={props.disabled}
         onChange={handleChange}
+        id={props.inputType === 'file' ? 'XYZ' : props.name || undefined}
       />
+      {props.inputType === 'file' && (
+        <>
+          <label htmlFor="XYZ" className={`${styles.fileLabel}`}>
+            
+            <p>Escolher arquivo</p>
+          </label>
+          {field?.value && <p className={styles.fileName}>{field.value.name}</p>}
+        </>
+      )}
     </label>
   );
-}
+};
+
 export default Input;

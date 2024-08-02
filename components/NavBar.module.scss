@@ -5,6 +5,7 @@
 .navBar{
     height: 70px;
     display: flex;
+    align-items: center;
     background-color: $white-light;//#fff;//$white-light;
     border-bottom: 1px solid $white-darken;
     width: 100vw;
@@ -19,11 +20,34 @@
     }
     .navBarItem2{
         display: flex;
+        justify-content: right;
+        padding-right: $gap-2;
         width: 300px;
         flex: 1;
     }
 }
-
+.logout{
+    padding: $gap-1;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $error-normal;
+    transition: .3s ease;
+    cursor: pointer;
+    &:hover{
+        border: 1px solid $error-normal;
+        background-color: $error-lighten;
+        p{
+            color: $error-normal;
+        }
+    }
+    svg{
+        height: 22px;
+        margin-left: $gap-1;
+    }
+}
 @include responsive(s){
     .navBar{
         padding-left: 66px;

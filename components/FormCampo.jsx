@@ -21,7 +21,7 @@ const FormCampo = ({ tenantSlug, formularioId, initialData, onClose, onSuccess }
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const { control, handleSubmit, setValue, reset } = useForm({
+  const { control, handleSubmit, setValue, reset,watch } = useForm({
     resolver: zodResolver(campoSchema),
     defaultValues: {
       label: '',
@@ -29,15 +29,17 @@ const FormCampo = ({ tenantSlug, formularioId, initialData, onClose, onSuccess }
       tipo: '',
       maxChar: '',
       obrigatorio: 'false',
-      ordem:'1'
+      ordem:'1',
+      tipoFile:''
     },
   });
-
+  const tipoValue = watch('tipo'); // Watch the value of 'tipo'
   useEffect(() => {
     if (initialData) {
       setValue('label', initialData.label);
       setValue('descricao', initialData.descricao);
-      setValue('tipo', initialData.tipo);
+      setValue('tipo', initialData.tipo || null);
+      setValue('tipoFile', initialData.tipoFile);
       setValue('maxChar', initialData.maxChar.toString());
       setValue('obrigatorio', initialData.obrigatorio ? 'true' : 'false');
     } else {
@@ -107,6 +109,22 @@ const FormCampo = ({ tenantSlug, formularioId, initialData, onClose, onSuccess }
           ]}
           disabled={loading}
         />
+        {tipoValue === "arquivo"  &&
+          <Select
+          className="mb-2"
+          control={control}
+          name="tipoFile"
+          label='Tipo de campo'
+          options={[
+            { label: "Selecione um tipo de arquivo", value: "" },
+            { label: "pdf", value: "pdf" },
+            { label: "xml", value: "xml" },
+            { label: "video", value: "video" },
+          ]}
+          disabled={loading}
+        />
+        }
+        
         <Input
           className="mb-2"
           control={control}

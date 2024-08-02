@@ -4,6 +4,7 @@
 
 .itemForm{
     margin-top: $gap-2;
+    
     p{color: $black-normal;}
     .edicao{
         margin-top: $gap-1;
@@ -45,7 +46,17 @@
             }
         }
         .actions.actionWithLabel{
-            p{display: block;color: $white-darken;}
+            button{
+                border-style: dashed;
+            }
+            &:hover{
+                p{color:$black-light}
+            }
+            p{
+                display: block;
+                color: $gray-400;
+
+            }
         }
         
     }

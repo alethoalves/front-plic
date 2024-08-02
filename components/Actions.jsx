@@ -1,11 +1,11 @@
-
+'use client'
 import Button from "@/components/Button";
 
 import { RiAddLine, RiFileExcelLine} from "@remixicon/react";
 import styles from './Actions.module.scss'
 
 
-const Actions = ({onClickPlus}) => {
+const Actions = ({onClickPlus,onClickExport}) => {
   
     return (
       <div className={styles.actions}>
@@ -19,6 +19,7 @@ const Actions = ({onClickPlus}) => {
           </div>
           <div className="btn">
             <Button
+              onClick={onClickExport}
               icon={RiFileExcelLine}
               className="btn-green ml-1"
               type="submit" // submit, reset, button
