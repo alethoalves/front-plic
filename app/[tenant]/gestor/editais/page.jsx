@@ -109,6 +109,7 @@ const Page = ({ params }) => {
   const renderDeleteModalContent = () => (
     <ModalDelete
       isOpen={deleteModalOpen}
+      title="Excluir edital"
       onClose={closeModalAndResetData}
       confirmationText={`Tem certeza que deseja excluir o edital ${editalToDelete?.titulo}`}
       errorDelete={errorDelete}

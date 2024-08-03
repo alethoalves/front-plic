@@ -15,13 +15,12 @@ import {
 import Header from "@/components/Header";
 import Button from "@/components/Button";
 import Modal from "@/components/Modal";
-import FormCampo from "@/components/FormCampo";
-
-//FUNÇÕES
-import { getCampos, deleteCampo, getFormulario } from "@/app/api/clientReq";
-import { deleteCargo, getCargos } from "@/app/api/client/cargo";
 import CPFVerificationForm from "@/components/CPFVerificationForm";
 import NewCargo from "@/components/NewCargo";
+import ModalDelete from "@/components/ModalDelete";
+
+//FUNÇÕES
+import { deleteCargo, getCargos } from "@/app/api/client/cargo";
 
 const Page = ({ params }) => {
   //ESTADOS
@@ -34,16 +33,9 @@ const Page = ({ params }) => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   //de armazenamento de dados
   const [cargos, setCargos] = useState({});
-  const [campos, setCampos] = useState([]);
   const [cargoToEdit, setCargoToEdit] = useState(null);
   const [cargoToDelete, setCargoToDelete] = useState(null);
   const [verifiedData, setVerifiedData] = useState(null);
-
-  const camposObrigatorios = [
-    { label: "CPF" },
-    { label: "Nome" },
-    { label: "Data de nascimento" },
-  ];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -117,37 +109,17 @@ const Page = ({ params }) => {
       )}
     </Modal>
   );
-
+  //Modal de exclusão
   const renderDeleteModalContent = () => (
-    <Modal
+    <ModalDelete
       isOpen={deleteModalOpen}
-      edit={false}
-      onClose={() => {
-        setDeleteModalOpen(false);
-        setErrorDelete("");
-      }}
-    >
-      <div className={`${styles.icon} mb-2`}>
-        <RiDeleteBinLine />
-      </div>
-      <h4>Excluir Administrador</h4>
-      <p>Tem certeza que deseja excluir este administrador?</p>
-      {errorDelete && (
-        <div className={`notification notification-error`}>
-          <p className="p5">{errorDelete}</p>
-        </div>
-      )}
-      <div className={styles.btnSubmit}>
-        <Button className="btn-error mt-4" onClick={handleDelete}>
-          Excluir
-        </Button>
-      </div>
-    </Modal>
+      onClose={closeModalAndResetData}
+      title="Excluir administrador"
+      confirmationText={`Tem certeza que deseja excluir este administrador?`}
+      errorDelete={errorDelete}
+      handleDelete={handleDelete}
+    />
   );
-
-  if (loading) {
-    return <p>Carregando...</p>;
-  }
 
   return (
     <>
@@ -171,33 +143,35 @@ const Page = ({ params }) => {
               </div>
               <p>Criar novo</p>
             </div>
-            {cargos.map((item) => (
-              <div className={styles.campo} key={item.id}>
-                <div className={styles.left}>
-                  <div className={styles.label}>
-                    <h6>{item.user.nome}</h6>
-                  </div>
-                  {item.cargo && (
-                    <div className={styles.required}>
-                      <p>{item.cargo}</p>
+
+            {!loading &&
+              cargos?.map((item) => (
+                <div className={styles.campo} key={item.id}>
+                  <div className={styles.left}>
+                    <div className={styles.label}>
+                      <h6>{item.user.nome}</h6>
                     </div>
-                  )}
-                </div>
-                <div className={styles.actions}>
-                  <div className={styles.btn2}>
-                    <Button
-                      onClick={() => {
-                        setDeleteModalOpen(true);
-                        setCargoToDelete(item);
-                      }}
-                      icon={RiDeleteBin6Line}
-                      className="btn-error"
-                      type="button"
-                    />
+                    {item.cargo && (
+                      <div className={styles.required}>
+                        <p>{item.cargo}</p>
+                      </div>
+                    )}
+                  </div>
+                  <div className={styles.actions}>
+                    <div className={styles.btn2}>
+                      <Button
+                        onClick={() => {
+                          setDeleteModalOpen(true);
+                          setCargoToDelete(item);
+                        }}
+                        icon={RiDeleteBin6Line}
+                        className="btn-error"
+                        type="button"
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
         </div>
       </main>

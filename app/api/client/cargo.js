@@ -27,7 +27,7 @@ export const createCargo = async (tenantSlug, data) => {
     try {
       const headers = getAuthHeadersClient();
       if (!headers) return false;
-      const response = await req.get(`/private/${tenantSlug}/cargo`, {
+      const response = await req.get(`/private/${tenantSlug}/cargos`, {
         headers,
       });
       console.log(response)

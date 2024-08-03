@@ -12,6 +12,7 @@ import { useCallback, useEffect, useState } from "react";
 const Modal = ({
   isOpen,
   onClose,
+  title,
   confirmationText = "Tem certeza que deseja excluir?",
   errorDelete,
   handleDelete,
@@ -42,7 +43,7 @@ const Modal = ({
         <div className={`${styles.icon} mb-2`}>
           <RiDeleteBinLine />
         </div>
-        <h4>Excluir edital</h4>
+        <h4>{title}</h4>
         <p className="mt-1">{`${confirmationText}`}</p>
         {errorDelete && (
           <div className={`notification notification-error`}>
