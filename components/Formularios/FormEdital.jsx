@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { formEdital } from "@/lib/zodSchemas/formEdital";
 
 //ESTILOS E ÍCONES
-import styles from "./Form.module.scss";
+import styles from "@/components/Formularios/Form.module.scss";
 import { RiSave2Line } from "@remixicon/react";
 
 //COMPONENTES
@@ -52,8 +52,7 @@ const FormEdital = ({ tenantSlug, initialData, onClose, onSuccess }) => {
     } catch (error) {
       console.error("Error:", error);
       setError(
-        error.response?.data?.error?.message ??
-          "Erro na conexão com o servidor."
+        error.response?.data?.message ?? "Erro na conexão com o servidor."
       );
     } finally {
       setLoading(false);

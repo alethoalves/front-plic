@@ -1,7 +1,7 @@
 "use client";
 import { RiLogoutBoxRLine } from "@remixicon/react";
 import styles from "./NavBar.module.scss";
-import { logout } from "@/app/api/clientReq";
+import { logout } from "@/app/api/client/auth";
 import { useRouter } from "next/navigation";
 
 const SideNav = ({ slug }) => {

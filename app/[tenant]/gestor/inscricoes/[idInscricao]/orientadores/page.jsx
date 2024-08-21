@@ -8,20 +8,29 @@ import { useRouter } from "next/navigation";
 import styles from "./page.module.scss";
 import {
   RiAddCircleLine,
+  RiArrowLeftRightLine,
   RiArrowRightSLine,
   RiDeleteBinLine,
   RiEditLine,
   RiGroupLine,
+  RiShutDownLine,
 } from "@remixicon/react";
 
 //COMPONENTES
 import Button from "@/components/Button";
 import Modal from "@/components/Modal";
-import CPFVerificationForm from "@/components/CPFVerificationForm";
-import DataSubmissionForm from "@/components/DataSubmissionForm";
+import ModalDelete from "@/components/ModalDelete";
+
+import CPFVerificationForm from "@/components/Formularios/CPFVerificationForm";
 
 //FUNÇÕES
-import { getParticipacoes, deleteParticipacao } from "@/app/api/clientReq";
+import {
+  getParticipacoes,
+  deleteParticipacao,
+  inativarParticipacao,
+} from "@/app/api/client/participacao";
+import ParticipacaoForm from "@/components/Formularios/ParticipacaoForm";
+import InativarParticipacaoForm from "@/components/Formularios/InativarParticipacaoForm";
 
 const Page = ({ params }) => {
   //ESTADOS
@@ -30,6 +39,7 @@ const Page = ({ params }) => {
   const [error, setError] = useState(null);
   const [errorDelete, setErrorDelete] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpenInativar, setIsModalOpenInativar] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [itens, setItens] = useState([]);
   const [itemToEdit, setItemToEdit] = useState(null);
@@ -44,7 +54,13 @@ const Page = ({ params }) => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const itens = await getParticipacoes(params.tenant, params.idInscricao);
+        const tipos = ["orientador", "coorientador"]; // Defina os tipos que deseja filtrar
+        const itens = await getParticipacoes(
+          params.tenant,
+          params.idInscricao,
+          tipos
+        );
+        console.log(itens);
         setItens(itens);
       } catch (error) {
         console.error("Erro ao buscar dados:", error);
@@ -58,34 +74,30 @@ const Page = ({ params }) => {
   //FUNÇÕES PARA MANIPULAÇÃO DAS AÇÕES DE CRIAR|EDITAR|DELETAR
   const handleCreateOrEditSuccess = useCallback(async () => {
     try {
-      const data = await getParticipacoes(params.tenant, params.idInscricao);
-      setItens(data);
+      const tipos = ["orientador", "coorientador"]; // Defina os tipos que deseja filtrar
+      const itens = await getParticipacoes(
+        params.tenant,
+        params.idInscricao,
+        tipos
+      );
+      setItens(itens);
     } catch (error) {
       console.error("Erro ao buscar editais:", error);
     }
   }, [params.tenant, params.idInscricao]);
-  const handleDelete = useCallback(async () => {
-    setErrorDelete("");
-    try {
-      await deleteParticipacao(params.tenant, itemToDelete.id);
-      setItens(itens.filter((p) => p.id !== itemToDelete.id));
-      setDeleteModalOpen(false);
-      setItemToDelete(null);
-    } catch (error) {
-      setErrorDelete(
-        error.response?.data?.error?.message ??
-          "Erro na conexão com o servidor."
-      );
-    }
-  }, [params.tenant, itemToDelete, itens]);
 
   const openModalAndSetData = (data) => {
     setIsModalOpen(true);
     setItemToEdit(data);
+    setVerifiedData(false);
   };
   const closeModalAndResetData = () => {
     setIsModalOpen(false);
     setItemToEdit(null);
+    setVerifiedData(false);
+    setDeleteModalOpen(false);
+    setErrorDelete("");
+    setIsModalOpenInativar(false);
   };
 
   const renderModalContent = () => (
@@ -99,12 +111,13 @@ const Page = ({ params }) => {
           ? "Edite os dados abaixo."
           : "Preencha os dados abaixo para adicionar uma nova participação."}
       </p>
+
       <CPFVerificationForm
         tenantSlug={params.tenant}
         onCpfVerified={setVerifiedData}
       />
       {verifiedData && (
-        <DataSubmissionForm
+        <ParticipacaoForm
           tenantSlug={params.tenant}
           inscricaoId={params.idInscricao}
           initialData={verifiedData}
@@ -115,36 +128,60 @@ const Page = ({ params }) => {
     </Modal>
   );
 
-  const renderDeleteModalContent = () => (
-    <Modal
-      isOpen={deleteModalOpen}
-      onClose={() => {
-        setDeleteModalOpen(false);
-        setErrorDelete("");
-      }}
-    >
+  const renderModalInativar = () => (
+    <Modal isOpen={isModalOpenInativar} onClose={closeModalAndResetData}>
       <div className={`${styles.icon} mb-2`}>
-        <RiDeleteBinLine />
+        <RiEditLine />
       </div>
-      <h4>Confirmar Exclusão</h4>
-      <p className="mt-1">{`Tem certeza que deseja excluir a participação de ${itemToDelete?.nome}`}</p>
-      {errorDelete && (
-        <div className={`notification notification-error`}>
-          <p className="p5">{errorDelete}</p>
-        </div>
-      )}
-      <div className={styles.btnSubmit}>
-        <Button className="btn-error mt-4" onClick={handleDelete}>
-          Excluir
-        </Button>
-      </div>
+      <h4 className="mb-1">Confirmar Inativação</h4>
+      <p>{`Tem certeza que deseja inativar:`}</p>
+      <p className="mt-1">{`${itemToDelete?.user.nome}`}</p>
+
+      <InativarParticipacaoForm
+        tenantSlug={params.tenant}
+        idParticipacao={itemToDelete?.id}
+        onClose={closeModalAndResetData}
+        onSuccess={handleCreateOrEditSuccess}
+      />
     </Modal>
   );
 
+  //Modal de exclusão
+  const renderDeleteModalContent = () => (
+    <ModalDelete
+      isOpen={deleteModalOpen}
+      title="Confirmar Inativação"
+      onClose={closeModalAndResetData}
+      confirmationText={`Tem certeza que deseja inativar ${itemToDelete?.user.nome}`}
+      errorDelete={errorDelete}
+      handleDelete={handleDelete}
+      icon={RiShutDownLine}
+      txtBtn="Inativar"
+    />
+  );
+  const handleDelete = useCallback(async () => {
+    setErrorDelete("");
+    try {
+      const response = await inativarParticipacao(
+        params.tenant,
+        itemToDelete.id
+      );
+      console.log(response);
+      if (response) {
+        handleCreateOrEditSuccess();
+        closeModalAndResetData();
+      }
+    } catch (error) {
+      setErrorDelete(
+        error.response?.data?.message ?? "Erro na conexão com o servidor."
+      );
+    }
+  }, [params.tenant, itemToDelete, itens]);
   return (
     <>
       {renderModalContent()}
       {renderDeleteModalContent()}
+      {renderModalInativar()}
       <div className={styles.navContent}>
         <div className={styles.content}>
           <div className={styles.header}>
@@ -174,15 +211,18 @@ const Page = ({ params }) => {
                   <div key={participacao.id} className={styles.itemList}>
                     <div className={styles.headItemList}>
                       <div className={styles.info}>
-                        <p>{participacao.nome}</p>
                         <div
                           className={`${styles.status} 
                         ${
                           participacao.status === "incompleto" &&
                           styles.incompleto
                         }
-                        ${participacao.status === "ativo" && styles.ativo}
-                        ${participacao.status === "inativo" && styles.ativo}
+                        ${
+                          (participacao.status === "ativo" ||
+                            participacao.status === "completo") &&
+                          styles.ativo
+                        }
+                        ${participacao.status === "inativo" && styles.inativo}
                         `}
                         >
                           <p
@@ -190,20 +230,28 @@ const Page = ({ params }) => {
                               styles[participacao.status.toLowerCase()]
                             }
                           >
-                            {participacao.status}
+                            {participacao.status === "ativo" &&
+                              `${participacao.status} desde ${participacao.inicio}`}
+                            {participacao.status != "ativo" &&
+                              ` participou de ${participacao.inicio} a ${participacao.fim}`}
                           </p>
                         </div>
+                        <p>{participacao.user.nome}</p>
+                        <p className="mt-1">{`CPF: ${participacao.user.cpf}`}</p>
                       </div>
                       <div className={styles.actions}>
-                        <div
-                          className={styles.delete}
-                          onClick={() => {
-                            setDeleteModalOpen(true);
-                            setItemToDelete(participacao);
-                          }}
-                        >
-                          <RiDeleteBinLine />
-                        </div>
+                        {participacao.status === "ativo" && (
+                          <div
+                            className={styles.delete}
+                            onClick={() => {
+                              setIsModalOpenInativar(true);
+                              setItemToDelete(participacao);
+                            }}
+                          >
+                            <RiShutDownLine />
+                          </div>
+                        )}
+
                         <div
                           className={styles.navigate}
                           onClick={() => {

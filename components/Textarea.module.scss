@@ -1,0 +1,76 @@
+@import "./../styles/partials/colors";
+@import "./../styles/partials/layout";
+@import "./../styles/partials/spacing";
+
+
+.textareaLabel {
+  display: flex;
+  flex-direction: column;
+  
+  textarea{
+    resize: none;
+    
+  }
+  p {
+    color: $black-light;
+    margin-bottom: $gap-1;
+  }
+
+  .errorMsg {
+    color: $error-light;
+    text-align: left;
+    font-size: 14px;
+  }
+}
+
+.textarea {
+  
+  font-family: var(--font-lato);
+  width: 100%;
+  height: 200px; // Ajuste conforme necessário
+  padding: $gap-2;
+  border: 1px solid $primary-normal;
+  border-radius: 4px;
+  background-color: $white-light;
+  color: $black-light;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: $primary-normal;
+  }
+
+  &:focus {
+    outline: 1px solid $primary-normal;
+    border: 1px solid $primary-normal;
+    background-color: $white-normal;
+  }
+
+  &::placeholder {
+    
+    color: $gray-300;
+  }
+
+  &:disabled {
+    background-color: $white-dark;
+    outline: 1px solid $white-dark;
+    border: 1px solid $white-dark;
+
+    &:hover {
+      outline: 1px solid $white-dark;
+      border: 1px solid $white-dark;
+    }
+  }
+
+  &.inputError {
+    border: 1px solid $error-light;
+
+    &:hover {
+      border-color: $error-light;
+    }
+
+    &:focus {
+      outline: 1px solid $error-light;
+      border: 1px solid $error-light;
+    }
+  }
+}

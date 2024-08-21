@@ -19,4 +19,79 @@
     width: 24px;
     color: $primary-normal;
 }
+.status{
+    margin-bottom: $gap-1;
+    display: inline-block;
+    padding: 4px $gap-2;
+    border-radius: 20px;
+    p{
+        font-size: 12px;
+    }
+}
+.incompleto{
+    background-color: $warning-light;
+    p{color:red}
+}
+.ativo{
+    background-color: $success-light;
+}
+.inativo{
+    background-color: $gray-50;
+}
+.modalTable{
+    h4{
+        margin-bottom: $gap-4;
+    }
+    .campo{
+        background-color: $white-light;
+        border: 1px solid $gray-50;
+        box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+        min-width: 300px;
+        @include responsive(xs){
+            width: 100%;
+            margin-right: 0;
+            min-width: 200px;
+        }
+        margin-top: $gap-2;
+        border-radius: $gap-1;
+        display: flex;
+        
+        align-items: center;
+        justify-content:space-between;
+        padding: $gap-2;
+        .required{
+            display: inline-block;
+            background-color: $primary-dark;
+            border-radius: 4px;
+            padding: 4px $gap-2;
+            margin-top: $gap-1;
+            p{
+                font-size: 12px;
+                color: $white-light;
+                font-weight: 300;
+            }
+        }
+    }
+    .actions{
+        display: flex;
+        margin-left: $gap-2;
+        p{
+            display: none;
+        }
+        .btn1{
+            
+            max-width: 250px;
+            @include responsive(xs){
+                flex: 1;
+                max-width: none;
+            }
+        }
+        .btn2{
+            max-width: 250px;
+            margin-left: $gap-1;
+            
+        }
+        
+    }
+}
 

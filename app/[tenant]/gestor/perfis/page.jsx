@@ -7,7 +7,6 @@ import styles from "./page.module.scss";
 import {
   RiAddCircleLine,
   RiDeleteBin6Line,
-  RiDeleteBinLine,
   RiEditLine,
 } from "@remixicon/react";
 
@@ -15,9 +14,11 @@ import {
 import Header from "@/components/Header";
 import Button from "@/components/Button";
 import Modal from "@/components/Modal";
-import CPFVerificationForm from "@/components/CPFVerificationForm";
-import NewCargo from "@/components/NewCargo";
 import ModalDelete from "@/components/ModalDelete";
+
+//FORMULARIOS
+import CPFVerificationForm from "@/components/Formularios/CPFVerificationForm";
+import NewCargo from "@/components/Formularios/NewCargo";
 
 //FUNÇÕES
 import { deleteCargo, getCargos } from "@/app/api/client/cargo";
@@ -85,6 +86,8 @@ const Page = ({ params }) => {
   const closeModalAndResetData = () => {
     setIsModalOpen(false);
     setCargoToEdit(null);
+    setDeleteModalOpen(false);
+    setErrorDelete(null);
   };
 
   const renderModalContent = () => (
@@ -143,8 +146,12 @@ const Page = ({ params }) => {
               </div>
               <p>Criar novo</p>
             </div>
+            {loading && <p className="mt-2">Carregando...</p>}
+
+            {error && <p>{error}</p>}
 
             {!loading &&
+              !error &&
               cargos?.map((item) => (
                 <div className={styles.campo} key={item.id}>
                   <div className={styles.left}>

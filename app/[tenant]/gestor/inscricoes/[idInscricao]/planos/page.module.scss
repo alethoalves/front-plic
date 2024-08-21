@@ -8,6 +8,29 @@
     color: $primary-normal;
 }
 
+.status{
+    padding: 4px $gap-2;
+    border-radius: 20px;
+    &:not(:last-child){
+        margin-right: $gap-1;
+    }
+
+    p{
+        
+        white-space:nowrap;
+        font-size: 12px;
+    }
+}
+.incompleto{
+    background-color: $warning-light;
+    p{color:red}
+}
+.ativo{
+    background-color: $success-light;
+}
+.inativo{
+    background-color: $gray-50;
+}
 .navContent{
     .content{
         padding-top: $gap-2;
@@ -29,7 +52,7 @@
 
 .list{
     .addItem{
-        padding: $gap-1;
+        padding: $gap-2;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -47,8 +70,8 @@
         }
         
         .icon {
-            width: 50px;
-            height: 50px;
+            width: 30px;
+            height: 30px;
             color: $primary-normal;
             svg{
                 width: 100%;
@@ -56,6 +79,22 @@
             }
             }
     } 
+    .addItemAluno{
+       border-color:$gray-100;
+       border-style: solid;
+       border-top: none;
+        margin-top: 0;
+        border-top-left-radius:0 ;
+        border-top-right-radius:0 ;
+        svg{
+            color: $gray-300;
+        }
+        &:hover{
+            svg{
+                color: $primary-normal;
+            }
+        }
+    }
     .itemList{
         margin-top: $gap-1;
         .headItemList{
@@ -64,9 +103,10 @@
             justify-content: space-between;
             padding: $gap-2 $gap-3;
             background-color: $white-darken;
-            cursor: pointer;
-            border-radius: $gap-1;
-
+            border-top-right-radius: $gap-1;
+            border-top-left-radius: $gap-1;
+            border: 1px solid $gray-100;
+            border-bottom: none;
             @include responsive(xs){
                 flex-direction: column;
                align-items: flex-start;
@@ -90,6 +130,7 @@
                     justify-content: center;
                     svg{
                         height: 24px;
+                        
                     }
                 }
                 .delete{
@@ -149,7 +190,84 @@
                 background-color: $white-light;
             }
         }
-       
+        .subitem{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: $gap-2 $gap-3;
+            background-color: $white-light;
+            border: 1px solid $gray-100;
+            border-top: none;
+            @include responsive(xs){
+                flex-direction: column;
+               align-items: flex-start;
+            }
+            
+            .actions{
+                display: flex;
+                @include responsive(xs){
+                    width: 100%;
+                    margin-top: $gap-1;
+                    .delete, .navigate,.edit{
+                        flex: 1;
+                    }
+                }
+                .delete, .navigate{
+                    
+                    cursor: pointer;
+                    height: 42px;
+                    width: 42px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    svg{
+                        height: 24px;
+                    }
+                }
+                .delete{
+                    //margin-right: $gap-1;
+                    color: $error-normal;
+                    border-radius: $gap-1;
+                    border: 1px solid transparent;
+                    @include responsive(xs){
+                        border: 1px solid $error-dark;
+                    }
+                    
+                    &:hover{
+                        background-color: $error-lighten;
+                        border: 1px solid $error-dark;
+                    }
+                }
+                .navigate{
+                    border-radius: 50px;
+                    color: $primary-darken;
+                    border: 1px solid transparent;
+                    background-color: $white-light;
+                    transition: .3s ease;
+                    &:hover{
+                        border: 1px solid $primary-normal;
+                        background-color: $white-darken;
+                    }
+                }
+            }
+            .status{
+                margin-bottom: $gap-1;
+                display: inline-block;
+                padding: 2px $gap-2;
+                border-radius: 20px;
+            }
+            .incompleto{
+                background-color: $warning-light;
+                p{color:red}
+            }
+            .ativo{
+                background-color: $success-light;
+            }
+            .inativo{
+                background-color: $white-light;
+            }
+        }
+        
     }
 }
 

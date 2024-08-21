@@ -4,12 +4,12 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 // ESTILO E ÍCONES
 import styles from "./page.module.scss";
-import { RiEditLine } from "@remixicon/react";
+import { RiEditLine, RiExternalLinkLine, RiEyeLine } from "@remixicon/react";
 // COMPONENTES
 import Header from "@/components/Header";
 import Modal from "@/components/Modal";
 import Actions from "@/components/Actions";
-import FormNewInscricao from "@/components/FormNewInscricao";
+import FormNewInscricao from "@/components/Formularios/FormNewInscricao";
 import Table from "@/components/Table";
 import BuscadorBack from "@/components/BuscadorBack";
 // FUNÇÕES
@@ -18,18 +18,22 @@ import {
   getAllInscricoes,
   getInscricoes,
   searchInscricoes,
-} from "@/app/api/clientReq";
+} from "@/app/api/client/inscricao";
 import {
   downloadExcel,
   flattenInscricoes,
   flattenedData,
+  processApiResponse,
 } from "@/lib/geradorExcel";
+import Button from "@/components/Button";
 
 const Page = ({ params }) => {
   // ESTADOS
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [detailsData, setDetailsData] = useState([]);
   const [editais, setEditais] = useState([]);
   const [inscricoes, setInscricoes] = useState([]);
   const [pageInfo, setPageInfo] = useState({ page: 1, limit: 10, total: 0 });
@@ -38,6 +42,7 @@ const Page = ({ params }) => {
   // ROTEAMENTO
   const router = useRouter();
 
+  // BUSCA DE DADOS INICIAIS
   const fetchInitialData = useCallback(async () => {
     setLoading(true);
     setNoResults(false);
@@ -69,8 +74,8 @@ const Page = ({ params }) => {
   }, [params.tenant, pageInfo.page, pageInfo.limit, fetchInitialData]);
 
   // BUSCA DE INSCRIÇÕES COM BASE NO TERMO DE BUSCA
-  const handleSearch = async (searchTerm) => {
-    if (!searchTerm) {
+  const handleSearch = async (search) => {
+    if (!search) {
       fetchInitialData();
       return;
     }
@@ -78,9 +83,15 @@ const Page = ({ params }) => {
     setLoading(true);
     setNoResults(false);
     try {
-      const searchResults = await searchInscricoes(params.tenant, searchTerm);
-      if (searchResults.length > 0) {
-        setInscricoes(searchResults);
+      const searchResults = await await getInscricoes(
+        params.tenant,
+        pageInfo.page,
+        pageInfo.limit,
+        search
+      );
+
+      if (searchResults.inscricoes.length > 0) {
+        setInscricoes(searchResults.inscricoes);
         setPageInfo((prev) => ({ ...prev, total: searchResults.length }));
       } else {
         setInscricoes([]);
@@ -98,13 +109,14 @@ const Page = ({ params }) => {
   const handleRowClick = (id) => {
     router.push(`/${params.tenant}/gestor/inscricoes/${id}`);
   };
+
   const handleDownloadExcel = async () => {
     setLoading(true);
     try {
       console.log("ENTROU");
       const allInscricoes = await getAllInscricoes(params.tenant);
       console.log(allInscricoes);
-      const resultData = flattenedData(allInscricoes.inscricoes);
+      const resultData = processApiResponse(allInscricoes);
       console.log(resultData);
       downloadExcel(resultData);
     } catch (error) {
@@ -113,20 +125,114 @@ const Page = ({ params }) => {
       setLoading(false);
     }
   };
+
+  // Controladores de modais
+  const openModalAndSetData = () => {
+    setIsModalOpen(true);
+  };
+
+  const closeModalAndResetData = () => {
+    setIsModalOpen(false);
+  };
+
+  const openDetailsModal = (data) => {
+    setDetailsData(data);
+    setIsDetailsModalOpen(true);
+  };
+
+  const closeDetailsModal = () => {
+    setIsDetailsModalOpen(false);
+    setDetailsData([]);
+  };
+
+  // Renderização do conteúdo do modal de criação/edição
+  const renderModalContent = () => (
+    <Modal isOpen={isModalOpen} onClose={closeModalAndResetData}>
+      <div className={`${styles.icon} mb-2`}>
+        <RiEditLine />
+      </div>
+      <h4>Nova Inscrição</h4>
+      <p>Preencha os dados abaixo para iniciar o processo de inscrição.</p>
+      <FormNewInscricao data={{ editais }} tenant={params.tenant} />
+    </Modal>
+  );
+
+  // Renderização do conteúdo do modal de detalhes
+  const renderDetailsModalContent = () => {
+    const { title, data = [], idInscricao } = detailsData;
+    const navigateTo = title?.includes("Orientador")
+      ? "orientadores"
+      : title?.includes("Plano")
+      ? "planos"
+      : title?.includes("Aluno")
+      ? "alunos"
+      : "";
+    return (
+      <Modal isOpen={isDetailsModalOpen} onClose={closeDetailsModal}>
+        <div className={styles.modalTable}>
+          <h4>{title}</h4>
+          {data.length > 0 ? (
+            <>
+              {data.map((item) => (
+                <div className={styles.campo} key={item.id}>
+                  <div className={styles.left}>
+                    <div
+                      className={`${styles.status} 
+                        ${item.status === "incompleto" && styles.incompleto}
+                        ${
+                          (item.status === "ativo" ||
+                            item.status === "completo") &&
+                          styles.ativo
+                        }
+                        ${item.status === "inativo" && styles.inativo}
+                        `}
+                    >
+                      <p className={styles[item.status.toLowerCase()]}>
+                        {item.status === "ativo" &&
+                          `${item.status} desde ${item.inicio}`}
+                        {item.status != "ativo" &&
+                          ` participou de ${item.inicio} a ${item.fim}`}
+                      </p>
+                    </div>
+                    <div className={styles.label}>
+                      <h6>
+                        {item.nome_orientador || item.nome_aluno || item.titulo}
+                      </h6>
+                    </div>
+                  </div>
+                  <div className={styles.actions}>
+                    <div className={styles.btn2}>
+                      <Button
+                        onClick={() => {
+                          router.push(
+                            `/${params.tenant}/gestor/inscricoes/${idInscricao}/${navigateTo}`
+                          );
+                        }}
+                        icon={RiExternalLinkLine}
+                        className="btn-secondary"
+                        type="button"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </>
+          ) : (
+            <p>Nada encontrado :/</p>
+          )}
+        </div>
+      </Modal>
+    );
+  };
+
   return (
     <>
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <div className={`${styles.icon} mb-2`}>
-          <RiEditLine />
-        </div>
-        <h4>Nova Inscrição</h4>
-        <p>Preencha os dados abaixo para iniciar o processo de inscrição.</p>
-        <FormNewInscricao data={{ editais }} tenant={params.tenant} />
-      </Modal>
+      {renderModalContent()}
+      {renderDetailsModalContent()}
 
       <main className={styles.main}>
         <Actions
-          onClickPlus={() => setIsModalOpen(true)}
+          onClickPlus={openModalAndSetData}
           onClickExport={handleDownloadExcel}
         />
 
@@ -141,18 +247,143 @@ const Page = ({ params }) => {
           <BuscadorBack onSearch={handleSearch} />
         </div>
         <div className={`${styles.content}`}>
-          {loading ? (
-            <p>Carregando...</p>
-          ) : noResults ? (
-            <p>Nenhuma inscrição encontrada.</p>
-          ) : (
+          {
             <Table
               data={inscricoes}
               pageInfo={pageInfo}
               setPageInfo={setPageInfo}
-              onRowClick={handleRowClick}
-            />
-          )}
+            >
+              <thead>
+                <tr>
+                  <th>
+                    <p>nº</p>
+                  </th>
+                  <th>
+                    <p>Iscricão no edital</p>
+                  </th>
+                  <th>
+                    <p>Status da inscrição</p>
+                  </th>
+                  <th>
+                    <p>Orientadores Ativos</p>
+                  </th>
+                  <th>
+                    <p>Orientadores Inativos</p>
+                  </th>
+                  <th>
+                    <p>Alunos Ativos</p>
+                  </th>
+                  <th>
+                    <p>Alunos Inativos</p>
+                  </th>
+                  <th>
+                    <p>Planos de Trabalho</p>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {inscricoes.map((item) => (
+                  <tr key={item.id}>
+                    <td>
+                      <p
+                        className="link"
+                        onClick={() => {
+                          router.push(
+                            `/${params.tenant}/gestor/inscricoes/${item.id}`
+                          );
+                        }}
+                      >
+                        {item.id}
+                        <RiExternalLinkLine />
+                      </p>
+                    </td>
+                    <td>
+                      <p>{item.editalNome}</p>
+                    </td>
+                    <td>
+                      <p
+                        className={`status ${
+                          item.status === "incompleta" ? "warning" : "green"
+                        }`}
+                      >
+                        {item.status}
+                      </p>
+                    </td>
+                    <td>
+                      <p
+                        className="status white link"
+                        onClick={() => {
+                          openDetailsModal({
+                            title: "Orientadores ativos",
+                            data: item.orientadoresAtivos,
+                            idInscricao: item.id,
+                          });
+                        }}
+                      >
+                        {item.totalOrientadoresAtivos}
+                      </p>
+                    </td>
+                    <td>
+                      <p
+                        className="status white link"
+                        onClick={() => {
+                          openDetailsModal({
+                            title: "Orientadores inativos",
+                            data: item.orientadoresInativos,
+                            idInscricao: item.id,
+                          });
+                        }}
+                      >
+                        {item.totalOrientadoresInativos}
+                      </p>
+                    </td>
+                    <td>
+                      <p
+                        className="status white link"
+                        onClick={() => {
+                          openDetailsModal({
+                            title: "Alunos ativos",
+                            data: item.alunosAtivos,
+                            idInscricao: item.id,
+                          });
+                        }}
+                      >
+                        {item.totalAlunosAtivos}
+                      </p>
+                    </td>
+                    <td>
+                      <p
+                        className="status white link"
+                        onClick={() => {
+                          openDetailsModal({
+                            title: "Alunos inativos",
+                            data: item.alunosInativos,
+                            idInscricao: item.id,
+                          });
+                        }}
+                      >
+                        {item.totalAlunosInativos}
+                      </p>
+                    </td>
+                    <td>
+                      <p
+                        className="status white link"
+                        onClick={() => {
+                          openDetailsModal({
+                            title: "Planos de Trabalho",
+                            data: item.planosDeTrabalho,
+                            idInscricao: item.id,
+                          });
+                        }}
+                      >
+                        {item.planosDeTrabalho?.length}
+                      </p>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          }
         </div>
       </main>
     </>

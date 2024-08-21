@@ -18,6 +18,7 @@
 }
 .campos{
     display: flex;
+    flex-direction: column;
     flex-wrap: wrap;
 }
 .addItem{
@@ -69,10 +70,13 @@
     margin-right: $gap-2;
     border-radius: $gap-1;
     display: flex;
-    
     align-items: center;
     justify-content:space-between;
+    
     padding: $gap-2;
+    @include responsive(xs){
+        display: block;
+    }
     .required{
         display: inline-block;
         background-color: $primary-dark;
@@ -88,12 +92,16 @@
 }
 .actions{
     display: flex;
+    align-items: center;
     margin-left: $gap-2;
+    @include responsive(xs){
+        margin-left: 0;
+        margin-top: $gap-2;
+    }
     p{
         display: none;
     }
     .btn1{
-        
         max-width: 250px;
         @include responsive(xs){
             flex: 1;
@@ -104,6 +112,33 @@
         max-width: 250px;
         margin-left: $gap-1;
         
+    }
+    .upDown{
+        width: 32px;
+        svg{
+            padding: 4px;
+        }
+        margin-left: $gap-2;
+        
+        cursor: pointer;
+        
+        .up, .down{
+            height: 24px;
+            background-color: $gray-50;
+            color: $primary-dark;
+            &:hover{
+                background-color: $gray-200;
+            }
+        }
+        .up{
+            border-top-left-radius: $gap-1;
+            border-top-right-radius: $gap-1;
+            border-bottom: 1px solid $white-normal;
+        }
+        .down{
+            border-bottom-left-radius: $gap-1;
+            border-bottom-right-radius: $gap-1;
+        }
     }
     
 }

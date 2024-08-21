@@ -14,8 +14,10 @@
     .card{
         margin-right: $gap-3;
         margin-bottom: $gap-3;
+        width: 338.29px;
         @include responsive(s){
             margin-right: 0;
+            width: 100%;
         }
     }
     .btnNewItem{

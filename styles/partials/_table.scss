@@ -23,6 +23,8 @@ table p, table h6 {
 table {
     border-collapse: collapse;
     width: 100%;
+    margin-top: 100px;
+    margin-bottom: 100px;
 }
 
 /* Estilos para o primeiro cabeçalho */
@@ -52,6 +54,7 @@ th:nth-child(2) {
 td:nth-child(1) {
     background-color: rgba($white-light, 0.2);
     backdrop-filter: blur(6px);
+    border-left: 4px solid transparent;
     border-right: 1px solid #fff;
     width: 100px;
     position: absolute;
@@ -73,9 +76,7 @@ td:nth-child(2) {
 }
 
 /* Estilos para as linhas do corpo da tabela */
-tbody tr {
-    cursor: pointer;
-}
+
 /* Alternando cores de fundo entre linhas ímpares e pares */
 tbody tr:nth-child(odd) {
     background-color: $white-normal; /* Cor de fundo para linhas ímpares */
@@ -95,13 +96,32 @@ tbody tr:hover td:first-child {
 }
 
 /* Estilos para cabeçalhos e células */
-th, td {
-    padding: $gap-2 $gap-3;
-}
+//th, td {
+    //padding: $gap-2 $gap-3;
+//}
 
 td {
     height: 90px;
-}
+    position: relative;
+    
+        p.link:not(p.status){
+            &:hover{
+            color: $primary-dark;
+            text-decoration: underline;
+            cursor: pointer;
+            }
+        }
+        .status.link{
+            &:hover{
+                background-color: $primary-dark;
+            cursor: pointer;
+            
+                color: $white-dark;
+        
+            }
+        }
+    }
+
 
 td:not(:nth-child(1)):not(:nth-child(2)) {
     text-align: center;
@@ -111,6 +131,7 @@ th, th:nth-child(1){
     
     p{
         color: $white-darken;
+        
     }
     &:first-child{
         border-top-left-radius: 8px;
@@ -121,8 +142,23 @@ th, th:nth-child(1){
 }
 th p {
     font-weight: 300;
+    display: inline;
+    padding: $gap-2 $gap-3;
 }
+.tooltip{
+    padding: $gap-2;
+    border-radius: $gap-1;
+    background-color: $white-light;
+    box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.1);
 
+    position: absolute;
+    bottom: 20;
+    width: 100%;
+    z-index: 1000;
+    p{
+        font-size: 10px;
+    }
+}
 /* Estilos para status */
 .status {
     display: inline-block;
@@ -141,20 +177,19 @@ th p {
     border: 1px solid $success-dark;
     background-color: $success-light;
 }
-@include responsive(xs) {
-    th:nth-child(1),
-    th:nth-child(2),
-    td:nth-child(1),
-    td:nth-child(2) {
-        width: 100px;
-    }
+
+.status.white {
+    border: 1px solid $primary-dark;
+    background-color: $white-darken;
 }
+
 
 .actions-table{
     display: flex;
     max-width: 230px;
     margin-top: $gap-2;
     margin-bottom: $gap-3;
+    position: absolute;
     .button{
         &:first-child{
             border-top-right-radius: 0;

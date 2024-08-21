@@ -119,10 +119,13 @@
                 }
             }
             .status{
-                margin-top: $gap-1;
+                margin-bottom: $gap-1;
                 display: inline-block;
-                padding: 2px $gap-2;
+                padding: 4px $gap-2;
                 border-radius: 20px;
+                p{
+                    font-size: 12px;
+                }
             }
             .incompleto{
                 background-color: $warning-light;

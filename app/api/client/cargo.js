@@ -5,14 +5,10 @@ import { getCookie } from 'cookies-next';
  * CARGO
  **************************/
 export const createCargo = async (tenantSlug, data) => {
-  console.log(data)
   try {
     const headers = getAuthHeadersClient();
     if (!headers) return false;
-    const response = await req.post(`/private/${tenantSlug}/cargo`, data, {
-      headers,
-    });
-      
+    const response = await req.post(`/private/${tenantSlug}/cargo`, data, {headers});
     return response.data.cargo;
   } catch (error) {
     if (error.response && error.response.status === 404) {
@@ -23,39 +19,32 @@ export const createCargo = async (tenantSlug, data) => {
     throw error;
   }
 };
-  export const getCargos = async (tenantSlug) => {
-    try {
-      const headers = getAuthHeadersClient();
-      if (!headers) return false;
-      const response = await req.get(`/private/${tenantSlug}/cargos`, {
-        headers,
-      });
-      console.log(response)
-      return response.data.cargos;
-    } catch (error) {
-      if (error.response && error.response.status === 404) {
-        console.error("Cargos não encontrados:", error);
-        return null;
-      }
-      console.error("Erro ao obter os cargos:", error);
-      throw error;
+export const getCargos = async (tenantSlug) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+    const response = await req.get(`/private/${tenantSlug}/cargos`, {
+      headers,
+    });
+    return response.data.cargos;
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      console.error("Cargos não encontrados:", error);
+      return null;
     }
-  }; 
-  
-  export const deleteCargo = async (tenantSlug, cargoId) => {
-    try {
-      const token = getCookie('authToken');
-      if (!token) {
-        return false;
-      }
-      const response = await req.delete(`/private/${tenantSlug}/cargo/${cargoId}`, {
-        headers: {
-          "Authorization": `Token ${token}`
-        }
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Erro ao deletar edital:', error);
-      throw error;
-    }
-  };
+    console.error("Erro ao obter os cargos:", error);
+    throw error;
+  }
+}; 
+
+export const deleteCargo = async (tenantSlug, cargoId) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+    const response = await req.delete(`/private/${tenantSlug}/cargo/${cargoId}`, {headers});
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao deletar edital:', error);
+    throw error;
+  }
+};

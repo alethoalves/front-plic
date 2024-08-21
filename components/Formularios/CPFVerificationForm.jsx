@@ -1,52 +1,54 @@
-//HOOKS 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+//HOOKS
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 
 //ESTILOS E ÍCONES
-import styles from './Form.module.scss'
+import styles from "@/components/Formularios/Form.module.scss";
 
 //COMPONENTES
 import Button from "@/components/Button";
 import Input from "@/components/Input";
 
 //FUNÇÕES
-import { getDataFromCPF, getUserByCpf, createUser } from '@/app/api/clientReq';
-import cpfValidator from '@/lib/cpfValidator';
+import { getDataFromCPF } from "@/app/api/clientReq";
+import { getUserByCpf, createUser } from "@/app/api/client/user";
+import cpfValidator from "@/lib/cpfValidator";
 
 const CPFVerificationForm = ({ tenantSlug, onCpfVerified }) => {
   //ESTADOS
   const [loading, setLoading] = useState(false);
-  const [cpfError, setCpfError] = useState('');
+  const [cpfError, setCpfError] = useState("");
   const [isCpfVerified, setIsCpfVerified] = useState(false);
 
   const { control, setValue, watch, reset, handleSubmit } = useForm({
     defaultValues: {
-      cpf: '',
+      cpf: "",
     },
   });
 
-  const cpf = watch('cpf');
+  const cpf = watch("cpf");
 
   const handleCPFCheck = async () => {
     setLoading(true);
-    setCpfError('');
+    setCpfError("");
     try {
       // Verifica se o CPF é válido
       const cpfIsValid = cpfValidator(cpf);
       if (!cpfIsValid) {
-        setCpfError('CPF inválido');
+        setCpfError("CPF inválido");
         setLoading(false);
         return;
       }
       // Verifica se o usuário já está cadastrado
-      const user = await getUserByCpf(tenantSlug, cpf);
-      
+      const response = await getUserByCpf(tenantSlug, cpf);
+      const user = response;
+
       if (user) {
         setIsCpfVerified(true);
         onCpfVerified({
           userId: user.id.toString(),
           nome: user.nome,
-          cpf: user.cpf
+          cpf: user.cpf,
         });
       } else {
         // Se o usuário não estiver cadastrado, faz a consulta ao serviço externo
@@ -54,18 +56,21 @@ const CPFVerificationForm = ({ tenantSlug, onCpfVerified }) => {
         const newUser = await createUser(tenantSlug, {
           nome: response.nome,
           cpf,
-          dtNascimento: response.data_de_nascimento
+          dtNascimento: response.data_de_nascimento,
         });
         setIsCpfVerified(true);
         onCpfVerified({
           userId: newUser.user.id.toString(),
           nome: newUser.user.nome,
-          cpf: cpf
+          cpf: cpf,
         });
       }
     } catch (error) {
       setIsCpfVerified(false);
-      const errorMessage = error.response?.data?.error?.details?.message || error.message || 'Erro na conexão com o servidor.';
+      const errorMessage =
+        error.response?.data?.error?.details?.message ||
+        error.message ||
+        "Erro na conexão com o servidor.";
       setCpfError(errorMessage);
     } finally {
       setLoading(false);
@@ -73,9 +78,9 @@ const CPFVerificationForm = ({ tenantSlug, onCpfVerified }) => {
   };
 
   const handleCPFReset = () => {
-    reset({ cpf: '' });
+    reset({ cpf: "" });
     setIsCpfVerified(false);
-    setCpfError('');
+    setCpfError("");
     onCpfVerified(null);
   };
 
@@ -86,9 +91,9 @@ const CPFVerificationForm = ({ tenantSlug, onCpfVerified }) => {
           className="cpf-input mb-2"
           control={control}
           name="cpf"
-          label='Digite o CPF'
+          label="Digite o CPF"
           inputType="text"
-          placeholder='Digite aqui o CPF'
+          placeholder="Digite aqui o CPF"
           disabled={loading || isCpfVerified}
         />
         {!isCpfVerified ? (
@@ -98,7 +103,7 @@ const CPFVerificationForm = ({ tenantSlug, onCpfVerified }) => {
             onClick={handleCPFCheck}
             disabled={loading}
           >
-            {loading ? 'Carregando...' : 'Verificar CPF'}
+            {loading ? "Carregando..." : "Verificar CPF"}
           </Button>
         ) : (
           <Button
@@ -110,7 +115,11 @@ const CPFVerificationForm = ({ tenantSlug, onCpfVerified }) => {
             Resetar CPF
           </Button>
         )}
-        {cpfError && <div className="notification notification-error"><p className='p5'>{cpfError}</p></div>}
+        {cpfError && (
+          <div className="notification notification-error">
+            <p className="p5">{cpfError}</p>
+          </div>
+        )}
       </div>
     </form>
   );

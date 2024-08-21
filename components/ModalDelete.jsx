@@ -16,6 +16,8 @@ const Modal = ({
   confirmationText = "Tem certeza que deseja excluir?",
   errorDelete,
   handleDelete,
+  icon: Icon,
+  txtBtn,
 }) => {
   const [visible, setVisible] = useState(false);
   useEffect(() => {
@@ -41,7 +43,7 @@ const Modal = ({
           <RiCloseLargeLine />
         </div>
         <div className={`${styles.icon} mb-2`}>
-          <RiDeleteBinLine />
+          {!Icon ? <RiDeleteBinLine /> : <Icon />}
         </div>
         <h4>{title}</h4>
         <p className="mt-1">{`${confirmationText}`}</p>
@@ -52,7 +54,7 @@ const Modal = ({
         )}
         <div className={styles.btnSubmit}>
           <Button className="btn-error mt-4" onClick={handleDelete}>
-            Excluir
+            {!txtBtn ? "Excluir" : txtBtn}
           </Button>
         </div>
       </div>

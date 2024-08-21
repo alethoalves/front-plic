@@ -102,7 +102,6 @@
             }
         }
         .head{
-            display: flex;
             align-items: center;
             @include responsive(xs){
                 flex-direction: column;
@@ -113,6 +112,7 @@
             }
         }
         .status{
+            margin-bottom: $gap-1;
             display: inline-block;
             padding: 4px $gap-2;
             border-radius: 20px;

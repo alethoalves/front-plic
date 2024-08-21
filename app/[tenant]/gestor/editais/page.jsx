@@ -11,7 +11,7 @@ import { RiAddCircleLine } from "@remixicon/react";
 import Header from "@/components/Header";
 import Modal from "@/components/Modal";
 import ModalDelete from "@/components/ModalDelete";
-import FormEdital from "@/components/FormEdital";
+import FormEdital from "@/components/Formularios/FormEdital";
 import BuscadorFront from "@/components/BuscadorFront";
 import Card from "@/components/Card";
 import Skeleton from "@/components/Skeleton";
@@ -100,8 +100,7 @@ const Page = ({ params }) => {
       setEditalToDelete(null);
     } catch (error) {
       setErrorDelete(
-        error.response?.data?.error?.message ??
-          "Erro na conexão com o servidor."
+        error.response?.data?.message ?? "Erro na conexão com o servidor."
       );
     }
   }, [params.tenant, editalToDelete, editais]);
