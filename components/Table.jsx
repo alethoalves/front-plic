@@ -1,7 +1,6 @@
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 const Table = ({ children, data, pageInfo, setPageInfo }) => {
-  console.log(data);
   const handleNext = () => {
     setPageInfo((prev) => ({ ...prev, page: prev.page + 1 }));
   };
@@ -12,31 +11,30 @@ const Table = ({ children, data, pageInfo, setPageInfo }) => {
     );
   };
 
-  if (!data?.length) {
-    return <p>Nenhuma inscrição encontrada</p>;
-  }
-
-  const columns = Object.keys(data[0]);
+  // const columns = Object.keys(data[0]);
 
   return (
     <div className="table-container">
-      <div className="actions-table">
-        <button
-          className="button btn-secondary"
-          onClick={handlePrevious}
-          disabled={pageInfo.page === 1}
-        >
-          Anterior
-        </button>
-        <button
-          className="button btn-secondary"
-          onClick={handleNext}
-          disabled={pageInfo.page * pageInfo.limit >= pageInfo.total}
-        >
-          Próximo
-        </button>
-      </div>
-      <table>{children}</table>
+      {pageInfo && (
+        <div className="actions-table">
+          <button
+            className="button btn-secondary"
+            onClick={handlePrevious}
+            disabled={pageInfo?.page === 1}
+          >
+            Anterior
+          </button>
+          <button
+            className="button btn-secondary"
+            onClick={handleNext}
+            disabled={pageInfo?.page * pageInfo?.limit >= pageInfo?.total}
+          >
+            Próximo
+          </button>
+        </div>
+      )}
+
+      <table className={`${!pageInfo && "withoutPage"}`}>{children}</table>
     </div>
   );
 };

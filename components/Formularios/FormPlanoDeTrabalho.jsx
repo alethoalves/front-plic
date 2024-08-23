@@ -21,6 +21,8 @@ import {
   updatePlanoDeTrabalho,
 } from "@/app/api/client/planoDeTrabalho";
 import { planoDeTrabalhoSchema } from "@/lib/zodSchemas/planoDeTrabalhoSchema";
+import { getAreas } from "@/app/api/client/area";
+import SearchableSelect from "../SearchableSelect";
 
 const FormPlanoDeTrabalho = ({
   tenantSlug,
@@ -32,51 +34,43 @@ const FormPlanoDeTrabalho = ({
   //ESTADOS
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [areas, setAreas] = useState("");
   const { control, handleSubmit, setValue, reset } = useForm({
     resolver: zodResolver(planoDeTrabalhoSchema),
     defaultValues: {
       titulo: "",
+      areaId: "",
     },
   });
 
   useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const response = await getAreas(tenantSlug);
+        setAreas(transformedArray(response));
+        console.log(transformedArray(response));
+      } catch (error) {
+        setErrorDelete(
+          error.response?.data?.message ?? "Erro na conexão com o servidor."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+
     if (initialData) {
       setValue("titulo", initialData.titulo);
+      setValue("areaId", initialData.areaId);
     } else {
       reset();
     }
   }, [initialData, setValue, reset]);
-  const incluirAtividadesNoPlanoDeTrabalho = async (
-    tenantSlug,
-    idPlanoDeTrabalho,
-    atividades
-  ) => {
-    try {
-      const promises = atividades.map(async (atividade) => {
-        const registroAtividadeData = {
-          status: "naoEntregue", // Ajustar conforme necessário
-          planoDeTrabalhoId: idPlanoDeTrabalho, // ID do plano de trabalho do item
-        };
 
-        return await createRegistroAtividade(
-          tenantSlug,
-          atividade.id,
-          registroAtividadeData
-        );
-      });
-
-      const resultados = await Promise.all(promises);
-      return resultados;
-    } catch (error) {
-      console.error(
-        "Erro ao incluir atividades nos planos de trabalho:",
-        error
-      );
-      throw error;
-    }
-  };
   const handleFormSubmit = async (data) => {
     setLoading(true);
+    console.log(data);
     setError("");
     try {
       if (initialData) {
@@ -105,6 +99,31 @@ const FormPlanoDeTrabalho = ({
       setLoading(false);
     }
   };
+  const transformedArray = (items) => {
+    const data = items?.flatMap((item) => {
+      // Criar um array inicial com a área principal
+      const result = [{ value: item.id, label: item.area }];
+
+      // Adicionar subáreas, se houver
+      const subareaResults = item.subareas.map((subarea) => ({
+        value: item.id,
+        label: `${item.area} - ${subarea.subarea}`,
+      }));
+
+      // Concatenar o array da área principal com as subáreas
+      return result.concat(subareaResults);
+    });
+
+    // Organizar por `value` crescente e depois por `label`
+    return data.sort((a, b) => {
+      // Primeiro, organizar por `value` crescente
+      if (a.value < b.value) return -1;
+      if (a.value > b.value) return 1;
+
+      // Se os `values` forem iguais, organizar por `label`
+      return a.label.localeCompare(b.label);
+    });
+  };
 
   return (
     <form
@@ -122,6 +141,17 @@ const FormPlanoDeTrabalho = ({
           disabled={loading}
         />
       </div>
+      <div className={`${styles.input}`}>
+        <SearchableSelect
+          className="mb-2"
+          control={control}
+          name="areaId"
+          label="Área de Conhecimento"
+          options={areas || []} // Garante que o options seja um array
+          disabled={loading}
+        />
+      </div>
+
       <div className={`${styles.btnSubmit}`}>
         <Button
           icon={RiSave2Line}

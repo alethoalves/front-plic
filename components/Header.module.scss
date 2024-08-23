@@ -15,3 +15,22 @@
         color: $gray-500;
     }
 }
+.status{
+    margin-bottom: $gap-1;
+    display: inline-block;
+    padding: 4px $gap-2;
+    border-radius: 20px;
+    p{
+        font-size: 12px;
+    }
+}
+.incompleto{
+    background-color: $warning-light;
+    p{color:red}
+}
+.ativo{
+    background-color: $success-light;
+}
+.inativo{
+    background-color: $white-light;
+}

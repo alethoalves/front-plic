@@ -63,7 +63,7 @@ const FormNewAtividade = ({
     } else {
       reset();
     }
-  }, [initialData, setValue, reset]);
+  }, [initialData, setValue, reset, error]);
 
   useEffect(() => {
     if (formularios && formularioId) {
@@ -82,36 +82,6 @@ const FormNewAtividade = ({
       }
     }
   }, [formularioId]);
-
-  const incluirAtividadeNosPlanosDeTrabalho = async (
-    tenantSlug,
-    atividadeId,
-    planosDeTrabalho
-  ) => {
-    try {
-      const promises = planosDeTrabalho.map(async (item) => {
-        const registroAtividadeData = {
-          status: "naoEntregue", // Ajustar conforme necessário
-          planoDeTrabalhoId: item.id, // ID do plano de trabalho do item
-        };
-
-        return await createRegistroAtividade(
-          tenantSlug,
-          atividadeId,
-          registroAtividadeData
-        );
-      });
-
-      const resultados = await Promise.all(promises);
-      return resultados;
-    } catch (error) {
-      console.error(
-        "Erro ao incluir atividades nos planos de trabalho:",
-        error
-      );
-      throw error;
-    }
-  };
 
   const handleFormSubmit = async (data) => {
     setLoading(true);

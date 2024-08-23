@@ -100,7 +100,7 @@ const Page = ({ params }) => {
       <div className={`${styles.icon} mb-2`}>
         <RiEditLine />
       </div>
-      <h4>Nova atividade</h4>
+      <h4>{itemToEdit ? "Editar Atividade" : "Nova Atividade"}</h4>
       <p>
         {itemToEdit
           ? "Edite os dados abaixo."

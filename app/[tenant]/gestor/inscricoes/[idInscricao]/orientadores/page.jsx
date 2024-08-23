@@ -252,16 +252,18 @@ const Page = ({ params }) => {
                           </div>
                         )}
 
-                        <div
-                          className={styles.navigate}
-                          onClick={() => {
-                            router.push(
-                              `/${params.tenant}/gestor/inscricoes/${params.idInscricao}/orientadores/${participacao.id}`
-                            );
-                          }}
-                        >
-                          <RiArrowRightSLine />
-                        </div>
+                        {false && (
+                          <div
+                            className={styles.navigate}
+                            onClick={() => {
+                              router.push(
+                                `/${params.tenant}/gestor/inscricoes/${params.idInscricao}/orientadores/${participacao.id}`
+                              );
+                            }}
+                          >
+                            <RiArrowRightSLine />
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

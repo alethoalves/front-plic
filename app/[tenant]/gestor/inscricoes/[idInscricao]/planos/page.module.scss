@@ -80,7 +80,7 @@
             }
     } 
     .addItemAluno{
-       border-color:$gray-100;
+       border-color:$gray-50;
        border-style: solid;
        border-top: none;
         margin-top: 0;
@@ -105,7 +105,7 @@
             background-color: $white-darken;
             border-top-right-radius: $gap-1;
             border-top-left-radius: $gap-1;
-            border: 1px solid $gray-100;
+            border: 1px solid $gray-50;
             border-bottom: none;
             @include responsive(xs){
                 flex-direction: column;
@@ -196,7 +196,7 @@
             justify-content: space-between;
             padding: $gap-2 $gap-3;
             background-color: $white-light;
-            border: 1px solid $gray-100;
+            border: 1px solid $gray-50;
             border-top: none;
             @include responsive(xs){
                 flex-direction: column;
@@ -264,7 +264,7 @@
                 background-color: $success-light;
             }
             .inativo{
-                background-color: $white-light;
+                background-color: $gray-50;
             }
         }
         

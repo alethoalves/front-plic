@@ -54,6 +54,7 @@ const Page = ({ params }) => {
       try {
         const itens = await getInscricao(params.tenant, params.idInscricao);
         setItens(itens);
+        console.log(itens);
         const flatItens = flattenItems(itens); // Mover a transformação aqui
         setFlatItens(flatItens); // Salvar o resultado no estado
       } catch (error) {
@@ -334,7 +335,7 @@ const Page = ({ params }) => {
                         handleEdit={() => {
                           openModalAndSetData(item);
                         }}
-                        navigateTo={`/`}
+                        //navigateTo={`/`}
                       />
                     );
                   })}

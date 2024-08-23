@@ -18,6 +18,7 @@ import {
 //COMPONENTES
 import Button from "@/components/Button";
 import Modal from "@/components/Modal";
+import ModalDelete from "@/components/ModalDelete";
 
 //FUNÇÕES
 import {
@@ -30,6 +31,8 @@ import {
 import FormPlanoDeTrabalho from "@/components/Formularios/FormPlanoDeTrabalho";
 import ParticipacaoForm from "@/components/Formularios/ParticipacaoForm";
 import CPFVerificationForm from "@/components/Formularios/CPFVerificationForm";
+import ParticipacaoFormAluno from "@/components/Formularios/ParticipacaoFormAluno";
+import InativarParticipacaoForm from "@/components/Formularios/InativarParticipacaoForm";
 
 const Page = ({ params }) => {
   //ESTADOS
@@ -39,6 +42,8 @@ const Page = ({ params }) => {
   const [errorDelete, setErrorDelete] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalOpenAluno, setIsModalOpenAluno] = useState(false);
+  const [isModalOpenInativar, setIsModalOpenInativar] = useState(false);
+
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [itens, setItens] = useState([]);
   const [itemToEdit, setItemToEdit] = useState(null);
@@ -107,6 +112,7 @@ const Page = ({ params }) => {
     setItemToEdit(null);
     setIsModalOpenAluno(false);
     setVerifiedData(false);
+    setIsModalOpenInativar(false);
   };
 
   const renderModalContent = () => (
@@ -136,11 +142,11 @@ const Page = ({ params }) => {
       <div className={`${styles.icon} mb-2`}>
         <RiEditLine />
       </div>
-      <h4>{itemToEdit ? "Editar participação" : "Nova participação"}</h4>
+      <h4>Adicionar Aluno</h4>
       <p>
         {itemToEdit
           ? "Edite os dados abaixo."
-          : "Preencha os dados abaixo para adicionar uma nova participação."}
+          : "Preencha os dados abaixo para adicionar um novo aluno."}
       </p>
 
       <CPFVerificationForm
@@ -148,9 +154,10 @@ const Page = ({ params }) => {
         onCpfVerified={setVerifiedData}
       />
       {verifiedData && (
-        <ParticipacaoForm
+        <ParticipacaoFormAluno
           tenantSlug={params.tenant}
           inscricaoId={params.idInscricao}
+          planoDeTrabalhoId={itemToEdit.id}
           initialData={verifiedData}
           onClose={closeModalAndResetData}
           onSuccess={handleCreateOrEditSuccess}
@@ -158,36 +165,42 @@ const Page = ({ params }) => {
       )}
     </Modal>
   );
+  const renderModalInativar = () => (
+    <Modal isOpen={isModalOpenInativar} onClose={closeModalAndResetData}>
+      <div className={`${styles.icon} mb-2`}>
+        <RiEditLine />
+      </div>
+      <h4 className="mb-1">Confirmar Inativação</h4>
+      <p>{`Tem certeza que deseja inativar:`}</p>
+      <p className="mt-1">{`${itemToDelete?.user?.nome}`}</p>
+
+      <InativarParticipacaoForm
+        tenantSlug={params.tenant}
+        idParticipacao={itemToDelete?.id}
+        onClose={closeModalAndResetData}
+        onSuccess={handleCreateOrEditSuccess}
+      />
+    </Modal>
+  );
   const renderDeleteModalContent = () => (
-    <Modal
+    <ModalDelete
       isOpen={deleteModalOpen}
+      title="Confirmar Exclusão"
       onClose={() => {
         setDeleteModalOpen(false);
         setErrorDelete("");
       }}
-    >
-      <div className={`${styles.icon} mb-2`}>
-        <RiDeleteBinLine />
-      </div>
-      <h4>Confirmar Exclusão</h4>
-      <p className="mt-1">{`Tem certeza que deseja excluir o Plano de Trabalho ${itemToDelete?.titulo}`}</p>
-      {errorDelete && (
-        <div className={`notification notification-error`}>
-          <p className="p5">{errorDelete}</p>
-        </div>
-      )}
-      <div className={styles.btnSubmit}>
-        <Button className="btn-error mt-4" onClick={handleDelete}>
-          Excluir
-        </Button>
-      </div>
-    </Modal>
+      confirmationText={`Tem certeza que deseja excluir o Plano de Trabalho`}
+      errorDelete={errorDelete}
+      handleDelete={handleDelete}
+    />
   );
 
   return (
     <>
       {renderModalContent()}
       {renderModalAluno()}
+      {renderModalInativar()}
       {renderDeleteModalContent()}
       <div className={styles.navContent}>
         <div className={styles.content}>
@@ -239,21 +252,23 @@ const Page = ({ params }) => {
                         >
                           <RiDeleteBinLine />
                         </div>
-                        <div
-                          className={styles.navigate}
-                          onClick={() => {
-                            router.push(
-                              `/${params.tenant}/gestor/inscricoes/${params.idInscricao}/planosDeTrabalho/${planoDeTrabalho.id}`
-                            );
-                          }}
-                        >
-                          <RiArrowRightSLine />
-                        </div>
+                        {false && (
+                          <div
+                            className={styles.navigate}
+                            onClick={() => {
+                              router.push(
+                                `/${params.tenant}/gestor/inscricoes/${params.idInscricao}/planosDeTrabalho/${planoDeTrabalho.id}`
+                              );
+                            }}
+                          >
+                            <RiArrowRightSLine />
+                          </div>
+                        )}
                       </div>
                     </div>
                     {planoDeTrabalho.participacoes &&
                       planoDeTrabalho.participacoes.map((participacao) => (
-                        <div className={styles.subitem}>
+                        <div key={participacao.id} className={styles.subitem}>
                           <div className={styles.info}>
                             <div
                               className={`${styles.status} 
@@ -302,7 +317,10 @@ const Page = ({ params }) => {
                       ))}
                     <div
                       className={`${styles.addItem} ${styles.addItemAluno}`}
-                      onClick={() => setIsModalOpenAluno(true)}
+                      onClick={() => {
+                        setIsModalOpenAluno(true);
+                        setItemToEdit(planoDeTrabalho);
+                      }}
                     >
                       <div className={styles.icon}>
                         <RiAddCircleLine />
