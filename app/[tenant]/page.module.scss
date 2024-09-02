@@ -4,11 +4,13 @@
 
 .container{
     width: 100vw;
-    display:flex ;
-    align-items:center;
-    justify-content:space-around;
-    margin: 0 auto;
+    overflow-x: hidden;
+    display:grid;
+    place-items: center;
     height: 100vh;
+    padding: $gap-2 0;
+    
+    justify-content:space-around;
     background-color: $white-light;
 }
 

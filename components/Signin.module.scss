@@ -4,7 +4,28 @@
 
 .auth{
     width: 416px;
+   @include responsive (xs){
+    //border: 1px solid red;
+    width: 0;
+    min-width: 200px;
+   }
     margin: $gap-2;
+    .btnBack{
+        margin-top: $gap-1;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        &:hover{
+            svg{color:$primary-normal}
+            
+        }
+        svg{
+            margin-right: $gap-1;
+            color: $primary-dark;
+            height: 30px;
+            width: 30px;
+        }
+    }
     .logo{
         width: auto;
         height: 142px;
@@ -36,11 +57,11 @@
 }
 .logoPlic{
     width: auto;
-    height: 40px;
+    height: 60px;
     margin-top: $gap-3;
     position: relative;
     img{
-        
+        padding-bottom: 20px;
         object-fit: contain;
         object-position: left center;
     }

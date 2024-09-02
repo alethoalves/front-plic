@@ -12,40 +12,105 @@ const Input = (props) => {
 
   const { field, fieldState } = useController(props);
 
+  const calculateNewCursorPosition = (oldPosition, oldValue, newValue) => {
+    const oldNonDigitCount = (oldValue.slice(0, oldPosition).match(/\D/g) || [])
+      .length;
+    const newNonDigitCount = (newValue.slice(0, oldPosition).match(/\D/g) || [])
+      .length;
+    const adjustment = newNonDigitCount - oldNonDigitCount;
+    return oldPosition + adjustment;
+  };
+
   const handleChange = (event) => {
-    let inputValue = event.target.value;
+    const inputElement = event.target;
+    let inputValue = inputElement.value;
+    const cursorPosition = inputElement.selectionStart;
+    const oldValue = inputValue;
 
     if (props.inputType === "checkbox") {
-      inputValue = event.target.checked ? "true" : "false";
-    } else if (props.className?.includes("phone-input")) {
+      inputValue = inputElement.checked ? "true" : "false";
+    } else if (props.inputType === "phone") {
       inputValue = inputValue.replace(/\D/g, "");
       if (inputValue.length <= 11) {
         inputValue = inputValue.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
       }
+
+      const newCursorPosition = calculateNewCursorPosition(
+        cursorPosition,
+        oldValue,
+        inputValue
+      );
+
+      inputElement.value = inputValue;
+      field.onChange(inputValue);
+
+      setTimeout(() => {
+        inputElement.setSelectionRange(newCursorPosition, newCursorPosition);
+      }, 0);
+      return;
     } else if (props.className?.includes("cpf-input")) {
       inputValue = inputValue.replace(/\D/g, "");
       if (inputValue.length > 11) {
-        inputValue = inputValue.slice(0, 11); // Limita o comprimento a 11 caracteres
+        inputValue = inputValue.slice(0, 11);
       }
-      if (inputValue.length <= 11) {
+      if (inputValue.length > 3) {
+        inputValue = inputValue.replace(/(\d{3})(\d)/, "$1.$2");
+      }
+      if (inputValue.length > 6) {
+        inputValue = inputValue.replace(/(\d{3})\.(\d{3})(\d)/, "$1.$2.$3");
+      }
+      if (inputValue.length > 9) {
         inputValue = inputValue.replace(
-          /(\d{3})(\d{3})(\d{3})(\d{2})/,
+          /(\d{3})\.(\d{3})\.(\d{3})(\d{2})/,
           "$1.$2.$3-$4"
         );
       }
+
+      const newCursorPosition = calculateNewCursorPosition(
+        cursorPosition,
+        oldValue,
+        inputValue
+      );
+
+      inputElement.value = inputValue;
+      field.onChange(inputValue);
+
+      setTimeout(() => {
+        inputElement.setSelectionRange(newCursorPosition, newCursorPosition);
+      }, 0);
+      return;
     } else if (
       props.inputType === "date" ||
       props.className?.includes("date-input")
     ) {
-      inputValue = inputValue.replace(/\D/g, ""); // Remove tudo que não for dígito
+      inputValue = inputValue.replace(/\D/g, "");
       if (inputValue.length > 8) {
-        inputValue = inputValue.slice(0, 8); // Limita o comprimento a 8 caracteres
+        inputValue = inputValue.slice(0, 8);
       }
       if (inputValue.length <= 8) {
-        inputValue = inputValue.replace(/(\d{2})(\d{2})(\d{4})/, "$1/$2/$3");
+        if (inputValue.length > 2) {
+          inputValue = inputValue.replace(/(\d{2})(\d)/, "$1/$2");
+        }
+        if (inputValue.length > 5) {
+          inputValue = inputValue.replace(/(\d{2})\/(\d{2})(\d)/, "$1/$2/$3");
+        }
       }
+
+      const newCursorPosition = calculateNewCursorPosition(
+        cursorPosition,
+        oldValue,
+        inputValue
+      );
+
+      inputElement.value = inputValue;
+      field.onChange(inputValue);
+
+      setTimeout(() => {
+        inputElement.setSelectionRange(newCursorPosition, newCursorPosition);
+      }, 0);
+      return;
     } else if (props.inputType === "file") {
-      inputValue = event.target.files[0];
+      inputValue = inputElement.files[0];
     }
 
     field.onChange(inputValue);
@@ -103,10 +168,11 @@ const Input = (props) => {
             : props.inputType === "file"
             ? "file"
             : "text"
-        } // Note que agora é um campo de texto
+        }
         placeholder={props.placeholder}
         autoFocus={props.autoFocus}
         disabled={props.disabled}
+        readOnly={props.readonly}
         onChange={handleChange}
         id={props.inputType === "file" ? "XYZ" : props.name || undefined}
       />
