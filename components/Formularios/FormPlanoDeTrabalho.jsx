@@ -39,7 +39,7 @@ const FormPlanoDeTrabalho = ({
     resolver: zodResolver(planoDeTrabalhoSchema),
     defaultValues: {
       titulo: "",
-      areaId: "",
+      //areaId: "",
     },
   });
 
@@ -47,9 +47,9 @@ const FormPlanoDeTrabalho = ({
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await getAreas(tenantSlug);
-        setAreas(transformedArray(response));
-        console.log(transformedArray(response));
+        //const response = await getAreas(tenantSlug);
+        //setAreas(transformedArray(response));
+        //console.log(transformedArray(response));
       } catch (error) {
         setErrorDelete(
           error.response?.data?.message ?? "Erro na conexão com o servidor."
@@ -62,7 +62,7 @@ const FormPlanoDeTrabalho = ({
 
     if (initialData) {
       setValue("titulo", initialData.titulo);
-      setValue("areaId", initialData.areaId);
+      //setValue("areaId", initialData.areaId);
     } else {
       reset();
     }
@@ -141,16 +141,18 @@ const FormPlanoDeTrabalho = ({
           disabled={loading}
         />
       </div>
-      <div className={`${styles.input}`}>
-        <SearchableSelect
-          className="mb-2"
-          control={control}
-          name="areaId"
-          label="Área de Conhecimento"
-          options={areas || []} // Garante que o options seja um array
-          disabled={loading}
-        />
-      </div>
+      {false && (
+        <div className={`${styles.input}`}>
+          <SearchableSelect
+            className="mb-2"
+            control={control}
+            name="areaId"
+            label="Área de Conhecimento"
+            options={areas || []} // Garante que o options seja um array
+            disabled={loading}
+          />
+        </div>
+      )}
 
       <div className={`${styles.btnSubmit}`}>
         <Button
