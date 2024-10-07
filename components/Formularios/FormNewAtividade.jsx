@@ -63,7 +63,7 @@ const FormNewAtividade = ({
     } else {
       reset();
     }
-  }, [initialData, setValue, reset, error]);
+  }, [initialData, setValue, reset]);
 
   useEffect(() => {
     if (formularios && formularioId) {
@@ -81,7 +81,7 @@ const FormNewAtividade = ({
         setValue("descricao", descricao);
       }
     }
-  }, [formularioId]);
+  }, [formularios, formularioId, setValue, initialData]);
 
   const handleFormSubmit = async (data) => {
     setLoading(true);
