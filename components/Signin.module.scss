@@ -6,8 +6,9 @@
     width: 416px;
    @include responsive (xs){
     //border: 1px solid red;
-    width: 0;
-    min-width: 200px;
+    width: 100vw;
+    padding: $gap-2;
+    
    }
     margin: $gap-2;
     .btnBack{
