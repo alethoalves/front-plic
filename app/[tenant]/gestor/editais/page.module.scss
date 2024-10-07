@@ -18,6 +18,11 @@
         @include responsive(s){
             margin-right: 0;
         }
+        width: 338.29px;
+        @include responsive(s){
+            margin-right: 0;
+            width: 100%;
+        }
     }
     .btnNewItem{
         margin-right: $gap-3;

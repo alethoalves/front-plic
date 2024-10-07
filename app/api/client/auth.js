@@ -16,6 +16,7 @@ export const signin = async (data) => {
         sameSite: "Strict", // Opcional: define a política de SameSite para o cookie
       });
     }
+    console.log(perfis)
     if (perfis) {
       setCookie("userProfiles", JSON.stringify(perfis), {
         maxAge: 24 * 60 * 60, // 24h

@@ -42,6 +42,18 @@ export const getUserByCpf = async (tenantSlug, cpf) => {
   }
 };
 
+export const cpfVerification = async (tenantSlug, data) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+    const response = await req.post(`/private/${tenantSlug}/cpfVerification`,data, {headers});
+    return response.data.user || response.data.step;
+  } catch (error) {
+    console.error("Erro ao obter o usuário:", error);
+    return false;
+  }
+};
+
 export const updateUser = async (tenantSlug, cpf, userData) => {
   try {
     const headers = getAuthHeadersClient();

@@ -14,9 +14,24 @@
     padding-left: 218px;
     z-index: 1000;
     //box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+    
     .navBarItem1{
         width: 100px;
         flex: 1;
+        .logoImg{
+            width: auto;
+            flex: 1;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: $gap-1;
+            position: relative;
+            img{
+                object-fit: contain;
+                //object-position: left bottom;
+            }
+        }
     }
     .navBarItem2{
         display: flex;

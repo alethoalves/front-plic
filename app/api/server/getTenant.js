@@ -10,3 +10,14 @@ export const getTenant = async (tenant) => {
         throw error;
     }
   };
+
+  export const getTenants = async () => {
+    try {
+        const response = await req.get(`/tenants`);
+        return response.data.tenants;
+    } catch (error) {
+        // Para outros erros, relança o erro para que o chamador possa tratá-lo
+        console.error('Erro ao obter o tenant:', error);
+        throw error;
+    }
+  };

@@ -20,6 +20,7 @@ import FormNewFormulario from "@/components/Formularios/FormNewFormulario";
 
 //FUNÇÕES
 import { deleteFormulario, getFormularios } from "@/app/api/client/formulario";
+import NoData from "@/components/NoData";
 
 const Page = ({ params }) => {
   //ESTADOS
@@ -188,6 +189,11 @@ const Page = ({ params }) => {
                 />
               </div>
             ))
+          )}
+          {!filteredFormularios[0] && (
+            <div className={styles.card}>
+              <NoData />
+            </div>
           )}
         </div>
       </main>

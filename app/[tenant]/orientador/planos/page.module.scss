@@ -1,0 +1,324 @@
+@import "../../../../styles/partials/colors";
+@import "../../../../styles/partials/layout";
+@import "../../../../styles/partials/spacing";
+
+
+
+.content{
+    margin-top: $gap-7;
+    margin-bottom: $gap-7;
+    max-width: 990px;
+               
+    @include responsive(s){
+        flex-direction: column;
+    }
+    
+}
+.mainContent{
+    margin-top: $gap-2;
+    h6{
+        margin-bottom: $gap-1;
+    }
+    
+    .box{
+        padding: $gap-2;
+        border: 1px solid $gray-50;
+        box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+        border-radius: $gap-1;
+        &:not(:last-child){
+            margin-bottom: $gap-1;
+        }
+        position: relative;
+        
+        .flags{
+            display: flex;
+            flex-wrap: wrap;
+            .flag{
+                border: 1px solid $gray-50;
+                padding: $gap-1 $gap-2;
+                border-radius: $gap-1;
+                background-color: $gray-100;
+                margin-bottom: $gap-1;
+                &:not(:last-child){
+                    margin-right: $gap-1;
+                }
+                p{
+                    color: $primary-darken;
+                }
+            }
+        }
+        .menuActions{
+            border-top-right-radius: $gap-1;
+            border-bottom-right-radius: $gap-1;
+            cursor: pointer;
+            padding: 4px $gap-2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+
+            &:hover{
+                background-color: $gray-100;
+                .circle{
+                    background-color: $primary-normal;
+                }
+            }
+            .circle{
+                width: 4px;
+                height: 4px;
+                border-radius: 50%;
+                background-color: $primary-darken;
+                &:not(:last-child){
+                    margin-bottom: 2px;
+                }
+            }
+            
+        }
+        .innerBoxGray{
+            background-color: $gray-50;
+            p{
+                color: $primary-darken;
+                margin-bottom: 0;
+                font-weight: 700;
+                line-height: 120%;
+                align-items: center;
+            }
+        }
+        .innerBoxWhite{
+            border: 1px solid $gray-50;
+            p{
+                color: $primary-darken;
+                margin-bottom: 0;
+                line-height: 120%;
+                align-items: center;
+            }
+        }
+        
+        .innerBox{
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+            border-radius: $gap-1;
+            margin-bottom: $gap-1;
+            p{
+                padding: $gap-2 ;
+            }
+            cursor: pointer;
+        }
+        .statusInativo{
+            cursor:default;
+            background-color: $white-dark;
+            border: 1px solid $white-dark;
+            p{
+                color: $gray-400;
+            }
+        }
+        .participacoes {
+            display: flex;
+            flex-wrap: wrap;
+            
+            span{
+                font-weight: 300;
+            }
+            .innerBox{
+                margin-right: $gap-1;
+                flex: 1;
+                min-width: 250px;
+                @include responsive(s){
+                    min-width: 200px;
+                }
+                @include responsive(xs){
+                    min-width: 150px;
+                }
+                display: flex;
+                flex-direction: row;
+                justify-content: flex-start;
+                align-items: center;
+                
+            }
+            
+        }
+        
+    }
+   
+
+
+
+
+   
+    
+    
+}
+.icon{
+    width: 24px;
+    color: $primary-normal;
+}
+.menuItens{
+    margin-top: $gap-2;
+    p{
+        &:not(:last-child){
+        margin-bottom: $gap-2;
+        }
+        transition: ease .3s;
+        padding: $gap-2 $gap-2;
+        border-radius: $gap-1;
+        //box-shadow: 0px 0px 4px rgba(5, 17, 34, 0.06);
+        border: 1px solid $gray-50;
+        color: $primary-darken;
+        cursor: pointer;
+        &:hover{
+            background-color: $white-dark;
+        }
+    }
+}
+
+
+.navContent{
+    .content{
+        margin-top: $gap-1;
+        margin-right: $gap-2;
+        @include responsive(s){
+            margin-right: 0;
+        }
+        .header{
+            display: flex;
+            align-items: center;
+            
+            .div{
+                display: flex;
+                width: 100%;
+                justify-content: space-between;
+                .toogle{
+                    display: flex;
+                    justify-content: flex-end;
+                    align-items: center;
+                    right: $gap-2;
+                    top: 10px;
+                    cursor: pointer;
+                    color: $primary-darken;
+                    svg{
+                        margin-right: $gap-1;
+                        width: 30px;
+                    }
+                    &:hover{
+                        color: $primary-normal;
+                        p{
+                            color: $primary-normal;
+                        }
+                    }
+                }
+            }
+            h5{
+                margin-left: $gap-2;
+            }
+        }
+    }
+
+}
+
+
+
+
+.itemList{
+    margin-top: $gap-1;
+    
+    .headItemList{
+        
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: $gap-2 $gap-3;
+        //box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+        border: 1px solid $gray-50;
+        cursor: pointer;
+        border-radius: $gap-1;
+
+        @include responsive(xs){
+            flex-direction: column;
+           align-items: flex-start;
+        }
+        .info{
+            flex: 1;
+            @include responsive(xs){
+                display: flex;
+                flex-direction: column;
+            }
+        }
+        .head{
+            display: flex;
+            align-items: center;
+            @include responsive(xs){
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            p.titulo{
+                width: 170px;
+                @include responsive(xs){
+                    width: 100%;
+                    margin-bottom: $gap-1;
+                }
+                color:$primary-darken;
+                font-weight: 600;
+                text-transform: uppercase;
+                margin-right: $gap-2;
+            }
+            p.subtitulo{
+                color:$gray-400;
+                display: flex;
+                flex-direction: column;
+                margin-right: $gap-2;
+                span{
+                    font-weight: 700;
+                }
+                @include responsive(xs){
+                    margin-bottom: $gap-1;
+                }
+            }
+            p.descricao{
+                font-weight: 300;
+                margin-top: $gap-1;
+                color: $gray-400;
+            }
+        }
+
+        .status{
+            width: 110px;
+            white-space: nowrap;
+            text-align: center;
+            display: inline-block;
+            padding: 4px $gap-2;
+            border-radius: 20px;
+            margin-right: $gap-2;
+            text-transform: lowercase;
+            @include responsive(xs){
+                margin-bottom: $gap-1;
+            }
+            p{
+                font-size: 12px;
+            }
+            @include responsive(xs){
+                margin-left: 0;
+            }
+        }
+        .warning{
+            background-color: $warning-light;
+            p{color:red}
+        }
+        .success{
+            background-color: $success-light;
+        }
+        .error{
+            p{color: $white-light;}
+            
+            background-color: $error-light;
+        }
+        .actions{
+            @include responsive(xs){
+                width: 100%;
+            }
+        }
+    }
+   
+}
+
+

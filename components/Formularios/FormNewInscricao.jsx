@@ -46,7 +46,7 @@ const FormNewInscricao = ({ data, tenant }) => {
     resolver: zodResolver(formNewInscricao),
     defaultValues: {
       editalId: "",
-      status: "incompleta",
+      status: "aprovada",
     },
   });
 

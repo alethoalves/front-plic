@@ -8,7 +8,14 @@ import {
 } from "@remixicon/react";
 import { useCallback, useEffect, useState } from "react";
 
-const Modal = ({ isOpen, onClose, edit, itemName, children }) => {
+const Modal = ({
+  isOpen,
+  onClose,
+  edit,
+  itemName,
+  children,
+  noPadding = false,
+}) => {
   const [visible, setVisible] = useState(false);
   useEffect(() => {
     if (isOpen) {
@@ -32,21 +39,23 @@ const Modal = ({ isOpen, onClose, edit, itemName, children }) => {
         <div onClick={handleCloseWithDelay} className={styles.closeIcon}>
           <RiCloseLargeLine />
         </div>
-        {edit && (
-          <>
-            <div className={`${styles.icon} mb-2`}>
-              <RiEditLine />
-            </div>
-            <h4>{edit ? `Editar ${itemName}` : `Novo ${itemName}`}</h4>
-            <p>
-              {edit
-                ? `Edite os dados de ${itemName}.`
-                : `Preencha os dados abaixo para criar ${itemName}.`}
-            </p>
-          </>
-        )}
+        <div className={`${noPadding ? styles.padding : styles.content}`}>
+          {edit && (
+            <>
+              <div className={`${styles.icon} mb-2`}>
+                <RiEditLine />
+              </div>
+              <h4>{edit ? `Editar ${itemName}` : `Novo ${itemName}`}</h4>
+              <p>
+                {edit
+                  ? `Edite os dados de ${itemName}.`
+                  : `Preencha os dados abaixo para criar ${itemName}.`}
+              </p>
+            </>
+          )}
 
-        {children}
+          {children}
+        </div>
       </div>
     </div>
   );

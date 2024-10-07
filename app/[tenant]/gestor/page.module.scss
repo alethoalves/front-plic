@@ -1,0 +1,288 @@
+@import "../../../styles/partials/colors";
+@import "../../../styles/partials/layout";
+@import "../../../styles/partials/spacing";
+
+.main {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr); /* 12 colunas */
+    grid-gap: $gap-2; /* Espaçamento entre os elementos da grid */
+    grid-auto-rows: minmax(100px, auto); /* Define a altura automática das linhas */
+
+    @include responsive(s) {
+      display: block; /* Para telas menores, exibe os elementos em blocos */
+    }
+    .dashboard {
+        &.dashboardA {
+            grid-column: span 12; /* Ocupa 6 colunas */
+            grid-row: 1; /* Fica na primeira linha */
+          }
+      
+          &.dashboardB {
+            grid-column: span 6; /* Ocupa 6 colunas */
+            grid-row: 2; /* Fica na segunda linha */
+          }
+      
+          &.dashboardC {
+            grid-column: span 6; /* Ocupa as últimas 6 colunas */
+            grid-row: 3; /* Ocupa desde a primeira linha até a segunda linha */
+          }
+          &.dashboardD {
+            grid-column: span 6; /* Ocupa as últimas 6 colunas */
+            grid-row: 2 / 6; /* Ocupa desde a segunda linha até a segunda linha */
+          }
+    margin-right: 0; /* Remova o margin-right já que o grid-gap gerencia o espaçamento */
+    
+    border-radius: $gap-1;
+      overflow: hidden;
+      width: 100%;
+    
+      .head {
+        background-color: $white-darken;
+        border-top-left-radius: $gap-1;
+        border-top-right-radius: $gap-1;
+        display: flex;
+        justify-content: space-between;
+        .left{
+            display: flex;
+            align-items: center;
+            
+            .icon {
+                
+                padding: $gap-2;
+                background-color: $primary-darken;
+                color: $white-light;
+                border-top-left-radius: $gap-1;
+                @include responsive(xs){
+                    display: none;
+                }
+              }
+        
+              .title {
+                
+                
+                @include responsive(xs){
+                    padding: $gap-2 0;
+                }
+                margin-left: $gap-2;
+                h5 {
+                    color: $primary-darken;
+                    font-weight: 300;
+                    white-space: nowrap; 
+                    overflow: hidden;           
+                    text-overflow: ellipsis; 
+                    width: 100%;
+                    @include responsive(xs){
+                        font-size: 14px;
+                    }
+                }
+                
+              }
+        }
+        .actions{
+            display: flex;
+            align-items: center;
+            .btn.selected{
+                color: $white-dark;
+                background-color: $primary-darken;
+            }
+            .btn{
+                width: 60px;
+                @include responsive(xs){
+                    width: 40px;
+                }
+                height: 100%;
+                color: $primary-darken;
+                display: flex;
+                align-items: center;
+                transition: ease .3s;
+                cursor: pointer;
+                &:hover{
+                    color: $white-dark;
+                    background-color: $primary-darken;
+                }
+            }
+        }
+
+      }
+  
+      .filters {
+        padding: $gap-2;
+        display: flex;
+        @include responsive(xs){
+            display: block;
+        }
+        .filter{
+            flex: 1;
+            &:not(:last-child){
+                margin-right: $gap-2;
+                @include responsive(xs){
+                    margin-right: 0;
+                }
+            }
+            
+            @include responsive(xs){
+                margin-right: 0;
+                margin-top: $gap-1;
+            }
+        }
+        
+      }
+  
+      .content {
+        
+        h5{
+            padding: $gap-2;
+            font-size: 20px;
+            @include responsive(xs){
+                font-size: 16px;
+            }
+        }
+        .sessoes{
+            max-height: calc(500px);
+            overflow: hidden;
+            overflow-y: auto;
+            @include responsive(s){
+                max-height: 100%;
+            overflow:visible;
+            overflow-y: auto;
+            }
+            .sessao{
+                margin-bottom: $gap-2;
+            }
+            margin: 0 $gap-2 $gap-2 $gap-2;
+            h6{
+                
+                padding: $gap-1 $gap-2;
+                background-color: $gray-50;
+                border: 1px solid $gray-50;
+                border-top-left-radius: $gap-1;
+                border-top-right-radius: $gap-1;
+                @include responsive(xs){
+                    font-size: 14px;
+                }
+            }
+            .subsessoes{
+                .subsessao{
+                    border: 1px solid $gray-50;
+                    border-top: none;
+                    padding: $gap-2;
+                    .description{
+                        &:not(:last-child){
+                            margin-bottom: $gap-2;
+                        }
+                        display: flex;
+                        align-items: center;
+                        .icon{
+                            margin-right: $gap-1;
+                            
+                            svg{
+                                color: $success-normal;
+                            }
+                        }
+                        .infoBoxDescription{
+                            flex: 1;
+                        }
+                    }
+                }
+            }
+        }
+        .totais{
+            padding: $gap-2;
+            @include responsive(s){
+                display: flex;
+            }
+            @include responsive(xs){
+                display: block;
+            }
+            .total{
+                border-radius: $gap-1;
+                display: inline-flex;
+                @include responsive(m){
+                    display: flex;
+                    margin-right: 0;
+                }
+                
+                
+               // margin-right: $gap-1;
+                margin-bottom: $gap-1;
+                @include responsive(xs){
+                    display: flex;
+                    &:not(:last-child){
+                        margin-bottom: $gap-1;
+                    }
+                }
+                align-items: center;
+                border: 1px solid $gray-50;
+                border-radius: $gap-1;
+                box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+                &:not(:last-child){
+                    margin-right: $gap-2;
+                    @include responsive(m){
+                        margin-right:0;
+                    }
+                    @include responsive(s){
+                        margin-right: $gap-2;
+                    }
+                    
+                    @include responsive(xs){
+                        margin-right:0;
+                    }
+                }
+                p{
+                    padding: $gap-3;
+                    @include responsive(s){
+                        padding: $gap-2;
+                        font-size: 14px;
+                    }
+                    color: $white-light;
+                    border-top-left-radius: 6.5px;
+                    border-bottom-left-radius: 6.5px;
+                    font-size: 22px;
+                }
+                h6{
+                    padding: $gap-2 $gap-3;
+                    @include responsive(s){
+                        padding: $gap-2;
+                        font-size: 12px;
+                    }
+                }
+                
+            }
+            .total.error{
+                p{
+                    background-color: $error-light;
+                }
+            }
+            .total.success{
+                p{
+                    background-color: $success-normal;
+                }
+            }
+            
+        }
+        .show{
+            margin: 0 $gap-2;
+        }
+        .barContainer {
+            width: 100%;
+            overflow-x: auto; /* Habilita o scroll horizontal */
+            padding: 10px; /* Opcional: ajuste de padding ao redor do gráfico */
+            height: 400px;
+            @include responsive(xs){
+                height: 200px;
+            }
+            /* Estilização do canvas diretamente */
+            canvas {
+              min-width: 150px; /* Largura mínima do canvas */
+              width: 100%; /* A largura do canvas deve preencher o container */
+              height: auto; /* Para manter a proporção */
+            }
+          }
+      }
+    }
+  }
+  
+  .download{
+    margin-bottom: $gap-2;
+    grid-column: span 6;
+}

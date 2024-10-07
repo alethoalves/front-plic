@@ -1,0 +1,16 @@
+@import "./../styles/partials/colors";
+@import "./../styles/partials/layout";
+@import "./../styles/partials/spacing";
+.logo{
+    width: auto;
+    height: 400px;
+    @include responsive(xs){
+        height: 300px;
+    }
+    position: relative;
+    
+    img{
+        object-fit: contain;
+        object-position: center center;
+    }
+}

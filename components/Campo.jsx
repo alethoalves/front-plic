@@ -22,11 +22,18 @@ import Textarea from "@/components/Textarea"; // Importa o componente Textarea
 //FUNÇÕES
 import { deleteFile, uploadFile } from "@/app/api/clientReq";
 import { createCampo, updateCampo } from "@/app/api/client/campo";
-import { createResposta, updateResposta } from "@/app/api/client/resposta";
+import {
+  createResposta,
+  createRespostaByParticipante,
+  updateResposta,
+  updateRespostaByParticipante,
+} from "@/app/api/client/resposta";
 
 import Link from "next/link";
 
 const Campo = ({
+  perfil = "gestor",
+  readOnly = false,
   tenantSlug,
   camposForm,
   schema,
@@ -42,12 +49,13 @@ const Campo = ({
 
   // Dynamically create the Zod schema based on the props
   const respostaSchema = useMemo(() => {
-    let baseSchema = z.string().min(1, { message: "Campo obrigatório!" });
+    let baseSchema = z.string();
 
-    if (schema?.maxChar) {
-      baseSchema = baseSchema.max(schema.maxChar, {
-        message: `Limite de ${schema.maxChar} caracteres excedido`,
-      });
+    // Condicional para verificar se o campo é obrigatório ou não
+    if (schema?.obrigatorio) {
+      baseSchema = baseSchema.min(1, { message: "Campo obrigatório!" });
+    } else {
+      baseSchema = baseSchema.optional(); // Permitir valor vazio quando não for obrigatório
     }
 
     // Add other conditions based on schema.tipo, e.g., email, number, etc.
@@ -77,7 +85,7 @@ const Campo = ({
           (file) => {
             if (schema?.tipoFile === "video") {
               return {
-                message: "Apenas arquivos .mp4, .mov e .avi são permitidos",
+                message: "Apenas arquivos .mp4 e .avi são permitidos",
               };
             } else if (schema?.tipoFile === "pdf") {
               return { message: "Apenas arquivos .pdf são permitidos" };
@@ -105,10 +113,10 @@ const Campo = ({
     },
   });
 
-  const initialDataArray = respostas.filter(
+  const initialDataArray = respostas?.filter(
     (item) => item.campoId === schema?.id
   );
-  const initialData = initialDataArray[0];
+  let initialData = initialDataArray[0];
 
   useEffect(() => {
     if (initialData) {
@@ -119,7 +127,6 @@ const Campo = ({
   }, [initialData, reset, setValue]);
 
   const handleFileUpload = async (file) => {
-    console.log(file);
     try {
       setLoading(true);
       const response = await uploadFile(file, tenantSlug);
@@ -151,15 +158,32 @@ const Campo = ({
           await deleteFile(tenantSlug, initialData.value);
         }
         const updateData = { value };
-
-        await updateResposta(tenantSlug, initialData.id, schema.id, updateData);
+        if (perfil === "gestor") {
+          await updateResposta(
+            tenantSlug,
+            initialData.id,
+            schema.id,
+            updateData
+          );
+        } else {
+          await updateRespostaByParticipante(
+            tenantSlug,
+            initialData.id,
+            schema.id,
+            updateData
+          );
+        }
       } else {
         const newData = {
           value,
           campoId: schema.id,
           registroAtividadeId,
         };
-        await createResposta(tenantSlug, schema.id, newData);
+        if (perfil === "gestor") {
+          await createResposta(tenantSlug, schema.id, newData);
+        } else {
+          await createRespostaByParticipante(tenantSlug, schema.id, newData);
+        }
       }
       setEditar(false);
       onSuccess();
@@ -216,7 +240,7 @@ const Campo = ({
           ) : (
             <>
               {schema?.tipo === "arquivo" && !editar && initialData && (
-                <div>
+                <div className="mt-2">
                   <Link
                     prefetch={false}
                     href={initialData.value}
@@ -248,42 +272,45 @@ const Campo = ({
             </>
           )}
         </div>
-        <div className={styles.actions}>
-          {(editar || !initialData) && (
-            <Button
-              icon={RiSave2Line}
-              className="btn-primary"
-              type="submit"
-              onClick={() => setEditar(true)}
-              disabled={loading}
-            >
-              Salvar
-            </Button>
-          )}
-          {(!initialData && !editar) ||
-            ((editar || !initialData) && schema?.tipo === "arquivo" && (
+
+        {!readOnly && (
+          <div className={styles.actions}>
+            {(editar || !initialData) && (
               <Button
-                icon={RiCloseLargeLine}
-                className="btn-error ml-1"
-                type="button"
-                onClick={() => setEditar(false)}
+                icon={RiSave2Line}
+                className="btn-primary"
+                type="submit"
+                onClick={() => setEditar(true)}
                 disabled={loading}
               >
                 Salvar
               </Button>
-            ))}
-          {!editar && initialData && (
-            <Button
-              icon={RiEditLine}
-              className="btn-secondary"
-              type="button"
-              onClick={() => setEditar(true)}
-              disabled={loading}
-            >
-              Editar
-            </Button>
-          )}
-        </div>
+            )}
+            {(!initialData && !editar) ||
+              ((editar || !initialData) && schema?.tipo === "arquivo" && (
+                <Button
+                  icon={RiCloseLargeLine}
+                  className="btn-error ml-1"
+                  type="button"
+                  onClick={() => setEditar(false)}
+                  disabled={loading}
+                >
+                  Salvar
+                </Button>
+              ))}
+            {!editar && initialData && (
+              <Button
+                icon={RiEditLine}
+                className="btn-secondary"
+                type="button"
+                onClick={() => setEditar(true)}
+                disabled={loading}
+              >
+                Editar
+              </Button>
+            )}
+          </div>
+        )}
       </form>
       {error && (
         <div className={`notification notification-error`}>

@@ -18,6 +18,7 @@ import Skeleton from "@/components/Skeleton";
 
 //FUNÇÕES
 import { getEditais, deleteEdital } from "@/app/api/client/edital";
+import NoData from "@/components/NoData";
 
 const Page = ({ params }) => {
   //ESTADOS
@@ -179,7 +180,9 @@ const Page = ({ params }) => {
               </div>
             ))
           ) : (
-            <p>Nenhum edital encontrado.</p>
+            <div className={`${styles.card}`}>
+              <NoData />
+            </div>
           )}
           {/**** FIM ITENS ****/}
         </div>

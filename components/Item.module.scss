@@ -10,7 +10,8 @@
         align-items: center;
         justify-content: space-between;
         padding: $gap-2 $gap-3;
-        background-color: $white-darken;
+        box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+        border: 1px solid $gray-50;
         cursor: pointer;
         border-radius: $gap-1;
 

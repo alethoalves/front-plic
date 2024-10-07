@@ -47,7 +47,65 @@ export const createRegistroAtividade = async (
       throw error;
     }
   };
+
+  export const getRegistroAtividadesOrientador = async (tenantSlug) => {
+    try {
+      const headers = getAuthHeadersClient();
+      if (!headers) {
+        return false;
+      }
+      const response = await req.get(
+        `/private/${tenantSlug}/orientador/atividadesOrientador`,
+        {
+          headers,
+          
+        }
+      );
+      return response.data.inscricoes;
+    } catch (error) {
+      console.error("Erro ao obter Registros de Atividade:", error);
+      throw error;
+    }
+  };
+
+  export const getRegistroAtividadesByCpfEditaisVigentes = async (tenantSlug) => {
+    try {
+      const headers = getAuthHeadersClient();
+      if (!headers) {
+        return false;
+      }
+      const response = await req.get(
+        `/private/${tenantSlug}/aluno/registroAtividadesByCPF`,
+        {
+          headers,
+          
+        }
+      );
+      return response.data.registrosAtividade;
+    } catch (error) {
+      console.error("Erro ao obter Registros de Atividade:", error);
+      throw error;
+    }
+  };
   
+  export const countRegistroAtividadesWithStatusNaoEntregueByCPF = async (tenantSlug) => {
+    try {
+      const headers = getAuthHeadersClient();
+      if (!headers) {
+        return false;
+      }
+      const response = await req.get(
+        `/private/${tenantSlug}/participante/count/registroAtividadesByCpf/status/naoEntregue`,
+        {
+          headers,
+        }
+      );
+      return response.data.registrosAtividade;
+    } catch (error) {
+      console.error("Erro ao obter Registros de Atividade:", error);
+      throw error;
+    }
+  };
   export const getRegistroAtividade = async (tenantSlug, atividadeId, id) => {
     try {
       const headers = getAuthHeadersClient();
@@ -101,6 +159,33 @@ export const createRegistroAtividade = async (
       return response.data;
     } catch (error) {
       console.error("Erro ao deletar Registro de Atividade:", error);
+      throw error;
+    }
+  };
+
+  export const registroAtividadesDashboard = async (tenantSlug, { statusAtividade, editalAno, editalTitulo, idFormularioAtividade, searchValue }) => {
+    try {
+      const headers = getAuthHeadersClient();
+      if (!headers) return false;
+  
+      // Monta o objeto de query params
+      const query = {};
+      if (statusAtividade) query.statusAtividade = statusAtividade;
+      if (editalAno) query.editalAno = editalAno;
+      if (editalTitulo) query.editalTitulo = editalTitulo;
+      if (idFormularioAtividade) query.idFormularioAtividade = idFormularioAtividade;
+      if (searchValue) query.searchValue = searchValue;
+
+      // Monta a URL da requisição, incluindo as query params dinâmicas
+      const response = await req.get(
+        `/private/${tenantSlug}/dashboard/registroDeAtividades?${new URLSearchParams(query).toString()}`,
+        { headers }
+      );
+  
+      // Retorna os dados de inscrições da resposta da API
+      return response.data.atividades;
+    } catch (error) {
+      console.error("Erro ao buscar dashboard de inscrições:", error);
       throw error;
     }
   };

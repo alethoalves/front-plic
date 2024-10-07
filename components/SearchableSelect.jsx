@@ -42,7 +42,7 @@ const SearchableSelect = (props) => {
   };
 
   const toggleDropdown = (e) => {
-    e.preventDefault(); // Prevenir comportamento padrão que pode interferir
+    e.preventDefault();
     setIsOpen((prev) => !prev);
   };
 
@@ -61,7 +61,7 @@ const SearchableSelect = (props) => {
 
       <div
         className={`${styles.selectContainer} ${props.className}`}
-        onClick={toggleDropdown} // Garantindo que o dropdown abre/fecha ao clicar
+        onClick={toggleDropdown}
       >
         <div
           className={`${styles.selectedOption} ${isOpen ? styles.open : ""} ${
@@ -74,7 +74,8 @@ const SearchableSelect = (props) => {
         {isOpen && !props.disabled && (
           <div
             className={styles.optionsListContainer}
-            style={{ zIndex: 1000 }} // Adicionando z-index
+            style={{ zIndex: 1000 }}
+            onClick={(e) => e.stopPropagation()} // Adicionado aqui
           >
             <input
               type="text"
@@ -93,7 +94,7 @@ const SearchableSelect = (props) => {
                   key={i}
                   className={styles.optionItem}
                   onClick={(e) => {
-                    e.stopPropagation(); // Prevenir que o clique no item feche o dropdown imediatamente
+                    e.stopPropagation();
                     handleSelect(option);
                   }}
                 >

@@ -8,10 +8,12 @@ const Layout = ({ children, params }) => {
   // Acessar os cabeçalhos da requisição
   const headersList = headers();
   const pathLogo = headersList.get("x-tenant-path-logo");
+  console.log("pathLogo");
+  console.log(pathLogo);
   return (
     <div className={styles.dashboard}>
       <div className={styles.item1}>
-        <SideNav pathLogo={pathLogo} />
+        <SideNav pathLogo={pathLogo} menuType="gestor" />
       </div>
       <div className={styles.item2}>
         <NavBar slug={params.tenant} />

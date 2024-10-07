@@ -37,18 +37,30 @@ const Auth = ({ slug, pathLogo }) => {
     setErrorMessage("");
     try {
       const response = await signin({ ...data, step: tela });
-
+      console.log(response.perfis);
       if (response.perfis) {
         const existeGestor = response.perfis?.some(
           (item) => item.tenant === slug && item.cargo === "gestor"
         );
-        if (!existeGestor) {
-          setErrorMessage("Você não tem perfil de gestor nesta instituição.");
+        const existeOrientador = response.perfis?.some(
+          (item) => item.tenant === slug && item.cargo === "orientador"
+        );
+        const existeAluno = response.perfis?.some(
+          (item) => item.tenant === slug && item.cargo === "aluno"
+        );
+        if (!existeGestor && !existeOrientador && !existeAluno) {
+          setErrorMessage("Você não tem perfil nesta instituição.");
           reset();
           setTela(0);
         }
         if (existeGestor) {
           router.push(`/${slug}/gestor`);
+        }
+        if (existeOrientador) {
+          router.push(`/${slug}/orientador`);
+        }
+        if (existeAluno) {
+          router.push(`/${slug}/aluno`);
         }
       } else {
         if (response.nextStep === tela) {

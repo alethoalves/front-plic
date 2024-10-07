@@ -22,15 +22,27 @@
     opacity: 0;
     .modalContent {
         max-height: 100vh;
-        
-    overflow: scroll;
+        overflow: scroll;
         background-color: $white-light;
-        padding: $gap-4;
+        position: relative;
+        .content{
+            
+            padding: $gap-4;
+            @include responsive(s){
+                padding: $gap-3;
+            }
+            @include responsive(xs){
+                padding: $gap-2;
+            }
+        }
+        .content.padding{
+            border: 2px solid red;
+        }
         border-radius: 12px;
         box-shadow: 0px 6px 12px rgba(5, 17, 34, 0.1);
         width: 80%;
         max-width: 500px;
-        position: relative;
+        
         @include responsive(xs){
             &{
                 width: 100%;
@@ -41,16 +53,14 @@
         }
     }
 }
-
 .closeIcon{
     position: absolute;
-    top: $gap-4;
-    right: $gap-4;
+    right: 0;
     width: 40px;
     height: 40px;
     padding: 10px;
     cursor: pointer;
-    border-radius: 50%;
+    border-bottom-left-radius: $gap-1;
     background-color: $white-darken;
     display: flex;
     justify-content: center;

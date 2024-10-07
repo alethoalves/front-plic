@@ -57,6 +57,7 @@ const Page = ({ params }) => {
         console.log(itens);
         const flatItens = flattenItems(itens); // Mover a transformação aqui
         setFlatItens(flatItens); // Salvar o resultado no estado
+        //console.log(flatItens);
       } catch (error) {
         console.error("Erro ao buscar dados:", error);
       } finally {
@@ -137,18 +138,24 @@ const Page = ({ params }) => {
   const getFormWithRespostas = async (idFormAtividade) => {
     try {
       const campos = await getCampos(params.tenant, idFormAtividade);
+      console.log(itemToEdit);
       const respostas = itemToEdit?.respostas || [];
+
+      // Mapeia os campos e associa as respostas
       const formWithRespostas = campos.map((campo) => {
         const resposta = respostas.find((res) => res.campoId === campo.id);
         return {
           campoId: campo.id,
+          obrigatorio: campo.obrigatorio, // Incluímos o campo obrigatorio para referência
           value: resposta ? resposta.value : "",
         };
       });
 
-      const isComplete = formWithRespostas.every(
-        (item) => item.value.trim() !== ""
-      );
+      // Filtra os campos obrigatórios e verifica se estão preenchidos
+      const isComplete = formWithRespostas
+        .filter((item) => item.obrigatorio) // Desconsidera campos não obrigatórios
+        .every((item) => item.value.trim() !== "");
+
       return {
         status: isComplete ? "completo" : "incompleto",
         data: formWithRespostas,

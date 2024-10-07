@@ -88,6 +88,29 @@ export const createPlanoDeTrabalho = async (
     }
   };
   
+  export const updatePlanoDeTrabalhoPerfilAluno = async (
+    tenantSlug,
+    inscricaoId,
+    id,
+    planoDeTrabalhoData
+  ) => {
+    try {
+      const headers = getAuthHeadersClient();
+      if (!headers) {
+        return false;
+      }
+      const response = await req.put(
+        `/private/${tenantSlug}/${inscricaoId}/aluno/planosDeTrabalho/${id}`,
+        planoDeTrabalhoData,
+        { headers }
+      );
+      return response.data.planoDeTrabalho;
+    } catch (error) {
+      console.error("Erro ao atualizar Plano de Trabalho:", error);
+      throw error;
+    }
+  };
+  
   export const deletePlanoDeTrabalho = async (tenantSlug, inscricaoId, id) => {
     try {
       const headers = getAuthHeadersClient();

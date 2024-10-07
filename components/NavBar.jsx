@@ -3,6 +3,7 @@ import { RiLogoutBoxRLine } from "@remixicon/react";
 import styles from "./NavBar.module.scss";
 import { logout } from "@/app/api/client/auth";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 const SideNav = ({ slug }) => {
   const router = useRouter();

@@ -115,3 +115,28 @@ export const searchInscricoes = async (tenantSlug, query) => {
     throw error;
   }
 };
+
+export const inscricoesDashboard = async (tenantSlug, { statusInscricao, editalAno, editalTitulo }) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+
+    // Monta o objeto de query params
+    const query = {};
+    if (statusInscricao) query.statusInscricao = statusInscricao;
+    if (editalAno) query.editalAno = editalAno;
+    if (editalTitulo) query.editalTitulo = editalTitulo;
+
+    // Monta a URL da requisição, incluindo as query params dinâmicas
+    const response = await req.get(
+      `/private/${tenantSlug}/dashboard/inscricoes?${new URLSearchParams(query).toString()}`,
+      { headers }
+    );
+
+    // Retorna os dados de inscrições da resposta da API
+    return response.data.inscricoes;
+  } catch (error) {
+    console.error("Erro ao buscar dashboard de inscrições:", error);
+    throw error;
+  }
+};

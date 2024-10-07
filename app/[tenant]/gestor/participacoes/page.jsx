@@ -1,7 +1,9 @@
+import UnderConstruction from "@/components/UnderConstruction";
+
 const Page = () => {
   return (
     <main>
-      <p>Participações</p>
+      <UnderConstruction />
     </main>
   );
 };

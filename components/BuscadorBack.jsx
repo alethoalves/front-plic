@@ -1,10 +1,10 @@
-import { RiSearchLine } from '@remixicon/react';
-import { useState } from 'react';
+import { RiSearchLine } from "@remixicon/react";
+import { useState } from "react";
 import Button from "@/components/Button";
-import styles from './BuscadorBack.module.scss';
+import styles from "./BuscadorBack.module.scss";
 
 const BuscadorBack = ({ onSearch }) => {
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
 
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
@@ -20,20 +20,16 @@ const BuscadorBack = ({ onSearch }) => {
       <div className={styles.input}>
         <div className="input-container">
           <input
-            className='p-2'
+            className="p-2"
             type="text"
             value={inputValue}
             onChange={handleInputChange}
-            placeholder='Pesquise aqui'
+            placeholder="Pesquise aqui"
           />
         </div>
       </div>
       <div className={styles.btnBuscador}>
-        <Button
-          icon={RiSearchLine}
-          className="btn-primary"
-          type="submit"
-        >
+        <Button icon={RiSearchLine} className="btn-secondary" type="submit">
           Pesquisar
         </Button>
       </div>

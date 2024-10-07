@@ -1,0 +1,72 @@
+@import "./../styles/partials/colors";
+@import "./../styles/partials/layout";
+@import "./../styles/partials/spacing";
+
+.navBar{
+    height: 70px;
+    display: flex;
+    align-items: center;
+    background-color: $white-light;//#fff;//$white-light;
+    border-bottom: 1px solid $white-darken;
+    width: 100vw;
+    position: fixed;
+    color: $primary-darken;
+    
+    z-index: 1000;
+    //box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+    
+    .navBarItem1{
+        width: 150px;
+        
+        margin-left: $gap-2;
+        display: none;
+        @include responsive(s){
+            display: block;
+            margin-left: 68px;
+        }
+        .logoImg{
+            
+            width: auto;
+            flex: 1;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: $gap-1;
+            position: relative;
+            img{
+                object-fit: contain;
+                object-position: left center;
+            }
+        }
+    }
+    .navBarItem2{
+        display: flex;
+        justify-content: right;
+        padding-right: $gap-2;
+        width: 300px;
+        flex: 1;
+    }
+}
+.logout{
+    padding: $gap-1;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $error-normal;
+    transition: .3s ease;
+    cursor: pointer;
+    &:hover{
+        border: 1px solid $error-normal;
+        background-color: $error-lighten;
+        p{
+            color: $error-normal;
+        }
+    }
+    svg{
+        height: 22px;
+        margin-left: $gap-1;
+    }
+}

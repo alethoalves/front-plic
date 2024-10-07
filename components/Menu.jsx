@@ -1,12 +1,11 @@
-'use client'
+"use client";
 
-import itensMenu from "@/lib/menuItens";
-import Link from 'next/link';
-import { usePathname, useParams } from 'next/navigation';
+import Link from "next/link";
+import { usePathname, useParams } from "next/navigation";
 
-import styles from './Menu.module.scss'
+import styles from "./Menu.module.scss";
 
-const Menu = ({ onClick }) => {
+const Menu = ({ onClick, itensMenu }) => {
   const pathname = usePathname();
   const { tenant } = useParams();
 
@@ -14,19 +13,19 @@ const Menu = ({ onClick }) => {
     <ul className={styles.menu}>
       {itensMenu.map((item, i) => {
         const Icon = item.icon;
-        const resolvedPath = item.path.replace('[tenant]', tenant);
+        const resolvedPath = item.path.replace("[tenant]", tenant);
 
         // Verificação específica para a rota "Home"
-        const isActive = i === 0
-          ? pathname === resolvedPath
-          : pathname.startsWith(resolvedPath) && pathname !== `/${tenant}/gestor`;
+        const isActive =
+          i === 0
+            ? pathname === resolvedPath
+            : pathname.startsWith(resolvedPath) &&
+              pathname !== `/${tenant}/gestor`;
 
         return (
           <Link key={i} href={resolvedPath} onClick={onClick} passHref>
-            <li className={isActive ? styles.active : ''}>
-              <div className={styles.icon}>
-                {Icon && <Icon />}
-              </div>
+            <li className={isActive ? styles.active : ""}>
+              <div className={styles.icon}>{Icon && <Icon />}</div>
               <p>{item.title}</p>
             </li>
           </Link>

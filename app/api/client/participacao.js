@@ -5,17 +5,29 @@ import { getCookie } from 'cookies-next';
 /**************************
  * PARTICIPACAO
  **************************/
-export const getParticipacoes = async (tenantSlug, idInscricao, tipos) => {
+export const getParticipacoes = async (tenantSlug, idInscricao, tipos, cpf, nome, status, editalId, page = 1, limit = 300) => {
   try {
     const headers = getAuthHeadersClient();
     if (!headers) {
       return false;
     }
 
-    const tipoParam = tipos ? `&tipo=${tipos.join(',')}` : '';
+    const queryParams = new URLSearchParams();
+
+    // Verifica cada parâmetro e adiciona ao queryParams se estiver presente
+    if (idInscricao) queryParams.append('inscricaoId', idInscricao);
+    if (tipos && tipos.length > 0) queryParams.append('tipo', tipos.join(','));
+    if (cpf) queryParams.append('cpf', cpf);
+    if (nome) queryParams.append('nome', nome);
+    if (status) queryParams.append('status', status);
+    if (editalId) queryParams.append('editalId', editalId);
+    queryParams.append('page', page);
+    queryParams.append('limit', limit);
+
+    const queryString = queryParams.toString();
 
     const response = await req.get(
-      `/private/${tenantSlug}/participacoes?inscricaoId=${idInscricao}${tipoParam}`,
+      `/private/${tenantSlug}/participacoes?${queryString}`,
       { headers }
     );
     return response.data.participacoes;
@@ -28,6 +40,7 @@ export const getParticipacoes = async (tenantSlug, idInscricao, tipos) => {
     throw error;
   }
 };
+
 
 export const createParticipacao = async (tenantSlug, participacaoData) => {
   try {

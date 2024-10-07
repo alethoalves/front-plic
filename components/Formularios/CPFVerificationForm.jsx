@@ -11,27 +11,53 @@ import Input from "@/components/Input";
 
 //FUNÇÕES
 import { getDataFromCPF } from "@/app/api/clientReq";
-import { getUserByCpf, createUser } from "@/app/api/client/user";
+import {
+  getUserByCpf,
+  createUser,
+  cpfVerification,
+} from "@/app/api/client/user";
 import cpfValidator from "@/lib/cpfValidator";
 
 const CPFVerificationForm = ({ tenantSlug, onCpfVerified }) => {
   //ESTADOS
   const [loading, setLoading] = useState(false);
   const [cpfError, setCpfError] = useState("");
+  const [cpfNotFound, setCpfNotFound] = useState(false);
   const [isCpfVerified, setIsCpfVerified] = useState(false);
+  const [step, setStep] = useState(0);
 
   const { control, setValue, watch, reset, handleSubmit } = useForm({
     defaultValues: {
       cpf: "",
+      dtNascimento: "",
     },
   });
 
   const cpf = watch("cpf");
+  const dtNascimento = watch("dtNascimento");
+
+  // Função para validar se a data está no formato correto e é válida
+  const isValidDate = (dateStr) => {
+    const regex = /^\d{2}\/\d{2}\/\d{4}$/;
+    if (!regex.test(dateStr)) {
+      return false;
+    }
+
+    const [day, month, year] = dateStr.split("/").map(Number);
+    const date = new Date(`${year}-${month}-${day}`);
+
+    // Verifica se a data existe e se o dia, mês e ano são coerentes
+    return (
+      date.getDate() === day &&
+      date.getMonth() + 1 === month &&
+      date.getFullYear() === year
+    );
+  };
 
   const handleCPFCheck = async () => {
     setLoading(true);
     setCpfError("");
-    try {
+    if (step === 0) {
       // Verifica se o CPF é válido
       const cpfIsValid = cpfValidator(cpf);
       if (!cpfIsValid) {
@@ -39,46 +65,71 @@ const CPFVerificationForm = ({ tenantSlug, onCpfVerified }) => {
         setLoading(false);
         return;
       }
-      // Verifica se o usuário já está cadastrado
-      const response = await getUserByCpf(tenantSlug, cpf);
-      const user = response;
-
-      if (user) {
+      const response = await cpfVerification(tenantSlug, { cpf });
+      if (response === 2) {
+        setCpfNotFound(true);
+        setLoading(false);
+        setCpfError("Informe a data de nascimento.");
+        setStep(2);
+        return;
+      }
+      if (response) {
+        const user = response;
         setIsCpfVerified(true);
         onCpfVerified({
           userId: user.id.toString(),
           nome: user.nome,
           cpf: user.cpf,
         });
-      } else {
-        // Se o usuário não estiver cadastrado, faz a consulta ao serviço externo
-        const response = await getDataFromCPF(tenantSlug, cpf);
-        const newUser = await createUser(tenantSlug, {
-          nome: response.nome,
-          cpf,
-          dtNascimento: response.data_de_nascimento,
-        });
+        setLoading(false);
+        return;
+      }
+    }
+    if (step === 2) {
+      // Verifica se o CPF é válido
+      if (cpf) {
+        const cpfIsValid = cpfValidator(cpf);
+        if (!cpfIsValid) {
+          setCpfError("CPF inválido");
+          setLoading(false);
+          return;
+        }
+      }
+      if (!dtNascimento) {
+        setCpfError("Informe uma data de nascimento.");
+        setLoading(false);
+        return;
+      }
+      if (!isValidDate(dtNascimento)) {
+        setCpfError("Informe uma data de nascimento válida.");
+        setLoading(false);
+        return;
+      }
+      const response = await cpfVerification(tenantSlug, { cpf, dtNascimento });
+      if (!response) {
+        setCpfError("Data de nascimento incompatível com o CPF.");
+        setLoading(false);
+      }
+      if (response) {
+        const user = response;
         setIsCpfVerified(true);
         onCpfVerified({
-          userId: newUser.user.id.toString(),
-          nome: newUser.user.nome,
-          cpf: cpf,
+          userId: user.id.toString(),
+          nome: user.nome,
+          cpf: user.cpf,
         });
+        setLoading(false);
+        return;
       }
-    } catch (error) {
-      setIsCpfVerified(false);
-      const errorMessage =
-        error.response?.data?.error?.details?.message ||
-        error.message ||
-        "Erro na conexão com o servidor.";
-      setCpfError(errorMessage);
-    } finally {
-      setLoading(false);
+
+      return;
     }
   };
 
   const handleCPFReset = () => {
-    reset({ cpf: "" });
+    reset({ cpf: "", dtNascimento: "" });
+    setCpfNotFound(false);
+    setStep(0);
     setIsCpfVerified(false);
     setCpfError("");
     onCpfVerified(null);
@@ -96,6 +147,18 @@ const CPFVerificationForm = ({ tenantSlug, onCpfVerified }) => {
           placeholder="Digite aqui o CPF"
           disabled={loading || isCpfVerified}
         />
+
+        {cpfNotFound && (
+          <Input
+            className="mb-2"
+            control={control}
+            name="dtNascimento"
+            label="Data de nascimento"
+            inputType="date"
+            placeholder="DD/MM/AAAA"
+            disabled={loading || isCpfVerified}
+          />
+        )}
         {!isCpfVerified ? (
           <Button
             className="btn-secondary mb-2"

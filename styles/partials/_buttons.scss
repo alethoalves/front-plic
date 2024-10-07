@@ -101,17 +101,34 @@ a.linkFile{
     }
 }
 .btn-green{
-    background-color: $white-light;
+    background-color: $success-normal;
     border: 1px solid $success-dark;
     transition: all .3s ease;
     p{
-        color: $primary-darken;
+        color: $white-light;
+    }
+    .btn-icon{
+        color: $white-light;
+    }
+    &:hover{
+        opacity: 0.8;
+    }
+}
+.btn-link{
+    background-color: transparent;
+    border: 1px solid transparent;
+    transition: all .3s ease;
+    p{
+        color: $gray-400;
+        text-decoration: underline;
     }
     .btn-icon{
         color: $success-dark;
     }
     &:hover{
-        opacity: 0.8;
+        p{
+            color: $gray-600;
+        };
     }
 }
 button[type="submit"]:disabled, button:disabled{

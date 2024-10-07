@@ -1,9 +1,11 @@
+import UnderConstruction from "@/components/UnderConstruction";
+
 const Page = () => {
   return (
-   <main>
-    <p>Planos de Trabalho</p>
-   </main>
+    <main>
+      <UnderConstruction />
+    </main>
   );
-}
+};
 
 export default Page;

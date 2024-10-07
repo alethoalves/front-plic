@@ -26,6 +26,8 @@ import {
   processApiResponse,
 } from "@/lib/geradorExcel";
 import Button from "@/components/Button";
+import Image from "next/image";
+import NoData from "@/components/NoData";
 
 const Page = ({ params }) => {
   // ESTADOS
@@ -159,7 +161,7 @@ const Page = ({ params }) => {
 
   // Renderização do conteúdo do modal de detalhes
   const renderDetailsModalContent = () => {
-    const { title, data = [], idInscricao } = detailsData;
+    const { title, data = [], idInscricao, type } = detailsData;
     const navigateTo = title?.includes("Orientador")
       ? "orientadores"
       : title?.includes("Plano")
@@ -176,8 +178,9 @@ const Page = ({ params }) => {
               {data.map((item) => (
                 <div className={styles.campo} key={item.id}>
                   <div className={styles.left}>
-                    <div
-                      className={`${styles.status} 
+                    {type != "plano" && (
+                      <div
+                        className={`${styles.status} 
                         ${item.status === "incompleto" && styles.incompleto}
                         ${
                           (item.status === "ativo" ||
@@ -186,14 +189,15 @@ const Page = ({ params }) => {
                         }
                         ${item.status === "inativo" && styles.inativo}
                         `}
-                    >
-                      <p className={styles[item.status.toLowerCase()]}>
-                        {item.status === "ativo" &&
-                          `${item.status} desde ${item.inicio}`}
-                        {item.status != "ativo" &&
-                          ` participou de ${item.inicio} a ${item.fim}`}
-                      </p>
-                    </div>
+                      >
+                        <p className={styles[item.status?.toLowerCase()]}>
+                          {item.status === "ativo" &&
+                            `${item.status} desde ${item.inicio}`}
+                          {item.status != "ativo" &&
+                            ` participou de ${item.inicio} a ${item.fim}`}
+                        </p>
+                      </div>
+                    )}
                     <div className={styles.label}>
                       <h6>
                         {item.nome_orientador || item.nome_aluno || item.titulo}
@@ -247,7 +251,7 @@ const Page = ({ params }) => {
           <BuscadorBack onSearch={handleSearch} />
         </div>
         <div className={`${styles.content}`}>
-          {
+          {inscricoes[0] ? (
             <Table
               data={inscricoes}
               pageInfo={pageInfo}
@@ -317,6 +321,7 @@ const Page = ({ params }) => {
                             title: "Orientadores ativos",
                             data: item.orientadoresAtivos,
                             idInscricao: item.id,
+                            type: "",
                           });
                         }}
                       >
@@ -331,6 +336,7 @@ const Page = ({ params }) => {
                             title: "Orientadores inativos",
                             data: item.orientadoresInativos,
                             idInscricao: item.id,
+                            type: "",
                           });
                         }}
                       >
@@ -345,6 +351,7 @@ const Page = ({ params }) => {
                             title: "Alunos ativos",
                             data: item.alunosAtivos,
                             idInscricao: item.id,
+                            type: "",
                           });
                         }}
                       >
@@ -359,6 +366,7 @@ const Page = ({ params }) => {
                             title: "Alunos inativos",
                             data: item.alunosInativos,
                             idInscricao: item.id,
+                            type: "",
                           });
                         }}
                       >
@@ -373,6 +381,7 @@ const Page = ({ params }) => {
                             title: "Planos de Trabalho",
                             data: item.planosDeTrabalho,
                             idInscricao: item.id,
+                            type: "plano",
                           });
                         }}
                       >
@@ -383,7 +392,9 @@ const Page = ({ params }) => {
                 ))}
               </tbody>
             </Table>
-          }
+          ) : (
+            <NoData />
+          )}
         </div>
       </main>
     </>
