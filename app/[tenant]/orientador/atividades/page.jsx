@@ -7,7 +7,9 @@ import {
   RiEditLine,
   RiFolder2Line,
   RiFoldersLine,
+  RiGroupLine,
   RiMenuLine,
+  RiUser2Line,
 } from "@remixicon/react";
 import styles from "./page.module.scss";
 import { useCallback, useEffect, useState } from "react";
@@ -437,6 +439,46 @@ const Page = ({ params }) => {
                       </p>
                       <div className={styles.description}>
                         <p>{registro.planoDeTrabalho.titulo}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className={styles.labelWithIcon}>
+                    <RiUser2Line />
+                    <div className={styles.label}>
+                      <p>
+                        <RiUser2Line />
+                        Orientador(es):
+                      </p>
+                      <div className={styles.description}>
+                        {registro.planoDeTrabalho.inscricao.participacoes
+                          .filter(
+                            (item) =>
+                              item.tipo === "orientador" ||
+                              item.tipo === "coorientador"
+                          )
+                          .map((item, index) => (
+                            <p className={styles.person} key={index}>
+                              {item.user.nome} ({item.status})
+                            </p>
+                          ))}
+                      </div>
+                    </div>
+                  </div>
+                  <div className={styles.labelWithIcon}>
+                    <RiGroupLine />
+                    <div className={styles.label}>
+                      <p>
+                        <RiGroupLine />
+                        Aluno(s):
+                      </p>
+                      <div className={styles.description}>
+                        {registro.planoDeTrabalho.participacoes.map(
+                          (item, index) => (
+                            <p className={styles.person} key={index}>
+                              {item.user.nome} ({item.status})
+                            </p>
+                          )
+                        )}
                       </div>
                     </div>
                   </div>
