@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useController } from "react-hook-form";
 import styles from "./SearchableSelect.module.scss";
 
@@ -11,7 +11,11 @@ const SearchableSelect = (props) => {
       props.options[0]
   );
   const selectRef = useRef(null);
-  const options = Array.isArray(props.options) ? props.options : [];
+
+  // Memoize the options to prevent recalculation on every render
+  const options = useMemo(() => {
+    return Array.isArray(props.options) ? props.options : [];
+  }, [props.options]);
 
   useEffect(() => {
     const initialOption = options.find(
@@ -20,7 +24,7 @@ const SearchableSelect = (props) => {
     if (initialOption) {
       setSelectedOption(initialOption);
     }
-  }, [field.value, options]);
+  }, [field.value, options]); // Use the memoized options here
 
   useEffect(() => {
     const handleClickOutside = (event) => {

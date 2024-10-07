@@ -16,7 +16,7 @@ const Page = async () => {
         <h4>Selecione a sua instituição</h4>
         {tenants ? (
           tenants.map((item) => (
-            <Link href={`/${item.slug}`}>
+            <Link key={item.id} href={`/${item.slug}`}>
               <div className={styles.boxButton}>
                 <div className={styles.logo}>
                   <Image

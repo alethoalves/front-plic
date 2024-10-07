@@ -91,6 +91,7 @@ const Inscricoes = ({ tenantSlug }) => {
     editalTitulo,
     idFormularioAtividade,
     searchValue,
+    tenantSlug, //ALTEREI AQUI
   ]);
 
   // Função chamada quando os filtros são alterados

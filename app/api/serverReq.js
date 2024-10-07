@@ -45,4 +45,6 @@ export const getEdital = async (tenantSlug, editalId) => {
 };
 
 
-  
+export const config = {
+  runtime: 'nodejs', // Desativa o Edge Runtime e usa Node.js
+};

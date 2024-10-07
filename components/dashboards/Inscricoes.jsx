@@ -174,7 +174,7 @@ const Inscricoes = ({ tenantSlug }) => {
   // Chamando a API sempre que os filtros mudarem
   useEffect(() => {
     fetchInscricoes(tenantSlug, null, editalAno || null, editalTitulo || null); // Passa valores nulos se os filtros estiverem vazios
-  }, [editalAno, editalTitulo]);
+  }, [editalAno, editalTitulo, tenantSlug]); //ALTEREI AQUI
 
   // Função chamada quando os filtros são alterados
   const handleFilterChange = (filtro, valor) => {

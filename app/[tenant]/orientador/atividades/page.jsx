@@ -94,7 +94,7 @@ const Page = ({ params }) => {
     } catch (error) {
       console.error("Erro ao buscar dados:", error);
     }
-  }, [params.tenant, itemToEdit?.id]);
+  }, [params.tenant, itemToEdit?.id, checkFormStatus]); //ALTEREI AQUI
 
   const closeModalAndResetData = () => {
     setIsModalOpen(false);
@@ -344,8 +344,8 @@ const Page = ({ params }) => {
     params.tenant,
     itemToEdit?.atividadeId,
     itemToEdit?.id,
-    itemToEdit?.formulario?.onSubmitStatus,
-    handleCreateOrEditSuccess,
+    //itemToEdit?.formulario?.onSubmitStatus, ALTEREI AQUI
+    //handleCreateOrEditSuccess, ALTEREI AQUI
   ]);
 
   return (

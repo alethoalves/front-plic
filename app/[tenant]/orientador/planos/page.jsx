@@ -98,7 +98,7 @@ const Page = ({ params }) => {
     } catch (error) {
       console.error("Erro:", error);
     }
-  }, [params.tenant, itemToEdit?.id]);
+  }, [params.tenant, itemToEdit?.id, itemToEdit]); //ALTEREI AQUI
   const closeModalAndResetData = () => {
     setIsModalOpen(false);
     setItemToEdit(null);
@@ -266,6 +266,7 @@ const Page = ({ params }) => {
     itemToEdit?.id,
     itemToEdit?.formulario?.onSubmitStatus,
     handleCreateOrEditSuccess,
+    itemToEdit, //ALTEREI AQUI
   ]);
   return (
     <>

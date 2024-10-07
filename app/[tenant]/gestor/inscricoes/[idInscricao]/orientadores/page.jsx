@@ -176,7 +176,7 @@ const Page = ({ params }) => {
         error.response?.data?.message ?? "Erro na conexão com o servidor."
       );
     }
-  }, [params.tenant, itemToDelete, itens]);
+  }, [params.tenant, itemToDelete, itens, handleCreateOrEditSuccess]); //ALTEREI AQUI
   return (
     <>
       {renderModalContent()}

@@ -70,7 +70,7 @@ const FormPlanoDeTrabalho = ({
     } else {
       reset();
     }
-  }, [initialData, setValue, reset]);
+  }, [initialData, setValue, reset, tenantSlug]); //ALTEREI AQUI
 
   const handleFormSubmit = async (data) => {
     setLoading(true);
