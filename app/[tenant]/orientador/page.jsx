@@ -74,7 +74,7 @@ const Page = ({ params }) => {
         <div className={styles.content}>
           <h6>Bem-vindo(a) à </h6>
           <h4>Iniciação Científica</h4>
-          <Link href={`/${params.tenant}/aluno/atividades`}>
+          <Link href={`/${params.tenant}/orientador/atividades`}>
             <div className={styles.infoBox}>
               {atividadesNaoEntregues > 0 && (
                 <div className={styles.notification}>
@@ -90,7 +90,7 @@ const Page = ({ params }) => {
               </div>
             </div>
           </Link>
-          <Link href={`/${params.tenant}/aluno/eventos`}>
+          <Link href={`/${params.tenant}/orientador/eventos`}>
             <div className={styles.infoBox}>
               {registroAtividadesNaoInscritos > 0 && (
                 <div className={styles.notification}>
@@ -106,7 +106,7 @@ const Page = ({ params }) => {
               </div>
             </div>
           </Link>
-          <Link href={`/${params.tenant}/aluno/meuseventos`}>
+          <Link href={`/${params.tenant}/orientador/meuseventos`}>
             <div className={styles.infoBox}>
               <div className={styles.icon}>
                 <RiCouponLine />

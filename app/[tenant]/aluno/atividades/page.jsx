@@ -90,11 +90,11 @@ const Page = ({ params }) => {
         updatedItem.atividade.formulario.campos,
         updatedItem.respostas
       );
-      setTela((prev) => Math.max(prev - 1, 0));
+      //setTela((prev) => Math.max(prev - 1, 0));
     } catch (error) {
       console.error("Erro ao buscar dados:", error);
     }
-  }, [params.tenant, itemToEdit?.id, checkFormStatus]); //incluí o checkFormStatus ALTEREI AQUI
+  }, [params.tenant, itemToEdit?.id]);
 
   const closeModalAndResetData = () => {
     setIsModalOpen(false);
