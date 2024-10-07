@@ -6,7 +6,7 @@
     width: 416px;
    @include responsive (xs){
     //border: 1px solid red;
-    width: 100vw;
+    width: calc(100vw - 32px);
     padding: $gap-2;
     
    }
