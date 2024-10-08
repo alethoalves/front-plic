@@ -37,6 +37,7 @@ const CPFVerificationForm = ({ tenantSlug, onCpfVerified }) => {
   const dtNascimento = watch("dtNascimento");
 
   // Função para validar se a data está no formato correto e é válida
+  // Tive que parar de usar essa função, pq estava impedindo de cadastrar datas com o mes 11 e 12
   const isValidDate = (dateStr) => {
     const regex = /^\d{2}\/\d{2}\/\d{4}$/;
     if (!regex.test(dateStr)) {
@@ -100,11 +101,12 @@ const CPFVerificationForm = ({ tenantSlug, onCpfVerified }) => {
         setLoading(false);
         return;
       }
-      if (!isValidDate(dtNascimento)) {
-        setCpfError("Informe uma data de nascimento válida.");
-        setLoading(false);
-        return;
-      }
+      //Veja o comentário na outra ocorrencia de isValidDate
+      //if (!isValidDate(dtNascimento)) {
+      //  setCpfError("Informe uma data de nascimento válida.");
+      //  setLoading(false);
+      //  return;
+      //}
       const response = await cpfVerification(tenantSlug, { cpf, dtNascimento });
       if (!response) {
         setCpfError("Data de nascimento incompatível com o CPF.");
