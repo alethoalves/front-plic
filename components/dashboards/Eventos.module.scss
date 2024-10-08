@@ -179,6 +179,8 @@ border-radius: $gap-1;
     }
     .totais{
         padding: $gap-2;
+        display: flex;
+        flex-wrap: wrap;
         @include responsive(s){
             display: flex;
         }
