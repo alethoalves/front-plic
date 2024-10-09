@@ -162,8 +162,8 @@ const Page = ({ params }) => {
             {/* Conteúdo comum para qualquer valor de code */}
             <h4>{itemToEdit?.atividade?.titulo}</h4>
             <p>
-              Preencha todos os campos e salve, aguarde a confirmação de
-              entrega!
+              Preencha cada campo e salve, ao finalizar, feche este modal e
+              verifique o status da atividade!
             </p>
             <div className={`${styles.campos} mt-2`}>
               {camposForm?.map(
