@@ -108,10 +108,12 @@ const Participacoes = ({ tenantSlug }) => {
                     <p>
                       CPF: <strong>{participacao.user.cpf}</strong>
                     </p>
-                    <p>
-                      Plano de Trabalho:{" "}
-                      <strong>{participacao.planodeTrabalho.titulo}</strong>
-                    </p>
+                    {participacao?.planodeTrabalho && (
+                      <p>
+                        Plano de Trabalho:{" "}
+                        <strong>{participacao.planodeTrabalho.titulo}</strong>
+                      </p>
+                    )}
                     <p>
                       ANO: <strong>{participacao.inscricao.edital.ano}</strong>{" "}
                       | EDITAL:{" "}
