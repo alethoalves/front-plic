@@ -133,18 +133,39 @@
         margin-bottom: $gap-2;
     }
 }
+.notification{
+    h6{
+        margin-top: $gap-2;
+        padding: $gap-1 $gap-2;
+        border-radius: $gap-1;
+        display: block;
+
+    }
+    h6.success{
+
+        background-color: $success-light;
+    }
+    h6.error{
+        color: $white-light;
+        background-color: $error-light;
+    }
+}
 .actionsTable{
     display: flex;
     margin-top: $gap-2;
     margin-bottom: $gap-3;
     
     button{
+        
         flex: 1;
         border-radius: $gap-1;
         &:not(:last-child) {
            margin-right: $gap-2;
-        }
+        };
+        color: $white-light
         
+        
+           
         
     
     }
