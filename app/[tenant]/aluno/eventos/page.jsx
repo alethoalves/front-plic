@@ -24,6 +24,9 @@ import {
   RiMapPinLine,
   RiMicroscopeLine,
 } from "@remixicon/react";
+import SearchableSelect from "@/components/SearchableSelect";
+import SearchableSelect2 from "@/components/SearchableSelect2";
+import { getAreas } from "@/app/api/client/area";
 
 const Page = ({ params }) => {
   // Estados para gerenciamento do componente
@@ -45,6 +48,8 @@ const Page = ({ params }) => {
   const [sessaoSelecionada, setSessaoSelecionada] = useState(null);
   const [selectedSessaoPorPlano, setSelectedSessaoPorPlano] = useState({});
   const [submissao, setSubmissao] = useState([]);
+  const [areas, setAreas] = useState([]);
+  const [selectedArea, setSelectedArea] = useState(null);
 
   // ROTEAMENTO
   const router = useRouter();
@@ -57,10 +62,10 @@ const Page = ({ params }) => {
           params.tenant
         );
         const eventos = await getEventosByTenant(params.tenant);
+
         setEventos(eventos);
         setPlanosDeTrabalho(transformData(response));
-        console.log("Aqui 1");
-        console.log(response);
+
         setRegistrosAtividadesEditaisVigentes(
           response.sort(
             (a, b) =>
@@ -68,6 +73,8 @@ const Page = ({ params }) => {
               new Date(b.atividade.dataInicio)
           )
         );
+        const areas = await getAreas(params.tenant);
+        setAreas(transformedArray(areas));
         setItens(response);
       } catch (error) {
         console.error("Erro ao buscar dados:", error);
@@ -77,6 +84,31 @@ const Page = ({ params }) => {
     };
     fetchData();
   }, [params.tenant, isModalOpen]);
+  const transformedArray = (items) => {
+    const data = items?.flatMap((item) => {
+      // Criar um array inicial com a área principal
+      const result = [{ value: item.id, label: item.area }];
+
+      // Adicionar subáreas, se houver
+      const subareaResults = item.subareas.map((subarea) => ({
+        value: item.id,
+        label: `${item.area} - ${subarea.subarea}`,
+      }));
+
+      // Concatenar o array da área principal com as subáreas
+      return result.concat(subareaResults);
+    });
+
+    // Organizar por `value` crescente e depois por `label`
+    return data.sort((a, b) => {
+      // Primeiro, organizar por `value` crescente
+      if (a.value < b.value) return -1;
+      if (a.value > b.value) return 1;
+
+      // Se os `values` forem iguais, organizar por `label`
+      return a.label.localeCompare(b.label);
+    });
+  };
   const transformData = (data) => {
     const uniqueItems = {};
 
@@ -141,9 +173,9 @@ const Page = ({ params }) => {
       setLoading(false);
     }
   };
-  const handleSessaoChange = (planoId, selectedSessaoId) => {
-    const selectedSessao = eventoSelecionado?.evento?.sessao.find(
-      (sessao) => sessao.id === selectedSessaoId
+  const handleSessaoChange = (planoId, selectedAreaId) => {
+    const selectedSessao = eventoSelecionado?.evento?.sessao.find((sessao) =>
+      sessao.sessaoArea.find((item) => item.areaId === selectedAreaId)
     );
     setSelectedSessaoPorPlano((prev) => ({
       ...prev,
@@ -153,7 +185,6 @@ const Page = ({ params }) => {
   // Renderiza o conteúdo do modal
   const renderModalEventoContent = () => {
     let planosSemSubmissao = [];
-    console.log(planosDeTrabalho);
     if (eventoSelecionado) {
       planosSemSubmissao = planosDeTrabalho.filter((plano) => {
         return !plano.item.planoDeTrabalho.submissao.some(
@@ -201,14 +232,12 @@ const Page = ({ params }) => {
                     <div>
                       <p className="mb-2">TÍTULO DO PROJETO:</p>
                       <h6 className="mb-2">{plano.titulo}</h6>
-                      <Select2
-                        label="Selecione uma sessão"
-                        options={eventoSelecionado?.evento?.sessao.map(
-                          (sessao) => ({
-                            label: sessao.titulo,
-                            value: sessao.id,
-                          })
-                        )}
+                      <SearchableSelect2
+                        className="mb-2"
+                        name="areaId"
+                        label="Selecione a área de Conhecimento"
+                        options={areas || []} // Garante que o options seja um array
+                        disabled={loading}
                         onChange={(value) => handleSessaoChange(idPlano, value)}
                       />
                     </div>
@@ -241,14 +270,16 @@ const Page = ({ params }) => {
                             className={`mt-2 ${styles.boxButton} ${styles.inscricaoEvento}`}
                           >
                             <div className={styles.infoEvento}>
+                              <p>Sessão:</p>
+                              <h6 className="mb-1">
+                                {sessaoSelecionada.titulo.toUpperCase()}
+                              </h6>
                               <p>Dia da apresentação:</p>
                               <h6 className="mb-1">{dataFormatada}</h6>
                               <p>Período:</p>
                               <h6>
                                 de {horaInicio} às {horaFim}
                               </h6>
-                              <p className="mt-1">Local:</p>
-                              <h6>{subsessao.local}</h6>
                             </div>
                             <Button
                               className="btn-primary"
@@ -265,7 +296,6 @@ const Page = ({ params }) => {
                                     subsessao.id
                                   );
                                   //await refresh();
-                                  console.log(submissao);
                                   setTela(1);
                                   setSubmissao(submissao);
                                 } catch (error) {
@@ -414,8 +444,7 @@ const Page = ({ params }) => {
                       className={`${styles.evento} ${styles.boxButton}`}
                       onClick={() => {
                         setEventoSelecionado(item);
-                        console.log("Evento selecionado");
-                        console.log(item);
+
                         setIsModalEventoOpen(true);
                       }}
                     >
