@@ -26,7 +26,6 @@ import { startSubmission } from "@/app/api/client/resposta";
 import FormArea from "@/components/Formularios/FormArea";
 
 const Page = ({ params }) => {
-  // Estados para gerenciamento do componente
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [errorToGetCamposForm, setErrorToGetCamposForm] = useState(false);
@@ -39,9 +38,8 @@ const Page = ({ params }) => {
   const [code, setCode] = useState(null);
   const [tela, setTela] = useState(0);
 
-  // ROTEAMENTO
   const router = useRouter();
-  //EFETUAR BUSCAS DE DADOS AO RENDERIZAR O COMPONENTE
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -65,38 +63,41 @@ const Page = ({ params }) => {
     fetchData();
   }, [params.tenant, isModalOpen]);
 
-  // Função para atualizar os itens após criar ou editar
+  // Atualização do item e status após criar ou editar
   const handleCreateOrEditSuccess = useCallback(async () => {
     try {
       const response = await getRegistroAtividadesByCpfEditaisVigentes(
         params.tenant
       );
 
-      setRegistrosAtividadesEditaisVigentes(
-        response
-          .filter(
-            (item) => item.planoDeTrabalho.inscricao.edital.vigente === true
-          )
-          .sort(
-            (a, b) =>
-              new Date(a.atividade.dataInicio) -
-              new Date(b.atividade.dataInicio)
-          )
+      const itens = response.filter(
+        (item) => item.planoDeTrabalho.inscricao.edital.vigente === true
       );
-      const itens = response;
 
       const updatedItem = itens.find((item) => item.id === itemToEdit?.id);
 
-      setItemToEdit(updatedItem);
-      await checkFormStatus(
-        updatedItem.atividade.formulario.campos,
-        updatedItem.respostas
-      );
-      //setTela((prev) => Math.max(prev - 1, 0));
+      setItemToEdit(updatedItem); // Atualiza o item
+
+      if (updatedItem) {
+        await checkFormStatus(
+          updatedItem.atividade.formulario.campos,
+          updatedItem.respostas
+        );
+      }
     } catch (error) {
       console.error("Erro ao buscar dados:", error);
     }
   }, [params.tenant, itemToEdit?.id]);
+
+  // Observa mudanças no itemToEdit e verifica o status do formulário
+  useEffect(() => {
+    if (itemToEdit) {
+      checkFormStatus(
+        itemToEdit.atividade.formulario.campos,
+        itemToEdit.respostas
+      );
+    }
+  }, [itemToEdit]);
 
   const closeModalAndResetData = () => {
     setIsModalOpen(false);
@@ -107,18 +108,15 @@ const Page = ({ params }) => {
 
   const formatarData = (dataIso) => {
     const data = new Date(dataIso);
-
     const dia = data.getUTCDate().toString().padStart(2, "0");
     const mes = (data.getUTCMonth() + 1).toString().padStart(2, "0");
     const ano = data.getUTCFullYear().toString();
-
     return `${dia}/${mes}/${ano}`;
   };
-  // Renderiza o conteúdo do modal
+
   const renderModalContent = () => {
     return (
       <Modal isOpen={isModalOpen} onClose={closeModalAndResetData}>
-        {/* Exibe conteúdo baseado no valor do code */}
         {code === 1 && (
           <>
             <h5>
@@ -139,9 +137,8 @@ const Page = ({ params }) => {
                 setCode(null);
               }}
               onSuccess={async () => {
-                // Correção: async adicionado corretamente
-                await handleCreateOrEditSuccess(); // Correção: await adicionado para esperar a função
-                setCode(2); // Altera o code após o sucesso
+                await handleCreateOrEditSuccess();
+                setCode(2);
               }}
             />
           </>
@@ -159,64 +156,93 @@ const Page = ({ params }) => {
         )}
         {code === 2 && camposForm && (
           <>
-            {/* Conteúdo comum para qualquer valor de code */}
             <h4>{itemToEdit?.atividade?.titulo}</h4>
+            <div className={styles.notification}>
+              <h6
+                className={`${
+                  itemToEdit?.status === "naoEntregue"
+                    ? styles.error
+                    : styles.success
+                } mb-2`}
+              >{`${
+                itemToEdit?.status === "naoEntregue"
+                  ? "Atividade não entregue! Preecha os campos e salve-os."
+                  : "Atividade entregue!"
+              }`}</h6>
+            </div>
             <p>
               Preencha cada campo e salve, ao finalizar, feche este modal e
               verifique o status da atividade!
             </p>
             <div className={`${styles.campos} mt-2`}>
-              {camposForm?.map(
-                (item, index) =>
-                  tela === index && ( // Exibe o campo somente se tela for igual ao índice
-                    <Campo
-                      perfil="participante"
-                      readOnly={false}
-                      key={item.id}
-                      schema={camposForm && camposForm[index]}
-                      camposForm={camposForm}
-                      respostas={itemToEdit?.respostas}
-                      tenantSlug={params.tenant}
-                      registroAtividadeId={itemToEdit?.id}
-                      onClose={closeModalAndResetData}
-                      onSuccess={handleCreateOrEditSuccess}
-                    />
-                  )
-              )}
+              {camposForm?.map((item, index) => (
+                // Exibe o campo somente se tela for igual ao índice
+                // tela === index &&
+                <Campo
+                  perfil="participante"
+                  readOnly={false}
+                  key={item.id}
+                  schema={camposForm && camposForm[index]}
+                  camposForm={camposForm}
+                  respostas={itemToEdit?.respostas}
+                  tenantSlug={params.tenant}
+                  registroAtividadeId={itemToEdit?.id}
+                  onClose={closeModalAndResetData}
+                  onSuccess={handleCreateOrEditSuccess}
+                />
+              ))}
             </div>
-            <div className={styles.actionsTable}>
-              {tela != 0 && (
-                <button
-                  className="button btn-secondary"
-                  onClick={() => setTela((prev) => Math.max(prev - 1, 0))}
-                  disabled={tela === 0}
-                >
-                  Anterior
-                </button>
-              )}
-              {tela != camposForm.length - 1 && (
-                <button
-                  className="button btn-secondary"
-                  onClick={() =>
-                    setTela((prev) => Math.min(prev + 1, camposForm.length - 1))
-                  }
-                  disabled={tela === camposForm.length - 1}
-                >
-                  Próximo
-                </button>
-              )}
+
+            <div className={styles.notification}>
+              <h6
+                className={`${
+                  itemToEdit?.status === "naoEntregue"
+                    ? styles.error
+                    : styles.success
+                }`}
+              >{`${
+                itemToEdit?.status === "naoEntregue"
+                  ? "Atividade não entregue! Preecha os campos e salve-os."
+                  : "Atividade entregue!"
+              }`}</h6>
             </div>
+
+            {false && (
+              <div className={styles.actionsTable}>
+                {tela != 0 && (
+                  <button
+                    className="button btn-secondary"
+                    onClick={() => setTela((prev) => Math.max(prev - 1, 0))}
+                    disabled={tela === 0}
+                  >
+                    Anterior
+                  </button>
+                )}
+                {tela != camposForm.length - 1 && (
+                  <button
+                    className="button btn-secondary"
+                    onClick={() =>
+                      setTela((prev) =>
+                        Math.min(prev + 1, camposForm.length - 1)
+                      )
+                    }
+                    disabled={tela === camposForm.length - 1}
+                  >
+                    Próximo
+                  </button>
+                )}
+              </div>
+            )}
             {itemToEdit?.status === "concluido" && (
               <Button
-                className="btn-primary"
-                icon={RiMenuLine}
-                type="button" // submit, reset, button
+                className={"mt-3 btn-secondary"}
+                type="button"
                 disabled={loading}
                 onClick={() => {
                   setCode(3);
                 }}
               >
-                Voltar para o menu
+                Sair da edição
               </Button>
             )}
           </>
@@ -244,7 +270,7 @@ const Page = ({ params }) => {
             <Button
               className="btn-secondary"
               icon={RiEditLine}
-              type="button" // submit, reset, button
+              type="button"
               disabled={loading}
               onClick={() => {
                 setCode(2);
@@ -257,7 +283,7 @@ const Page = ({ params }) => {
               <Button
                 className="btn-secondary"
                 icon={RiFolder2Line}
-                type="button" // submit, reset, button
+                type="button"
                 disabled={loading}
                 onClick={() => {
                   setCode(2);
@@ -275,9 +301,7 @@ const Page = ({ params }) => {
   const openModalAndSetData = async (data) => {
     setItemToEdit(data);
 
-    // Inicia a submissão e aguarda o response
     const response = await startSubmission(data.id);
-    // Atualiza o código sem reabrir o modal
     if (response?.response?.status === "concluido") {
       setCode(3);
     } else {
@@ -285,30 +309,25 @@ const Page = ({ params }) => {
     }
 
     setItemToEdit(data);
-    // Pega os campos do formulário relacionados
     setCamposForm(
       data.atividade.formulario.campos.sort((a, b) => a.ordem - b.ordem)
     );
-    // Abre o modal uma vez
     setIsModalOpen(true);
   };
 
-  // Obtém o formulário com as respostas preenchidas
   const getFormWithRespostas = async (campos, respostas) => {
     try {
-      // Mapeia os campos e associa as respostas
       const formWithRespostas = campos.map((campo) => {
         const resposta = respostas.find((res) => res.campoId === campo.id);
         return {
           campoId: campo.id,
-          obrigatorio: campo.obrigatorio, // Incluímos o campo obrigatorio para referência
+          obrigatorio: campo.obrigatorio,
           value: resposta ? resposta.value : "",
         };
       });
 
-      // Filtra os campos obrigatórios e verifica se estão preenchidos
       const isComplete = formWithRespostas
-        .filter((item) => item.obrigatorio) // Desconsidera campos não obrigatórios
+        .filter((item) => item.obrigatorio)
         .every((item) => item.value.trim() !== "");
 
       return {
@@ -324,7 +343,6 @@ const Page = ({ params }) => {
     }
   };
 
-  // Verifica o status do formulário
   const checkFormStatus = async (campos, respostas) => {
     const result = await getFormWithRespostas(campos, respostas);
     if (result.status === "completo") {
@@ -332,7 +350,6 @@ const Page = ({ params }) => {
     }
   };
 
-  // Função chamada quando o formulário está completo
   const handleFormComplete = useCallback(async () => {
     try {
       await updateRegistroAtividade(
@@ -341,14 +358,10 @@ const Page = ({ params }) => {
         itemToEdit.id,
         { status: "concluido" }
       );
-    } catch (error) {}
-  }, [
-    params.tenant,
-    itemToEdit?.atividadeId,
-    itemToEdit?.id,
-    //itemToEdit?.formulario?.onSubmitStatus, ALTEREI AQUI
-    //handleCreateOrEditSuccess, ALTEREI AQUI
-  ]);
+    } catch (error) {
+      console.error("Erro ao atualizar registro:", error);
+    }
+  }, [params.tenant, itemToEdit?.atividadeId, itemToEdit?.id]);
 
   return (
     <>
