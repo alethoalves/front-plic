@@ -76,13 +76,22 @@ const Page = ({ params }) => {
     fetchData();
   }, [params.tenant, isModalOpen]);
   const transformData = (data) => {
-    return data?.map((item) => ({
-      id: item.planoDeTrabalho.id,
-      titulo: item.planoDeTrabalho.titulo,
-      edital: item.planoDeTrabalho.inscricao.edital.titulo,
-      anoEdital: item.planoDeTrabalho.inscricao.edital.ano,
-      item,
-    }));
+    const uniqueItems = {};
+
+    data.forEach((item) => {
+      const planoId = item.planoDeTrabalho.id;
+      if (!uniqueItems[planoId]) {
+        uniqueItems[planoId] = {
+          id: planoId,
+          titulo: item.planoDeTrabalho.titulo,
+          edital: item.planoDeTrabalho.inscricao.edital.titulo,
+          anoEdital: item.planoDeTrabalho.inscricao.edital.ano,
+          item,
+        };
+      }
+    });
+
+    return Object.values(uniqueItems);
   };
 
   const formatarData = (dataIso) => {

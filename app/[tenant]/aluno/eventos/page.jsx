@@ -59,6 +59,8 @@ const Page = ({ params }) => {
         const eventos = await getEventosByTenant(params.tenant);
         setEventos(eventos);
         setPlanosDeTrabalho(transformData(response));
+        console.log("Aqui 1");
+        console.log(response);
         setRegistrosAtividadesEditaisVigentes(
           response.sort(
             (a, b) =>
@@ -76,13 +78,22 @@ const Page = ({ params }) => {
     fetchData();
   }, [params.tenant, isModalOpen]);
   const transformData = (data) => {
-    return data?.map((item) => ({
-      id: item.planoDeTrabalho.id,
-      titulo: item.planoDeTrabalho.titulo,
-      edital: item.planoDeTrabalho.inscricao.edital.titulo,
-      anoEdital: item.planoDeTrabalho.inscricao.edital.ano,
-      item,
-    }));
+    const uniqueItems = {};
+
+    data.forEach((item) => {
+      const planoId = item.planoDeTrabalho.id;
+      if (!uniqueItems[planoId]) {
+        uniqueItems[planoId] = {
+          id: planoId,
+          titulo: item.planoDeTrabalho.titulo,
+          edital: item.planoDeTrabalho.inscricao.edital.titulo,
+          anoEdital: item.planoDeTrabalho.inscricao.edital.ano,
+          item,
+        };
+      }
+    });
+
+    return Object.values(uniqueItems);
   };
 
   const formatarData = (dataIso) => {
@@ -142,6 +153,7 @@ const Page = ({ params }) => {
   // Renderiza o conteúdo do modal
   const renderModalEventoContent = () => {
     let planosSemSubmissao = [];
+    console.log(planosDeTrabalho);
     if (eventoSelecionado) {
       planosSemSubmissao = planosDeTrabalho.filter((plano) => {
         return !plano.item.planoDeTrabalho.submissao.some(
@@ -402,6 +414,8 @@ const Page = ({ params }) => {
                       className={`${styles.evento} ${styles.boxButton}`}
                       onClick={() => {
                         setEventoSelecionado(item);
+                        console.log("Evento selecionado");
+                        console.log(item);
                         setIsModalEventoOpen(true);
                       }}
                     >
