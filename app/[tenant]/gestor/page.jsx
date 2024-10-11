@@ -1,20 +1,6 @@
 "use client";
-import Image from "next/image";
 import styles from "./page.module.scss";
-import UnderConstruction from "@/components/UnderConstruction";
-import {
-  RiBarChart2Fill,
-  RiBatteryLowLine,
-  RiCalendarLine,
-  RiEye2Line,
-  RiEyeLine,
-  RiFileExcelLine,
-  RiFilter2Fill,
-  RiLineChartLine,
-  RiListCheck2,
-  RiMapPinLine,
-} from "@remixicon/react";
-import Select2 from "@/components/Select2";
+import { RiFileExcelLine } from "@remixicon/react";
 
 import Button from "@/components/Button";
 import { useState, useEffect } from "react";

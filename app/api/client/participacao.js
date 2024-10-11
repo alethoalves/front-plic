@@ -41,6 +41,41 @@ export const getParticipacoes = async (tenantSlug, idInscricao, tipos, cpf, nome
   }
 };
 
+export const getParticipacoesDashboard = async (tenantSlug, idInscricao, tipos, cpf, nome, status, editalId, page = 1, limit = 300) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+
+    const queryParams = new URLSearchParams();
+
+    // Verifica cada parâmetro e adiciona ao queryParams se estiver presente
+    if (idInscricao) queryParams.append('inscricaoId', idInscricao);
+    if (tipos && tipos.length > 0) queryParams.append('tipo', tipos.join(','));
+    if (cpf) queryParams.append('cpf', cpf);
+    if (nome) queryParams.append('nome', nome);
+    if (status) queryParams.append('status', status);
+    if (editalId) queryParams.append('editalId', editalId);
+    queryParams.append('page', page);
+    queryParams.append('limit', limit);
+
+    const queryString = queryParams.toString();
+
+    const response = await req.get(
+      `/private/${tenantSlug}/dashboard/participacoes?${queryString}`,
+      { headers }
+    );
+    return response.data.participacoes;
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      console.error("Participações não encontradas:", error);
+      return null;
+    }
+    console.error("Erro ao obter as participações:", error);
+    throw error;
+  }
+};
 
 export const createParticipacao = async (tenantSlug, participacaoData) => {
   try {

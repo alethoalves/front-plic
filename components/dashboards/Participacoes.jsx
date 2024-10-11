@@ -18,7 +18,10 @@ import { Bar } from "react-chartjs-2";
 
 import BuscadorBack from "../BuscadorBack";
 import NoData from "../NoData";
-import { getParticipacoes } from "@/app/api/client/participacao";
+import {
+  getParticipacoes,
+  getParticipacoesDashboard,
+} from "@/app/api/client/participacao";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -34,7 +37,7 @@ const Participacoes = ({ tenantSlug }) => {
   const fetchInscricoes = async (tenantSlug, searchValue) => {
     setLoading(true);
     try {
-      const participacoes = await getParticipacoes(
+      const participacoes = await getParticipacoesDashboard(
         tenantSlug,
         null, // ou inscrevaçõesId, caso precise
         null, // tipo, se necessário
