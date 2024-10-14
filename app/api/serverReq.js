@@ -44,7 +44,17 @@ export const getEdital = async (tenantSlug, editalId) => {
   }
 };
 
-
+export const getEventoBySlug = async (slug) => {
+  try {
+    
+    const response = await req.get(`/evenplic/eventoSlug/${slug}`);
+    
+    return response.data.evento;
+  } catch (error) {
+    console.error("Erro ao chamar a API:", error);
+    throw error;
+  }
+};
 export const config = {
   runtime: 'nodejs', // Desativa o Edge Runtime e usa Node.js
 };

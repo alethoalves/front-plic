@@ -40,20 +40,20 @@ export const middleware = async (request) => {
     }
 
     /******************
-     * MIDDLEWARE PARA AVALIADOR (/avaliador)
+     * MIDDLEWARE PARA EVENTO (/evento)
      * ****************/
-    // APENAS /avaliador/signin
-    if (/^\/avaliador\/signin$/.test(pathname)) {
-      console.log('ENTROU NA ROTA /avaliador/signin')
+    // APENAS /evento/signin
+    if (/^\/eventos\/signin$/.test(pathname)) {
+      console.log('ENTROU NA ROTA /evento/signin')
       return NextResponse.next();
     }
 
     //Rotas especificas para avaliador, colocar antes das abaixo
 
-    // /avaliador ou /avaliador/ ou avaliador/qualquercoisa
-    if (/^\/avaliador(\/|$)/.test(pathname)) {
-      console.log('ENTROU EM QUALQUER ROTA que começa com /avaliador');
-      return NextResponse.redirect(urlToAvaliador);
+    // /evento ou /evento/ ou evento/qualquercoisa
+    if (/^\/eventos(\/|$)/.test(pathname)) {
+      console.log('ENTROU EM QUALQUER ROTA que começa com /evento');
+      return NextResponse.next();
     }
     /******************
      * MIDDLEWARE PARA TODAS AS ROTAS EXCETO AS ROTAS ACIMA

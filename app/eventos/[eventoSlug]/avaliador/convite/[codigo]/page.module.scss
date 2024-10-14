@@ -1,0 +1,172 @@
+@import "../../../../../../styles/partials/colors";
+@import "../../../../../../styles/partials/layout";
+@import "../../../../../../styles/partials/spacing";
+.main{
+    background-color: $white-normal;
+    height: 100vh;
+    display: flex;
+    overflow: auto;
+    
+    .content{
+        height: 100vh;
+        margin: 0 auto;
+        padding: $gap-2;
+        width: 900px;
+        
+        .banner{
+            
+            height: 350px;
+            @include responsive(xs){
+                height: 80px;
+            }
+            @include responsive(s){
+                height: 250px;
+            }
+            box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+            border-radius: $gap-2;
+            position: relative;
+            
+            img{
+                border-radius: $gap-2;
+                object-fit: contain;
+                object-position: center center;
+            }
+        }
+        .box{
+            margin-top: $gap-2;
+            box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+            border: 1px solid $gray-50;
+            border-radius: $gap-1;
+            display: flex;
+            flex-direction: column;
+            .header{
+                background-color: $primary-dark;
+                padding: $gap-2;
+                border-top-left-radius: $gap-1;
+                border-top-right-radius: $gap-1;
+                h4{
+                    color: $white-darken;
+                    text-align: center;
+                }
+            }
+            .boxContent{
+                background-color: $white-light;
+                padding: $gap-2;
+                border-bottom-left-radius: $gap-1;
+                border-bottom-right-radius: $gap-1;
+                
+                
+            }
+            
+            
+            
+        }
+        .errorMsg{
+            background-color: $error-light;
+            border-radius: $gap-1;
+            margin-top: $gap-1;
+            p{
+                color: $white-light;
+                padding: $gap-1 $gap-2;
+                
+            }
+        }
+        form{
+            width: 400px;
+            @include responsive(xs){
+                width: 100%;
+            }
+            margin: 0 auto;
+            .grandesAreas{
+                margin-bottom: $gap-1;
+                display: flex;
+                flex-wrap: wrap;
+                
+               
+                    flex-direction: column;
+                
+                .grandeArea.selected{
+                    border: 1px solid $success-normal;
+                    background-color: $success-normal;
+                    color: $white-light;
+                }
+                .grandeArea{
+                    
+                    border: 1px solid $gray-50;
+                    margin: 4px 0 ;
+                    
+                    padding: $gap-2;
+                    border-radius: $gap-1;
+                    cursor: pointer;
+                    transition: ease .3s;
+                    &:hover{
+                        transform: scale(1.04);
+                    }
+                    
+                }
+            }
+            .areas{
+                margin-bottom: $gap-1;
+                display: flex;
+                flex-wrap: wrap;
+                flex-direction: column;
+                .area{
+                    border: 1px solid $gray-50;
+                    padding: 4px $gap-2;
+                    border-radius: $gap-1;
+                    font-size: 12px;
+                    cursor: pointer;
+                    transition: ease .3s;
+                    margin: 4px 0 ;
+                    @include responsive(xs){
+                        padding: $gap-2 $gap-2;
+                        
+                    }
+                    &:hover{
+                        transform: scale(1.04);
+                    }
+                    &.selected{
+                        border: 1px solid $success-normal;
+                        background-color: $success-normal;
+                        color: $white-light;
+                    }
+                }
+            }
+            .subsessoes{
+                margin-bottom: $gap-1;
+                display: flex;
+                flex-wrap: wrap;
+                flex-direction: column;
+                .subsessao{
+                    border: 1px solid $gray-50;
+                    margin: 4px 0 ;
+                    padding: $gap-2 $gap-3;
+                    border-radius: $gap-1;
+                    font-size: 12px;
+                    cursor: pointer;
+                    transition: ease .3s;
+                    @include responsive(xs){
+                        padding: $gap-2 $gap-2;
+                        
+                    }
+                    &:hover{
+                        transform: scale(1.04);
+                    }
+                    &.selected{
+                        border: 1px solid $success-normal;
+                        background-color: $success-normal;
+                        p{
+                            color: $white-light;
+                            
+                        }
+                        
+                    }
+                }
+            }
+            
+        }
+    }
+    
+}
+
+

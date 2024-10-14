@@ -23,7 +23,32 @@ export const getEventosByTenant = async (tenantSlug) => {
       throw error;
     }
   };
-
+  export const getEventoBySlug = async (slug) => {
+    try {
+     
+      const response = await req.get(
+        `/evenplic/eventoSlug/${slug}`,
+       
+      );
+      return response.data.evento;
+    } catch (error) {
+      console.error("Erro ao chamar a API:", error);
+      throw error;
+    }
+  };
+  export const getAllEvents = async () => {
+    try {
+      
+      const response = await req.get(
+        `/evenplic/allevents`,
+       
+      );
+      return response.data.eventos;
+    } catch (error) {
+      console.error("Erro ao chamar a API:", error);
+      throw error;
+    }
+  };
   export const startSubmissaoEvento = async (tenantSlug,idEvento,idPlanoDeTrabalho,idFormulario,idSubsessaoApresentacao) => {
     try {
       const headers = getAuthHeadersClient();

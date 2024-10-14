@@ -1,0 +1,92 @@
+@import "../../styles/partials/colors";
+@import "../../styles/partials/layout";
+@import "../../styles/partials/spacing";
+.main{
+    background-color: $white-normal;
+    height: 100vh;
+    display: flex;
+    
+    .content{
+        margin: 0 auto;
+        padding: $gap-2;
+        @include responsive(xs){
+            padding: $gap-1;
+        }
+    }
+    .header {
+        width: calc(100vw - 32px);
+        margin-bottom: $gap-2;
+        @include responsive(xs){
+            width: calc(100vw - 16px);
+            margin-bottom: $gap-1;
+        }
+        
+        @include responsive(m){
+           //border: 1px solid blue;
+        }
+        @include responsive(s){
+           // border: 1px solid green;
+        }
+        @include responsive(xs){
+            
+        }
+        
+        .logo{
+            position: relative;
+            height: 80px;
+
+            img{
+                object-fit: contain;
+                object-position: center center;
+            }
+        }
+    }
+    
+    .eventos{
+        display: flex;
+        flex-wrap: wrap;
+        
+        .evento{
+            border: 1px solid $gray-50;
+            border-radius: $gap-1;
+            //width: 320px;
+            //Por hora, já que só tem um evento colocar :
+            width: calc(100vw - 42px);
+            @include responsive(m){
+                //width: calc((100vw - 100px)/2);
+                //Por hora, já que só tem um evento colocar :
+            width: calc(100vw - 42px);
+            }
+            @include responsive(s){
+                width: calc(100vw - 42px);
+            }
+            @include responsive(xs){
+                width: calc(100vw - 32px);
+            }
+            //flex: 1;
+            margin: $gap-1;
+            .banner{
+                position: relative;
+                height: 250px;
+                
+                img{
+                    border-top-left-radius: $gap-1;
+                    border-top-right-radius: $gap-1;
+                    object-fit: contain;
+                    object-position: center center;
+                    
+                    background-color: #EDF2F2;
+                }
+            }
+            .description{
+                background-color: $white-light;
+                padding: $gap-3;
+                border-bottom-left-radius: $gap-1;
+                border-bottom-right-radius: $gap-1;
+            }
+        }
+    }
+    
+}
+
+

@@ -7,9 +7,8 @@ import { req } from "./../axios.js";
 
 export const getAreas = async (tenantSlug) => {
   try {
-    const headers = getAuthHeadersClient();
-    if (!headers) return false;
-    const response = await req.get(`/private/${tenantSlug}/areas`, { headers });
+    
+    const response = await req.get(`/areas`, );
     return response.data.areas;
   } catch (error) {
     if (error.response && error.response.status === 404) {
