@@ -10,6 +10,7 @@ import {
   RiArrowRightCircleFill,
   RiBatteryLowLine,
   RiCalendarLine,
+  RiGroupLine,
   RiPresentationFill,
 } from "@remixicon/react";
 
@@ -160,6 +161,17 @@ const Inscricoes = ({ tenantSlug }) => {
                                 <strong>Capacidade: </strong>
                                 {subs.submissaoTotal} inscritos | capacidade:{" "}
                                 {capacidadeTotal}
+                              </p>
+                            </div>
+                          </div>
+                          <div className={styles.description}>
+                            <div className={styles.icon}>
+                              <RiGroupLine />
+                            </div>
+                            <div className={styles.infoBoxDescription}>
+                              <p>
+                                <strong>Avaliadores: </strong>
+                                {subs.convitesAceitos}
                               </p>
                             </div>
                           </div>
