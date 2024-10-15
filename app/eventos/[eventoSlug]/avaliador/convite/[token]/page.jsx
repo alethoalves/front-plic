@@ -247,10 +247,13 @@ const Page = ({ params }) => {
                 <br></br>
                 <p>
                   As avaliações ocorrerão nos dias{" "}
-                  <strong>4, 5 e 6 de novembro de 2024</strong>
-                  de forma <strong>presencial no Centro Comunitário </strong>
-                  Athos Bulcão localizado no Campus Darcy Ribeiro da
-                  Universidade de Brasília.
+                  <strong>4, 5 e 6 de novembro de 2024 </strong>
+                  de forma{" "}
+                  <strong>
+                    presencial, no Centro Comunitário Athos Bulcão
+                  </strong>
+                  , localizado no Campus Darcy Ribeiro da Universidade de
+                  Brasília.
                 </p>
                 <form
                   className="mt-2"
