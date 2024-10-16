@@ -50,11 +50,21 @@ const Page = ({ params }) => {
         setEvento(evento);
         const convite = await consultarConviteByToken(params.token);
         setConvite(convite);
+        console.log(convite);
         if (convite) {
-          if (convite.convite.status === "ACEITO") {
+          const conviteAvaliadorComSubsessao =
+            convite.convite?.user?.ConviteAvaliadorEvento?.some(
+              (avaliador) => avaliador.conviteSubsessao.length > 0
+            );
+
+          if (
+            (convite.convite.status === "ACEITO" && convite.convite.userId) ||
+            conviteAvaliadorComSubsessao
+          ) {
             setConviteAceito(true);
             setStep(5);
           }
+
           //console.log("Evento:", evento);
 
           // Filtrar apenas as subsessões
@@ -501,65 +511,79 @@ const Page = ({ params }) => {
                                     </h6>
                                   </div>
                                 </div>
-                                {convite.convite.conviteSubsessao
-                                  .sort((a, b) => {
-                                    // Converta as datas de início em objetos Date para comparação
-                                    const dateA = new Date(
-                                      a.subsessaoApresentacao.inicio
-                                    );
-                                    const dateB = new Date(
-                                      b.subsessaoApresentacao.inicio
-                                    );
-                                    return dateA - dateB; // Ordena por data e hora de início
-                                  })
-                                  .map((item) => (
-                                    <div
-                                      className={styles.sessao}
-                                      key={item.id}
-                                    >
-                                      <div className={styles.description}>
-                                        <div className={styles.icon}>
-                                          <RiFlaskLine />
-                                        </div>
+                                {convite.convite?.user?.ConviteAvaliadorEvento.map(
+                                  (con) => {
+                                    // Ordena os convites de subsessão pela data de início
+                                    const conviteSubsessaoOrdenado =
+                                      con.conviteSubsessao.sort((a, b) => {
+                                        const dateA = new Date(
+                                          a.subsessaoApresentacao.inicio
+                                        );
+                                        const dateB = new Date(
+                                          b.subsessaoApresentacao.inicio
+                                        );
+                                        return dateA - dateB; // Ordena por data e hora de início
+                                      });
+
+                                    // Mapeia e renderiza os itens ordenados
+                                    return conviteSubsessaoOrdenado.map(
+                                      (item) => (
                                         <div
-                                          className={styles.infoBoxDescription}
+                                          className={styles.sessao}
+                                          key={item.id}
                                         >
-                                          <p>
-                                            <strong>Sessão: </strong>
-                                          </p>
-                                          <p>
-                                            {
-                                              item.subsessaoApresentacao
-                                                .sessaoApresentacao.titulo
-                                            }
-                                          </p>
+                                          <div className={styles.description}>
+                                            <div className={styles.icon}>
+                                              <RiFlaskLine />
+                                            </div>
+                                            <div
+                                              className={
+                                                styles.infoBoxDescription
+                                              }
+                                            >
+                                              <p>
+                                                <strong>Sessão: </strong>
+                                              </p>
+                                              <p>
+                                                {
+                                                  item.subsessaoApresentacao
+                                                    .sessaoApresentacao.titulo
+                                                }
+                                              </p>
+                                            </div>
+                                          </div>
+                                          <div className={styles.description}>
+                                            <div className={styles.icon}>
+                                              <RiCalendarLine />
+                                            </div>
+                                            <div
+                                              className={
+                                                styles.infoBoxDescription
+                                              }
+                                            >
+                                              <p>
+                                                <strong>
+                                                  Início das avaliações:{" "}
+                                                </strong>
+                                              </p>
+                                              <p>
+                                                {formatarData(
+                                                  item.subsessaoApresentacao
+                                                    .inicio
+                                                )}{" "}
+                                                -{" "}
+                                                {formatarHora(
+                                                  item.subsessaoApresentacao
+                                                    .inicio
+                                                )}
+                                              </p>
+                                            </div>
+                                          </div>
                                         </div>
-                                      </div>
-                                      <div className={styles.description}>
-                                        <div className={styles.icon}>
-                                          <RiCalendarLine />
-                                        </div>
-                                        <div
-                                          className={styles.infoBoxDescription}
-                                        >
-                                          <p>
-                                            <strong>
-                                              Início das avaliações:{" "}
-                                            </strong>
-                                          </p>
-                                          <p>
-                                            {formatarData(
-                                              item.subsessaoApresentacao.inicio
-                                            )}{" "}
-                                            -{" "}
-                                            {formatarHora(
-                                              item.subsessaoApresentacao.inicio
-                                            )}
-                                          </p>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  ))}
+                                      )
+                                    );
+                                  }
+                                )}
                               </div>
                             </div>
                           </div>
