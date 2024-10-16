@@ -33,3 +33,14 @@ export const pingAluno = async (token,tenant) => {
     return false
   }
 };
+
+export const pingAvaliador = async (token) => {
+  try {
+    const response = await req.get(`/private/plic/ping/avaliador`, {
+      headers: getAuthHeadersServer(token)
+    });
+    return response.data.pong
+  } catch (error) {
+    return false
+  }
+};

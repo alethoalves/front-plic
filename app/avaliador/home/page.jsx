@@ -1,7 +1,7 @@
 const Page = () => {
   return (
     <main>
-      <p>AVALIADOR</p>
+      <p>AVALIADOR HOME</p>
     </main>
   );
 };

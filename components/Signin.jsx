@@ -25,7 +25,7 @@ import Input from "@/components/Input";
 //Chamadas api
 import { signin } from "@/app/api/client/auth";
 
-const Auth = ({ slug, pathLogo }) => {
+const Auth = ({ slug, pathLogo, isAvaliador = false }) => {
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [tela, setTela] = useState(0);
@@ -48,8 +48,19 @@ const Auth = ({ slug, pathLogo }) => {
         const existeAluno = response.perfis?.some(
           (item) => item.tenant === slug && item.cargo === "aluno"
         );
-        if (!existeGestor && !existeOrientador && !existeAluno) {
-          setErrorMessage("Você não tem perfil nesta instituição.");
+        const existeAvaliador = response.perfis?.some(
+          (item) => item.tenant === "plic" && item.cargo === "avaliador"
+        );
+        if (
+          !existeGestor &&
+          !existeOrientador &&
+          !existeAluno & !existeAvaliador
+        ) {
+          setErrorMessage(
+            `Você não tem perfil ${
+              isAvaliador ? "de avaliador" : "nesta instituição"
+            } .`
+          );
           reset();
           setTela(0);
         }

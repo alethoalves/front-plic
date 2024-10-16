@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { getCookie } from "cookies-next";
 import { cookies } from "next/headers";
 import { getTenant } from "./app/api/server/getTenant";
-import { pingAluno, pingGestor, pingOrientador } from "./app/api/server/pings";
+import { pingAluno, pingAvaliador, pingGestor, pingOrientador } from "./app/api/server/pings";
 
 export const middleware = async (request) => {
   // Recebe um request, extrai a URL e identifica o tenant a partir do caminho.
@@ -15,7 +15,9 @@ export const middleware = async (request) => {
   const urlToRoot = new URL(request.url);
   urlToRoot.pathname = `/`;
   const urlToAvaliador = new URL(request.url);
-  urlToAvaliador.pathname = `/avaliador/signin`;
+  urlToAvaliador.pathname = `/avaliador/home`;
+  const urlToRootAvaliador = new URL(request.url);
+  urlToRootAvaliador.pathname = `/avaliador`;
   const urlToGestor = new URL(request.url);
   urlToGestor.pathname = `/${tenant}/gestor`;
   const urlToOrientador = new URL(request.url);
@@ -48,12 +50,34 @@ export const middleware = async (request) => {
       return NextResponse.next();
     }
 
-    //Rotas especificas para avaliador, colocar antes das abaixo
+    //Rotas especificas para evento, colocar antes das abaixo
 
     // /evento ou /evento/ ou evento/qualquercoisa
     if (/^\/eventos(\/|$)/.test(pathname)) {
       console.log('ENTROU EM QUALQUER ROTA que começa com /evento');
       return NextResponse.next();
+    }
+    let pongAvaliador;
+    pongAvaliador = await pingAvaliador(token);
+     /******************
+     * MIDDLEWARE PARA AVALIADOR (/avaliador)
+     * ****************/
+    // APENAS /avaliador
+    if (pathname === '/avaliador') {
+      console.log('ENTROU NA ROTA APENAS /avaliador')
+      if (pongAvaliador) return NextResponse.redirect(urlToAvaliador);
+      console.log(pongAvaliador)
+      return NextResponse.next();
+    }
+
+    //Rotas especificas para avaliador, colocar antes das abaixo
+
+    
+    // Middleware apenas para as rotas avaliador `/avaliador/home`
+    if (url.pathname.startsWith(`/avaliador/home`)) {
+      // Não tem token válido OU não tem permissão de acesso -> redireciona
+      if (!pongAvaliador) return NextResponse.redirect(urlToRootAvaliador);
+      return NextResponse.next()
     }
     /******************
      * MIDDLEWARE PARA TODAS AS ROTAS EXCETO AS ROTAS ACIMA
