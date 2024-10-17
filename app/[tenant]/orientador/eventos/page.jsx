@@ -235,8 +235,8 @@ const Page = ({ params }) => {
                       {plano.item.status === "naoEntregue" && (
                         <div className={`${styles.semResumo}`}>
                           <p>
-                            Envie o resumo deste projeto antes de fazer a
-                            inscrição neste evento.
+                            Envie o resumo e o vídeo deste projeto antes de
+                            fazer a inscrição neste evento.
                           </p>
                         </div>
                       )}
