@@ -487,7 +487,9 @@ const Page = ({ params }) => {
                           type="submit" // submit, reset, button
                           disabled={loading}
                         >
-                          Concluir
+                          {loading
+                            ? "Aguarde alguns minutos. Estamos validando os dados do CPF."
+                            : "Concluir"}
                         </Button>
                       </>
                     )}
