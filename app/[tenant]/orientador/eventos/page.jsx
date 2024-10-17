@@ -232,14 +232,26 @@ const Page = ({ params }) => {
                     <div>
                       <p className="mb-2">TÍTULO DO PROJETO:</p>
                       <h6 className="mb-2">{plano.titulo}</h6>
-                      <SearchableSelect2
-                        className="mb-2"
-                        name="areaId"
-                        label="Selecione a área de Conhecimento"
-                        options={areas || []} // Garante que o options seja um array
-                        disabled={loading}
-                        onChange={(value) => handleSessaoChange(idPlano, value)}
-                      />
+                      {plano.item.status === "naoEntregue" && (
+                        <div className={`${styles.semResumo}`}>
+                          <p>
+                            Envie o resumo deste projeto antes de fazer a
+                            inscrição neste evento.
+                          </p>
+                        </div>
+                      )}
+                      {plano.item.status !== "naoEntregue" && (
+                        <SearchableSelect2
+                          className="mb-2"
+                          name="areaId"
+                          label="Selecione a área de Conhecimento"
+                          options={areas || []} // Garante que o options seja um array
+                          disabled={loading}
+                          onChange={(value) =>
+                            handleSessaoChange(idPlano, value)
+                          }
+                        />
+                      )}
                     </div>
 
                     {error && (
