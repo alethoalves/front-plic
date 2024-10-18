@@ -22,8 +22,8 @@ export const generateMetadata = async ({ params }) => {
 
 const Layout = async ({ children, params }) => {
   // Acessar os cabeçalhos da requisição
-  const evento = await getEventoBySlug(params.eventoSlug);
-  const primaryColor = evento.primaryColor;
+  const headersList = headers();
+  const primaryColor = headersList.get("x-tenant-primary-color");
 
   const primaryVariants =
     colorGenerate.createPrimaryColorVariants(primaryColor);

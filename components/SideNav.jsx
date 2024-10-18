@@ -4,6 +4,7 @@ import Menu from "@/components/Menu";
 import itensMenu from "@/lib/menuItens";
 import itensMenuOrientador from "@/lib/menuItensOrientador";
 import itensMenuAluno from "@/lib/menuItensAluno";
+import itensMenuAdmin from "@/lib/menuItensAdmin";
 
 import styles from "./SideNav.module.scss";
 import { RiQuestionAnswerLine } from "@remixicon/react";
@@ -24,6 +25,9 @@ const SideNav = ({ pathLogo, menuType = "gestor" }) => {
   }
   if (menuType === "aluno") {
     menuData = itensMenuAluno;
+  }
+  if (menuType === "admin") {
+    menuData = itensMenuAdmin;
   }
   return (
     <div className={`${styles.sideNav} ${sidebarOpen && styles.open}`}>

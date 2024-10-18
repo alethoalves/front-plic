@@ -3,13 +3,17 @@ import { NextResponse } from "next/server";
 import { getCookie } from "cookies-next";
 import { cookies } from "next/headers";
 import { getTenant } from "./app/api/server/getTenant";
-import { pingAluno, pingAvaliador, pingGestor, pingOrientador } from "./app/api/server/pings";
+import { pingAdminEvento, pingAluno, pingAvaliador, pingGestor, pingOrientador } from "./app/api/server/pings";
+import { getEventoBySlug } from "./app/api/serverReq";
 
 export const middleware = async (request) => {
   // Recebe um request, extrai a URL e identifica o tenant a partir do caminho.
   const url = new URL(request.url);
   const tenantMatch = url.pathname.match(/^\/([^\/]*)/);
   const tenant = tenantMatch ? tenantMatch[1] : null;
+  const slugEventoMatch = url.pathname.match(/eventos\/([^\/]+)\/admin/);
+  const slugEvento = slugEventoMatch ? slugEventoMatch[1] : null;
+  console.log(slugEvento)
   const urlToSignin = new URL(request.url);
   urlToSignin.pathname = `/${tenant}`;
   const urlToRoot = new URL(request.url);
@@ -44,11 +48,42 @@ export const middleware = async (request) => {
     /******************
      * MIDDLEWARE PARA EVENTO (/evento)
      * ****************/
-    // APENAS /evento/signin
+    // APENAS /eventos/signin
     if (/^\/eventos\/signin$/.test(pathname)) {
       console.log('ENTROU NA ROTA /evento/signin')
       return NextResponse.next();
     }
+
+    
+    
+ /******************
+     * MIDDLEWARE PARA AS ROTAS INTERNAS DO ADMIN DE EVENTO (/eventos/[eventoSlug]/admin)
+     * ****************/
+    // Middleware apenas para as rotas admin `/eventos/[eventoSlug]/admin`
+    if (url.pathname.startsWith(`/eventos/${slugEvento}/admin`)) {
+      // Não tem token válido OU não tem permissão de acesso -> redireciona
+      let pongAdminEvento;
+      pongAdminEvento = await pingAdminEvento(token,slugEvento);
+      if (!pongAdminEvento) return NextResponse.redirect(urlToSignin);
+      const eventoExists = await getEventoBySlug(slugEvento);
+      console.log(eventoExists.pathLogo)
+      if (!eventoExists) {
+        return NextResponse.redirect(urlToSignin);
+      }
+      const NextResponseWithEvento = NextResponse.next();
+      NextResponseWithEvento.headers.set(
+        "x-tenant-primary-color",
+        eventoExists.primaryColor || ""
+      );
+      NextResponseWithEvento.headers.set(
+        "x-tenant-path-logo",
+        eventoExists.pathLogo || ""
+      );
+      
+      
+        return NextResponseWithEvento;
+    }
+
 
     //Rotas especificas para evento, colocar antes das abaixo
 
@@ -79,6 +114,11 @@ export const middleware = async (request) => {
       if (!pongAvaliador) return NextResponse.redirect(urlToRootAvaliador);
       return NextResponse.next()
     }
+
+   
+
+
+
     /******************
      * MIDDLEWARE PARA TODAS AS ROTAS EXCETO AS ROTAS ACIMA
      * ****************/

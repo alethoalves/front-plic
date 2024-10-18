@@ -44,3 +44,15 @@ export const pingAvaliador = async (token) => {
     return false
   }
 };
+
+
+export const pingAdminEvento = async (token,eventoSlug) => {
+  try {
+    const response = await req.get(`/private/evenplic/${eventoSlug}/ping/admin`, {
+      headers: getAuthHeadersServer(token)
+    });
+    return response.data.pong
+  } catch (error) {
+    return false
+  }
+};

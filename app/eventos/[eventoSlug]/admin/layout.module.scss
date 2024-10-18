@@ -1,0 +1,38 @@
+@import "../../../../styles/partials/colors";
+@import "../../../../styles/partials/layout";
+@import "../../../../styles/partials/spacing";
+
+.dashboard{
+    display: flex;
+   
+    width: 100vw;
+    min-height: 100vh;
+    background-color:$white-light;
+    .item1{
+        background-color: $white-light;
+        
+    }
+    .item2{
+        flex: 1;
+        
+        .content{
+            margin-top: 70px;
+            margin-left: 210px;
+            padding: $gap-5 0 0 $gap-4 ;
+            padding-right: 20px;
+            //max-width: 990px;
+        }
+    }
+}
+@include responsive(s){
+    .dashboard{
+        .item2{            
+            .content{
+                margin-left: 0;
+                padding: $gap-3 $gap-2;
+            }
+        }
+    }
+}
+
+

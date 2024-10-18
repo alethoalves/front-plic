@@ -112,7 +112,11 @@ const Inscricoes = ({ tenantSlug }) => {
       {eventos ? (
         eventos.length > 0 ? (
           <div className={styles.content}>
-            <h5>{eventos[currentEventIndex].data.evento.nomeEvento}</h5>
+            <Link
+              href={`/eventos/${eventos[currentEventIndex].data.evento.slug}/admin`}
+            >
+              <h5>{eventos[currentEventIndex].data.evento.nomeEvento}</h5>
+            </Link>
             <div className={styles.totais}>
               {eventos[currentEventIndex].info.tenantsTotais.map((tenant) => (
                 <div

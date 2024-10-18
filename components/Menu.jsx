@@ -7,13 +7,16 @@ import styles from "./Menu.module.scss";
 
 const Menu = ({ onClick, itensMenu }) => {
   const pathname = usePathname();
-  const { tenant } = useParams();
+  const { tenant, eventoSlug } = useParams();
 
   return (
     <ul className={styles.menu}>
       {itensMenu.map((item, i) => {
         const Icon = item.icon;
-        const resolvedPath = item.path.replace("[tenant]", tenant);
+        const resolvedPath = item.path.replace(
+          "[tenant]",
+          tenant || eventoSlug
+        );
 
         // Verificação específica para a rota "Home"
         const isActive =
