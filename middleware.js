@@ -13,6 +13,7 @@ export const middleware = async (request) => {
   const tenant = tenantMatch ? tenantMatch[1] : null;
   const slugEventoMatch = url.pathname.match(/eventos\/([^\/]+)\//);
   const slugEvento = slugEventoMatch ? slugEventoMatch[1] : null;
+  
   console.log(slugEvento)
   const urlToSignin = new URL(request.url);
   urlToSignin.pathname = `/${tenant}`;
@@ -53,9 +54,9 @@ export const middleware = async (request) => {
       console.log('ENTROU NA ROTA /evento/signin')
       return NextResponse.next();
     }
-   
-    if (url.pathname.startsWith(`/eventos/${slugEvento}/avaliador/convite/`)) {
-      console.log(`/eventos/${slugEvento}/avaliador/convite/`)
+    
+    if (url.pathname.startsWith(`/eventos/${slugEvento}/avaliador/convite`)) {
+      console.log(`/eventos/${slugEvento}/avaliador`)
       // Não tem token válido OU não tem permissão de acesso -> redireciona
       
       const eventoExists = await getEventoBySlug(slugEvento);
