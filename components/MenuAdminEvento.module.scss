@@ -8,6 +8,7 @@
     border-radius: 9px;
     color: $primary-darken;
     margin-right: $gap-2;
+    max-width: 990px;
     @include responsive(s){
         margin-right: 0;
     }

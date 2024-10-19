@@ -2,18 +2,24 @@ import Header from "@/components/Header";
 import styles from "./layout.module.scss";
 import MenuAdminEvento from "@/components/MenuAdminEvento";
 import { redirect } from "next/navigation";
+import { getSessoesBySlug } from "@/app/api/serverReq";
 
 const Layout = async ({ children, params }) => {
-  let inscricao;
-
+  let sessoesData;
+  let menuItens = [];
   try {
+    sessoesData = await getSessoesBySlug(params.eventoSlug);
+    sessoesData.forEach((element) => {
+      menuItens.push({
+        title: element.titulo,
+        path: `/eventos/${params.eventoSlug}/admin/apresentacao/${element.id}`,
+      });
+    });
   } catch (error) {
     console.error("Erro:", error);
 
     return <p>Dados não encontrados</p>; // Garante que nada mais será renderizado após o redirecionamento
   }
-
-  const statusType = "incompleta";
 
   return (
     <main className={styles.main}>
@@ -26,7 +32,6 @@ const Layout = async ({ children, params }) => {
         //descricao={<><strong>Proponente: </strong>{inscricao.proponente.nome}</>}
       />
       <div className={styles.content}>
-        <MenuAdminEvento params={params} />
         <div className={styles.navContent}>{children}</div>
       </div>
     </main>

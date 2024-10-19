@@ -1,41 +1,21 @@
 "use client";
 
-import itensMenu from "@/lib/menuInscricao";
 import Link from "next/link";
 import { usePathname, useParams } from "next/navigation";
-
+import { useEffect, useState } from "react";
 import styles from "./MenuAdminEvento.module.scss";
-import {
-  RiFolderUserLine,
-  RiFoldersLine,
-  RiGroupLine,
-  RiInformationLine,
-} from "@remixicon/react";
+import { getSessoesBySlug } from "@/app/api/client/sessoes";
 
-const MenuInscricao = ({ params, onClick }) => {
+const MenuInscricao = ({ params, menu, onClick }) => {
   const pathname = usePathname();
   const { tenant, idInscricao } = useParams();
-  const itensMenu = [
-    {
-      title: "Exatas e Tecnológicas",
-      path: "/eventos/[eventoSlug]/admin/apresentacao/sessao/[idSessao]",
-    },
-    {
-      title: "Saúde e Vida",
-      path: "/eventos/[eventoSlug]/admin/apresentacao/sessao/[idSessao]",
-    },
-    //{ title: "Alunos", icon: RiGraduationCapLine, path: "/[tenant]/gestor/inscricoes/[idInscricao]/alunos" },
-    {
-      title: "Artes e Humanidades",
-      path: "/eventos/[eventoSlug]/admin/apresentacao/sessao/[idSessao]",
-    },
-  ];
+
   return (
     <div className={styles.nav}>
-      {itensMenu.map((item, i) => {
-        const resolvedPath = item.path
-          .replace("[eventoSlug]", params.eventoSlug)
-          .replace("[idSessao]", 1);
+      {menu.map((item, i) => {
+        const Icon = item.icon;
+        const resolvedPath = item.path;
+
         const isActive = pathname === resolvedPath;
 
         return (

@@ -58,3 +58,16 @@ export const getEventoBySlug = async (slug) => {
 export const config = {
   runtime: 'nodejs', // Desativa o Edge Runtime e usa Node.js
 };
+
+export const getSessoesBySlug = async (eventoSlug) => {
+  try {
+    
+    const response = await req.get(
+      `/evenplic/evento/${eventoSlug}/sessoes`,
+    );
+    return response.data.sessoes;
+  } catch (error) {
+    console.error("Erro:", error);
+    throw error;
+  }
+};

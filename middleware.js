@@ -11,7 +11,7 @@ export const middleware = async (request) => {
   const url = new URL(request.url);
   const tenantMatch = url.pathname.match(/^\/([^\/]*)/);
   const tenant = tenantMatch ? tenantMatch[1] : null;
-  const slugEventoMatch = url.pathname.match(/eventos\/([^\/]+)\/admin/);
+  const slugEventoMatch = url.pathname.match(/eventos\/([^\/]+)\//);
   const slugEvento = slugEventoMatch ? slugEventoMatch[1] : null;
   console.log(slugEvento)
   const urlToSignin = new URL(request.url);
@@ -53,14 +53,36 @@ export const middleware = async (request) => {
       console.log('ENTROU NA ROTA /evento/signin')
       return NextResponse.next();
     }
-
-    
+   
+    if (url.pathname.startsWith(`/eventos/${slugEvento}/avaliador/convite/`)) {
+      console.log(`/eventos/${slugEvento}/avaliador/convite/`)
+      // Não tem token válido OU não tem permissão de acesso -> redireciona
+      
+      const eventoExists = await getEventoBySlug(slugEvento);
+      console.log(eventoExists.pathLogo)
+      if (!eventoExists) {
+        return NextResponse.redirect(urlToSignin);
+      }
+      const NextResponseWithEvento = NextResponse.next();
+      NextResponseWithEvento.headers.set(
+        "x-tenant-primary-color",
+        eventoExists.primaryColor || ""
+      );
+      NextResponseWithEvento.headers.set(
+        "x-tenant-path-logo",
+        eventoExists.pathLogo || ""
+      );
+      
+      
+        return NextResponseWithEvento;
+    }
     
  /******************
      * MIDDLEWARE PARA AS ROTAS INTERNAS DO ADMIN DE EVENTO (/eventos/[eventoSlug]/admin)
      * ****************/
     // Middleware apenas para as rotas admin `/eventos/[eventoSlug]/admin`
     if (url.pathname.startsWith(`/eventos/${slugEvento}/admin`)) {
+      console.log(`/eventos/${slugEvento}/admin`)
       // Não tem token válido OU não tem permissão de acesso -> redireciona
       let pongAdminEvento;
       pongAdminEvento = await pingAdminEvento(token,slugEvento);
@@ -83,13 +105,15 @@ export const middleware = async (request) => {
       
         return NextResponseWithEvento;
     }
-
+    
+    
 
     //Rotas especificas para evento, colocar antes das abaixo
 
     // /evento ou /evento/ ou evento/qualquercoisa
     if (/^\/eventos(\/|$)/.test(pathname)) {
       console.log('ENTROU EM QUALQUER ROTA que começa com /evento');
+      
       return NextResponse.next();
     }
     let pongAvaliador;
