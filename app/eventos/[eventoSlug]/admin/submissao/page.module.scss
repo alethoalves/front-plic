@@ -1,0 +1,107 @@
+@import "../../../../../styles/partials/colors";
+@import "../../../../../styles/partials/layout";
+@import "../../../../../styles/partials/spacing";
+
+
+ 
+.squares{
+    max-width: 990px;
+    .square{
+        border: 1px solid $gray-50;
+        border-radius: $gap-1;
+        padding: 3px;
+        display: flex;
+        @include responsive (s){
+            flex-direction: column;
+        }
+        margin-bottom: $gap-1;
+        .squareHeader, .squareContent, .squareContentEmpty{
+            background-color: $white-darken;
+            padding: $gap-1;
+            border-radius: 6px;
+        }
+        .squareHeader{
+            margin-right: 3px;
+            @include responsive (s){
+                margin-right: 0px;
+                margin-bottom: 3px;
+            }
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: center;
+            h6{
+                font-size: 22px;
+            }
+        }
+        .squareContentEmpty{
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: transparent;
+            border: 1px solid $white-darken;
+            transition: ease .3s;
+            cursor: pointer;
+            p{
+                text-align: center;
+                transition: ease .3s;
+                cursor: pointer;
+            }
+
+            &:hover{
+                background-color: $white-darken;
+                p{
+                    text-decoration: underline;
+                }
+            }
+        }
+        .squareContent{
+            flex: 1;
+            cursor: pointer;
+            transition: ease .3s;
+            border: 1px solid transparent;
+            &:hover{
+                border: 1px solid $primary-light;
+            }
+            .info{
+                display: flex;
+                margin-bottom: 6px;
+                .status{
+                    background-color: $primary-light;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    color: $white-normal;
+                    font-size: 10px;
+                    margin-right: 6px;
+                    &.error{
+                        background-color: $error-lighten;
+                        color: $error-dark;
+                    }
+                }
+                .area{
+                    border: 1px solid $primary-light;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    color: $primary-light;
+                    font-size: 10px;
+                }
+            }
+            .submissaoData{
+                .participacoes{
+                    font-size: 12px;
+                }
+            }
+        }
+    }
+}
+
+
+.icon{
+    width: 24px;
+    color: $primary-normal;
+}
+
+
+
+

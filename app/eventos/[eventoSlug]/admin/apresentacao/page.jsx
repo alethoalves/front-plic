@@ -17,6 +17,7 @@ import { getInscricao } from "@/app/api/client/inscricao";
 import Table from "@/components/Table";
 import { useRouter } from "next/navigation";
 import { getSessaoById, getSessoesBySlug } from "@/app/api/client/sessoes";
+import Link from "next/link";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
@@ -80,47 +81,52 @@ const Page = ({ params }) => {
               </p>
               <div className={styles.subsessoes}>
                 {sessao?.subsessaoApresentacao?.map((subs) => (
-                  <div key={subs.id} className={styles.subsessao}>
-                    <div className={styles.description}>
-                      <div className={styles.icon}>
-                        <RiCalendarLine />
+                  <Link
+                    key={subs.id}
+                    href={`/eventos/${params.eventoSlug}/admin/apresentacao/${subs.id}`}
+                  >
+                    <div className={styles.subsessao}>
+                      <div className={styles.description}>
+                        <div className={styles.icon}>
+                          <RiCalendarLine />
+                        </div>
+                        <div className={styles.infoBoxDescription}>
+                          <p>Dia</p>
+                          <h6>{formatarData(subs.inicio)}</h6>
+                        </div>
                       </div>
-                      <div className={styles.infoBoxDescription}>
-                        <p>Dia</p>
-                        <h6>{formatarData(subs.inicio)}</h6>
+                      <div className={styles.description}>
+                        <div className={styles.icon}>
+                          <RiTimeLine />
+                        </div>
+                        <div className={styles.infoBoxDescription}>
+                          <p>Horário</p>
+                          <h6>
+                            de {formatarHora(subs.inicio)} às{" "}
+                            {formatarHora(subs.fim)}
+                          </h6>
+                        </div>
+                      </div>
+                      <div className={styles.description}>
+                        <div className={styles.icon}>
+                          <RiGroupLine />
+                        </div>
+                        <div className={styles.infoBoxDescription}>
+                          <p>Inscritos</p>
+                          <h6>{subs.submissaoCount}</h6>
+                        </div>
+                      </div>
+                      <div className={styles.description}>
+                        <div className={styles.icon}>
+                          <RiSurveyLine />
+                        </div>
+                        <div className={styles.infoBoxDescription}>
+                          <p>Avaliadores</p>
+                          <h6>{subs.conviteSubsessaoCount}</h6>
+                        </div>
                       </div>
                     </div>
-                    <div className={styles.description}>
-                      <div className={styles.icon}>
-                        <RiTimeLine />
-                      </div>
-                      <div className={styles.infoBoxDescription}>
-                        <p>Horário</p>
-                        <h6>
-                          de {formatarHora(subs.inicio)} às{" "}
-                          {formatarHora(subs.fim)}
-                        </h6>
-                      </div>
-                    </div>
-                    <div className={styles.description}>
-                      <div className={styles.icon}>
-                        <RiGroupLine />
-                      </div>
-                      <div className={styles.infoBoxDescription}>
-                        <p>Inscritos</p>
-                        <h6>{subs.submissaoCount}</h6>
-                      </div>
-                    </div>
-                    <div className={styles.description}>
-                      <div className={styles.icon}>
-                        <RiSurveyLine />
-                      </div>
-                      <div className={styles.infoBoxDescription}>
-                        <p>Avaliadores</p>
-                        <h6>{subs.conviteSubsessaoCount}</h6>
-                      </div>
-                    </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>

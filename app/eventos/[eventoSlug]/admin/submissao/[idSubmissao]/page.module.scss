@@ -1,0 +1,211 @@
+@import "../../../../../../styles/partials/colors";
+@import "../../../../../../styles/partials/layout";
+@import "../../../../../../styles/partials/spacing";
+
+
+
+.content{
+    margin-top: $gap-3;
+    margin-bottom: $gap-7;
+    max-width: 990px;
+               
+    @include responsive(s){
+        flex-direction: column;
+    }
+    
+}
+.mainContent{
+    margin-top: $gap-2;
+    .edital, .orientadores,.atividades{
+        padding: $gap-2;
+        border: 1px solid $gray-50;
+        box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+        border-radius: $gap-1;
+        &:not(:last-child){
+            margin-bottom: $gap-1;
+        }
+    }
+    .atividades{
+        margin-top: $gap-3;
+        position: relative;
+        
+        .titulo{
+            display: flex;
+            align-items: center;
+            margin-bottom: $gap-1;
+            h6{
+                color: $primary-darken;
+                text-transform: uppercase;
+                
+            }
+            svg{
+                color: $primary-darken;
+                margin-left: 3px;
+                width: 20px;
+
+            }
+        }
+        
+        .label{
+            
+            background-color: $gray-50;
+            border-radius: $gap-1;
+            display: inline-block;
+            padding: $gap-1 $gap-3;
+            position: absolute;
+            top: 0;
+            margin-top: -15px;
+            p{
+                color: $primary-darken;
+            }
+        }
+        .atividade{
+            cursor: pointer;
+            margin-top: $gap-2;
+            border-bottom: 1px solid $gray-100;
+            padding-bottom: $gap-2;
+        }
+    }
+    .registros{
+        
+        .icons{
+            display: flex;
+            flex-wrap: wrap;
+            svg{
+                color: $gray-50;
+            }
+            .statusConcluido{
+                svg{
+                    color: $success-dark;
+                }
+            }
+        }
+    }
+    .edital{
+        
+        p:not(:last-child){
+                margin-bottom: 4px;
+            }
+    }
+    .orientadores{
+        p:not(:last-child){
+            margin-bottom: 4px;
+        }
+    }
+    p{
+        margin-bottom: 5px;
+    }
+}
+.icon{
+    width: 24px;
+    color: $primary-normal;
+}
+
+.nav{
+    display: flex;
+    flex-wrap: wrap;
+    border: 1px solid $gray-50;
+    border-radius: 9px;
+    color: $primary-darken;
+    margin-right: $gap-2;
+    @include responsive(s){
+        margin-right: 0;
+    }
+}
+
+.navContent{
+    .content{
+        padding-top: $gap-2;
+        margin-top: $gap-1;
+        margin-right: $gap-2;
+        @include responsive(s){
+            margin-right: 0;
+        }
+        .header{
+            display: flex;
+            align-items: center;
+            h5{
+                margin-left: $gap-2;
+            }
+        }
+    }
+
+}
+
+
+.list{
+    .addItem{
+        padding: $gap-2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: $gap-2;
+        p{
+            margin-left: $gap-1;
+        }
+        
+        border-radius: $gap-1;
+        cursor: pointer;
+        border: 1px dashed  $primary-normal;
+        background-color: $white-light;
+        &:hover{
+            background-color: $white-normal;
+        }
+        
+        .icon {
+            width: 30px;
+            height: 30px;
+            color: $primary-normal;
+            svg{
+                width: 100%;
+                height: 100%;
+            }
+            }
+    } 
+    .itemList{
+        margin-top: $gap-1;
+        .headItemList{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: $gap-2 $gap-3;
+            background-color: $white-darken;
+            cursor: pointer;
+            transition: .3s ease;
+            &:hover{
+                box-shadow: 0px 0px 4px rgba(5, 17, 34, 0.1);
+                
+
+            }
+        }
+        .bodyItemList{
+            padding: $gap-1 $gap-3;
+            padding: $gap-2 $gap-3;
+            border-left: 1px solid $white-darken;
+            border-bottom: 1px solid $white-darken;
+            border-right: 1px solid $white-darken;
+            .actions{
+                display: flex;
+                .btn1{
+                    
+                    max-width: 250px;
+                    @include responsive(xs){
+                        flex: 1;
+                        max-width: none;
+                    }
+                }
+                .btn2{
+                    max-width: 250px;
+                    margin-left: $gap-1;
+                    @include responsive(xs){
+                        p{
+                            display: none;
+                        }
+                    }
+                }
+                
+            }
+        }
+    }
+}
+
