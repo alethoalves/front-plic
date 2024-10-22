@@ -54,7 +54,8 @@ const Auth = ({ slug, pathLogo, isAvaliador = false }) => {
         if (
           !existeGestor &&
           !existeOrientador &&
-          !existeAluno & !existeAvaliador
+          !existeAluno &&
+          !existeAvaliador
         ) {
           setErrorMessage(
             `Você não tem perfil ${
@@ -72,6 +73,9 @@ const Auth = ({ slug, pathLogo, isAvaliador = false }) => {
         }
         if (existeAluno) {
           router.push(`/${slug}/aluno`);
+        }
+        if (existeAvaliador) {
+          router.push(`/avaliador/home`);
         }
       } else {
         if (response.nextStep === tela) {

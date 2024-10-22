@@ -45,3 +45,98 @@ import { getCookie } from 'cookies-next';
       throw error;
     }
   };
+
+  //AVALIADOR
+
+  export const getSubmissoesSemAvaliacao = async (eventoId, areasIds = []) => {
+    try {
+        const headers = getAuthHeadersClient();
+        if (!headers) {
+            return false;
+        }
+
+        // Verifica se há áreas passadas e constrói a URL com query params, se necessário
+        let url = `/evenplic/evento/${eventoId}/getSubmissoesSemAvaliacao`;
+        if (areasIds.length > 0) {
+            const query = areasIds.join(','); // Transforma o array de IDs em uma string separada por vírgulas
+            url += `?areas=${query}`; // Adiciona os query params à URL
+        }
+
+        const response = await req.get(url, { headers });
+        return response.data.submissoes;
+    } catch (error) {
+        console.error("Erro ao atualizar campo:", error);
+        throw error;
+    }
+};
+
+export const getSubmissoesEmAvaliacao = async (eventoId, areasIds = []) => {
+  try {
+
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.get(
+      `/evenplic/evento/${eventoId}/getSubmissoesEmAvaliacao`,
+      { headers }
+    );
+    return response.data.submissoes;
+      
+  } catch (error) {
+      console.error("Erro ao atualizar campo:", error);
+      throw error;
+  }
+};
+
+
+export const associarAvaliadorSubmissao = async (eventoId, idSubmissao) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.get(
+      `/evenplic/evento/${eventoId}/associarAvaliadorSubmissao/${idSubmissao}`,
+      { headers }
+    );
+    return response.data.submissao;
+  } catch (error) {
+      console.error("Erro ao atualizar campo:", error);
+      throw error;
+  }
+};
+
+export const getResumo = async (eventoId, submissaoId, tenantId) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.get(
+      `/evenplic/evento/${eventoId}/getResumo/${submissaoId}/${tenantId}`,
+      { headers }
+    );
+    return response.data.submissao;
+  } catch (error) {
+      console.error("Erro ao atualizar campo:", error);
+      throw error;
+  }
+};
+
+export const desvincularAvaliadorSubmissao = async (eventoId, idSubmissao) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.get(
+      `/evenplic/evento/${eventoId}/desvincularAvaliadorSubmissao/${idSubmissao}`,
+      { headers }
+    );
+    return response.data.submissao;
+  } catch (error) {
+      console.error("Erro ao atualizar campo:", error);
+      throw error;
+  }
+};

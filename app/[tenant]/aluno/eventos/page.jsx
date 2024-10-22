@@ -225,7 +225,7 @@ const Page = ({ params }) => {
               {planosSemSubmissao.map((plano) => {
                 const idPlano = plano.id;
                 const sessaoSelecionada = selectedSessaoPorPlano[idPlano];
-
+                console.log(plano);
                 return (
                   <div
                     key={idPlano}
@@ -234,15 +234,15 @@ const Page = ({ params }) => {
                     <div>
                       <p className="mb-2">TÍTULO DO PROJETO:</p>
                       <h6 className="mb-2">{plano.titulo}</h6>
-                      {plano.item.status === "naoEntregue" && (
+                      {!plano.item?.planoDeTrabalho?.area && (
                         <div className={`${styles.semResumo}`}>
                           <p>
-                            Envie o resumo e o vídeo deste projeto antes de
-                            fazer a inscrição neste evento.
+                            Envie o resumo deste projeto antes de fazer a
+                            inscrição neste evento.
                           </p>
                         </div>
                       )}
-                      {plano.item.status !== "naoEntregue" && (
+                      {plano.item?.planoDeTrabalho?.area && (
                         <SearchableSelect2
                           className="mb-2"
                           name="areaId"
