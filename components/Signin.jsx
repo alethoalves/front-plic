@@ -67,15 +67,19 @@ const Auth = ({ slug, pathLogo, isAvaliador = false }) => {
         }
         if (existeGestor) {
           router.push(`/${slug}/gestor`);
+          return;
         }
         if (existeOrientador) {
           router.push(`/${slug}/orientador`);
+          return;
         }
         if (existeAluno) {
           router.push(`/${slug}/aluno`);
+          return;
         }
         if (existeAvaliador) {
           router.push(`/avaliador/home`);
+          return;
         }
       } else {
         if (response.nextStep === tela) {
