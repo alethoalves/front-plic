@@ -1,5 +1,5 @@
 import SideNav from "@/components/SideNav";
-import NavBar from "@/components/NavBar";
+import NavBarAvaliador from "@/components/NavBarAvaliador";
 
 import styles from "./layout.module.scss";
 import { headers } from "next/headers";
@@ -10,7 +10,7 @@ const Layout = ({ children, params }) => {
         <SideNav pathLogo={"plicAvaliador.png"} menuType="avaliador" />
       </div>
       <div className={styles.item2}>
-        <NavBar slug={params.eventoSlug} />
+        <NavBarAvaliador slug={params.eventoSlug} />
         <div className={styles.content}>{children}</div>
       </div>
     </div>
