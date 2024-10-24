@@ -114,6 +114,51 @@ a.linkFile{
         opacity: 0.8;
     }
 }
+.btn-warning{
+    background-color: $warning-dark;
+    border: none;
+    color: $warning-lighten;
+    flex: 1;
+    margin-right: 0;
+    @include responsive(xs){
+        margin-top: 4px;
+    }
+    transition: ease .3s;
+    &:hover{
+        transform: scale(1.005);
+    }
+    .btn-icon{
+        color: $warning-lighten
+    }
+    color: $warning-lighten;
+    p{
+        color: $warning-lighten;
+    }
+}
+.btn-warning-secondary{
+    background-color: $warning-lighten;
+    border: 1px solid transparent;
+    color: $warning-lighten;
+    flex: 1;
+    margin-right: 0;
+    @include responsive(xs){
+        margin-top: 4px;
+    }
+    transition: ease .3s;
+    &:hover{
+        transform: scale(1.005);
+        border: 1px solid $warning-dark;
+
+    }
+    .btn-icon{
+        color: $warning-darken
+        
+    }
+    color: $warning-lighten;
+    p{
+        color: $warning-darken;
+    }
+}
 .btn-link{
     background-color: transparent;
     border: 1px solid transparent;

@@ -76,15 +76,15 @@
   
   @else if $size == h4 and $device == desktop {
     font-size: 32px;
-    line-height: 120%;
+    line-height: 100%;
     font-weight: 400;
   } @else if $size == h4 and $device == mobile {
     font-size: 26px;
-    line-height: 130%;
+    line-height: 100%;
     font-weight: 400;
   } @else if $size == h4 and $device == smallmobile {
     font-size: 20px;
-    line-height: 140%;
+    line-height: 100%;
     font-weight: 400;
   } 
   

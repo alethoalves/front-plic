@@ -140,3 +140,23 @@ export const desvincularAvaliadorSubmissao = async (eventoId, idSubmissao) => {
       throw error;
   }
 };
+
+export const gerarFeedback = async (
+  titulo,resumo, fichaAvaliacao,eventoId
+) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.post(
+      `/evenplic/evento/${eventoId}/gerarFeedback`,
+      {titulo,resumo,fichaAvaliacao},
+      { headers }
+    );
+    return response.data.feedback;
+  } catch (error) {
+    console.error("Erro ao atualizar campo:", error);
+    throw error;
+  }
+};

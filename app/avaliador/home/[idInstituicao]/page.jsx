@@ -121,6 +121,9 @@ const Page = ({ params }) => {
           top: 0,
           behavior: "smooth", // Opção para rolar suavemente
         });
+        router.push(
+          `/avaliador/home/${params.idInstituicao}/avaliacao/${idSubmissao}/${updatedSubmissao.planoDeTrabalho?.inscricao?.edital?.tenant?.id}`
+        );
       }
     } catch (err) {
       // Define o erro para a submissão específica
@@ -343,6 +346,11 @@ const Page = ({ params }) => {
                       </div>
                       <div
                         className={`${styles.squareHeader}  ${styles.action} ${styles.actionPrimary}`}
+                        onClick={() =>
+                          router.push(
+                            `/avaliador/home/${params.idInstituicao}/avaliacao/${item.id}/${item.planoDeTrabalho?.inscricao?.edital?.tenant?.id}`
+                          )
+                        }
                       >
                         <RiQuillPenLine />
                         <p>Avaliar agora</p>
