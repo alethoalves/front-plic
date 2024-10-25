@@ -239,12 +239,13 @@ const Page = ({ params }) => {
   const handleGerarFeedback = async () => {
     setLoadingFeedback(true); // Define estado de carregamento
     try {
+      const { comentarioFeedback, ...eventoSemComentario } = evento;
       const feedback = await gerarFeedback(
         submissao?.planoDeTrabalho?.titulo,
         formatarResumo(
           submissao?.planoDeTrabalho?.registroAtividades[0].respostas
         ),
-        evento,
+        eventoSemComentario,
         params.idInstituicao
       );
       setEvento((prevEvento) => ({
@@ -310,7 +311,7 @@ const Page = ({ params }) => {
                   </div>
                   {error[submissao.id] && (
                     <div className={styles.error}>
-                      <p>{error[item.id]}</p>
+                      <p>{error[item?.id]}</p>
                     </div>
                   )}
                 </div>
@@ -433,7 +434,9 @@ const Page = ({ params }) => {
                       {notaTotal >= evento?.notaMinimaPremio && (
                         <div
                           className={`${styles.value} ${
-                            evento.premioSelecionado ? styles.selected : ""
+                            evento.premioSelecionado
+                              ? styles.selectedPremio
+                              : ""
                           }`}
                           onClick={handleSelecionarPremio}
                         >
