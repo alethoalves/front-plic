@@ -12,6 +12,7 @@ import {
   getResumo,
   getSubmissoesEmAvaliacao,
   getSubmissoesSemAvaliacao,
+  processarAvaliacao,
 } from "@/app/api/client/submissao"; // Supondo que essa função está na API do client
 import {
   Ri24HoursFill,
@@ -75,7 +76,7 @@ const Page = ({ params }) => {
         notaMinimaMencaoHonrosa:
           submissaoComResumo.evento.notaMinimaMencaoHonrosa || 0,
       });
-      console.log("Dados carregados:", submissaoComResumo.evento);
+      // console.log("Dados carregados:", submissaoComResumo.evento);
     } catch (error) {
       console.error("Erro ao buscar dados:", error);
     } finally {
@@ -123,8 +124,8 @@ const Page = ({ params }) => {
     });
 
     // Log para verificar as mudanças
-    console.log("Notas selecionadas:", novasNotas);
-    console.log("Evento atualizado:", evento);
+    //console.log("Notas selecionadas:", novasNotas);
+    //console.log("Evento atualizado:", evento);
   };
 
   // Função para lidar com a mudança no campo de feedback
@@ -238,6 +239,7 @@ const Page = ({ params }) => {
   // Função para gerar feedback com IA e atualizar o textarea
   const handleGerarFeedback = async () => {
     setLoadingFeedback(true); // Define estado de carregamento
+
     try {
       const { comentarioFeedback, ...eventoSemComentario } = evento;
       const feedback = await gerarFeedback(
@@ -259,12 +261,34 @@ const Page = ({ params }) => {
     }
   };
   // Função para finalizar a avaliação
-  const handleTerminarAvaliacao = () => {
-    // Exibe todos os dados de 'evento' no console
-    console.log("Dados finais do evento:", evento);
+  const handleTerminarAvaliacao = async () => {
+    setLoading(true); // Inicia o estado de carregamento
+    setError({}); // Limpa erros anteriores
 
-    // Aqui você pode adicionar qualquer outra lógica necessária
-    // como envio dos dados para a API, redirecionamento, etc.
+    try {
+      const body = {
+        ...evento,
+        submissaoId: submissao.id,
+      };
+      const response = await processarAvaliacao(params.idInstituicao, body);
+
+      if (response.status === "success") {
+        alert("Avaliação processada com sucesso!");
+        // Redireciona ou atualiza a página se necessário
+        router.push(`/avaliador/home/${params.idInstituicao}`);
+      } else {
+        setError({ geral: response.message || "Erro ao processar avaliação." });
+      }
+    } catch (error) {
+      // Captura erros específicos e exibe mensagem
+      setError({
+        geral:
+          error.response?.data?.message ||
+          "Ocorreu um erro ao finalizar a avaliação.",
+      });
+    } finally {
+      setLoading(false); // Finaliza o estado de carregamento
+    }
   };
   return (
     <>
@@ -280,6 +304,11 @@ const Page = ({ params }) => {
           <p>Voltar</p>
         </div>
         {loading && <h6>Aguarde. Carregando...</h6>}
+        {error.geral && (
+          <div className={`${styles.error} mb-1`}>
+            <p>{error.geral}</p>
+          </div>
+        )}
         {submissao && (
           <>
             <div className={styles.squares}>
@@ -410,6 +439,16 @@ const Page = ({ params }) => {
                   <div className={styles.item}>
                     <div className={styles.label}>
                       <h6>Premiação</h6>
+                      <p className="mt-1">
+                        Nota mínima para atribuir menção honrosa:{" "}
+                        <strong>
+                          {submissao?.evento?.notaMinimaMencaoHonrosa}
+                        </strong>
+                      </p>
+                      <p className="mt-1">
+                        Nota mínima para indicar a prêmio destaque:{" "}
+                        <strong>{submissao?.evento?.notaMinimaPremio}</strong>
+                      </p>
                     </div>
                     <div className={styles.instructions}></div>
                     <div className={styles.premio}>

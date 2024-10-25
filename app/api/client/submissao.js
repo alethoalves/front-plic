@@ -160,3 +160,23 @@ export const gerarFeedback = async (
     throw error;
   }
 };
+
+export const processarAvaliacao = async (
+  eventoId,body
+) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.post(
+      `/evenplic/evento/${eventoId}/processarAvaliacao`,
+      body,
+      { headers }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao atualizar campo:", error);
+    throw error;
+  }
+};
