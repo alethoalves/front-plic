@@ -492,18 +492,20 @@ const Page = ({ params }) => {
 
                   <div className={`${styles.item} mt-2`}>
                     <div className={styles.label}>
-                      <h6>Feedback/Comentário ao aluno</h6>
+                      <h6>Feedback/Comentário ao aluno (OPCIONAL)</h6>
                     </div>
-                    <Button
-                      className="button btn-warning-secondary mb-1 mt-2"
-                      onClick={handleGerarFeedback} // Chama a função ao clicar
-                      icon={RiSparkling2Line}
-                      disabled={loadingFeedback} // Desabilita o botão enquanto carrega
-                    >
-                      {loadingFeedback
-                        ? "Gerando..."
-                        : "Gerar sugestão de feedback com IA"}
-                    </Button>
+                    {false && (
+                      <Button
+                        className="button btn-warning-secondary mb-1 mt-2"
+                        onClick={handleGerarFeedback} // Chama a função ao clicar
+                        icon={RiSparkling2Line}
+                        disabled={loadingFeedback} // Desabilita o botão enquanto carrega
+                      >
+                        {loadingFeedback
+                          ? "Gerando..."
+                          : "Gerar sugestão de feedback com IA"}
+                      </Button>
+                    )}
                     <textarea
                       type="text"
                       placeholder="Escreva aqui"

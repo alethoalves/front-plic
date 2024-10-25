@@ -313,7 +313,7 @@ const Page = ({ params }) => {
                                 } catch (error) {
                                   console.error("Erro ao buscar dados:", error);
                                   setError(error.response?.data?.message);
-                                  setTela(1);
+                                  //setTela(1);
                                 } finally {
                                   setLoading(false);
                                 }
