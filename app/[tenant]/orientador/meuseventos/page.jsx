@@ -138,6 +138,11 @@ const Page = ({ params }) => {
                   </div>
                 </div>
               </div>
+              {error && (
+                <div className={`notification notification-error`}>
+                  <p className="p5">{error}</p>
+                </div>
+              )}
               {tela === 0 && (
                 <Button
                   className="btn-error"
@@ -154,10 +159,10 @@ const Page = ({ params }) => {
                       setSubmissoes(submissoes);
                       setTela(1);
                     } catch (error) {
-                      setSubmissoes([]);
+                      //setSubmissoes([]);
                       console.error("Erro ao buscar dados:", error);
                       setError(error.response?.data?.message);
-                      setTela(1);
+                      //setTela(1);
                     } finally {
                       setLoading(false);
                     }
@@ -212,6 +217,11 @@ const Page = ({ params }) => {
                     <div className={styles.status}>
                       <p>
                         {item.status === "DISTRIBUIDA" && "Aguardando Check-in"}
+                        {item.status === "AGUARDANDO_AVALIACAO" &&
+                          "Aguardando Check-in"}
+                        {item.status === "EM_AVALIACAO" && "em Avaliação"}
+                        {item.status === "AVALIADA" && "Avaliação realizada"}
+                        {item.status === "SELECIONADA" && "Selecionada"}
                       </p>
                     </div>
                     <Button
