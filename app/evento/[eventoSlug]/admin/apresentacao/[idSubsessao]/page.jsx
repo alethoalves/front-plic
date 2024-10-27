@@ -1,16 +1,22 @@
 "use client";
 import {
   RiAddCircleLine,
+  RiAlarmLine,
+  RiAlertLine,
   RiArticleLine,
   RiCalendarLine,
+  RiFileCheckLine,
   RiGroupLine,
   RiMapPinLine,
   RiMedalLine,
   RiMenLine,
   RiMenuLine,
   RiPercentLine,
+  RiQuillPenLine,
+  RiSpeedUpLine,
   RiStarLine,
   RiSurveyLine,
+  RiThumbDownLine,
   RiTimeLine,
 } from "@remixicon/react";
 import styles from "./page.module.scss";
@@ -162,7 +168,7 @@ const Page = ({ params }) => {
               className={styles.square}
               onClick={() => alocarSubmissao(item)}
             >
-              <div className={styles.squareContent}>
+              <div className={`${styles.squareContent} m-0`}>
                 <div className={styles.info}>
                   <p
                     className={`${styles.status} ${
@@ -219,6 +225,37 @@ const Page = ({ params }) => {
                   </p>
                 </div>
               </div>
+              {(item?.premio ||
+                item?.indicacaoPremio ||
+                item?.premio ||
+                item?.notaFinal) && (
+                <div className={styles.premios}>
+                  {item?.premio && (
+                    <div className={`${styles.squareHeader} `}>
+                      <RiShieldStarFill />
+                      <p>Premiado</p>
+                    </div>
+                  )}
+                  {item?.indicacaoPremio && (
+                    <div className={`${styles.squareHeader} `}>
+                      <RiMedalLine />
+                      <p>Indicado ao Prêmio</p>
+                    </div>
+                  )}
+                  {item?.mencaoHonrosa && (
+                    <div className={`${styles.squareHeader} `}>
+                      <RiStarLine />
+                      <p>Menção Honrosa</p>
+                    </div>
+                  )}
+                  {item?.notaFinal && (
+                    <div className={`${styles.squareHeader} `}>
+                      <RiSpeedUpLine />
+                      <p>{item?.notaFinal}</p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -258,7 +295,28 @@ const Page = ({ params }) => {
               </div>
               <div className={styles.infoBoxDescription}>
                 <p>Avaliados</p>
-                <h6>30% (faltam 320)</h6>
+                <h6>
+                  {(subsessao.info.avaliadas / subsessao.info.total).toFixed(2)}
+                  % (faltam {subsessao.info.total - subsessao.info.avaliadas})
+                </h6>
+              </div>
+            </div>
+            <div className={styles.description}>
+              <div className={styles.icon}>
+                <RiAlarmLine />
+              </div>
+              <div className={styles.infoBoxDescription}>
+                <p>Aguardando Checkin</p>
+                <h6>{subsessao.info.aguardando}</h6>
+              </div>
+            </div>
+            <div className={styles.description}>
+              <div className={styles.icon}>
+                <RiQuillPenLine />
+              </div>
+              <div className={styles.infoBoxDescription}>
+                <p>em Avaliação</p>
+                <h6>{subsessao.info.emAvaliacao}</h6>
               </div>
             </div>
             <div className={styles.description}>
@@ -266,8 +324,8 @@ const Page = ({ params }) => {
                 <RiMedalLine />
               </div>
               <div className={styles.infoBoxDescription}>
-                <p>Prêmio Destaque</p>
-                <h6>34</h6>
+                <p>Indicados ao Prêmio</p>
+                <h6>{subsessao.info.indicadosPremio}</h6>
               </div>
             </div>
             <div className={styles.description}>
@@ -276,7 +334,25 @@ const Page = ({ params }) => {
               </div>
               <div className={styles.infoBoxDescription}>
                 <p>Menção Honrosa</p>
-                <h6>97</h6>
+                <h6>{subsessao.info.mencaoHonrosa}</h6>
+              </div>
+            </div>
+            <div className={styles.description}>
+              <div className={styles.icon}>
+                <RiThumbDownLine />
+              </div>
+              <div className={styles.infoBoxDescription}>
+                <p>Notas baixas</p>
+                <h6>{subsessao.info.notasMenores4}</h6>
+              </div>
+            </div>
+            <div className={styles.description}>
+              <div className={styles.icon}>
+                <RiAlertLine />
+              </div>
+              <div className={styles.infoBoxDescription}>
+                <p>Trabalhos sem Pôster</p>
+                <h6>{subsessao.info.submissoesNaoAlocadas}</h6>
               </div>
             </div>
           </div>
@@ -315,69 +391,108 @@ const Page = ({ params }) => {
                 <p>Inserir trabalho</p>
               </div>
             ) : (
-              <div
-                className={styles.squareContent}
-                onClick={() => {
-                  setSubmissaoSelected(item.submissao);
-                  setIsModalOpenSubmissao(true);
-                }}
-              >
-                <div className={styles.info}>
-                  <p
-                    className={`${styles.status} ${
-                      item.submissao?.status === "DISTRIBUIDA"
-                        ? styles.error
+              <>
+                <div
+                  className={styles.squareContent}
+                  onClick={() => {
+                    setSubmissaoSelected(item.submissao);
+                    setIsModalOpenSubmissao(true);
+                  }}
+                >
+                  <div className={styles.info}>
+                    <p
+                      className={`${styles.status} ${
+                        item.submissao?.status === "DISTRIBUIDA"
+                          ? styles.error
+                          : item.submissao?.status === "AGUARDANDO_AVALIACAO"
+                          ? styles.warning
+                          : item.submissao?.status === "AVALIADA"
+                          ? styles.success
+                          : styles.success
+                      }`}
+                    >
+                      {item.submissao?.status === "DISTRIBUIDA"
+                        ? "checkin pendente"
                         : item.submissao?.status === "AGUARDANDO_AVALIACAO"
-                        ? styles.warning
+                        ? "aguardando avaliação"
                         : item.submissao?.status === "AVALIADA"
-                        ? styles.success
-                        : styles.success
-                    }`}
-                  >
-                    {item.submissao?.status === "DISTRIBUIDA"
-                      ? "checkin pendente"
-                      : item.submissao?.status === "AGUARDANDO_AVALIACAO"
-                      ? "aguardando avaliação"
-                      : item.submissao?.status === "AVALIADA"
-                      ? "avaliação concluída"
-                      : item.submissao?.status}
-                  </p>
-                  <p className={styles.area}>
-                    {item.submissao?.planoDeTrabalho?.area?.area
-                      ? item.submissao?.planoDeTrabalho?.area?.area
-                      : "sem área"}{" "}
-                    -{" "}
-                    {item.submissao?.planoDeTrabalho?.inscricao?.edital?.tenant?.sigla.toUpperCase()}
-                    -{" "}
-                    {item.submissao?.planoDeTrabalho?.inscricao?.edital?.titulo.toUpperCase()}
-                  </p>
-                </div>
-                <div className={styles.submissaoData}>
-                  <h6>{item.submissao?.planoDeTrabalho?.titulo}</h6>
-                  <p className={styles.participacoes}>
-                    <strong>Orientadores: </strong>
-                    {item.submissao?.planoDeTrabalho?.inscricao.participacoes
-                      .filter(
-                        (item) =>
-                          item.tipo === "orientador" ||
-                          item.tipo === "coorientador"
-                      )
-                      .map(
+                        ? "avaliação concluída"
+                        : item.submissao?.status}
+                    </p>
+                    <p className={styles.area}>
+                      {item.submissao?.planoDeTrabalho?.area?.area
+                        ? item.submissao?.planoDeTrabalho?.area?.area
+                        : "sem área"}{" "}
+                      -{" "}
+                      {item.submissao?.planoDeTrabalho?.inscricao?.edital?.tenant?.sigla.toUpperCase()}
+                      -{" "}
+                      {item.submissao?.planoDeTrabalho?.inscricao?.edital?.titulo.toUpperCase()}
+                    </p>
+                  </div>
+                  <div className={styles.submissaoData}>
+                    <h6>{item.submissao?.planoDeTrabalho?.titulo}</h6>
+                    <p className={styles.participacoes}>
+                      <strong>Orientadores: </strong>
+                      {item.submissao?.planoDeTrabalho?.inscricao.participacoes
+                        .filter(
+                          (item) =>
+                            item.tipo === "orientador" ||
+                            item.tipo === "coorientador"
+                        )
+                        .map(
+                          (item, i) =>
+                            `${i > 0 ? ", " : ""}${item.user.nome} (${
+                              item.status
+                            })`
+                        )}
+                    </p>
+                    <p className={styles.participacoes}>
+                      <strong>Alunos: </strong>
+                      {item.submissao?.planoDeTrabalho?.participacoes.map(
                         (item, i) =>
                           `${i > 0 ? ", " : ""}${item.user.nome} (${
                             item.status
                           })`
                       )}
-                  </p>
-                  <p className={styles.participacoes}>
-                    <strong>Alunos: </strong>
-                    {item.submissao?.planoDeTrabalho?.participacoes.map(
-                      (item, i) =>
-                        `${i > 0 ? ", " : ""}${item.user.nome} (${item.status})`
-                    )}
-                  </p>
+                    </p>
+                  </div>
                 </div>
-              </div>
+
+                {(item.submissao.premio ||
+                  item.submissao.indicacaoPremio ||
+                  item.submissao?.premio ||
+                  item.submissao?.notaFinal) && (
+                  <div className={styles.premios}>
+                    {item.submissao.premio && (
+                      <div className={`${styles.squareHeader} `}>
+                        <RiShieldStarFill />
+                        <p>Premiado</p>
+                      </div>
+                    )}
+                    {item.submissao.indicacaoPremio && (
+                      <div className={`${styles.squareHeader} `}>
+                        <RiMedalLine />
+                        <p>Indicado ao Prêmio</p>
+                      </div>
+                    )}
+                    {item.submissao?.mencaoHonrosa && (
+                      <div className={`${styles.squareHeader} `}>
+                        <RiStarLine />
+                        <p>Menção Honrosa</p>
+                      </div>
+                    )}
+                    {item.submissao?.notaFinal && (
+                      <div className={`${styles.squareHeader} `}>
+                        <RiSpeedUpLine />
+                        <p>
+                          <stron>Nota: </stron>
+                          {item.submissao?.notaFinal}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
             )}
           </div>
         ))}

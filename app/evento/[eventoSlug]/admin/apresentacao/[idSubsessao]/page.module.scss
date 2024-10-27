@@ -27,11 +27,13 @@
 margin-bottom: $gap-2;
 display: flex;
 flex-wrap: wrap;
+
 }
 .subsessao{
     @include responsive(xs){
         flex: 1;
     }
+    flex: 1;
     width:fit-content;
     padding: $gap-2;
     border: 1px solid $gray-50;
@@ -43,13 +45,12 @@ flex-wrap: wrap;
         transform: scaleX(1.01);
     }
     border-radius: $gap-1;
-    
-    margin: $gap-1;
+    margin: $gap-1 0;
     &:first-child{
         margin-left: 0;
     }
     display: flex;
-    
+    flex-wrap: wrap;
     align-items: center;
     //justify-content:space-between ;
     @include responsive (xs){
@@ -59,9 +60,9 @@ flex-wrap: wrap;
         
     }
     .description{
-        &:not(:last-child){
-            margin-right: $gap-2;
-        }
+        
+            margin: $gap-2;
+        
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -100,6 +101,7 @@ flex-wrap: wrap;
 }
 .squares{
     .square{
+        margin-bottom: $gap-1;
         border: 1px solid $gray-50;
         border-radius: $gap-1;
         padding: 3px;
@@ -107,17 +109,45 @@ flex-wrap: wrap;
         @include responsive (s){
             flex-direction: column;
         }
-        margin-bottom: $gap-1;
+        
         .squareHeader, .squareContent, .squareContentEmpty{
             background-color: $white-darken;
             padding: $gap-1;
             border-radius: 6px;
         }
+        .premios{
+            display: flex;
+            p{
+                text-wrap: wrap;
+            }
+            margin-left: 4px;
+            @include responsive(s){
+                margin-left: 0;
+                margin-top: 4px;
+            }
+            :not(:last-child){
+                margin-right: 4px;
+               }
+            .squareHeader{
+                flex: 1;
+                background-color: $warning-lighten;
+                color: $warning-darken;
+                svg{
+                    margin: 0;
+                }
+                
+            }
+            @include responsive(s){
+                
+                
+            }
+            
+        }
         .squareHeader{
-            margin-right: 3px;
+           
             @include responsive (s){
                 margin-right: 0px;
-                margin-bottom: 3px;
+                
             }
             display: flex;
             flex-direction: column;
@@ -129,6 +159,7 @@ flex-wrap: wrap;
         }
         .squareContentEmpty{
             flex: 1;
+            margin-left: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -151,6 +182,11 @@ flex-wrap: wrap;
         }
         .squareContent{
             flex: 1;
+            margin-left: 4px;
+            @include responsive(s){
+                margin-left: 0;
+                margin-top: 4px;
+            }
             cursor: pointer;
             transition: ease .3s;
             border: 1px solid transparent;
@@ -194,6 +230,7 @@ flex-wrap: wrap;
                 }
             }
         }
+        
     }
 }
 .icon{
