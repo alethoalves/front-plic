@@ -6,6 +6,7 @@ import {
   RiFileExcelLine,
   RiMedalLine,
   RiShieldStarFill,
+  RiStarLine,
 } from "@remixicon/react";
 import styles from "./BuscaSubmissoes.module.scss";
 import BuscadorBack from "./BuscadorBack";
