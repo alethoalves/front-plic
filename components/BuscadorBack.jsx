@@ -3,7 +3,12 @@ import { useState } from "react";
 import Button from "@/components/Button";
 import styles from "./BuscadorBack.module.scss";
 
-const BuscadorBack = ({ onSearch }) => {
+const BuscadorBack = ({
+  onSearch,
+  btnTitle = "Pesquisar",
+  placeholder = "Pesquise aqui",
+  icon,
+}) => {
   const [inputValue, setInputValue] = useState("");
 
   const handleInputChange = (e) => {
@@ -24,13 +29,17 @@ const BuscadorBack = ({ onSearch }) => {
             type="text"
             value={inputValue}
             onChange={handleInputChange}
-            placeholder="Pesquise aqui"
+            placeholder={placeholder}
           />
         </div>
       </div>
       <div className={styles.btnBuscador}>
-        <Button icon={RiSearchLine} className="btn-secondary" type="submit">
-          Pesquisar
+        <Button
+          icon={icon ? icon : RiSearchLine}
+          className="btn-secondary"
+          type="submit"
+        >
+          {btnTitle}
         </Button>
       </div>
     </form>

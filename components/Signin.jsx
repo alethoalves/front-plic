@@ -7,11 +7,13 @@ import { useForm } from "react-hook-form";
 import { signinSchema, signupSchema } from "@/lib/zodSchemas/authSchema";
 //Estilizações
 import {
+  Ri24HoursLine,
   RiArrowLeftCircleLine,
   RiAtLine,
   RiCalendarEventFill,
   RiCalendarEventLine,
   RiIdCardLine,
+  RiKeyLine,
   RiLock2Line,
   RiPhoneLine,
   RiUserLine,
@@ -24,6 +26,8 @@ import Button from "@/components/Button";
 import Input from "@/components/Input";
 //Chamadas api
 import { signin } from "@/app/api/client/auth";
+import BuscadorBack from "./BuscadorBack";
+import { verificarCodAvaliador } from "@/app/api/client/conviteEvento";
 
 const Auth = ({ slug, pathLogo, isAvaliador = false }) => {
   const [errorMessage, setErrorMessage] = useState("");
@@ -59,7 +63,9 @@ const Auth = ({ slug, pathLogo, isAvaliador = false }) => {
         ) {
           setErrorMessage(
             `Você não tem perfil ${
-              isAvaliador ? "de avaliador" : "nesta instituição"
+              isAvaliador
+                ? "de avaliador. Acesse digitando o código do evento"
+                : "nesta instituição"
             } .`
           );
           reset();
@@ -110,7 +116,24 @@ const Auth = ({ slug, pathLogo, isAvaliador = false }) => {
       confirmacaoSenha: "",
     },
   });
+  const handleAvaliadorToEvento = async (value) => {
+    try {
+      setLoading(true);
+      // Chama a função de verificação, passando o value
+      const response = await verificarCodAvaliador(value);
 
+      // Exibe o resultado no console ou faça outra ação com ele
+      console.log("Resultado da verificação:", response);
+      setErrorMessage(
+        "Entre novamente para verificar se seu acesso foi concedido."
+      );
+    } catch (error) {
+      console.error("Erro ao verificar avaliador:", error);
+      setErrorMessage("Erro na validação do código");
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className={styles.auth}>
       <div className={styles.logo}>
@@ -126,156 +149,173 @@ const Auth = ({ slug, pathLogo, isAvaliador = false }) => {
         <h4>Iniciação Científica</h4>
       </div>
       {errorMessage && (
-        <Notification className="notification-error">
-          {errorMessage}
-        </Notification>
+        <>
+          <Notification className="notification-error">
+            {errorMessage}
+          </Notification>
+          {isAvaliador &&
+            errorMessage.startsWith("Você não tem perfil de avaliador") && (
+              <BuscadorBack
+                btnTitle={loading ? "Validando..." : "Entrar com código"}
+                placeholder="Digite o código"
+                onSearch={handleAvaliadorToEvento}
+                icon={RiKeyLine}
+              />
+            )}
+        </>
       )}
-      <form onSubmit={handleSubmit(handleFormSubmit)}>
-        <div className={styles.form}>
-          <div className={styles.formInput}>
-            <Input
-              control={control}
-              className="cpf-input"
-              name="cpf"
-              label="CPF"
-              icon={RiIdCardLine}
-              inputType="text" // text, password
-              placeholder="Digite seu CPF"
-              autoFocus
-              disabled={loading}
-              readonly={tela > 0 && true}
-            />
-          </div>
-          {tela === 3 && (
+      {!(
+        isAvaliador &&
+        errorMessage.startsWith("Você não tem perfil de avaliador")
+      ) && (
+        <form onSubmit={handleSubmit(handleFormSubmit)}>
+          <div className={styles.form}>
             <div className={styles.formInput}>
               <Input
                 control={control}
-                name="nome"
-                label="Nome completo"
+                className="cpf-input"
+                name="cpf"
+                label="CPF"
                 icon={RiIdCardLine}
                 inputType="text" // text, password
-                placeholder="Digite seu nome completo"
+                placeholder="Digite seu CPF"
+                autoFocus
                 disabled={loading}
+                readonly={tela > 0 && true}
               />
             </div>
-          )}
-          {tela >= 3 && (
-            <div className={styles.formInput}>
-              <Input
-                control={control}
-                name="dtNascimento"
-                label="Data de nascimento"
-                icon={RiCalendarEventLine}
-                inputType="date" // text, password
-                placeholder="Digite sua data de nascimento"
-                disabled={loading}
-              />
-            </div>
-          )}
-          {(tela === 3 || tela === 5) && (
-            <div className={`${styles.formInput} phone-input`}>
-              <Input
-                control={control}
-                name="celular"
-                label="Celular"
-                icon={RiPhoneLine}
-                inputType="phone" // text, password
-                placeholder="Informe seu celular"
-                disabled={loading}
-              />
-            </div>
-          )}
-          {(tela === 3 || tela === 5) && (
-            <div className={styles.formInput}>
-              <Input
-                control={control}
-                name="email"
-                label="Email"
-                icon={RiAtLine}
-                inputType="email" // text, password
-                placeholder="Digite seu email"
-                disabled={loading}
-              />
-            </div>
-          )}
+            {tela === 3 && (
+              <div className={styles.formInput}>
+                <Input
+                  control={control}
+                  name="nome"
+                  label="Nome completo"
+                  icon={RiIdCardLine}
+                  inputType="text" // text, password
+                  placeholder="Digite seu nome completo"
+                  disabled={loading}
+                />
+              </div>
+            )}
+            {tela >= 3 && (
+              <div className={styles.formInput}>
+                <Input
+                  control={control}
+                  name="dtNascimento"
+                  label="Data de nascimento"
+                  icon={RiCalendarEventLine}
+                  inputType="date" // text, password
+                  placeholder="Digite sua data de nascimento"
+                  disabled={loading}
+                />
+              </div>
+            )}
+            {(tela === 3 || tela === 5) && (
+              <div className={`${styles.formInput} phone-input`}>
+                <Input
+                  control={control}
+                  name="celular"
+                  label="Celular"
+                  icon={RiPhoneLine}
+                  inputType="phone" // text, password
+                  placeholder="Informe seu celular"
+                  disabled={loading}
+                />
+              </div>
+            )}
+            {(tela === 3 || tela === 5) && (
+              <div className={styles.formInput}>
+                <Input
+                  control={control}
+                  name="email"
+                  label="Email"
+                  icon={RiAtLine}
+                  inputType="email" // text, password
+                  placeholder="Digite seu email"
+                  disabled={loading}
+                />
+              </div>
+            )}
 
-          {tela > 1 && (
-            <div className={styles.formInput}>
-              <Input
-                control={control}
-                name="senha"
-                label="Senha"
-                icon={RiLock2Line}
-                inputType="password" // text, password
-                placeholder="Digite sua senha"
-                disabled={loading}
-              />
-            </div>
-          )}
-          {tela >= 3 && (
-            <div className={styles.formInput}>
-              <Input
-                control={control}
-                name="confirmacaoSenha"
-                label="Confirme sua senha"
-                icon={RiLock2Line}
-                inputType="password" // text, password
-                placeholder="Digite novamente sua senha"
-                disabled={loading}
-              />
-            </div>
-          )}
+            {tela > 1 && (
+              <div className={styles.formInput}>
+                <Input
+                  control={control}
+                  name="senha"
+                  label="Senha"
+                  icon={RiLock2Line}
+                  inputType="password" // text, password
+                  placeholder="Digite sua senha"
+                  disabled={loading}
+                />
+              </div>
+            )}
+            {tela >= 3 && (
+              <div className={styles.formInput}>
+                <Input
+                  control={control}
+                  name="confirmacaoSenha"
+                  label="Confirme sua senha"
+                  icon={RiLock2Line}
+                  inputType="password" // text, password
+                  placeholder="Digite novamente sua senha"
+                  disabled={loading}
+                />
+              </div>
+            )}
 
-          <Button
-            className="btn-primary"
-            type="submit" // submit, reset, button
-            disabled={loading}
-          >
-            {loading
-              ? "Carregando..."
-              : tela === 0
-              ? "Verificar CPF"
-              : tela === 1
-              ? "Tela 1"
-              : tela === 2
-              ? "Entrar"
-              : tela === 3
-              ? "Cadastrar"
-              : tela === 4
-              ? "Recuperar senha"
-              : tela === 5
-              ? "Completar cadastro"
-              : "--"}
-          </Button>
-
-          {tela === 2 && (
             <Button
-              className="btn-secondary mt-1"
-              type="button" // submit, reset, button
-              onClick={() => {
-                console.log("Enviar email");
-                setTela(4);
-              }}
+              className="btn-primary"
+              type="submit" // submit, reset, button
               disabled={loading}
             >
-              {loading ? "Carregando..." : "Esqueci minha senha"}
+              {loading
+                ? "Carregando..."
+                : tela === 0
+                ? "Verificar CPF"
+                : tela === 1
+                ? "Tela 1"
+                : tela === 2
+                ? "Entrar"
+                : tela === 3
+                ? "Cadastrar"
+                : tela === 4
+                ? "Recuperar senha"
+                : tela === 5
+                ? "Completar cadastro"
+                : "--"}
             </Button>
-          )}
-          {tela > 1 && (
-            <div
-              className={styles.btnBack}
-              onClick={() => {
-                setTela(0);
-                setErrorMessage("");
-                reset();
-              }}
-            >
-              <RiArrowLeftCircleLine />
-              <p>Voltar</p>
-            </div>
-          )}
-        </div>
-      </form>
+
+            {tela === 2 && (
+              <Button
+                className="btn-secondary mt-1"
+                type="button" // submit, reset, button
+                onClick={() => {
+                  console.log("Enviar email");
+                  setTela(4);
+                }}
+                disabled={loading}
+              >
+                {loading ? "Carregando..." : "Esqueci minha senha"}
+              </Button>
+            )}
+            {tela > 1 && (
+              <div
+                className={styles.btnBack}
+                onClick={() => {
+                  setTela(0);
+                  setErrorMessage("");
+                  reset();
+                }}
+              >
+                <RiArrowLeftCircleLine />
+                <p>Voltar</p>
+              </div>
+            )}
+          </div>
+        </form>
+      )}
+
       <div className={styles.logoPlic}>
         <Image
           priority

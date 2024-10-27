@@ -113,7 +113,7 @@ const Inscricoes = ({ tenantSlug }) => {
         eventos.length > 0 ? (
           <div className={styles.content}>
             <Link
-              href={`/eventos/${eventos[currentEventIndex].data.evento.slug}/admin`}
+              href={`/evento/${eventos[currentEventIndex].data.evento.slug}/admin`}
             >
               <h5>{eventos[currentEventIndex].data.evento.nomeEvento}</h5>
             </Link>

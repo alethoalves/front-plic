@@ -62,3 +62,23 @@ export const consultarConviteByToken = async (token) => {
       throw error;
     }
   };
+
+  export const verificarCodAvaliador = async (value) => {
+    try {
+      const headers = getAuthHeadersClient();
+      console.log(headers)
+      if (!headers) {
+        return false;
+      }
+      const response = await req.get(`/evenplic/cadastrarAvaliador`, {
+        params: { value },
+        headers,
+      });
+
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao criar campo:", error);
+      throw error;
+    }
+  };
+  
