@@ -49,14 +49,10 @@ import { getCookie } from 'cookies-next';
 
 export const getSubmissoesFiltered = async (idEvento, searchValue) => {
   try {
-    const headers = getAuthHeadersClient();
-    if (!headers) {
-      return false;
-    }
+    
     const response = await req.get(
       `/evenplic/submissoes/evento/${idEvento}/submissoesFiltered`,
       {
-        headers,
         params: { searchValue }, // Passa o searchValue como query
       }
     );

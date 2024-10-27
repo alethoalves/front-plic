@@ -83,7 +83,7 @@ const Page = ({ params }) => {
                 {sessao?.subsessaoApresentacao?.map((subs) => (
                   <Link
                     key={subs.id}
-                    href={`/eventos/${params.eventoSlug}/admin/apresentacao/${subs.id}`}
+                    href={`/evento/${params.eventoSlug}/admin/apresentacao/${subs.id}`}
                   >
                     <div className={styles.subsessao}>
                       <div className={styles.description}>
