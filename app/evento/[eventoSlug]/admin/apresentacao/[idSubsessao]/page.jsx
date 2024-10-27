@@ -13,6 +13,7 @@ import {
   RiMenuLine,
   RiPercentLine,
   RiQuillPenLine,
+  RiShieldStarFill,
   RiSpeedUpLine,
   RiStarLine,
   RiSurveyLine,
