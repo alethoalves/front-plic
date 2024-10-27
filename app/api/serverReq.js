@@ -58,6 +58,17 @@ export const getEventoBySlug = async (slug) => {
 export const config = {
   runtime: 'nodejs', // Desativa o Edge Runtime e usa Node.js
 };
+export const getSubmissoes = async (id) => {
+  try {
+    
+    const response = await req.get(`/evenplic/submissoes/evento/${id}/submissoes`);
+    
+    return response.data.submissoes;
+  } catch (error) {
+    console.error("Erro ao chamar a API:", error);
+    throw error;
+  }
+};
 
 export const getSessoesBySlug = async (eventoSlug) => {
   try {

@@ -1,0 +1,247 @@
+@import "./../styles/partials/colors";
+@import "./../styles/partials/layout";
+@import "./../styles/partials/spacing";
+
+.actions{
+    display: flex;
+    justify-content: flex-end;
+    z-index: 999;
+    position: fixed;
+    bottom: 25px;
+    right: 35px;
+    @include responsive(s){
+        p{
+            display: none;
+        }
+    }
+    
+}
+
+.squares{
+    margin-top: $gap-2;
+    .square{
+        
+        .infoSquare{
+            display: flex;
+            margin-left: 4px;
+            @include responsive(s){
+                margin-left: 0px;
+                margin-top: 4px;
+                
+            }
+        }
+        border: 1px solid $gray-50;
+        border-radius: $gap-1;
+        padding: 3px;
+        display: flex;
+        @include responsive (s){
+            flex-direction: column;
+        }
+        margin-bottom: $gap-1;
+        .squareHeader, .squareContent, .squareContentEmpty{
+            background-color: $white-darken;
+            padding: $gap-1;
+            border-radius: 6px;
+        }
+        .informacoes{
+            display: flex;
+            flex-wrap: wrap;
+            margin-left: 4px;
+            @include responsive(s){
+                margin-top: 4px;
+                margin-left: 0px;
+            }
+            .squareHeader:not(:last-child){
+                flex: 1;
+            }
+            .squareHeader:not(:last-child){
+                margin-right: 4px;
+            }
+            p{
+                text-wrap: nowrap;
+            }
+        }
+        .premios{
+            margin-right: 4px;
+            display: flex;
+            p{
+                text-wrap: wrap;
+            }
+            :not(:last-child){
+                margin-right: 4px;
+            }
+            .squareHeader{
+                flex: 1;
+                background-color: $warning-lighten;
+                color: $warning-darken;
+            }
+            @include responsive(s){
+                                    
+                margin-right: 0;
+                margin-bottom: 4px;
+            
+        }
+        }
+        .squareHeader{
+            
+            @include responsive (s){
+                margin-right: 0px;
+            }
+            
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: center;
+            
+            h6{
+                font-size: 22px;
+            }
+        }
+        .squareContentEmpty{
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: transparent;
+            border: 1px solid $white-darken;
+            transition: ease .3s;
+            p{
+                text-align: center;
+                transition: ease .3s;
+                cursor: pointer;
+            }
+
+            
+        }
+        .squareContent{
+            flex: 1;
+            cursor: pointer;
+            transition: ease .3s;
+            border: 1px solid transparent;
+            &:hover{
+                border: 1px solid $primary-light;
+            }
+            .info{
+                display: flex;
+                margin-bottom: 6px;
+                .status{
+                    background-color: $primary-light;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    color: $white-normal;
+                    font-size: 10px;
+                    margin-right: 6px;
+                    &.error{
+                        background-color: $error-lighten;
+                        color: $error-dark;
+                    }
+                    &.warning{
+                        background-color: $warning-light;
+                        color: $error-dark;
+                    }
+                    &.success{
+                        background-color: $success-light;
+                        color: $primary-darken;
+                    }
+                }
+                .area{
+                    border: 1px solid $primary-light;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    color: $primary-light;
+                    font-size: 10px;
+                }
+            }
+            .submissaoData{
+                .participacoes{
+                    font-size: 12px;
+                }
+            }
+        }
+        &.squareWarning{
+            .squareHeader, .squareContent, .squareContentEmpty{
+                background-color: $warning-lighten;
+                
+            }
+
+            .squareContent{
+                margin-right: 4px;
+                @include responsive(s){
+                    margin-right: 0px;
+                    margin-bottom: 4px;
+                }
+                cursor:auto;
+                &:hover{
+                    border: 1px solid transparent;
+                }
+                .area{
+                    border: 1px solid $warning-darken;
+                    
+                    color: $warning-darken;
+                }
+            }
+            .actions{
+
+                display: flex;
+                @include responsive(xs){
+                    flex-direction: column;
+                }
+                .item1{
+                    display: flex;
+                    @include responsive(xs){
+                        .action{
+                            flex: 1;
+                            &:last-child{
+                                margin-right: 0;
+                            }
+                        }
+                        
+                    }
+                }
+                
+                .action{
+                    cursor: pointer;
+                    border: 1px solid transparent;
+                    transition: ease .3s;
+                    color:$warning-darken;
+                    p{color:$warning-darken}
+                    &:hover{
+                        border: 1px solid $warning-dark;
+                        transform: scale(1.02)
+                    };
+                    @include responsive(s){
+                        margin-bottom: 0;
+                        margin-right: 4px;
+                        
+                    }
+                    &.actionPrimary{
+                        background-color: $warning-dark;
+                        color: $warning-lighten;
+                        flex: 1;
+                        margin-right: 0;
+                        @include responsive(xs){
+                            margin-top: 4px;
+                        }
+                        &:hover{
+                            transform: scale(1.005);
+                        }
+                        p{
+                            color: $warning-lighten;
+                        }
+                    }
+                    &.actionError{
+                        color: $error-dark;
+                        &:hover{
+                            border: 1px solid $error-dark;
+                           
+                        };
+                        p{
+                            color: $error-dark;
+                        }
+                    }
+                }
+            }
+            
+        }
+    }
+}

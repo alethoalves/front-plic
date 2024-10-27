@@ -45,6 +45,27 @@ import { getCookie } from 'cookies-next';
       throw error;
     }
   };
+//PUBLICO
+
+export const getSubmissoesFiltered = async (idEvento, searchValue) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.get(
+      `/evenplic/submissoes/evento/${idEvento}/submissoesFiltered`,
+      {
+        headers,
+        params: { searchValue }, // Passa o searchValue como query
+      }
+    );
+    return response.data.submissoes;
+  } catch (error) {
+    console.error("Erro ao atualizar campo:", error);
+    throw error;
+  }
+};
 
   //AVALIADOR
 

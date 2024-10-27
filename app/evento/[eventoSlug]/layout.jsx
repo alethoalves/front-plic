@@ -7,14 +7,14 @@ export const generateMetadata = async ({ params }) => {
   const { eventoSlug } = params;
   //Necessário personalizar isso para cada evento
   return {
-    title: `PLIC | Plataforma de Iniciação Científica`,
-    description: `A PLIC é uma plataforma de gerenciamento de programas de iniciação científica, eventos acadêmicos e científicos no Brasil. Gerencie editais, inscrições e divulgue trabalhos científicos.`,
+    title: `CICDF | Congresso de Iniciação Científica da UnB e do DF`,
+    description: `"Participe do Congresso de Iniciação Científica da UnB e DF, onde jovens cientistas apresentam pesquisas inovadoras.`,
     keywords:
       "iniciação científica,PIIC - Programa de Incentivo à Iniciação Científica,Programa Institucional de Iniciação Científica e Tecnológica,PAIC,proic,Programas de Iniciação Científica - FGV CPDOC, ic, pibic, pibiti, pibic ensino médio, jovens cientistas, pic, encuca, ceub, udf, ifg, ifb, unb, iesb, gerenciamento de eventos científicos, submissão de artigos, programas de fomento, CNPq, FAPDF, eventos acadêmicos",
     openGraph: {
-      title: `PLIC | ${eventoSlug}`,
-      description: `Gerencie programas de iniciação científica e eventos acadêmicos com a PLIC.`,
-      url: "https://www.plic.app.br",
+      title: `EvenPLIC | ${params.eventoSlug}`,
+      description: `Participe do maior congresso de Iniciação Científica do Centro Oeste. Serão apresentados mais de 3 mil trabalhos de diversas áreas do conhecimento.`,
+      url: `https://www.plic.app.br/eventos/${params.eventoSlug}`,
       type: "website",
     },
   };
@@ -34,22 +34,29 @@ const Layout = async ({ children, params }) => {
       <Head>
         <meta
           name="description"
-          content="A PLIC é uma plataforma de gerenciamento de programas de iniciação científica, eventos acadêmicos e científicos no Brasil. Gerencie editais, inscrições e divulgue trabalhos científicos."
+          content="Participe do Congresso de Iniciação Científica da UnB e DF, onde jovens cientistas apresentam pesquisas inovadoras."
         />
         <meta
           name="keywords"
-          content="iniciação científica, gerenciamento de eventos científicos, submissão de artigos, programas de fomento, CNPq, FAPDF, eventos acadêmicos"
+          content="iniciação científica, PIIC - Programa de Incentivo à Iniciação Científica, Programa Institucional de Iniciação Científica e Tecnológica, PAIC, proic, Programas de Iniciação Científica - FGV CPDOC, ic, pibic, pibiti, pibic ensino médio, jovens cientistas, pic, encuca, ceub, udf, ifg, ifb, unb, iesb, gerenciamento de eventos científicos, submissão de artigos, programas de fomento, CNPq, FAPDF, eventos acadêmicos"
         />
         <meta
           property="og:title"
-          content="PLIC | Plataforma de Iniciação Científica"
+          content="CICDF | Congresso de Iniciação Científica da UnB e do DF"
         />
         <meta
           property="og:description"
-          content="Gerencie programas de iniciação científica e eventos acadêmicos com a PLIC."
+          content="Participe do maior congresso de Iniciação Científica do Centro Oeste. Serão apresentados mais de 3 mil trabalhos de diversas áreas do conhecimento."
         />
-        <meta property="og:url" content="https://www.plic.app.br" />
+        <meta
+          property="og:url"
+          content={`https://www.plic.app.br/eventos/${params.eventoSlug}`}
+        />
         <meta property="og:type" content="website" />
+        <meta
+          property="og:image"
+          content="https://www.plic.app.br/default-event-image.jpg"
+        />
       </Head>
       <div
         style={{

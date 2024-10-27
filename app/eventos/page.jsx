@@ -47,7 +47,7 @@ const Page = () => {
         ) : (
           eventos?.map((evento) => (
             <div key={evento.id} className={styles.eventos}>
-              <Link href={`/eventos/${evento.slug}`}>
+              <Link href={`/evento/${evento.slug}`}>
                 <div className={styles.evento}>
                   <div className={styles.banner}>
                     <Image
