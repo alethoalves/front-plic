@@ -65,6 +65,13 @@ const Page = async ({ params }) => {
                     orientações passadas pela equipe do evento. Trabalhos com
                     checkin pendentes não serão avaliados.
                   </p>
+                  <p className="mb-2">
+                    TRABALHOS SEM NÚMERO DE PÔSTER - alunos cujos trabalhos não
+                    tenham número de pôster, deverão informar esta situação no
+                    dia do evento. Essa situação não impedirá a apresentação,
+                    apenas indica ao aluno que será necessário esperar até que
+                    um pôster fique disponível.
+                  </p>
                   <div className={styles.squares}>
                     {submissoes.length > 0 &&
                       submissoes.map((item, index) => (

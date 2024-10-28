@@ -5,6 +5,7 @@ import {
   RiAlertLine,
   RiArticleLine,
   RiCalendarLine,
+  RiEditLine,
   RiFileCheckLine,
   RiGroupLine,
   RiMapPinLine,
@@ -14,6 +15,7 @@ import {
   RiPercentLine,
   RiPresentationLine,
   RiQuillPenLine,
+  RiRobot2Line,
   RiShieldStarFill,
   RiSpeedUpLine,
   RiStarLine,
@@ -44,6 +46,10 @@ const Page = ({ params }) => {
   const [isModalOpen, setIsModalOpen] = useState(null);
   const [isModalOpenSubmissao, setIsModalOpenSubmissao] = useState(null);
   const [isUpdated, setIsUpdated] = useState(false);
+
+  const [progress, setProgress] = useState(0);
+  const [total, setTotal] = useState(0);
+  const [loadingAlocacao, setLoadingAlocacao] = useState(false);
 
   // ROTEAMENTO
   const router = useRouter();
@@ -150,7 +156,40 @@ const Page = ({ params }) => {
       setLoading(false); // Para o estado de carregamento
     }
   };
+  const alocarSubmissoesSequencialmente = async () => {
+    setLoadingAlocacao(true);
+    setTotal(subsessaoFiltered.length);
+    setProgress(0);
+    subsessaoFiltered.forEach(async (item, i) => {
+      try {
+        const updatedSquare = await vincularSubmissao(
+          params.eventoSlug,
+          item.id, // id da submissão
+          squareSelected.id + i // id do square selecionado
+        );
 
+        if (updatedSquare) {
+          // Atualiza o estado local sem precisar buscar novamente
+          setSubsessao((prevSubsessao) => {
+            // Encontra o Square que foi atualizado
+            const updatedSquares = prevSubsessao.Square.map((square) => {
+              if (square.id === squareSelected.id) {
+                return { ...square, submissaoId: item.id, submissao: item };
+              }
+              return square;
+            });
+
+            return { ...prevSubsessao, Square: updatedSquares };
+          });
+        }
+      } catch (error) {
+        console.error("Erro ao alocar submissão:", error);
+      }
+      setProgress(i + 1); // Atualiza o progresso
+    });
+
+    setLoadingAlocacao(false);
+  };
   const renderModalContent = () => (
     <Modal isOpen={isModalOpen} onClose={closeModalAndResetData}>
       <div className={`${styles.icon} mb-2`}>
@@ -164,6 +203,19 @@ const Page = ({ params }) => {
       </div>
       {!loading && (
         <div className={styles.squares}>
+          <Button
+            className="btn-secondary mb-2"
+            icon={RiRobot2Line}
+            type="button"
+            disabled={loadingAlocacao}
+            onClick={alocarSubmissoesSequencialmente}
+          >
+            {loading
+              ? `Alocando: ${progress} de ${total} (${Math.round(
+                  (progress / total) * 100
+                )}%)`
+              : "Alocar automaticamente"}
+          </Button>
           {subsessaoFiltered?.map((item) => (
             <div
               key={item.id}
@@ -389,6 +441,11 @@ const Page = ({ params }) => {
               <p>Pôster nº</p>
               <h6>{item.numero}</h6>
             </div>
+            {false && (
+              <div className={styles.squareHeader}>
+                <h6>SUBMISSAO_ID_{item.submissaoId}</h6>
+              </div>
+            )}
             {!item.submissaoId ? (
               <div
                 onClick={async () => {
