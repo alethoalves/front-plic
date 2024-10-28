@@ -46,7 +46,7 @@ const Layout = async ({ children, params }) => {
         />
         <meta
           property="og:description"
-          content="Participe do maior congresso de Iniciação Científica do Centro Oeste. Serão apresentados mais de 3 mil trabalhos de diversas áreas do conhecimento."
+          content="Programação do 30º Congresso de Iniciação Científica da UnB e 21º Congresso do Distrito Federal"
         />
         <meta
           property="og:url"
