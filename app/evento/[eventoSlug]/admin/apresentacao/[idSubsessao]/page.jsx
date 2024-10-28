@@ -12,6 +12,7 @@ import {
   RiMenLine,
   RiMenuLine,
   RiPercentLine,
+  RiPresentationLine,
   RiQuillPenLine,
   RiShieldStarFill,
   RiSpeedUpLine,
@@ -308,6 +309,15 @@ const Page = ({ params }) => {
               </div>
               <div className={styles.infoBoxDescription}>
                 <p>Aguardando Checkin</p>
+                <h6>{subsessao.info.distribuidas}</h6>
+              </div>
+            </div>
+            <div className={styles.description}>
+              <div className={styles.icon}>
+                <RiPresentationLine />
+              </div>
+              <div className={styles.infoBoxDescription}>
+                <p>Aguardando Avaliação</p>
                 <h6>{subsessao.info.aguardando}</h6>
               </div>
             </div>
@@ -409,7 +419,7 @@ const Page = ({ params }) => {
                           ? styles.warning
                           : item.submissao?.status === "AVALIADA"
                           ? styles.success
-                          : styles.success
+                          : styles.warning
                       }`}
                     >
                       {item.submissao?.status === "DISTRIBUIDA"
@@ -418,6 +428,8 @@ const Page = ({ params }) => {
                         ? "aguardando avaliação"
                         : item.submissao?.status === "AVALIADA"
                         ? "avaliação concluída"
+                        : item.submissao?.status === "EM_AVALIACAO"
+                        ? "em avaliação"
                         : item.submissao?.status}
                     </p>
                     <p className={styles.area}>
@@ -486,7 +498,7 @@ const Page = ({ params }) => {
                       <div className={`${styles.squareHeader} `}>
                         <RiSpeedUpLine />
                         <p>
-                          <stron>Nota: </stron>
+                          <strong>Nota: </strong>
                           {item.submissao?.notaFinal}
                         </p>
                       </div>

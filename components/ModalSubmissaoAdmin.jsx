@@ -254,42 +254,116 @@ const Modal = ({ isOpen, onClose, eventoSlug, idSubmissao, onDataUpdated }) => {
                     </div>
                   </div>
                 )}
+                {submissao?.emAvaliacaoPor &&
+                  submissao?.emAvaliacaoPor.length > 0 && (
+                    <div className={styles.squareHeader}>
+                      <div className={styles.squareHeaderNumero}>
+                        <div>
+                          <p>Trabalho está em avaliação:</p>
+                        </div>
+                      </div>
+                      {submissao.emAvaliacaoPor.map((item) => (
+                        <div key={item.id} className={styles.squareHeaderInfo}>
+                          <div className={styles.emAvaliacao}>
+                            <div className={styles.time}>
+                              <h6>{item.tempo}</h6>
+                              <p>min</p>
+                            </div>
+                            <p>
+                              {item.avaliador.user.nome} (ID {item.id})
+                            </p>
+                            {false && (
+                              <div className={styles.deletarAvaliador}>
+                                <div
+                                  className={styles.deleteSquare}
+                                  onClick={() => {}}
+                                >
+                                  <RiDeleteBinLine />
+                                  {excluindo && <p>Excluindo...</p>}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 <div className={styles.squareHeader}>
                   <div className={styles.squareHeaderNumero}>
                     <div>
-                      <p>Alterar Status para:</p>
+                      <p>Avaliações:</p>
                     </div>
                   </div>
-                  {submissao && (
-                    <div className={styles.squareHeaderInfo}>
-                      {alterandoStatus && <p className="mb-2">Aguarde...</p>}
-                      <ul>
-                        <li
-                          className={`${
-                            submissao?.status === "DISTRIBUIDA"
-                              ? styles.selected
-                              : ""
-                          }`}
-                          onClick={() => handleStatusUpdate("DISTRIBUIDA")} // Chama a função para atualizar o status
-                        >
-                          <p>Checkin pendente</p>
-                        </li>
-                        <li
-                          className={`${
-                            submissao?.status === "AGUARDANDO_AVALIACAO"
-                              ? styles.selected
-                              : ""
-                          }`}
-                          onClick={() =>
-                            handleStatusUpdate("AGUARDANDO_AVALIACAO")
-                          } // Chama a função para atualizar o status
-                        >
-                          <p>Aguardando avaliação</p>
-                        </li>
-                      </ul>
-                    </div>
-                  )}
+                  <div className={styles.squareHeaderInfo}>
+                    {submissao?.Avaliacao?.sort((a, b) => a.id - b.id).map(
+                      (item) => (
+                        <div key={item.id} className={styles.avaliador}>
+                          <p>
+                            ID da avaliação: <strong>{item.id}</strong>
+                          </p>
+                          <p>
+                            Avaliador: <strong>{item.avaliador?.nome}</strong>
+                          </p>
+                          <p>
+                            Nota: <strong>{item.notaTotal}</strong>
+                          </p>
+                          <p>
+                            Prêmios:
+                            <strong>
+                              {!item.indicacaoPremio &&
+                                !item.mencaoHonrosa &&
+                                "-"}
+                              {item.indicacaoPremio && "indicacão a prêmio"}
+                              <br></br>
+                              {item.mencaoHonrosa && "menção honrosa"}
+                            </strong>
+                          </p>
+                        </div>
+                      )
+                    )}
+                  </div>
                 </div>
+                {!(
+                  submissao?.emAvaliacaoPor &&
+                  submissao?.emAvaliacaoPor.length > 0
+                ) && (
+                  <div className={styles.squareHeader}>
+                    <div className={styles.squareHeaderNumero}>
+                      <div>
+                        <p>Alterar Status para:</p>
+                      </div>
+                    </div>
+                    {submissao && (
+                      <div className={styles.squareHeaderInfo}>
+                        {alterandoStatus && <p className="mb-2">Aguarde...</p>}
+                        <ul>
+                          <li
+                            className={`${
+                              submissao?.status === "DISTRIBUIDA"
+                                ? styles.selected
+                                : ""
+                            }`}
+                            onClick={() => handleStatusUpdate("DISTRIBUIDA")} // Chama a função para atualizar o status
+                          >
+                            <p>Checkin pendente</p>
+                          </li>
+                          <li
+                            className={`${
+                              submissao?.status === "AGUARDANDO_AVALIACAO"
+                                ? styles.selected
+                                : ""
+                            }`}
+                            onClick={() =>
+                              handleStatusUpdate("AGUARDANDO_AVALIACAO")
+                            } // Chama a função para atualizar o status
+                          >
+                            <p>Aguardando avaliação</p>
+                          </li>
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}

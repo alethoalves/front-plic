@@ -161,6 +161,7 @@ const Page = async ({ params }) => {
                                   {formatarData(item.subsessao.inicio)}
                                 </strong>
                               </p>
+                              <p>{item.subsessao.sessaoApresentacao.titulo}</p>
                             </div>
                             <div className={styles.squareHeader}>
                               <p>Horário</p>
