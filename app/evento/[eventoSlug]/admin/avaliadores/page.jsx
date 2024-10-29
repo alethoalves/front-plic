@@ -27,7 +27,7 @@ const Page = ({ params }) => {
     setLoading(true);
     try {
       const avaliadores = await consultarAvaliadoresEvento(eventoSlug);
-
+      console.log(avaliadores);
       // Ordena e configura os estados com a lista completa
       const sortedAvaliadores = avaliadores.sort((a, b) => {
         const subsessaoA =
@@ -154,62 +154,62 @@ const Page = ({ params }) => {
       <div className={styles.actions}></div>
       {loading && <p className="mb-2">Carregando...</p>}
       <div className={styles.squares}>
-        {avaliadores?.map((item) => (
-          <>
-            <div key={item.id} className={styles.square}>
-              <div className={styles.squareContent}>
-                <div className={styles.info}>
-                  {item.user?.userArea.map((item) => (
-                    <p className={styles.area}>{item.area.area}</p>
-                  ))}
-                </div>
-                <div className={styles.submissaoData}>
-                  <h6>
-                    ID {item.id} - {item.user?.nome}
-                  </h6>
-                  <p className={styles.participacoes}>
-                    <strong>
-                      {item.user?.email
-                        ? item.user?.email
-                        : item.user?.ConviteAvaliadorEvento[
-                            item.user.ConviteAvaliadorEvento.length - 1
-                          ].email}
-                    </strong>
+        {avaliadores?.map((avaliador) => (
+          <div key={avaliador.id} className={styles.square}>
+            <div className={styles.squareContent}>
+              <div className={styles.info}>
+                {avaliador.user?.userArea.map((e) => (
+                  <p key={e.id} className={styles.area}>
+                    {e.area.area}
                   </p>
-                  <p className={styles.participacoes}>
-                    <strong>{item.user?.celular}</strong>
-                  </p>
-                </div>
+                ))}
               </div>
-              {item.user.ConviteAvaliadorEvento.map((item) =>
-                item.conviteSubsessao.map((e) => (
-                  <div className={styles.squareContent}>
+              <div className={styles.submissaoData}>
+                <h6>
+                  ID {avaliador.id} - {avaliador.user?.nome}
+                </h6>
+                <p className={styles.participacoes}>
+                  <strong>
+                    {avaliador.user?.email
+                      ? avaliador.user?.email
+                      : avaliador.user?.ConviteAvaliadorEvento[
+                          avaliador.user.ConviteAvaliadorEvento.length - 1
+                        ].email}
+                  </strong>
+                </p>
+                <p className={styles.participacoes}>
+                  <strong>{avaliador.user?.celular}</strong>
+                </p>
+              </div>
+            </div>
+            {avaliador.user.ConviteAvaliadorEvento.map((item) =>
+              item.conviteSubsessao.map((e) => (
+                <div key={e.id} className={styles.squareContent}>
+                  <div className={styles.submissaoData}>
+                    <p className={styles.participacoes}>
+                      <strong>
+                        {e.subsessaoApresentacao.sessaoApresentacao.titulo}{" "}
+                      </strong>
+                      {formatarData(e.subsessaoApresentacao?.inicio)} -
+                      {formatarHora(e.subsessaoApresentacao?.inicio)}
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
+            {avaliador.user.ConviteAvaliadorEvento.map(
+              (item) =>
+                item.conviteSubsessao.length < 1 && (
+                  <div key={item.id} className={styles.squareContent}>
                     <div className={styles.submissaoData}>
                       <p className={styles.participacoes}>
-                        <strong>
-                          {e.subsessaoApresentacao.sessaoApresentacao.titulo}{" "}
-                        </strong>
-                        {formatarData(e.subsessaoApresentacao?.inicio)} -
-                        {formatarHora(e.subsessaoApresentacao?.inicio)}
+                        <strong>Avaliador não especificou áreas</strong>
                       </p>
                     </div>
                   </div>
-                ))
-              )}
-              {item.user.ConviteAvaliadorEvento.map(
-                (item) =>
-                  item.conviteSubsessao.length < 1 && (
-                    <div className={styles.squareContent}>
-                      <div className={styles.submissaoData}>
-                        <p className={styles.participacoes}>
-                          <strong>Avaliador não especificou áreas</strong>
-                        </p>
-                      </div>
-                    </div>
-                  )
-              )}
-            </div>
-          </>
+                )
+            )}
+          </div>
         ))}
       </div>
     </div>
