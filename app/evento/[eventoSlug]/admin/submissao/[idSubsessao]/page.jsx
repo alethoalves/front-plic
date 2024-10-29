@@ -66,9 +66,7 @@ const Page = ({ params }) => {
       // Ordena os items dentro de subsessao.Square pelo campo "numero" de forma crescente
       subsessao.Square.sort((a, b) => a.numero - b.numero);
       setSubsessao(subsessao);
-      const subsessaoFiltered = subsessao.Submissao.filter(
-        (item) => item.square.length < 1
-      );
+      const subsessaoFiltered = subsessao.Submissao;
       setSubsessaoFiltered(subsessaoFiltered);
     } catch (error) {
       console.error("Erro ao buscar dados:", error);
@@ -111,18 +109,19 @@ const Page = ({ params }) => {
   };
 
   // Função para lidar com a busca
-  const handleSearch = async (value) => {
+  const handleSearch = (value) => {
     setSearchValue(value); // Atualiza o valor de busca
 
-    // Cria os filtros com o valor de busca aplicado a nome, cpf, e título
-    const filters = {
-      nome: value,
-      cpf: value,
-      titulo: value,
-    };
+    const filteredItems = subsessao.Submissao.filter((item) =>
+      item.planoDeTrabalho?.inscricao?.participacoes.some(
+        (participacao) =>
+          participacao.user.nome &&
+          participacao.user.nome.toLowerCase().includes(value.toLowerCase())
+      )
+    );
 
-    // Refaz a busca com os filtros aplicados
-    fetchData(params.eventoSlug, params.idSubsessao, filters);
+    // Atualiza o estado com os itens filtrados
+    setSubsessaoFiltered(filteredItems);
   };
   const alocarSubmissao = async (item) => {
     try {
@@ -346,7 +345,7 @@ const Page = ({ params }) => {
           {formatarHora(subsessao?.inicio)} às {formatarHora(subsessao?.fim)}
         </p>
       )}
-      {subsessao && (
+      {false && subsessao && (
         <div className={styles.dashboard}>
           <div className={styles.subsessao}>
             <div className={styles.description}>
@@ -427,7 +426,9 @@ const Page = ({ params }) => {
           </div>
         </div>
       )}
-
+      <div className="mt-2 mb-2">
+        <BuscadorBack onSearch={handleSearch} />
+      </div>
       <div className={styles.actions}>
         {subsessao?.Square.length < 1 && (
           <Button
@@ -442,140 +443,133 @@ const Page = ({ params }) => {
       </div>
       {loading && <p className="mb-2">Carregando...</p>}
       <div className={styles.squares}>
-        {subsessao?.Square.map((item) => (
-          <div key={item.id} className={styles.square}>
-            <div className={styles.squareHeader}>
-              <p>Pôster nº</p>
-              <h6>{item.numero}</h6>
-            </div>
-            {false && (
-              <div className={styles.squareHeader}>
-                <h6>SUBMISSAO_ID_{item.submissaoId}</h6>
-              </div>
-            )}
-            {!item.submissaoId ? (
+        {subsessaoFiltered?.map((item) => (
+          <>
+            <div key={item.id} className={styles.square}>
+              {item.square.map((squareItem) => (
+                <div key={squareItem.id} className={styles.squareHeader}>
+                  <p>Pôster nº</p>
+                  <h6>{squareItem.numero}</h6>
+                </div>
+              ))}
+              {item.square.length == 0 && (
+                <div className={styles.squareHeader}>
+                  <p>Pôster nº</p>
+                  <h6>-</h6>
+                </div>
+              )}
+
+              {false && (
+                <div className={styles.squareHeader}>
+                  <h6>SUBMISSAO_ID_{item.id}</h6>
+                </div>
+              )}
               <div
-                onClick={async () => {
-                  setSearchValue();
-                  setIsModalOpen(true);
-                  setSquareSelected(item);
-                  await fetchData(params.eventoSlug, params.idSubsessao, {});
+                className={styles.squareContent}
+                onClick={() => {
+                  setSubmissaoSelected(item);
+                  setIsModalOpenSubmissao(true);
                 }}
-                className={styles.squareContentEmpty}
               >
-                <p>Inserir trabalho</p>
-              </div>
-            ) : (
-              <>
-                <div
-                  className={styles.squareContent}
-                  onClick={() => {
-                    setSubmissaoSelected(item.submissao);
-                    setIsModalOpenSubmissao(true);
-                  }}
-                >
-                  <div className={styles.info}>
-                    <p
-                      className={`${styles.status} ${
-                        item.submissao?.status === "DISTRIBUIDA"
-                          ? styles.error
-                          : item.submissao?.status === "AGUARDANDO_AVALIACAO"
-                          ? styles.warning
-                          : item.submissao?.status === "AVALIADA"
-                          ? styles.success
-                          : item.submissao?.status === "AUSENTE"
-                          ? styles.inativada
-                          : item.submissao?.status
-                      }`}
-                    >
-                      {item.submissao?.status === "DISTRIBUIDA"
-                        ? "checkin pendente"
-                        : item.submissao?.status === "AGUARDANDO_AVALIACAO"
-                        ? "aguardando avaliação"
-                        : item.submissao?.status === "AVALIADA"
-                        ? "avaliação concluída"
-                        : item.submissao?.status === "EM_AVALIACAO"
-                        ? "em avaliação"
-                        : item.submissao?.status === "AUSENTE"
-                        ? "ausente"
-                        : item.submissao?.status}
-                    </p>
-                    <p className={styles.area}>
-                      {item.submissao?.planoDeTrabalho?.area?.area
-                        ? item.submissao?.planoDeTrabalho?.area?.area
-                        : "sem área"}{" "}
-                      -{" "}
-                      {item.submissao?.planoDeTrabalho?.inscricao?.edital?.tenant?.sigla.toUpperCase()}
-                      -{" "}
-                      {item.submissao?.planoDeTrabalho?.inscricao?.edital?.titulo.toUpperCase()}
-                    </p>
-                  </div>
-                  <div className={styles.submissaoData}>
-                    <h6>{item.submissao?.planoDeTrabalho?.titulo}</h6>
-                    <p className={styles.participacoes}>
-                      <strong>Orientadores: </strong>
-                      {item.submissao?.planoDeTrabalho?.inscricao.participacoes
-                        .filter(
-                          (item) =>
-                            item.tipo === "orientador" ||
-                            item.tipo === "coorientador"
-                        )
-                        .map(
-                          (item, i) =>
-                            `${i > 0 ? ", " : ""}${item.user.nome} (${
-                              item.status
-                            })`
-                        )}
-                    </p>
-                    <p className={styles.participacoes}>
-                      <strong>Alunos: </strong>
-                      {item.submissao?.planoDeTrabalho?.participacoes.map(
+                <div className={styles.info}>
+                  <p
+                    className={`${styles.status} ${
+                      item?.status === "DISTRIBUIDA"
+                        ? styles.error
+                        : item?.status === "AGUARDANDO_AVALIACAO"
+                        ? styles.warning
+                        : item?.status === "AVALIADA"
+                        ? styles.success
+                        : item?.status === "AUSENTE"
+                        ? styles.inativada
+                        : item?.status
+                    }`}
+                  >
+                    {item?.status === "DISTRIBUIDA"
+                      ? "checkin pendente"
+                      : item?.status === "AGUARDANDO_AVALIACAO"
+                      ? "aguardando avaliação"
+                      : item?.status === "AVALIADA"
+                      ? "avaliação concluída"
+                      : item?.status === "EM_AVALIACAO"
+                      ? "em avaliação"
+                      : item?.status === "AUSENTE"
+                      ? "ausente"
+                      : item?.status}
+                  </p>
+                  <p className={styles.area}>
+                    {item.planoDeTrabalho?.area?.area
+                      ? item.planoDeTrabalho?.area?.area
+                      : "sem área"}{" "}
+                    -{" "}
+                    {item.planoDeTrabalho?.inscricao?.edital?.tenant?.sigla.toUpperCase()}
+                    -{" "}
+                    {item.planoDeTrabalho?.inscricao?.edital?.titulo.toUpperCase()}
+                  </p>
+                </div>
+                <div className={styles.submissaoData}>
+                  <h6>{item.planoDeTrabalho?.titulo}</h6>
+                  <p className={styles.participacoes}>
+                    <strong>Orientadores: </strong>
+                    {item.planoDeTrabalho?.inscricao.participacoes
+                      .filter(
+                        (item) =>
+                          item.tipo === "orientador" ||
+                          item.tipo === "coorientador"
+                      )
+                      .map(
                         (item, i) =>
                           `${i > 0 ? ", " : ""}${item.user.nome} (${
                             item.status
                           })`
                       )}
-                    </p>
-                  </div>
+                  </p>
+                  <p className={styles.participacoes}>
+                    <strong>Alunos: </strong>
+                    {item.planoDeTrabalho?.participacoes.map(
+                      (item, i) =>
+                        `${i > 0 ? ", " : ""}${item.user.nome} (${item.status})`
+                    )}
+                  </p>
                 </div>
+              </div>
 
-                {(item.submissao.premio ||
-                  item.submissao.indicacaoPremio ||
-                  item.submissao?.premio ||
-                  item.submissao?.notaFinal) && (
-                  <div className={styles.premios}>
-                    {item.submissao.premio && (
-                      <div className={`${styles.squareHeader} `}>
-                        <RiShieldStarFill />
-                        <p>Premiado</p>
-                      </div>
-                    )}
-                    {item.submissao.indicacaoPremio && (
-                      <div className={`${styles.squareHeader} `}>
-                        <RiMedalLine />
-                        <p>Indicado ao Prêmio</p>
-                      </div>
-                    )}
-                    {item.submissao?.mencaoHonrosa && (
-                      <div className={`${styles.squareHeader} `}>
-                        <RiStarLine />
-                        <p>Menção Honrosa</p>
-                      </div>
-                    )}
-                    {item.submissao?.notaFinal && (
-                      <div className={`${styles.squareHeader} `}>
-                        <RiSpeedUpLine />
-                        <p>
-                          <strong>Nota: </strong>
-                          {item.submissao?.notaFinal}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+              {(item.premio ||
+                item.indicacaoPremio ||
+                item.premio ||
+                item.notaFinal) && (
+                <div className={styles.premios}>
+                  {item.premio && (
+                    <div className={`${styles.squareHeader} `}>
+                      <RiShieldStarFill />
+                      <p>Premiado</p>
+                    </div>
+                  )}
+                  {item.indicacaoPremio && (
+                    <div className={`${styles.squareHeader} `}>
+                      <RiMedalLine />
+                      <p>Indicado ao Prêmio</p>
+                    </div>
+                  )}
+                  {item.mencaoHonrosa && (
+                    <div className={`${styles.squareHeader} `}>
+                      <RiStarLine />
+                      <p>Menção Honrosa</p>
+                    </div>
+                  )}
+                  {item.notaFinal && (
+                    <div className={`${styles.squareHeader} `}>
+                      <RiSpeedUpLine />
+                      <p>
+                        <strong>Nota: </strong>
+                        {item.notaFinal}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </>
         ))}
       </div>
     </div>

@@ -13,7 +13,7 @@ export const generateMetadata = async ({ params }) => {
       "iniciação científica,PIIC - Programa de Incentivo à Iniciação Científica,Programa Institucional de Iniciação Científica e Tecnológica,PAIC,proic,Programas de Iniciação Científica - FGV CPDOC, ic, pibic, pibiti, pibic ensino médio, jovens cientistas, pic, encuca, ceub, udf, ifg, ifb, unb, iesb, gerenciamento de eventos científicos, submissão de artigos, programas de fomento, CNPq, FAPDF, eventos acadêmicos",
     openGraph: {
       title: `EvenPLIC | ${params.eventoSlug}`,
-      description: `Participe do maior congresso de Iniciação Científica do Centro Oeste. Serão apresentados mais de 3 mil trabalhos de diversas áreas do conhecimento.`,
+      description: `Participe do Congresso de Iniciação Científica da UnB e DF, onde jovens cientistas apresentam pesquisas inovadoras.`,
       url: `https://www.plic.app.br/eventos/${params.eventoSlug}`,
       type: "website",
     },

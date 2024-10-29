@@ -81,6 +81,8 @@ const BuscaSubmissoes = ({ idEvento }) => {
                           ? styles.warning
                           : item.status === "AVALIADA"
                           ? styles.success
+                          : item.status === "AUSENTE"
+                          ? styles.inativada
                           : styles.success
                       }`}
                     >
@@ -90,6 +92,8 @@ const BuscaSubmissoes = ({ idEvento }) => {
                         ? "aguardando avaliação"
                         : item.status === "AVALIADA"
                         ? "avaliação concluída"
+                        : item.status === "AUSENTE"
+                        ? "ausente"
                         : item.status}
                     </p>
                     <p className={styles.area}>

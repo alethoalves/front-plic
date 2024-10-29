@@ -1,17 +1,23 @@
 "use client";
 import {
+  RiBatteryLowLine,
   RiCalendarLine,
+  RiCheckDoubleLine,
+  RiExternalLinkLine,
+  RiFilePaper2Fill,
+  RiFilePaper2Line,
   RiGroupLine,
+  RiInformationLine,
   RiSurveyLine,
   RiTimeLine,
 } from "@remixicon/react";
 import styles from "./page.module.scss";
 import { useEffect, useState } from "react";
+import { getInscricao } from "@/app/api/client/inscricao";
+import Table from "@/components/Table";
 import { useRouter } from "next/navigation";
 import { getSessaoById, getSessoesBySlug } from "@/app/api/client/sessoes";
 import Link from "next/link";
-import BuscadorBack from "@/components/BuscadorBack";
-import Header from "@/components/Header";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
@@ -51,62 +57,83 @@ const Page = ({ params }) => {
     const minutos = data.getUTCMinutes().toString().padStart(2, "0");
     return `${horas}h${minutos}`;
   };
-  // Função para lidar com a busca
-  const handleSearch = async (value) => {
-    setSearchValue(value); // Atualiza o valor de busca
-
-    // Cria os filtros com o valor de busca aplicado a nome, cpf, e título
-    const filters = {
-      nome: value,
-      cpf: value,
-      titulo: value,
-    };
-
-    // Refaz a busca com os filtros aplicados
-    fetchData(params.eventoSlug, params.idSubsessao, filters);
-  };
   return (
-    <>
-      <main className={styles.main}>
-        <Header
-          className="mb-3"
-          //titulo="Submissões"
-          subtitulo="Submissões de trabalhos"
-          //descricao="Aqui você gerencia as submissões nos editais da Iniciação Científica."
-        />
-        <div className={`${styles.buscador} mb-2`}>
-          <BuscadorBack onSearch={handleSearch} />
-          {loading && <p className="mt-2">Carregando...</p>}{" "}
-          {/* Exibe o indicador de carregamento dentro do modal */}
-        </div>
-        {!loading && (
-          <div className={styles.squares}>
-            <div
-              className={styles.square}
-              onClick={() => alocarSubmissao(item)}
-            >
-              <div className={styles.squareContent}>
-                <div className={styles.info}>
-                  <p className={styles.status}>Aguardando avaliação</p>
-                  <p className={styles.area}>Fisioterapia</p>
-                </div>
-                <div className={styles.submissaoData}>
-                  <h6>A lutas das mulheres pretas periféricas e inférteis</h6>
-                  <p className={styles.participacoes}>
-                    <strong>Orientadores: </strong>
-                    Aletho Alves
-                  </p>
-                  <p className={styles.participacoes}>
-                    <strong>Alunos: </strong>
-                    Botswana
-                  </p>
-                </div>
+    <div className={styles.navContent}>
+      {sessoes?.map((sessao) => (
+        <div key={sessao.id} className={styles.content}>
+          <div className={styles.header}>
+            <h5>Sessão {sessao?.titulo}</h5>
+          </div>
+          <div className={styles.mainContent}>
+            <div className={styles.edital}>
+              <p>
+                <strong>Tipo de sessão: </strong>
+                {sessao?.tipo === "APRESENTACAO_POSTER"
+                  ? "Apresentação de Pôsteres"
+                  : ""}
+              </p>
+              <p>
+                <strong>Capacidade de cada subsessão: </strong>
+                {sessao?.capacidade} pôsteres
+              </p>
+              <p className="mt-2">
+                <strong>Subsessões: </strong>
+              </p>
+              <div className={styles.subsessoes}>
+                {sessao?.subsessaoApresentacao?.map((subs) => (
+                  <Link
+                    key={subs.id}
+                    href={`/evento/${params.eventoSlug}/admin/submissao/${subs.id}`}
+                  >
+                    <div className={styles.subsessao}>
+                      <div className={styles.description}>
+                        <div className={styles.icon}>
+                          <RiCalendarLine />
+                        </div>
+                        <div className={styles.infoBoxDescription}>
+                          <p>Dia</p>
+                          <h6>{formatarData(subs.inicio)}</h6>
+                        </div>
+                      </div>
+                      <div className={styles.description}>
+                        <div className={styles.icon}>
+                          <RiTimeLine />
+                        </div>
+                        <div className={styles.infoBoxDescription}>
+                          <p>Horário</p>
+                          <h6>
+                            de {formatarHora(subs.inicio)} às{" "}
+                            {formatarHora(subs.fim)}
+                          </h6>
+                        </div>
+                      </div>
+                      <div className={styles.description}>
+                        <div className={styles.icon}>
+                          <RiGroupLine />
+                        </div>
+                        <div className={styles.infoBoxDescription}>
+                          <p>Inscritos</p>
+                          <h6>{subs.submissaoCount}</h6>
+                        </div>
+                      </div>
+                      <div className={styles.description}>
+                        <div className={styles.icon}>
+                          <RiSurveyLine />
+                        </div>
+                        <div className={styles.infoBoxDescription}>
+                          <p>Avaliadores</p>
+                          <h6>{subs.conviteSubsessaoCount}</h6>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
               </div>
             </div>
           </div>
-        )}
-      </main>
-    </>
+        </div>
+      ))}
+    </div>
   );
 };
 

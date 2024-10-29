@@ -111,6 +111,8 @@ const Page = async ({ params }) => {
                                     ? styles.warning
                                     : item.status === "AVALIADA"
                                     ? styles.success
+                                    : item.status === "AUSENTE"
+                                    ? styles.inativada
                                     : styles.success
                                 }`}
                               >
@@ -120,6 +122,8 @@ const Page = async ({ params }) => {
                                   ? "aguardando avaliação"
                                   : item.status === "AVALIADA"
                                   ? "avaliação concluída"
+                                  : item.status === "AUSENTE"
+                                  ? "ausente"
                                   : item.status}
                               </p>
                               <p className={styles.area}>

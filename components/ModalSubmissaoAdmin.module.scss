@@ -345,6 +345,10 @@
                         background-color: $success-light;
                         color: $primary-darken;
                     }
+                    &.inativada{
+                        background-color: $white-light;
+                        color: $primary-darken;
+                    }
                 }
                 .area{
                     border: 1px solid $primary-light;

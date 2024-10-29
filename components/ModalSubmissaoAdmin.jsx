@@ -129,6 +129,8 @@ const Modal = ({ isOpen, onClose, eventoSlug, idSubmissao, onDataUpdated }) => {
                           ? styles.warning
                           : submissao?.status === "AVALIADA"
                           ? styles.success
+                          : submissao?.status === "AUSENTE"
+                          ? styles.inativada
                           : styles.success
                       }
                       }`}
@@ -139,6 +141,8 @@ const Modal = ({ isOpen, onClose, eventoSlug, idSubmissao, onDataUpdated }) => {
                         ? "aguardando avaliação"
                         : submissao?.status === "AVALIADA"
                         ? "avaliação concluída"
+                        : submissao?.status === "AUSENTE"
+                        ? "ausente"
                         : submissao?.status}
                     </p>
                     <p className={styles.area}>
@@ -337,6 +341,16 @@ const Modal = ({ isOpen, onClose, eventoSlug, idSubmissao, onDataUpdated }) => {
                       <div className={styles.squareHeaderInfo}>
                         {alterandoStatus && <p className="mb-2">Aguarde...</p>}
                         <ul>
+                          <li
+                            className={`${
+                              submissao?.status === "AUSENTE"
+                                ? styles.selected
+                                : ""
+                            }`}
+                            onClick={() => handleStatusUpdate("AUSENTE")} // Chama a função para atualizar o status
+                          >
+                            <p>Ausente</p>
+                          </li>
                           <li
                             className={`${
                               submissao?.status === "DISTRIBUIDA"
