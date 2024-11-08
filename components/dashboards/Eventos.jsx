@@ -10,6 +10,8 @@ import {
   RiArrowRightCircleFill,
   RiBatteryLowLine,
   RiCalendarLine,
+  RiFileExcelLine,
+  RiFileWordLine,
   RiGroupLine,
   RiPresentationFill,
 } from "@remixicon/react";
@@ -18,14 +20,26 @@ import {
 import Link from "next/link";
 import NoData from "../NoData";
 import { getEventosDashboard } from "@/app/api/client/eventos";
+import { getSubmissaoByEvento } from "@/app/api/client/relatorios";
+import { formatarData, formatarHora } from "@/lib/formatarDatas";
+import Modal from "../Modal";
+import Button from "../Button";
+import ExcelJS from "exceljs"; // Para exportação do Excel
+import { saveAs } from "file-saver"; // Para salvar o arquivo Excel
 
 const Inscricoes = ({ tenantSlug }) => {
   // ESTADOS
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [currentEventIndex, setCurrentEventIndex] = useState(0); // Estado para controlar o índice do evento atual
+  const [currentEventIndex, setCurrentEventIndex] = useState(0);
   const [eventos, setEventos] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [isDownloadingExcel, setIsDownloadingExcel] = useState(false);
+  const [isDownloadingSubmissoes, setIsDownloadingSubmissoes] = useState(false);
 
+  const [tenant, setTenant] = useState("");
+  const [submissoes, setSubmissoes] = useState([]);
   // Função para buscar os eventos da API
   const fetchEventos = async (tenantSlug) => {
     setLoading(true);
@@ -45,23 +59,6 @@ const Inscricoes = ({ tenantSlug }) => {
     fetchEventos(tenantSlug);
   }, [tenantSlug]);
 
-  // Função para formatar data
-  const formatarData = (dataIso) => {
-    const data = new Date(dataIso);
-    const dia = data.getUTCDate().toString().padStart(2, "0");
-    const mes = (data.getUTCMonth() + 1).toString().padStart(2, "0");
-    const ano = data.getUTCFullYear().toString();
-    return `${dia}/${mes}/${ano}`;
-  };
-
-  // Função para formatar hora
-  const formatarHora = (dataIso) => {
-    const data = new Date(dataIso);
-    const horas = data.getUTCHours().toString().padStart(2, "0");
-    const minutos = data.getUTCMinutes().toString().padStart(2, "0");
-    return `${horas}h${minutos}`;
-  };
-
   // Função para passar para o próximo evento
   const handleNextEvent = () => {
     if (currentEventIndex < eventos.length - 1) {
@@ -75,9 +72,344 @@ const Inscricoes = ({ tenantSlug }) => {
       setCurrentEventIndex(currentEventIndex - 1);
     }
   };
+  const sanitizeText = (text) => {
+    if (typeof text !== "string") return text;
+    return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  };
 
+  const gerarDocDosResumos = async (tenantSigla) => {
+    setIsDownloading(true);
+    try {
+      const evento = eventos[currentEventIndex].data.evento;
+      const submissaoData = await getSubmissaoByEvento(
+        evento.slug,
+        evento.id,
+        tenantSigla
+      );
+
+      // Criação do conteúdo HTML
+      let htmlContent = `
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>Submissões do Evento</title>
+          <style>
+            body { font-family: Arial, sans-serif; }
+            h1 { font-size: 14pt; text-align: center; margin-bottom: 20px; }
+            h2 { font-size: 12pt; margin-top: 15px; color: #333; }
+            p { font-size: 10pt; margin: 5px 0; }
+            .container { width: 80%; margin: auto; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>Submissões do Evento</h1>
+      `;
+
+      submissaoData.forEach((sub, index) => {
+        const planoDeTrabalho = sub.planoDeTrabalho || {};
+        const participacoesPlano = planoDeTrabalho.participacoes || [];
+        const participacoesInscricao =
+          planoDeTrabalho.inscricao?.participacoes || [];
+        const area = planoDeTrabalho.area || {};
+        const registroAtividades = planoDeTrabalho.registroAtividades || [];
+
+        const alunos = participacoesPlano
+          .filter((p) => p.tipo === "aluno")
+          .map((p) => sanitizeText(p.user?.nome || "Nome não disponível"))
+          .join(", ");
+
+        const orientadores = participacoesInscricao
+          .filter((p) => p.tipo === "orientador" || p.tipo === "coorientador")
+          .map(
+            (p) =>
+              `${sanitizeText(p.user?.nome || "Nome não disponível")} (${
+                p.tipo
+              })`
+          )
+          .join(", ");
+
+        const editalTitulo =
+          planoDeTrabalho.inscricao?.edital?.titulo || "Edital não disponível";
+        const tenantSigla =
+          planoDeTrabalho.inscricao?.edital?.tenant?.sigla ||
+          "Tenant não disponível";
+
+        htmlContent += `
+          <div class="section">
+            <h2>${
+              sanitizeText(planoDeTrabalho.titulo) || "Título não disponível"
+            }</h2>
+            <p><strong>Alunos:</strong> ${alunos}</p>
+            <p><strong>Orientadores/Coorientadores:</strong> ${
+              orientadores || "Nenhum"
+            }</p>
+            <p><strong>Área:</strong> ${
+              sanitizeText(area.area) || "Área não disponível"
+            }</p>
+            <p><strong>Edital:</strong> ${sanitizeText(editalTitulo)}</p>
+            <p><strong>Instituição:</strong> ${sanitizeText(tenantSigla)}</p>
+        `;
+
+        // Ordenar as respostas pela propriedade `ordem`
+        const respostasOrdenadas = [
+          ...(registroAtividades[0]?.respostas || []),
+        ].sort((a, b) => (a.campo?.ordem || 0) - (b.campo?.ordem || 0));
+
+        // Adicionar respostas ordenadas ao HTML
+        if (respostasOrdenadas.length > 0) {
+          respostasOrdenadas.forEach((resposta) => {
+            htmlContent += `
+              <h3>${sanitizeText(resposta.campo?.label || "Seção")}</h3>
+              <p>${sanitizeText(
+                resposta.value || "Conteúdo não disponível"
+              )}</p>
+            `;
+          });
+        } else {
+          htmlContent += `<p><em>Sem registro de atividades.</em></p>`;
+        }
+
+        htmlContent += `</div>`;
+
+        // Adiciona o caractere de quebra de página entre submissões
+        if (index < submissaoData.length - 1) {
+          htmlContent += `<p style="page-break-before: always;">\f</p>`;
+        }
+      });
+
+      htmlContent += `</div></body></html>`;
+
+      // Criar o Blob e baixar como arquivo .doc
+      const blob = new Blob([htmlContent], { type: "application/msword" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "submissoes_evento.doc";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Erro ao gerar o documento .doc:", error);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  // Calcula o total geral das submissões de todos os tenants
+  const totalSubmissoesGeral = eventos
+    ? eventos[currentEventIndex].info.tenantsTotais.reduce(
+        (total, tenant) => total + tenant.quantidadeSubmissoesTotal,
+        0
+      )
+    : 0;
+  const closeModalAndResetData = () => {
+    setIsModalOpen(false);
+  };
+  const openModalAndSetData = (tenant) => {
+    console.log(tenant);
+    setTenant(tenant);
+    setIsModalOpen(true);
+  };
+  const gerarDadosDasSubmissoes = async (tenantSigla) => {
+    setIsDownloadingSubmissoes(true);
+    try {
+      const evento = eventos[currentEventIndex].data.evento;
+      const submissaoData = await getSubmissaoByEvento(
+        evento.slug,
+        evento.id,
+        tenantSigla
+      );
+
+      const submissoesArray = submissaoData.map((sub) => {
+        const planoDeTrabalho = sub.planoDeTrabalho || {};
+        const area = planoDeTrabalho.area || {};
+        const editalTitulo =
+          planoDeTrabalho.inscricao?.edital?.titulo || "Edital não disponível";
+        const tenantSigla =
+          planoDeTrabalho.inscricao?.edital?.tenant?.sigla ||
+          "Sigla não disponível";
+
+        return {
+          SIGLA: tenantSigla,
+          TITULO_EDITAL: editalTitulo,
+          GRANDE_AREA:
+            area.grandeArea?.grandeArea || "Grande Área não disponível",
+          AREA: area.area || "Área não disponível",
+          TITULO_PLANO: planoDeTrabalho.titulo || "Título não disponível",
+          PREMIO: sub.premio ? "Sim" : "Não",
+          MENCAO_HONROSA: sub.mencaoHonrosa ? "Sim" : "Não",
+          INDICACAO_PREMIO: sub.indicacaoPremio ? "Sim" : "Não",
+          ID: sub.id,
+        };
+      });
+
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet("Relatório de Submissões");
+
+      worksheet.columns = [
+        { header: "Sigla", key: "SIGLA", width: 15 },
+        { header: "Título do Edital", key: "TITULO_EDITAL", width: 25 },
+        { header: "Grande Área", key: "GRANDE_AREA", width: 20 },
+        { header: "Área", key: "AREA", width: 20 },
+        { header: "Título do Plano", key: "TITULO_PLANO", width: 30 },
+        { header: "Prêmio", key: "PREMIO", width: 10 },
+        { header: "Menção Honrosa", key: "MENCAO_HONROSA", width: 15 },
+        { header: "Indicação Prêmio", key: "INDICACAO_PREMIO", width: 15 },
+        { header: "ID", key: "ID", width: 10 },
+      ];
+
+      submissoesArray.forEach((submissao) => {
+        worksheet.addRow(submissao);
+      });
+
+      worksheet.autoFilter = {
+        from: "A1",
+        to: "I1",
+      };
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      saveAs(blob, "relatorio_submissoes.xlsx");
+    } catch (error) {
+      console.error("Erro ao gerar o Excel:", error);
+    } finally {
+      setIsDownloadingSubmissoes(false);
+    }
+  };
+  // Função para gerar o Excel
+  const gerarDadosDasParticipacoes = async (tenantSigla) => {
+    setIsDownloadingExcel(true);
+    try {
+      const evento = eventos[currentEventIndex].data.evento;
+      const submissaoData = await getSubmissaoByEvento(
+        evento.slug,
+        evento.id,
+        tenantSigla
+      );
+
+      const participacoesArray = submissaoData.flatMap((sub) => {
+        const planoDeTrabalho = sub.planoDeTrabalho || {};
+        const area = planoDeTrabalho.area || {};
+        const editalTitulo =
+          planoDeTrabalho.inscricao?.edital?.titulo || "Edital não disponível";
+        const tenantSigla =
+          planoDeTrabalho.inscricao?.edital?.tenant?.sigla ||
+          "Sigla não disponível";
+
+        const participacoesInscricao =
+          planoDeTrabalho.inscricao?.participacoes || [];
+
+        return participacoesInscricao.map((participacao) => ({
+          Nome: participacao.user?.nome || "Nome não disponível",
+          CPF: participacao.user?.cpf || "CPF não disponível",
+          TIPO: participacao.tipo || "Tipo não disponível",
+          STATUS: participacao.status || "Status não disponível",
+          SIGLA: tenantSigla,
+          TITULO_EDITAL: editalTitulo,
+          GRANDE_AREA:
+            area.grandeArea?.grandeArea || "Grande Área não disponível",
+          AREA: area.area || "Área não disponível",
+          TITULO_PLANO: planoDeTrabalho.titulo || "Título não disponível",
+          PREMIO: sub.premio ? "Sim" : "Não",
+          MENCAO_HONROSA: sub.mencaoHonrosa ? "Sim" : "Não",
+          INDICACAO_PREMIO: sub.indicacaoPremio ? "Sim" : "Não",
+          ID: sub.id,
+        }));
+      });
+
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet("Relatório de Participações");
+
+      worksheet.columns = [
+        { header: "Nome", key: "Nome", width: 25 },
+        { header: "CPF", key: "CPF", width: 15 },
+        { header: "Tipo", key: "TIPO", width: 15 },
+        { header: "Status", key: "STATUS", width: 15 },
+        { header: "Sigla", key: "SIGLA", width: 15 },
+        { header: "Título do Edital", key: "TITULO_EDITAL", width: 25 },
+        { header: "Grande Área", key: "GRANDE_AREA", width: 20 },
+        { header: "Área", key: "AREA", width: 20 },
+        { header: "Título do Plano", key: "TITULO_PLANO", width: 30 },
+        { header: "Prêmio", key: "PREMIO", width: 10 },
+        { header: "Menção Honrosa", key: "MENCAO_HONROSA", width: 15 },
+        { header: "Indicação Prêmio", key: "INDICACAO_PREMIO", width: 15 },
+        { header: "ID", key: "ID", width: 10 },
+      ];
+
+      participacoesArray.forEach((participacao) => {
+        worksheet.addRow(participacao);
+      });
+
+      worksheet.autoFilter = {
+        from: "A1",
+        to: "M1",
+      };
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      saveAs(blob, "relatorio_participacoes.xlsx");
+    } catch (error) {
+      console.error("Erro ao gerar o Excel:", error);
+    } finally {
+      setIsDownloadingExcel(false);
+    }
+  };
+
+  const renderModalContent = () => (
+    <Modal isOpen={isModalOpen} onClose={closeModalAndResetData}>
+      <div className={`${styles.icon} mb-2`}>
+        <RiFileExcelLine />
+      </div>
+      <h4>Relatórios</h4>
+      {!tenant && <p>Faça o download dos dados gerais do evento</p>}
+      {tenant && (
+        <p>
+          {`Faça o download dos dados referentes à instituição ${tenant.tenant.toUpperCase()}`}{" "}
+        </p>
+      )}
+      <Button
+        onClick={() => gerarDocDosResumos(tenant ? tenant.tenant : null)} // Função para exportar os dados para Excel
+        icon={RiFileWordLine}
+        className="btn-secondary mt-2"
+        type="button"
+        disabled={isDownloading} // Desabilita o botão enquanto o download está em andamento
+      >
+        {isDownloading ? "Exportando..." : "Resumos/Artigos"}
+      </Button>
+      <Button
+        onClick={() =>
+          gerarDadosDasParticipacoes(tenant ? tenant.tenant : null)
+        }
+        icon={RiFileExcelLine}
+        className="btn-secondary mt-2"
+        type="button"
+        disabled={isDownloadingExcel}
+      >
+        {isDownloadingExcel ? "Exportando..." : "Participações"}
+      </Button>
+      <Button
+        onClick={() => gerarDadosDasSubmissoes(tenant ? tenant.tenant : null)}
+        icon={RiFileExcelLine}
+        className="btn-secondary mt-2"
+        type="button"
+        disabled={isDownloadingSubmissoes}
+      >
+        {isDownloadingSubmissoes ? "Exportando..." : "Submissões"}
+      </Button>
+    </Modal>
+  );
   return (
     <div className={`${styles.dashboard}`}>
+      {renderModalContent()}
+
       <div className={styles.head}>
         <div className={styles.left}>
           <div className={styles.icon}>
@@ -117,16 +449,25 @@ const Inscricoes = ({ tenantSlug }) => {
             >
               <h5>{eventos[currentEventIndex].data.evento.nomeEvento}</h5>
             </Link>
+
             <div className={styles.totais}>
               {eventos[currentEventIndex].info.tenantsTotais.map((tenant) => (
                 <div
                   className={`${styles.total} ${styles.light}`}
                   key={tenant.tenant}
+                  onClick={() => openModalAndSetData(tenant)}
                 >
                   <p>{tenant.quantidadeSubmissoesTotal}</p>
                   <h6>{tenant.tenant}</h6>
                 </div>
               ))}
+              <div
+                className={`${styles.total} ${styles.blue}`}
+                onClick={() => openModalAndSetData(null)}
+              >
+                <p>{totalSubmissoesGeral}</p>
+                <h6>Total Geral</h6>
+              </div>
             </div>
             <div className={styles.sessoes}>
               {eventos[currentEventIndex].info.sessaoInfo[0] &&

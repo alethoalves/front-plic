@@ -191,7 +191,11 @@ border-radius: $gap-1;
         .total{
             border-radius: $gap-1;
             display: inline-flex;
-            
+            cursor: pointer;
+            transition: ease .3s;
+            &:hover{
+                transform: scale(1.05);
+            }
             
             
            margin-right: $gap-1;
@@ -237,6 +241,12 @@ border-radius: $gap-1;
                 background-color: $error-light;
             }
         }
+        .total.blue{
+            p{
+                background-color: $primary-dark;
+                color: $white-light;
+            }
+        }
         .total.success{
             p{
                 background-color: $success-normal;
@@ -263,4 +273,10 @@ border-radius: $gap-1;
         }
       }
   }
+}
+
+
+.icon{
+    width: 24px;
+    color: $primary-normal;
 }

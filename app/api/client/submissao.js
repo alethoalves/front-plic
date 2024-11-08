@@ -45,6 +45,8 @@ import { getCookie } from 'cookies-next';
       throw error;
     }
   };
+
+  
 //PUBLICO
 
 export const getSubmissoesFiltered = async (idEvento, searchValue) => {
