@@ -86,8 +86,8 @@ const Page = ({ params }) => {
           </div>
           <div className={styles.modalContent}>
             {loading ? (
-              <p>Carregando...</p>
-            ) : submissoes.length > 0 ? (
+              <p className={styles.squares}>Carregando...</p>
+            ) : submissoes?.length > 0 ? (
               <div className={styles.squares}>
                 {submissoes?.map((item) => (
                   <div key={item.id} className={styles.square}>
@@ -224,7 +224,7 @@ const Page = ({ params }) => {
                 ))}
               </div>
             ) : (
-              <p>-</p>
+              <p className={styles.squares}>Nenhum certificado encontrado</p>
             )}
           </div>
         </div>
