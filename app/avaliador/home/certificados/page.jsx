@@ -3,7 +3,10 @@ import { useState } from "react";
 import Header from "@/components/Header";
 import styles from "./page.module.scss";
 import Image from "next/image";
-import { generateAndDownloadCertificatePDF } from "@/app/api/client/certificado";
+import {
+  generateAndDownloadAvaliadorCertificatePDF,
+  generateAndDownloadCertificatePDF,
+} from "@/app/api/client/certificado";
 
 const Page = () => {
   const [loading, setLoading] = useState(false);
@@ -15,7 +18,7 @@ const Page = () => {
       setLoading(true);
       setError(null);
 
-      await generateAndDownloadCertificatePDF(eventoSlug);
+      await generateAndDownloadAvaliadorCertificatePDF(eventoSlug);
 
       alert("Certificado baixado com sucesso!");
     } catch (error) {

@@ -61,7 +61,7 @@ export const generateAndDownloadAvaliadorCertificatePDF = async (eventoSlug) => 
     }
 
     // Chame a API para obter o HTML do certificado
-    const response = await req.get(`/evenplic/evento/1/generateAvaliadorCertificate`, {
+    const response = await req.get(`evenplic/evento/1/generateAvaliadorCertificate`, {
       headers,
     });
 
