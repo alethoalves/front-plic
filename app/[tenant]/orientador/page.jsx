@@ -1,5 +1,6 @@
 "use client";
 import {
+  RiAwardFill,
   RiCalendarEventFill,
   RiCouponLine,
   RiListCheck2,
@@ -116,6 +117,17 @@ const Page = ({ params }) => {
                 <p>
                   Visualize e gerencie suas inscrições em eventos científicos!
                 </p>
+              </div>
+            </div>
+          </Link>
+          <Link href={`/${params.tenant}/orientador/certificados`}>
+            <div className={styles.infoBox}>
+              <div className={styles.icon}>
+                <RiAwardFill />
+              </div>
+              <div className={styles.infoBoxContent}>
+                <h6>Meus certificados</h6>
+                <p>Baixe seus certificados!</p>
               </div>
             </div>
           </Link>

@@ -2,29 +2,29 @@ import Header from "@/components/Header";
 import styles from "./page.module.scss";
 import Image from "next/image";
 import Link from "next/link";
+import { RiAwardFill, RiQuillPenLine } from "@remixicon/react";
 
 const Page = () => {
   return (
     <main className={styles.main}>
-      <Header
-        className="mb-3"
-        titulo="Avaliações"
-        subtitulo="Selecione um evento ou uma instituição para iniciar as avaliações."
-      />
       <div className={styles.instituicoes}>
-        <Link href={"home/1"}>
-          <div className={styles.instituicao}>
+        <Link href={"/avaliador/home/avaliacoes"}>
+          <div className={styles.menu}>
             <div className={styles.logo}>
-              <Image
-                priority
-                sizes="300 500 700"
-                src={`/image/cicdf.png`}
-                fill={true}
-                alt="logo da instituição"
-              />
+              <RiQuillPenLine />
             </div>
             <div className={styles.descricao}>
-              <h6>Congresso de Iniciação Científica da UnB e do DF</h6>
+              <h6>Começar a avaliar</h6>
+            </div>
+          </div>
+        </Link>
+        <Link href={"/avaliador/home/certificados"}>
+          <div className={styles.menu}>
+            <div className={styles.logo}>
+              <RiAwardFill />
+            </div>
+            <div className={styles.descricao}>
+              <h6>Meus certificados</h6>
             </div>
           </div>
         </Link>

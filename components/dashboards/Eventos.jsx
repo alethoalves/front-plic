@@ -35,6 +35,11 @@ const Inscricoes = ({ tenantSlug }) => {
   const [eventos, setEventos] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [
+    isDownloadingArtigoSemIdentificacao,
+    setIsDownloadingArtigoSemIdentificacao,
+  ] = useState(false);
+
   const [isDownloadingExcel, setIsDownloadingExcel] = useState(false);
   const [isDownloadingSubmissoes, setIsDownloadingSubmissoes] = useState(false);
 
@@ -199,6 +204,115 @@ const Inscricoes = ({ tenantSlug }) => {
     }
   };
 
+  const gerarDocDosResumosSemIdentificacao = async (tenantSigla) => {
+    setIsDownloadingArtigoSemIdentificacao(true);
+    try {
+      const evento = eventos[currentEventIndex].data.evento;
+      const submissaoData = await getSubmissaoByEvento(
+        evento.slug,
+        evento.id,
+        tenantSigla
+      );
+      submissaoData.sort((a, b) => a.id - b.id);
+
+      console.log(
+        submissaoData.filter((submissao) => submissao.indicacaoPremio)
+      );
+      // Criação do conteúdo HTML
+      let htmlContent = `
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>Submissões do Evento</title>
+          <style>
+            body { font-family: Arial, sans-serif; }
+            h1 { font-size: 14pt; text-align: center; margin-bottom: 20px; }
+            h2 { font-size: 12pt; margin-top: 15px; color: #333; }
+            p { font-size: 10pt; margin: 5px 0; }
+            .container { width: 80%; margin: auto; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>Submissões do Evento</h1>
+      `;
+
+      submissaoData
+        .filter((submissao) => submissao.indicacaoPremio)
+        .forEach((sub, index) => {
+          const planoDeTrabalho = sub.planoDeTrabalho || {};
+          const participacoesPlano = planoDeTrabalho.participacoes || [];
+          const participacoesInscricao =
+            planoDeTrabalho.inscricao?.participacoes || [];
+          const area = planoDeTrabalho.area || {};
+          const registroAtividades = planoDeTrabalho.registroAtividades || [];
+          const idSubmissao = sub.id;
+
+          const editalTitulo =
+            planoDeTrabalho.inscricao?.edital?.titulo ||
+            "Edital não disponível";
+          const tenantSigla =
+            planoDeTrabalho.inscricao?.edital?.tenant?.sigla ||
+            "Tenant não disponível";
+
+          htmlContent += `
+          <div class="section">
+          <h1>${`ID - ${idSubmissao}`}</h1>
+            <h2>${
+              sanitizeText(planoDeTrabalho.titulo) || "Título não disponível"
+            }</h2>
+            
+            <p><strong>Área:</strong> ${
+              sanitizeText(area.area) || "Área não disponível"
+            }</p>
+            <p><strong>Edital:</strong> ${sanitizeText(editalTitulo)}</p>
+            <p><strong>Instituição:</strong> ${sanitizeText(tenantSigla)}</p>
+        `;
+
+          // Ordenar as respostas pela propriedade `ordem`
+          const respostasOrdenadas = [
+            ...(registroAtividades[0]?.respostas || []),
+          ].sort((a, b) => (a.campo?.ordem || 0) - (b.campo?.ordem || 0));
+
+          // Adicionar respostas ordenadas ao HTML
+          if (respostasOrdenadas.length > 0) {
+            respostasOrdenadas.forEach((resposta) => {
+              if (resposta.campo.label === "Colaboradores") return;
+              htmlContent += `
+              <h3>${sanitizeText(resposta.campo?.label || "Seção")}</h3>
+              <p>${sanitizeText(
+                resposta.value || "Conteúdo não disponível"
+              )}</p>
+            `;
+            });
+          } else {
+            htmlContent += `<p><em>Sem registro de atividades.</em></p>`;
+          }
+
+          htmlContent += `</div>`;
+
+          // Adiciona o caractere de quebra de página entre submissões
+          if (index < submissaoData.length - 1) {
+            htmlContent += `<p style="page-break-before: always;">\f</p>`;
+          }
+        });
+
+      htmlContent += `</div></body></html>`;
+
+      // Criar o Blob e baixar como arquivo .doc
+      const blob = new Blob([htmlContent], { type: "application/msword" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "submissoes_evento.doc";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Erro ao gerar o documento .doc:", error);
+    } finally {
+      setIsDownloadingArtigoSemIdentificacao(false);
+    }
+  };
   // Calcula o total geral das submissões de todos os tenants
   const totalSubmissoesGeral = eventos
     ? eventos[currentEventIndex].info.tenantsTotais.reduce(
@@ -383,6 +497,19 @@ const Inscricoes = ({ tenantSlug }) => {
         disabled={isDownloading} // Desabilita o botão enquanto o download está em andamento
       >
         {isDownloading ? "Exportando..." : "Resumos/Artigos"}
+      </Button>
+      <Button
+        onClick={() =>
+          gerarDocDosResumosSemIdentificacao(tenant ? tenant.tenant : null)
+        } // Função para exportar os dados para Excel
+        icon={RiFileWordLine}
+        className="btn-secondary mt-2"
+        type="button"
+        disabled={isDownloadingArtigoSemIdentificacao} // Desabilita o botão enquanto o download está em andamento
+      >
+        {isDownloadingArtigoSemIdentificacao
+          ? "Exportando..."
+          : "Indicados ao prêmio"}
       </Button>
       <Button
         onClick={() =>
