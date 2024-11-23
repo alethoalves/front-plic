@@ -205,7 +205,7 @@
                                 }
                             }
                             .premios{
-                                margin-right: 4px;
+                                margin-left: 4px;
                                 display: flex;
                                 p{
                                     text-wrap: wrap;
@@ -220,8 +220,8 @@
                                 }
                                 @include responsive(s){
                                     
-                                        margin-right: 0;
-                                        margin-bottom: 4px;
+                                        margin-left: 0;
+                                        margin-top: 4px;
                                     
                                 }
                             }

@@ -7,12 +7,12 @@ export const generateMetadata = async ({ params }) => {
   const { tenant } = params;
   return {
     title: `PLIC | Plataforma de Iniciação Científica`,
-    description: `A PLIC é uma plataforma de gerenciamento de programas de iniciação científica, eventos acadêmicos e científicos no Brasil. Gerencie editais, inscrições e divulgue trabalhos científicos.`,
+    description: `PLIC é uma plataforma de gerenciamento de programas de iniciação científica, eventos acadêmicos e científicos no Brasil. Gerencie editais, inscrições e divulgue trabalhos científicos.`,
     keywords:
       "iniciação científica,PIIC - Programa de Incentivo à Iniciação Científica,Programa Institucional de Iniciação Científica e Tecnológica,PAIC,proic,Programas de Iniciação Científica - FGV CPDOC, ic, pibic, pibiti, pibic ensino médio, jovens cientistas, pic, encuca, ceub, udf, ifg, ifb, unb, iesb, gerenciamento de eventos científicos, submissão de artigos, programas de fomento, CNPq, FAPDF, eventos acadêmicos",
     openGraph: {
       title: `PLIC | ${tenant}`,
-      description: `Gerencie programas de iniciação científica e eventos acadêmicos com a PLIC.`,
+      description: `Gerencie programas de iniciação científica e eventos acadêmicos com a plataforma PLIC.`,
       url: "https://www.plic.app.br",
       type: "website",
     },
@@ -33,7 +33,7 @@ const Layout = async ({ children, params }) => {
       <Head>
         <meta
           name="description"
-          content="A PLIC é uma plataforma de gerenciamento de programas de iniciação científica, eventos acadêmicos e científicos no Brasil. Gerencie editais, inscrições e divulgue trabalhos científicos."
+          content="PLIC é uma plataforma de gerenciamento de programas de iniciação científica, eventos acadêmicos e científicos no Brasil. Gerencie editais, inscrições e divulgue trabalhos científicos."
         />
         <meta
           name="keywords"
@@ -45,7 +45,7 @@ const Layout = async ({ children, params }) => {
         />
         <meta
           property="og:description"
-          content="Gerencie programas de iniciação científica e eventos acadêmicos com a PLIC."
+          content="Gerencie programas de iniciação científica e eventos acadêmicos com a plataforma PLIC."
         />
         <meta property="og:url" content="https://www.plic.app.br" />
         <meta property="og:type" content="website" />

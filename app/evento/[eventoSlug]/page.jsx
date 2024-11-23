@@ -2,13 +2,8 @@ import { getEventoBySlug, getSubmissoes } from "@/app/api/serverReq";
 import Image from "next/image";
 import styles from "./page.module.scss";
 import {
-  RiDeleteBinLine,
-  RiFileList3Line,
-  RiListCheck2,
-  RiMapPinLine,
   RiMedalLine,
   RiPresentationLine,
-  RiQuillPenLine,
   RiSearchLine,
   RiShieldStarFill,
   RiStarLine,
@@ -76,31 +71,6 @@ const Page = async ({ params }) => {
                     {submissoes.length > 0 &&
                       submissoes.map((item, index) => (
                         <div key={item.id} className={styles.square}>
-                          {item.indicacaoPremio ||
-                            item.mencaoHonrosa ||
-                            (item.premio && (
-                              <div className={styles.premios}>
-                                {item.premio && (
-                                  <div className={`${styles.squareHeader} `}>
-                                    <RiShieldStarFill />
-                                    <p>Premiado</p>
-                                  </div>
-                                )}
-                                {item.indicacaoPremio && (
-                                  <div className={`${styles.squareHeader} `}>
-                                    <RiMedalLine />
-                                    <p>Indicado ao Prêmio</p>
-                                  </div>
-                                )}
-                                {item.premio && (
-                                  <div className={`${styles.squareHeader} `}>
-                                    <RiStarLine />
-                                    <p>Menção Honrosa</p>
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-
                           <div className={styles.squareContent}>
                             <div className={styles.info}>
                               <p
@@ -198,6 +168,29 @@ const Page = async ({ params }) => {
                               </div>
                             )}
                           </div>
+                          {(item.indicacaoPremio || item.mencaoHonrosa) && (
+                            <div className={styles.premios}>
+                              {item.premio && (
+                                <div className={`${styles.squareHeader} `}>
+                                  <RiShieldStarFill />
+                                  <p>Premiado</p>
+                                </div>
+                              )}
+                              {item.indicacaoPremio && (
+                                <div className={`${styles.squareHeader} `}>
+                                  <RiMedalLine />
+                                  <p>Indicado ao Prêmio</p>
+                                </div>
+                              )}
+
+                              {item.mencaoHonrosa && (
+                                <div className={`${styles.squareHeader} `}>
+                                  <RiStarLine />
+                                  <p>Menção Honrosa</p>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       ))}
                   </div>
