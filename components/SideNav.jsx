@@ -6,6 +6,7 @@ import itensMenuOrientador from "@/lib/menuItensOrientador";
 import itensMenuAluno from "@/lib/menuItensAluno";
 import itensMenuAdmin from "@/lib/menuItensAdmin";
 import itensMenuAvaliador from "@/lib/menuItensAvaliador";
+import itensMenuRoot from "@/lib/menuItensRoot";
 
 import styles from "./SideNav.module.scss";
 import { RiQuestionAnswerLine } from "@remixicon/react";
@@ -32,6 +33,9 @@ const SideNav = ({ pathLogo, menuType = "gestor" }) => {
   }
   if (menuType === "avaliador") {
     menuData = itensMenuAvaliador;
+  }
+  if (menuType === "root") {
+    menuData = itensMenuRoot;
   }
   return (
     <div className={`${styles.sideNav} ${sidebarOpen && styles.open}`}>

@@ -46,6 +46,23 @@ import { getCookie } from 'cookies-next';
     }
   };
 
+  export const getSubmissoesSemPage = async () => {
+    try {
+      const headers = getAuthHeadersClient();
+      if (!headers) {
+        return false;
+      }
+      const response = await req.get(
+        `/evenplic/getSubmissoesSemPage`,
+        
+        { headers }
+      );
+      return response.data.submissoes;
+    } catch (error) {
+      console.error("Erro ao atualizar campo:", error);
+      throw error;
+    }
+  };
   
 //PUBLICO
 

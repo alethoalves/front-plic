@@ -29,7 +29,13 @@ import { signin } from "@/app/api/client/auth";
 import BuscadorBack from "./BuscadorBack";
 import { verificarCodAvaliador } from "@/app/api/client/conviteEvento";
 
-const Auth = ({ slug, pathLogo, isAvaliador = false }) => {
+const Auth = ({
+  slug,
+  pathLogo,
+  isAvaliador = false,
+  isStudio = false,
+  isRoot = false,
+}) => {
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [tela, setTela] = useState(0);
@@ -41,7 +47,7 @@ const Auth = ({ slug, pathLogo, isAvaliador = false }) => {
     setErrorMessage("");
     try {
       const response = await signin({ ...data, step: tela });
-      console.log(response.perfis);
+
       if (response.perfis) {
         const existeGestor = response.perfis?.some(
           (item) => item.tenant === slug && item.cargo === "gestor"
@@ -81,6 +87,10 @@ const Auth = ({ slug, pathLogo, isAvaliador = false }) => {
         }
         if (existeAluno) {
           router.push(`/${slug}/aluno`);
+          return;
+        }
+        if (isRoot) {
+          router.push(`/root/home`);
           return;
         }
         if (existeAvaliador) {
@@ -145,9 +155,11 @@ const Auth = ({ slug, pathLogo, isAvaliador = false }) => {
           sizes="300 500 700"
         />
       </div>
-      <div className={styles.header}>
-        <h4>Iniciação Científica</h4>
-      </div>
+      {false && (
+        <div className={styles.header}>
+          <h4>Iniciação Científica</h4>
+        </div>
+      )}
       {errorMessage && (
         <>
           <Notification className="notification-error">
@@ -316,15 +328,17 @@ const Auth = ({ slug, pathLogo, isAvaliador = false }) => {
         </form>
       )}
 
-      <div className={styles.logoPlic}>
-        <Image
-          priority
-          sizes="300 500 700"
-          fill
-          src={`/image/plicFundoTransparente.png`}
-          alt="logo"
-        />
-      </div>
+      {!isRoot && (
+        <div className={styles.logoPlic}>
+          <Image
+            priority
+            sizes="300 500 700"
+            fill
+            src={`/image/plicFundoTransparente.png`}
+            alt="logo"
+          />
+        </div>
+      )}
     </div>
   );
 };

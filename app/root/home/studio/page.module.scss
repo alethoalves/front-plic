@@ -1,0 +1,181 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+.icon{
+    width: 24px;
+    color: $primary-normal;
+}
+.processing{
+    margin-top: $gap-1;
+    background-color: $warning-light;
+    border-radius: 4px;
+    p{
+        padding:  4px $gap-1;
+        color: $error-dark;
+    }
+}
+.squares{
+    margin-top: $gap-2;
+    .square{
+        margin-bottom: $gap-1;
+        border: 1px solid $gray-50;
+        border-radius: $gap-1;
+        padding: 3px;
+        display: flex;
+        @include responsive (s){
+            flex-direction: column;
+        }
+        
+        .squareHeader, .squareContent, .squareContentEmpty{
+            background-color: $white-darken;
+            padding: $gap-1;
+            border-radius: 6px;
+        }
+        .premios{
+            display: flex;
+            p{
+                text-wrap: wrap;
+            }
+            margin-left: 4px;
+            @include responsive(s){
+                margin-left: 0;
+                margin-top: 4px;
+            }
+            :not(:last-child){
+                margin-right: 4px;
+               }
+            .squareHeader{
+                flex: 1;
+                background-color: $warning-lighten;
+                color: $warning-darken;
+                svg{
+                    margin: 0;
+                }
+                
+            }
+            @include responsive(s){
+                
+                
+            }
+            
+        }
+        .squareHeader{
+           
+            @include responsive (s){
+                margin-right: 0px;
+                
+            }
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: center;
+            h6{
+                font-size: 22px;
+            }
+        }
+        .squareContentEmpty{
+            flex: 1;
+            margin-left: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: transparent;
+            border: 1px solid $white-darken;
+            transition: ease .3s;
+            cursor: pointer;
+            p{
+                text-align: center;
+                transition: ease .3s;
+                cursor: pointer;
+            }
+
+            &:hover{
+                background-color: $white-darken;
+                p{
+                    text-decoration: underline;
+                }
+            }
+        }
+        .squareContent{
+            flex: 1;
+            margin-left: 4px;
+            @include responsive(s){
+                margin-left: 0;
+                margin-top: 4px;
+            }
+            cursor: pointer;
+            transition: ease .3s;
+            border: 1px solid transparent;
+            &:hover{
+                border: 1px solid $primary-light;
+            }
+            .info{
+                display: flex;
+                margin-bottom: 6px;
+                .status{
+                    background-color: $primary-light;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    color: $white-normal;
+                    font-size: 10px;
+                    margin-right: 6px;
+                    &.error{
+                        background-color: $error-lighten;
+                        color: $error-dark;
+                    }
+                    &.warning{
+                        background-color: $warning-light;
+                        color: $error-dark;
+                    }
+                    &.success{
+                        background-color: $success-light;
+                        color: $primary-darken;
+                    }
+                    &.inativada{
+                        background-color: $white-light;
+                        color: $primary-darken;
+                    }
+                }
+                .area{
+                    border: 1px solid $primary-light;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    color: $primary-light;
+                    font-size: 10px;
+                }
+            }
+            .submissaoData{
+                .participacoes{
+                    font-size: 12px;
+                }
+            }
+        }
+        
+    }
+}
+.main{
+    max-width: 990px;
+    padding: 0 $gap-2 ;
+    margin: 0 auto;
+    margin-top: $gap-4;
+    .header{
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        h1{
+            color: $primary-darken;
+            font-size: 24px;
+        }
+        @include responsive(xs){
+            flex-direction: column;
+            align-items: start;
+            h1{
+                margin-bottom: $gap-1;
+            }
+
+        }
+    }
+    
+}
+

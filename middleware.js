@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { getCookie } from "cookies-next";
 import { cookies } from "next/headers";
 import { getTenant } from "./app/api/server/getTenant";
-import { pingAdminEvento, pingAluno, pingAvaliador, pingGestor, pingOrientador } from "./app/api/server/pings";
+import { pingAdminEvento, pingAluno, pingAvaliador, pingGestor, pingOrientador, pingRoot } from "./app/api/server/pings";
 import { getEventoBySlug } from "./app/api/serverReq";
 
 export const middleware = async (request) => {
@@ -21,10 +21,17 @@ export const middleware = async (request) => {
   urlToEventos.pathname = `/eventos`;
   const urlToRoot = new URL(request.url);
   urlToRoot.pathname = `/`;
+
   const urlToAvaliador = new URL(request.url);
   urlToAvaliador.pathname = `/avaliador/home`;
   const urlToRootAvaliador = new URL(request.url);
   urlToRootAvaliador.pathname = `/avaliador`;
+
+  const urlToPlic = new URL(request.url);
+  urlToPlic.pathname = `/root/home`;
+  const urlToRootPlic = new URL(request.url);
+  urlToRootPlic.pathname = `/root`;
+
   const urlToGestor = new URL(request.url);
   urlToGestor.pathname = `/${tenant}/gestor`;
   const urlToOrientador = new URL(request.url);
@@ -160,7 +167,34 @@ export const middleware = async (request) => {
       return NextResponse.next()
     }
 
+    let pongRoot;
+    pongRoot = await pingRoot(token);
+     /******************
+     * MIDDLEWARE PARA ROOT (/root)
+     * ****************/
+    // APENAS /root
+    if (pathname === '/root') {
+      console.log('ENTROU NA ROTA APENAS /root')
+      if (pongRoot) return NextResponse.redirect(urlToPlic);
+      console.log(pongRoot)
+      return NextResponse.next();
+    }
+
+    //Rotas especificas para root, colocar antes das abaixo
+
+    
+    // Middleware apenas para as rotas root `/root/home`
+    if (url.pathname.startsWith(`/root/home`)) {
+      // Não tem token válido OU não tem permissão de acesso -> redireciona
+      if (!pongRoot) return NextResponse.redirect(urlToRootPlic);
+      return NextResponse.next()
+    }
    
+
+    if (url.pathname.startsWith(`/artigo`)) {
+      
+      return NextResponse.next();
+    }
 
 
 

@@ -56,3 +56,14 @@ export const pingAdminEvento = async (token,eventoSlug) => {
     return false
   }
 };
+
+export const pingRoot = async (token,eventoSlug) => {
+  try {
+    const response = await req.get(`/private/plic/ping/root`, {
+      headers: getAuthHeadersServer(token)
+    });
+    return response.data.pong
+  } catch (error) {
+    return false
+  }
+};

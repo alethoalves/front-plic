@@ -1,0 +1,308 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+.line{
+    width: 100%;
+    height: 1px;
+    background-color: #fff;
+    border-radius: 50px;
+    margin: $gap-2 0;
+}
+.keywords{
+    display: flex;
+    flex-wrap: wrap;
+    .keyword{
+        background-color: #fff;
+        display: inline-block;
+        padding: 4px $gap-1;
+        margin: 4px;
+        border-radius: 50px;
+        p{
+            font-size: 10px;
+        }
+
+    }
+}
+.main{
+    max-width: 990px;
+    margin: 0 auto;
+    padding: 0 $gap-2;
+    @include responsive(xs){
+        padding: 0 0;
+    }
+    p, h1, h2, h3, h4, h5,h6, strong,svg{
+        color: #2C1D09;
+        
+    }
+    p{
+        line-height: 130%;
+        font-size: 10px;
+    }
+    section p{
+        font-size: 14px;
+    }
+    iframe,
+    video {
+        width: 100%;
+        border: none;
+        border-radius: 7px;
+        @include responsive (xs){
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+            height: 200px;
+            border-radius: 0;
+        }
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    a {
+        color: #0070f3;
+        text-decoration: none;
+        font-weight: bold;
+
+        &:hover {
+        text-decoration: underline;
+        }
+    }
+    header{
+        background-color: rgba(#fff, 0.5);
+        padding: $gap-2;
+        border-radius: $gap-1;
+        margin-top: $gap-2;
+        @include responsive(xs){
+            margin-top: 0;
+            border-radius: 0;
+        }
+        .info{
+            .area{
+                
+                background-color: #fff;
+                padding: $gap-1 $gap-3;
+                font-size: 14px;
+                display: inline-block;
+                border-radius: 40px;
+                p{
+                    font-weight: 600;
+                }
+                @include responsive(xs){
+                    font-size: 10px;
+                    padding: 4px $gap-2;
+                }
+            }
+            margin-bottom: $gap-1;
+        }
+        .title{
+            font-size: 32px;
+            @include responsive(xs){
+                font-size: 24px;
+                line-height: 110%;
+            }
+        }
+    }
+    .content{
+        display: flex;
+        background-color: rgba(#fff, 0.5);
+        padding: $gap-2;
+        
+        border-radius: $gap-1;
+        margin: $gap-2 0;
+        @include responsive (xs){
+            flex-direction: column;
+        }
+        @include responsive (xs){
+            padding: 0;
+            margin: 0;
+            border-radius: 0;
+            padding-bottom: $gap-2;
+        }
+        section{
+            flex: 1;
+            p:not(:last-child){
+                margin-bottom: $gap-2;
+            }
+            margin-right: $gap-2;
+            @include responsive (xs){
+                margin-right: 0;
+            }
+            p{
+                padding: 0 $gap-2;
+            }
+        }
+        aside{
+            width: 300px;
+            @include responsive (xs){
+                width: 100%;
+            }
+        }
+        .asideDesktop{
+            @include responsive(xs){
+                display: none;
+            }
+        }
+
+        .asideMobile{
+            display: none;
+            @include responsive (xs){
+                display: block;
+            }
+           .authors{
+            overflow: hidden;
+            width: 100%;
+           }
+           
+           .card{
+            margin: 0 $gap-2;
+            margin-bottom: $gap-2;
+           }
+           .cardAuthors{
+            margin: 0 0;
+            margin-bottom: $gap-2;
+            .title{
+                margin-left: $gap-2;
+            }
+            
+           }
+           
+            .slider{
+                display: flex;
+                overflow-x: auto; /* Permite a rolagem horizontal */
+                scroll-snap-type: x mandatory; /* Adiciona snapping para deslizar */
+                gap: 16px; /* Espaço entre os itens */
+
+                /* Oculta a barra de rolagem (opcional) */
+                &::-webkit-scrollbar {
+                display: none;
+                }
+            }
+            .content{
+                padding: $gap-2;
+                border-radius: $gap-1;
+            }
+        }
+    }
+    
+}
+.card{
+   
+    margin-bottom: $gap-2;
+    .title{
+        margin-bottom: $gap-1;
+    }
+    .content{
+        margin: 0;
+        p{
+            font-size: 10px;
+        }
+    }
+}
+.award{
+    display: flex;
+    .awardIcon{
+        width: 50px;
+        display: flex;
+        align-items: center;
+        border-top-left-radius: $gap-1;
+        border-bottom-left-radius: $gap-1;
+        background-color: #fff;
+        .svg{
+            padding: $gap-1;
+            
+        }
+    }
+    .awardDescription{
+        flex: 1;
+        border-top-right-radius: $gap-1;
+        border-bottom-right-radius: $gap-1;
+        padding: $gap-1;
+        background-color: rgba(#fff, 0.5);
+        p{
+            font-size: 10px;
+        }
+    }
+}
+.authors{
+    h6{
+        font-size: 14px;
+    }
+    p{
+        font-size: 10px;
+    }
+    .author{
+        display: flex;
+        align-items: center;
+        padding: $gap-1;
+        flex: 0 0 auto; /* Garante que cada item tenha largura fixa */
+        width: 100%; /* Define a largura de cada item */
+        @include responsive(xs){
+            width: auto;
+        }
+        scroll-snap-align: start; /* Ajusta o snapping */
+
+        .avatar{
+            background-color: #fff;
+            margin-right: $gap-1;
+            width: 40px;
+            height: 40px;
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .name{
+            flex: 1;
+        }
+    }
+}
+.bg {
+    position: fixed; /* Fixa o elemento na viewport */
+    top: 0;
+    left: 0;
+    width: 100vw; /* Ocupa toda a largura da viewport */
+    height: 100vh; /* Ocupa toda a altura da viewport */
+    z-index: -1; /* Envia o fundo para trás do conteúdo */
+  
+    img {
+      object-fit: cover; /* Garante que a imagem preencha todo o fundo */
+      object-position: center; /* Centraliza a imagem */
+      filter: blur(1000px); /* Aplica o desfoque */
+
+    }
+    
+  }
+.img{
+    //width: 990px;
+    flex: 1;
+    height: 450px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-top: $gap-2;
+    
+    img{
+        object-fit: cover;
+        object-position: center center;
+        border-radius: $gap-1;
+        @include responsive(xs){
+            border-radius: 0;
+        }
+    }
+    @include responsive(xs){
+        height: 150px;
+        margin-top: 0;
+    }
+}
+.instituicao{
+    
+    border: 1px solid $gray-50;
+    padding: $gap-2;
+    border-radius: $gap-1;
+    cursor: pointer;
+    margin-bottom: $gap-2;
+    transition: ease .3s;
+    &:hover{
+        box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+        transform: scale(1.01);
+    }
+    
+}
