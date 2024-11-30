@@ -264,8 +264,11 @@
     img {
       object-fit: cover; /* Garante que a imagem preencha todo o fundo */
       object-position: center; /* Centraliza a imagem */
-      filter: blur(1000px); /* Aplica o desfoque */
-
+      width: 100%; /* Define largura explícita */
+      height: 100%; /* Define altura explícita */
+      filter: blur(300px); /* Aplica o desfoque */
+      will-change: transform, filter; /* Otimiza para efeitos visuais */
+      backface-visibility: hidden; /* Garante melhor renderização */
     }
     
   }
