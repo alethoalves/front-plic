@@ -13,7 +13,7 @@ import {
 } from "@remixicon/react";
 import Modal from "@/components/Modal";
 import { getSubmissoesSemPage } from "@/app/api/client/submissao";
-import { createPageForSubmissao, getAllPages } from "@/app/api/client/page";
+import { createPageForSubmissao, getAllPages } from "@/app/api/client/pages";
 
 const Page = () => {
   const [loadingPages, setLoadingPages] = useState(false); // Loading para páginas
