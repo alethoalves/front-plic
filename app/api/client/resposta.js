@@ -19,6 +19,7 @@ export const startSubmission = async (registroAtividadeId, body) => {
     );
     return response.data;
   } catch (error) {
+    console.log("OLAAAA")
     console.error("Erro ao criar campo:", error);
     throw error;
   }

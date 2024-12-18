@@ -53,6 +53,15 @@
         }
     }
 }
+.large{
+    .modalContent{
+        max-width: 100%;
+        .content{
+            //width: 100vw;
+            height: 100vh;
+        }
+    }
+}
 .closeIcon{
     position: absolute;
     right: 0;

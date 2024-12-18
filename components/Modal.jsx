@@ -15,6 +15,7 @@ const Modal = ({
   itemName,
   children,
   noPadding = false,
+  size = "small",
 }) => {
   const [visible, setVisible] = useState(false);
   useEffect(() => {
@@ -34,7 +35,11 @@ const Modal = ({
   if (!isOpen) return null;
 
   return (
-    <div className={`${styles.modalBackdrop} ${visible && styles.visible}`}>
+    <div
+      className={`${styles.modalBackdrop} ${visible && styles.visible} ${
+        size === "large" ? styles.large : ""
+      }`}
+    >
       <div className={`${styles.modalContent} `}>
         <div onClick={handleCloseWithDelay} className={styles.closeIcon}>
           <RiCloseLargeLine />

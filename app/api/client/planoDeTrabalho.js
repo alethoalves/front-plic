@@ -88,7 +88,7 @@ export const createPlanoDeTrabalho = async (
     }
   };
   
-  export const updatePlanoDeTrabalhoPerfilAluno = async (
+  export const updatePlanoDeTrabalhoPerfilUser = async (
     tenantSlug,
     inscricaoId,
     id,
@@ -100,7 +100,7 @@ export const createPlanoDeTrabalho = async (
         return false;
       }
       const response = await req.put(
-        `/private/${tenantSlug}/${inscricaoId}/aluno/planosDeTrabalho/${id}`,
+        `/private/${tenantSlug}/${inscricaoId}/user/planosDeTrabalho/${id}`,
         planoDeTrabalhoData,
         { headers }
       );

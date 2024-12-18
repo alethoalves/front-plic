@@ -278,7 +278,7 @@ h6 {
   }
 }
 
-p {
+p,a {
   letter-spacing: 0px;
   color: $gray-600;
   
@@ -290,6 +290,7 @@ p {
     @include typeface-2(p3, smallmobile);
   }
 }
+
 
 .uppercase{
   text-transform: uppercase;

@@ -1,0 +1,77 @@
+@import "./../styles/partials/colors";
+@import "./../styles/partials/layout";
+@import "./../styles/partials/spacing";
+
+.fileInputContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  position: relative;
+    p{
+        margin-bottom: 0;
+    }
+  .label {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    position: relative;
+    cursor: pointer;
+    .labelP{
+        margin-right: $gap-2;
+    }
+    .customButton {
+      padding: $gap-1 $gap-3;
+      //background-color: $primary-normal;
+      color: $white-normal;
+      border: 1px solid $gray-50;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: ease 0.3s ;
+      
+      
+      p{
+        color: $primary-darken;
+        font-weight: 400;
+      }
+
+      &:hover {
+        background-color: $primary-dark;
+        border-color: $primary-dark;
+        transform: scaleX(1.03);
+        p{
+            color: $white-light; 
+        }
+      }
+
+      &:active {
+        background-color: $primary-darken;
+        border-color: $primary-darken;
+      }
+      &[disabled] {
+        background-color: $gray-300; // Cor de desabilitado
+        border-color: $gray-300;
+        cursor: not-allowed; // Cursor de desabilitado
+        color: $gray-600; // Texto desabilitado
+        transform: none; // Remove efeito de hover
+      }
+    }
+  }
+
+  .fileInput {
+    display: none; // Esconde o input file padrão
+
+  }
+  
+  .fileName {
+    margin-top: $gap-1;
+    color: $gray-500;
+    font-size: 0.875rem; // Tamanho de texto menor
+  }
+
+  .errorMsg {
+    color: $error-light;
+    margin-top: $gap-1;
+    font-size: 0.875rem;
+  }
+}

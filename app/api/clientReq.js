@@ -50,6 +50,34 @@ export const getDataFromCPF = async (tenantSlug, cpf) => {
     throw error;
   }
 };
+export const xmlLattes = async (file, tenantSlug, idUser) => {
+  try {
+    const token = getCookie("authToken");
+    if (!token) {
+      return false;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("idUser", idUser); // Inclui o idUser no body da requisição
+
+    const response = await req.post(
+      `/private/${tenantSlug}/external/xmlLattes`,
+      formData,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Erro:", error);
+    throw error;
+  }
+};
 
 export const uploadFile = async (file, tenantSlug) => {
   try {

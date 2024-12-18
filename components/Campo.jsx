@@ -39,6 +39,7 @@ const Campo = ({
   schema,
   respostas,
   registroAtividadeId,
+  participacaoId,
   onClose,
   onSuccess,
 }) => {
@@ -46,7 +47,7 @@ const Campo = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [editar, setEditar] = useState(false);
-
+  const [initialData, setInitialData] = useState();
   // Dynamically create the Zod schema based on the props
   const respostaSchema = useMemo(() => {
     let baseSchema = z.string();
@@ -113,18 +114,17 @@ const Campo = ({
     },
   });
 
-  const initialDataArray = respostas?.filter(
-    (item) => item.campoId === schema?.id
-  );
-  let initialData = initialDataArray[0];
-
   useEffect(() => {
-    if (initialData) {
-      setValue("value", initialData.value);
+    const initialDataArray = respostas?.filter(
+      (item) => item.campoId === schema?.id
+    );
+    setInitialData(initialDataArray[0]);
+    if (initialDataArray[0]) {
+      setValue("value", initialDataArray[0].value); // Sincroniza o formulário
     } else {
       reset();
     }
-  }, [initialData, reset, setValue]);
+  }, [respostas, schema?.id, reset, setValue]);
 
   const handleFileUpload = async (file) => {
     try {
@@ -148,6 +148,7 @@ const Campo = ({
     setError("");
     try {
       let value = data.value;
+      let response;
 
       if (schema?.tipo === "arquivo") {
         value = await handleFileUpload(value);
@@ -159,14 +160,14 @@ const Campo = ({
         }
         const updateData = { value };
         if (perfil === "gestor") {
-          await updateResposta(
+          response = await updateResposta(
             tenantSlug,
             initialData.id,
             schema.id,
             updateData
           );
         } else {
-          await updateRespostaByParticipante(
+          response = await updateRespostaByParticipante(
             tenantSlug,
             initialData.id,
             schema.id,
@@ -178,13 +179,21 @@ const Campo = ({
           value,
           campoId: schema.id,
           registroAtividadeId,
+          participacaoId,
         };
         if (perfil === "gestor") {
-          await createResposta(tenantSlug, schema.id, newData);
+          response = await createResposta(tenantSlug, schema.id, newData);
         } else {
-          await createRespostaByParticipante(tenantSlug, schema.id, newData);
+          response = await createRespostaByParticipante(
+            tenantSlug,
+            schema.id,
+            newData
+          );
         }
       }
+
+      setInitialData(response); // Atualiza o estado com o objeto completo
+      setValue("value", response.value); // Sincroniza o formulário
       setEditar(false);
       onSuccess();
     } catch (error) {
@@ -262,7 +271,7 @@ const Campo = ({
                   name="value"
                   label={schema?.label}
                   inputType={schema?.tipo === "arquivo" ? "file" : schema?.tipo}
-                  placeholder="Digite aqui o título da pergunta"
+                  placeholder={schema?.label}
                   disabled={
                     loading ||
                     (!editar && initialData && schema?.tipo !== "arquivo")

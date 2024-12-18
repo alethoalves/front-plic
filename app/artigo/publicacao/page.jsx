@@ -42,7 +42,9 @@ const Page = () => {
           <p className={`${styles.label} ${styles.center}`}>Edições</p>
           <div className={`${styles.list} ${styles.center}`}>
             <ul>
-              <Link href={`/artigo/publicacao/edicao`}>
+              <Link
+                href={`/artigo/diversidade-de-especies-arboreas-usadas-na-arborizacao-do-Colegio-Militar-de-Brasilia`}
+              >
                 <li>
                   <div className={styles.text}>
                     <div className={styles.itemListSmall}>

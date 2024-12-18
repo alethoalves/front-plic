@@ -75,7 +75,7 @@ export const createRegistroAtividade = async (
         return false;
       }
       const response = await req.get(
-        `/private/${tenantSlug}/aluno/registroAtividadesByCPF`,
+        `/private/${tenantSlug}/user/registroAtividadesByCPF`,
         {
           headers,
           

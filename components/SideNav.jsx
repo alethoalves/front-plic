@@ -7,6 +7,7 @@ import itensMenuAluno from "@/lib/menuItensAluno";
 import itensMenuAdmin from "@/lib/menuItensAdmin";
 import itensMenuAvaliador from "@/lib/menuItensAvaliador";
 import itensMenuRoot from "@/lib/menuItensRoot";
+import itensMenuUser from "@/lib/menuItensUser";
 
 import styles from "./SideNav.module.scss";
 import { RiQuestionAnswerLine } from "@remixicon/react";
@@ -24,6 +25,9 @@ const SideNav = ({ pathLogo, menuType = "gestor" }) => {
   }
   if (menuType === "orientador") {
     menuData = itensMenuOrientador;
+  }
+  if (menuType === "user") {
+    menuData = itensMenuUser;
   }
   if (menuType === "aluno") {
     menuData = itensMenuAluno;

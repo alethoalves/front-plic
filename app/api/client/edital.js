@@ -60,6 +60,8 @@ export const getEditais = async (tenantSlug) => {
   }
 };
 
+
+
 export const getEdital = async (tenantSlug, editalId) => {
   try {
     const headers = getAuthHeadersClient();

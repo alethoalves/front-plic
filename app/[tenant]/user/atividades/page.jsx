@@ -24,6 +24,7 @@ import {
 import Campo from "@/components/Campo";
 import { startSubmission } from "@/app/api/client/resposta";
 import FormArea from "@/components/Formularios/FormArea";
+import NoData from "@/components/NoData";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
@@ -300,7 +301,7 @@ const Page = ({ params }) => {
 
   const openModalAndSetData = async (data) => {
     setItemToEdit(data);
-    console.log("ENTROU 1");
+
     const response = await startSubmission(data.id);
     if (response?.response?.status === "concluido") {
       setCode(3);
@@ -369,136 +370,142 @@ const Page = ({ params }) => {
       <div className={styles.navContent}>
         <div className={styles.content}>
           <div className={styles.header}>
-            {registroAtividadesEditaisVigentes?.length > 0 && (
-              <>
-                <h4>Cronograma de atividades:</h4>
-                <p className="mt-1">
-                  As atividades abaixo são obrigatórias para conclusão do
-                  programa de iniciação científica.
-                </p>
-              </>
-            )}
+            <h4>Cronograma de atividades:</h4>
+            <p className="mt-1">
+              As atividades abaixo são obrigatórias para conclusão do programa
+              de iniciação científica.
+            </p>
           </div>
-          <div className={styles.mainContent}>
-            <div className={styles.tela1}>
-              {registroAtividadesEditaisVigentes?.map((registro) => (
-                <div
-                  key={registro.id}
-                  className={styles.boxButton}
-                  onClick={async () => {
-                    await openModalAndSetData(registro);
-                  }}
-                >
-                  <div className={styles.labelWithIcon}>
-                    <RiCheckDoubleLine />
-                    <div className={styles.label}>
-                      <p>
+          {registroAtividadesEditaisVigentes?.length > 0 ? (
+            <>
+              <div className={styles.mainContent}>
+                <div className={styles.tela1}>
+                  {registroAtividadesEditaisVigentes?.map((registro) => (
+                    <div
+                      key={registro.id}
+                      className={styles.boxButton}
+                      onClick={async () => {
+                        await openModalAndSetData(registro);
+                      }}
+                    >
+                      <div className={styles.labelWithIcon}>
                         <RiCheckDoubleLine />
-                        Status da atividade:
-                      </p>
-                      <div className={styles.description}>
-                        <div
-                          className={`${styles.status} ${
-                            registro.status === "naoEntregue" && styles.error
-                          } ${
-                            registro.status === "concluido" && styles.success
-                          }`}
-                        >
+                        <div className={styles.label}>
                           <p>
-                            {registro.status === "naoEntregue" &&
-                              "Não entregue"}
-                            {registro.status === "concluido" && "Entregue"}
+                            <RiCheckDoubleLine />
+                            Status da atividade:
                           </p>
+                          <div className={styles.description}>
+                            <div
+                              className={`${styles.status} ${
+                                registro.status === "naoEntregue" &&
+                                styles.error
+                              } ${
+                                registro.status === "concluido" &&
+                                styles.success
+                              }`}
+                            >
+                              <p>
+                                {registro.status === "naoEntregue" &&
+                                  "Não entregue"}
+                                {registro.status === "concluido" && "Entregue"}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className={styles.labelWithIcon}>
+                        <RiDraftLine />
+                        <div className={styles.label}>
+                          <p>
+                            <RiDraftLine />
+                            Nome da atividade:
+                          </p>
+                          <div className={styles.description}>
+                            <p className={styles.destaque}>
+                              {registro.atividade.titulo}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className={styles.labelWithIcon}>
+                        <RiCalendarEventFill />
+                        <div className={styles.label}>
+                          <p>
+                            <RiCalendarEventFill />
+                            Período para entrega:
+                          </p>
+                          <div className={styles.description}>
+                            <p>
+                              {formatarData(registro.atividade.dataInicio)} a{" "}
+                              {formatarData(registro.atividade.dataFinal)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className={styles.labelWithIcon}>
+                        <RiFoldersLine />
+                        <div className={styles.label}>
+                          <p>
+                            <RiFoldersLine />
+                            Atividade referente ao plano de trabalho:
+                          </p>
+                          <div className={styles.description}>
+                            <p>{registro.planoDeTrabalho.titulo}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className={styles.labelWithIcon}>
+                        <RiUser2Line />
+                        <div className={styles.label}>
+                          <p>
+                            <RiUser2Line />
+                            Orientador(es):
+                          </p>
+                          <div className={styles.description}>
+                            {registro.planoDeTrabalho.inscricao.participacoes
+                              .filter(
+                                (item) =>
+                                  item.tipo === "orientador" ||
+                                  item.tipo === "coorientador"
+                              )
+                              .map((item, index) => (
+                                <p className={styles.person} key={index}>
+                                  {item.user.nome} ({item.status})
+                                </p>
+                              ))}
+                          </div>
+                        </div>
+                      </div>
+                      <div className={styles.labelWithIcon}>
+                        <RiGroupLine />
+                        <div className={styles.label}>
+                          <p>
+                            <RiGroupLine />
+                            Aluno(s):
+                          </p>
+                          <div className={styles.description}>
+                            {registro.planoDeTrabalho.participacoes.map(
+                              (item, index) => (
+                                <p className={styles.person} key={index}>
+                                  {item.user.nome} ({item.status})
+                                </p>
+                              )
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                  <div className={styles.labelWithIcon}>
-                    <RiDraftLine />
-                    <div className={styles.label}>
-                      <p>
-                        <RiDraftLine />
-                        Nome da atividade:
-                      </p>
-                      <div className={styles.description}>
-                        <p className={styles.destaque}>
-                          {registro.atividade.titulo}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className={styles.labelWithIcon}>
-                    <RiCalendarEventFill />
-                    <div className={styles.label}>
-                      <p>
-                        <RiCalendarEventFill />
-                        Período para entrega:
-                      </p>
-                      <div className={styles.description}>
-                        <p>
-                          {formatarData(registro.atividade.dataInicio)} a{" "}
-                          {formatarData(registro.atividade.dataFinal)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className={styles.labelWithIcon}>
-                    <RiFoldersLine />
-                    <div className={styles.label}>
-                      <p>
-                        <RiFoldersLine />
-                        Atividade referente ao plano de trabalho:
-                      </p>
-                      <div className={styles.description}>
-                        <p>{registro.planoDeTrabalho.titulo}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className={styles.labelWithIcon}>
-                    <RiUser2Line />
-                    <div className={styles.label}>
-                      <p>
-                        <RiUser2Line />
-                        Orientador(es):
-                      </p>
-                      <div className={styles.description}>
-                        {registro.planoDeTrabalho.inscricao.participacoes
-                          .filter(
-                            (item) =>
-                              item.tipo === "orientador" ||
-                              item.tipo === "coorientador"
-                          )
-                          .map((item, index) => (
-                            <p className={styles.person} key={index}>
-                              {item.user.nome} ({item.status})
-                            </p>
-                          ))}
-                      </div>
-                    </div>
-                  </div>
-                  <div className={styles.labelWithIcon}>
-                    <RiGroupLine />
-                    <div className={styles.label}>
-                      <p>
-                        <RiGroupLine />
-                        Aluno(s):
-                      </p>
-                      <div className={styles.description}>
-                        {registro.planoDeTrabalho.participacoes.map(
-                          (item, index) => (
-                            <p className={styles.person} key={index}>
-                              {item.user.nome} ({item.status})
-                            </p>
-                          )
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <NoData description="Não há atividades cadastradas para o seu perfil nesta instituição." />
+            </>
+          )}
         </div>
       </div>
     </>

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { getCookie } from "cookies-next";
 import { cookies } from "next/headers";
 import { getTenant } from "./app/api/server/getTenant";
-import { pingAdminEvento, pingAluno, pingAvaliador, pingGestor, pingOrientador, pingRoot } from "./app/api/server/pings";
+import { pingAdminEvento, pingAluno, pingAvaliador, pingGestor, pingOrientador, pingRoot, pingUser } from "./app/api/server/pings";
 import { getEventoBySlug } from "./app/api/serverReq";
 
 export const middleware = async (request) => {
@@ -38,6 +38,8 @@ export const middleware = async (request) => {
   urlToOrientador.pathname = `/${tenant}/orientador`;
   const urlToAluno = new URL(request.url);
   urlToAluno.pathname = `/${tenant}/aluno`;
+  const urlToUser = new URL(request.url);
+  urlToUser.pathname = `/${tenant}/user`;
   const { pathname } = request.nextUrl;
   const token = getCookie("authToken", { cookies });
   console.log('ENTROU NO MIDDLEWARE')
@@ -219,7 +221,8 @@ export const middleware = async (request) => {
     pongOrientador = await pingOrientador(token, tenant);
     let pongAluno;
     pongAluno = await pingAluno(token, tenant);
-    
+    let pongUser;
+    pongUser = await pingUser(token, tenant);
 
     
     /******************
@@ -230,6 +233,8 @@ export const middleware = async (request) => {
       if (pongGestor) return NextResponse.redirect(urlToGestor);
       if (pongOrientador) return NextResponse.redirect(urlToOrientador);
       if (pongAluno) return NextResponse.redirect(urlToAluno);
+      if (pongUser) return NextResponse.redirect(urlToUser);
+
       return NextResponseWithTenant
       
     }
@@ -258,6 +263,15 @@ export const middleware = async (request) => {
     if (url.pathname.startsWith(`/${tenant}/aluno`)) {
       // Não tem token válido OU não tem permissão de acesso -> redireciona
       if (!pongAluno) return NextResponse.redirect(urlToSignin);
+      return NextResponseWithTenant
+    }
+    /******************
+     * MIDDLEWARE PARA AS ROTAS INTERNAS DE USER (/:tenant)
+     * ****************/
+    // Middleware apenas para as rotas user `/:tenant/user`
+    if (url.pathname.startsWith(`/${tenant}/user`)) {
+      // Não tem token válido OU não tem permissão de acesso -> redireciona
+      if (!pongUser) return NextResponse.redirect(urlToSignin);
       return NextResponseWithTenant
     }
      

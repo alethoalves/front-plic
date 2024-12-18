@@ -180,6 +180,11 @@ button[type="submit"]:disabled, button:disabled{
     background-color: $white-light;
     border: 1px solid $gray-100;
     cursor:default;
+    color: $gray-600;
+    svg{
+        color:$primary-dark;
+    }
+    
     p{
         color: $gray-600;
     }

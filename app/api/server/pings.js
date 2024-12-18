@@ -67,3 +67,14 @@ export const pingRoot = async (token,eventoSlug) => {
     return false
   }
 };
+
+export const pingUser = async (token,eventoSlug) => {
+  try {
+    const response = await req.get(`/private/plic/ping/user`, {
+      headers: getAuthHeadersServer(token)
+    });
+    return response.data.pong
+  } catch (error) {
+    return false
+  }
+};

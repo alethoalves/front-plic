@@ -2,10 +2,118 @@
 @import "../../../../../styles/partials/layout";
 @import "../../../../../styles/partials/spacing";
 
+.labelDate{
+    margin-top: $gap-2;
+    max-width: 320px;
+    label p {
+        color: $primary-darken;
+    }
+    .input{
+        background-color: $white-normal;
+        border: 1px solid $white-normal;
+        margin: $gap-1 0;
+        border-radius: $gap-1;
+        cursor: pointer;
+        transition: ease .3s;
+        &:hover{
+            transform: scale(1.03);
+            border: 1px solid $white-darken;
+        }
+        display: flex;
+        .icon{
+            background-color: $white-darken;
+            border-top-left-radius: $gap-1;
+            border-bottom-left-radius: $gap-1;
+            padding: $gap-1;
+            width:fit-content;
+            display: flex;
+            align-items: center;
+            svg{
+                width: 30px;
+                height: 30px;
+            }
+        }
+       
+        input{
+            cursor: pointer;
+            flex: 1;
+            border: none;
+            background: none;
+            padding: $gap-2;
+            outline: none;
+        } 
+    }
+    .errorLabel{
+        p{
+            color: $error-dark;
+        }
+    }
+}
 
+.labelNumber{
+    margin-top: $gap-2;
+    //max-width: 320px;
+    label p {
+        color: $primary-darken;
+    }
+    .controles{
+        .aumentar, .diminuir{
+            cursor: pointer;
+            transition: ease .3s;
+            user-select: none;
+        }
+        .aumentar{
+            border: 1px solid $gray-50;
+            border-top-right-radius: $gap-1;
+            color: $primary-normal;
+            &:hover{
+                color: $primary-darken;
+                background-color: $white-darken;
+            }
+        }
+        .diminuir{
+            border: 1px solid $gray-50;
+            border-top: none;
+            border-bottom-right-radius: $gap-1;
+            color: $primary-normal;
+            &:hover{
+                color: $primary-darken;
+                background-color: $white-darken;
+            }
+        }
 
-.content{
-    
+        
+    }
+    .input{
+        background-color: $white-normal;
+        border: 1px solid $white-normal;
+        margin: $gap-1 0;
+        border-radius: $gap-1;
+       
+        &:hover{
+            transform: scale(1.03);
+            border: 1px solid $white-darken;
+        }
+        display: flex;
+        
+       
+        input{
+            cursor: pointer;
+            flex: 1;
+            border: none;
+            background: none;
+            padding: $gap-2;
+            outline: none;
+        } 
+    }
+    .errorLabel{
+        p{
+            color: $error-dark;
+        }
+    }
+}
+
+.content{    
     margin-top: $gap-3;
     margin-bottom: $gap-7;
     @include responsive(s){

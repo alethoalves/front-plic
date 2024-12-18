@@ -19,6 +19,12 @@ const ParticipacaoForm = ({
   inscricaoId,
   onSuccess,
   onClose,
+  options = [
+    { label: "Selecione uma opção", value: "" },
+    { label: "Orientador", value: "orientador" },
+    { label: "Coorientador", value: "coorientador" },
+  ],
+  showLabelInicio = true,
 }) => {
   //ESTADOS
   const [loading, setLoading] = useState(false);
@@ -31,7 +37,6 @@ const ParticipacaoForm = ({
       nome: "",
       inicio: "",
       cpf: "",
-      status: "",
       tipo: "",
       cvLattesId: "",
       ...initialData,
@@ -39,13 +44,11 @@ const ParticipacaoForm = ({
   });
   const handleFormSubmit = async (data) => {
     const { tipo, inicio } = data;
-    const status = "ativo";
     const cvLattesId = "";
     const newData = {
       ...initialData,
       tipo,
       inscricaoId,
-      status,
       cvLattesId,
       inicio,
     };
@@ -53,8 +56,8 @@ const ParticipacaoForm = ({
     setLoading(true);
     setError("");
     try {
-      await createParticipacao(tenantSlug, newData);
-      onSuccess();
+      const response = await createParticipacao(tenantSlug, newData); // Supondo que a API retorne os dados da participação criada
+      onSuccess(response); // Passa a nova participação para o pai
       onClose();
     } catch (error) {
       console.error("Error:", error);
@@ -80,24 +83,22 @@ const ParticipacaoForm = ({
         control={control}
         name="tipo"
         label="Tipo de orientador"
-        options={[
-          { label: "Selecione uma opção", value: "" },
-          { label: "Orientador", value: "orientador" },
-          { label: "Coorientador", value: "coorientador" },
-        ]}
+        options={options}
         disabled={loading}
       />
-      <Input
-        className="mb-2"
-        control={control}
-        name="inicio"
-        label="Início da participação"
-        inputType="date"
-        placeholder="DD/MM/AAAA"
-        disabled={loading}
-      />
+      {showLabelInicio && (
+        <Input
+          className="mb-2"
+          control={control}
+          name="inicio"
+          label="Início da participação"
+          inputType="date"
+          placeholder="DD/MM/AAAA"
+          disabled={loading}
+        />
+      )}
       <Button className="btn-primary" type="submit">
-        Enviar
+        {loading ? "Aguarde..." : "Salvar"}
       </Button>
       {error && (
         <div className={`notification notification-error`}>

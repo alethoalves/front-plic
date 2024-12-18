@@ -10,6 +10,55 @@
     //padding: $gap-2;
     
    }
+   .menu{
+    margin-bottom: $gap-2;
+    display: flex;
+    
+    .menuItem{
+        background-color: $white-darken;
+        cursor: pointer;
+        transition: ease .3s;
+        border: 1px solid $white-darken;
+
+        &:hover{
+            border: 1px solid $primary-normal;
+        }
+        &:first-child{
+            border-radius: $gap-1 0 0 $gap-1;
+            border: 1px solid $white-light;
+            margin-left: 2px;
+            &:hover{
+                border: 1px solid $primary-normal;
+            }
+        }
+        &:last-child{
+            border-radius: 0 $gap-1 $gap-1 0;
+            border: 1px solid $white-light;
+            &:hover{
+                border: 1px solid $primary-normal;
+            }
+        }
+        
+        
+        padding: $gap-2 $gap-3;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        
+        p{
+            text-align: center;
+            color: $primary-dark;
+        }
+    }
+    .selected{
+        background-color: $primary-normal;
+        border: 1px solid $primary-normal;
+        p{
+            color: $white-light;
+        }
+    }
+   }
     margin: $gap-2;
     .btnBack{
         margin-top: $gap-1;

@@ -19,7 +19,7 @@ import { createRegistroAtividade } from "@/app/api/client/registroAtividade";
 import {
   createPlanoDeTrabalho,
   updatePlanoDeTrabalho,
-  updatePlanoDeTrabalhoPerfilAluno,
+  updatePlanoDeTrabalhoPerfilUser,
 } from "@/app/api/client/planoDeTrabalho";
 import { planoDeTrabalhoSchema } from "@/lib/zodSchemas/planoDeTrabalhoSchema";
 import { getAreas } from "@/app/api/client/area";
@@ -85,7 +85,7 @@ const FormPlanoDeTrabalho = ({
         );
       }
       if (perfil === "aluno") {
-        await updatePlanoDeTrabalhoPerfilAluno(
+        await updatePlanoDeTrabalhoPerfilUser(
           tenantSlug,
           idInscricao,
           initialData.id,
