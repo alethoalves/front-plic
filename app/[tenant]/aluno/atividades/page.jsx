@@ -87,7 +87,7 @@ const Page = ({ params }) => {
     } catch (error) {
       console.error("Erro ao buscar dados:", error);
     }
-  }, [params.tenant, itemToEdit?.id, checkFormStatus]);
+  }, [params.tenant, itemToEdit?.id]);
 
   // Observa mudanças no itemToEdit e verifica o status do formulário
   useEffect(() => {
@@ -97,7 +97,7 @@ const Page = ({ params }) => {
         itemToEdit.respostas
       );
     }
-  }, [itemToEdit, checkFormStatus]);
+  }, [itemToEdit]);
 
   const closeModalAndResetData = () => {
     setIsModalOpen(false);

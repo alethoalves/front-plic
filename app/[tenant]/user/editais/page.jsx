@@ -203,6 +203,7 @@ const Page = ({ params }) => {
                             )
                             .map((inscricaoFiltered) => (
                               <Link
+                                key={inscricaoFiltered.id}
                                 href={`/${params.tenant}/user/editais/inscricoes/${inscricaoFiltered.id}`}
                               >
                                 <div
