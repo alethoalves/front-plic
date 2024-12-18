@@ -64,30 +64,34 @@ const Page = ({ params }) => {
   }, [params.tenant, isModalOpen]);
 
   // Atualização do item e status após criar ou editar
-  const handleCreateOrEditSuccess = useCallback(async () => {
-    try {
-      const response = await getRegistroAtividadesByCpfEditaisVigentes(
-        params.tenant
-      );
-
-      const itens = response.filter(
-        (item) => item.planoDeTrabalho.inscricao.edital.vigente === true
-      );
-
-      const updatedItem = itens.find((item) => item.id === itemToEdit?.id);
-
-      setItemToEdit(updatedItem); // Atualiza o item
-
-      if (updatedItem) {
-        await checkFormStatus(
-          updatedItem.atividade.formulario.campos,
-          updatedItem.respostas
+  const handleCreateOrEditSuccess = useCallback(
+    async () => {
+      try {
+        const response = await getRegistroAtividadesByCpfEditaisVigentes(
+          params.tenant
         );
+
+        const itens = response.filter(
+          (item) => item.planoDeTrabalho.inscricao.edital.vigente === true
+        );
+
+        const updatedItem = itens.find((item) => item.id === itemToEdit?.id);
+
+        setItemToEdit(updatedItem); // Atualiza o item
+
+        if (updatedItem) {
+          await checkFormStatus(
+            updatedItem.atividade.formulario.campos,
+            updatedItem.respostas
+          );
+        }
+      } catch (error) {
+        console.error("Erro ao buscar dados:", error);
       }
-    } catch (error) {
-      console.error("Erro ao buscar dados:", error);
-    }
-  }, [params.tenant, itemToEdit?.id]);
+    },
+    [params.tenant, itemToEdit?.id],
+    checkFormStatus
+  );
 
   // Observa mudanças no itemToEdit e verifica o status do formulário
   useEffect(() => {
@@ -97,7 +101,7 @@ const Page = ({ params }) => {
         itemToEdit.respostas
       );
     }
-  }, [itemToEdit]);
+  }, [itemToEdit, checkFormStatus]);
 
   const closeModalAndResetData = () => {
     setIsModalOpen(false);
