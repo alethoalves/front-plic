@@ -166,7 +166,10 @@ const Page = ({ params }) => {
           >
             <div className={styles.certificadoImg}>
               {item.imagemFundo ? (
-                <img src={item.imagemFundo} alt={`Certificado ${item.tipo}`} />
+                <Image
+                  src={item.imagemFundo}
+                  alt={`Certificado ${item.tipo}`}
+                />
               ) : (
                 <RiImageAddLine />
               )}
