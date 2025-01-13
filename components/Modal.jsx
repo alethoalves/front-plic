@@ -37,7 +37,7 @@ const Modal = ({
   return (
     <div
       className={`${styles.modalBackdrop} ${visible && styles.visible} ${
-        size === "large" ? styles.large : ""
+        styles[size]
       }`}
     >
       <div className={`${styles.modalContent} `}>

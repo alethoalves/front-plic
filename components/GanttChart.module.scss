@@ -1,0 +1,72 @@
+@import "./../styles/partials/colors";
+@import "./../styles/partials/layout";
+@import "./../styles/partials/spacing";
+
+.ganttContainer {
+    margin-top: $gap-2;
+    display: flex;
+    flex-direction: column;
+    overflow-x: auto; /* Permitir scroll horizontal */
+    border: 1px solid #ddd;
+    padding: 10px;
+    white-space: nowrap; /* Prevenir quebras de linha */
+    
+  }
+  
+  .ganttHeader {
+    display: flex;
+    height: 30px; /* Altura total do cabeçalho */
+    background-color: #f8f8f8;
+    position: relative;
+    white-space: nowrap; /* Evitar quebras de linha */
+    //overflow: hidden;
+  }
+  
+  .ganttMonth {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-right: 1px solid #ccc;
+    font-size: 12px;
+    background-color: #d9d9d9; /* Cor de fundo para cada mês */
+    white-space: nowrap;
+    flex-shrink: 0; /* Prevenir compressão */
+  }
+  
+  .ganttBody {
+    position: relative;
+    white-space: nowrap; /* Prevenir quebras de linha */
+  }
+  
+  .ganttRow {
+    position: relative;
+    height: 30px;
+    display: flex;
+  }
+  
+  .ganttBar {
+    position: absolute;
+    top: 7px;
+    height: 20px;
+    background-color: #4caf50;
+    color: #fff;
+    line-height: 20px;
+    font-size: 12px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    white-space: nowrap; /* Prevenir quebras de texto */
+    flex-shrink: 0; /* Prevenir compressão */
+  }
+  
+  .ganttBarText {
+    margin-left: 5px; /* Espaço entre a borda e o texto */
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    p{
+        color: $white-light;
+    }
+  }
+  

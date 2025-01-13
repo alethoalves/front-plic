@@ -280,7 +280,7 @@ h6 {
 
 p,a {
   letter-spacing: 0px;
-  color: $gray-600;
+  //color: $gray-600;
   
   @include typeface-2(p3, desktop);
   @include responsive(s) {

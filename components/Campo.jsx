@@ -38,8 +38,9 @@ const Campo = ({
   camposForm,
   schema,
   respostas,
-  registroAtividadeId,
+  registroAtividadeId = null,
   participacaoId,
+  projetoId,
   onClose,
   onSuccess,
 }) => {
@@ -178,8 +179,9 @@ const Campo = ({
         const newData = {
           value,
           campoId: schema.id,
-          registroAtividadeId,
-          participacaoId,
+          registroAtividadeId: registroAtividadeId ? registroAtividadeId : null,
+          participacaoId: participacaoId ? participacaoId : null,
+          projetoId: projetoId ? projetoId : null,
         };
         if (perfil === "gestor") {
           response = await createResposta(tenantSlug, schema.id, newData);

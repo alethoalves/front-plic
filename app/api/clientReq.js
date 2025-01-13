@@ -132,6 +132,67 @@ export const deleteFile = async (tenantSlug, fileUrl) => {
   }
 };
 
+// Função para upload de arquivos vinculados a projetos
+export const uploadFileProjeto = async (file, tenantSlug, projetoId) => {
+  try {
+    const token = getCookie("authToken");
+    if (!token) {
+      return false;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file); // Adiciona o arquivo ao FormData
+    formData.append("projetoId", projetoId); // Adiciona o ID do projeto ao FormData
+
+    const response = await req.post(
+      `/private/${tenantSlug}/external/projeto/upload`,
+      formData,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao fazer upload do arquivo para o projeto:", error);
+    throw error;
+  }
+};
+
+// Função para deletar arquivos vinculados a projetos
+export const deleteFileProjeto = async (tenantSlug, fileUrl, projetoId) => {
+  try {
+    const token = getCookie("authToken");
+    if (!token) {
+      return false;
+    }
+
+    const body = {
+      fileUrl, // URL do arquivo a ser deletado
+      projetoId, // ID do projeto associado ao arquivo
+    };
+
+    const response = await req.post(
+      `/private/${tenantSlug}/external/projeto/deleteFile`,
+      body,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao deletar o arquivo do projeto:", error);
+    throw error;
+  }
+};
+
+
 
 
 

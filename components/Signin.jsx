@@ -84,10 +84,7 @@ const Auth = ({
           router.push(`/${slug}/gestor`);
           return;
         }
-        if (user) {
-          router.push(`/${slug}/user`);
-          return;
-        }
+
         if (existeOrientador) {
           router.push(`/${slug}/orientador`);
           return;

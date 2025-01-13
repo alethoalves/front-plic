@@ -23,7 +23,10 @@ const Textarea = (props) => {
         <p>
           {props.label}
           <span className={styles.charCount}>
-            &nbsp;{`(${textareaValue.length}/${props.maxLength})`}
+            &nbsp;
+            {`(${textareaValue?.length > 0 ? textareaValue.length : 0}/${
+              props.maxLength
+            })`}
           </span>
         </p>
 
