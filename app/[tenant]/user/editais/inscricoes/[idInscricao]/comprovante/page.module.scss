@@ -1,0 +1,182 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+.errorMsg{
+    background-color: $error-light;
+    border-radius: $gap-1;
+    margin-top: $gap-1;
+    p{
+        color: $white-light;
+        padding: $gap-1 $gap-2;
+    }
+}
+.info{
+    margin-top: $gap-2;
+    margin-bottom: $gap-2;
+    p:not(:last-child){
+        margin-bottom: 6px;
+    }
+}
+
+.icon{
+    width: 24px;
+    color: $primary-normal;
+}
+
+.acompanhamento{
+    .btn{
+        max-width: 200px;
+        min-width: 170px;
+    }
+    .status{
+        display: flex;
+        align-items: center;
+        padding: 0 $gap-1;
+        position: relative; // Necessário para posicionar o pseudo-elemento corretamente
+    
+        &::after {
+        content: '';
+        position: absolute;
+        width: 2px;
+        height: 100%; // Faz com que a linha ocupe toda a altura do elemento .status
+        background-color: $white-darken; // Substitua pela cor desejada
+        left: 20px; // Centraliza na posição horizontal
+        transform: translateX(-50%); // Ajusta o alinhamento exato
+        z-index: 1;
+        }
+        
+        .left{
+            .circle{
+                position: relative;
+                z-index: 2;
+                width: 25px;
+                height: 25px;
+                background-color: $white-darken;
+                border-radius: 70px;
+                display: flex;
+                align-items: center;
+                color: $primary-light;
+                padding: 3px;
+                svg{
+                    display: none;
+                }
+            }
+        }
+        .right{
+            margin-left: $gap-2;
+            padding: $gap-2 0;
+            
+        }
+    }
+    .statusPassado{
+        border-radius: $gap-1;
+        .left .circle{
+            background-color: $primary-dark;
+            color: $white-darken;
+            svg{
+                display: block;
+            }
+        }
+        h6{
+            color: $primary-darken;
+        }
+    }
+    .statusAtual{
+        border-radius: $gap-1;
+        background-color: $white-dark;
+        .left .circle{
+            background-color: $primary-dark;
+            color: $white-darken;
+            svg{
+                display: block;
+            }
+        }
+        h6{
+            color: $primary-darken;
+        }
+        
+        
+    }
+}
+@media print {
+    /* Oculta elementos que não devem aparecer na impressão */
+    .no-print {
+      display: none;
+    }
+  
+    /* Ajusta o layout para impressão */
+    .navContent {
+      width: 100%;
+      padding: 0;
+      margin-left: -200px;
+    }
+  
+    /* Garante que o conteúdo ocupe a página inteira */
+    .content {
+      width: 100%;
+      page-break-inside: avoid; /* Evita que o conteúdo seja dividido entre páginas */
+    }
+  }
+.navContent{
+    
+    width: 960px;
+    @include responsive(m){
+        width: 100%;
+    }
+    @include responsive(s){
+        width: 100%;
+    }
+
+    .content{
+        @include responsive(s){
+            flex-direction: column;
+            padding: $gap-1;
+        }
+        
+        padding: $gap-2;
+        .header{
+            h5{
+                font-weight: 300;
+
+                span{
+                    padding: 4px $gap-2;
+                    border-radius: $gap-1;
+                    background-color: $primary-darken;
+                    color: $white-light
+                    
+                }
+                
+            };
+            display: flex;
+            flex-direction: column;
+            align-items: left;
+        } 
+    }
+}
+.detalhesProjeto{
+    .card{
+        margin-top: $gap-3;
+        border: 1px solid $gray-50;
+        border-radius: $gap-1;
+        padding: $gap-2;
+        position: relative;
+        padding-top: $gap-3;
+        p:not(:first-child){
+            margin-top: $gap-1;
+        }
+        .label{
+            position: absolute;
+            border: 1px solid $gray-50;
+            top: -9px;
+            font-size: 12px;
+            padding: 2px $gap-2;
+            background-color: $white-darken;
+            border-radius: 50px;
+            color: $primary-darken;
+            
+        }
+       
+    }
+}
+
+

@@ -21,7 +21,14 @@ a{
 text-decoration: none;
 font-family: var(--font-lato);
 }
-
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
+.hideForPdf {
+  display: none;
+}
 img {
 max-width: 100%; /* Garante que a imagem não ultrapasse o tamanho do contêiner */
 height: auto; /* Mantém a proporção original da imagem */

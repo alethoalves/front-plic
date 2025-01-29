@@ -1,0 +1,72 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+.detalhesProjeto{
+    .card{
+        margin-top: $gap-3;
+        border: 1px solid $gray-50;
+        border-radius: $gap-1;
+        padding: $gap-2;
+        position: relative;
+        padding-top: $gap-3;
+        .label{
+            position: absolute;
+            border: 1px solid $gray-50;
+            top: -9px;
+            font-size: 12px;
+            padding: 2px $gap-2;
+            background-color: $white-darken;
+            border-radius: 50px;
+            color: $primary-darken;
+            
+        }
+       
+    }
+}
+.error{
+   
+    border: 1px solid $error-dark;
+    background-color: $error-lighten;
+    padding: $gap-1 $gap-2;
+    border-radius: $gap-1;
+    display: flex;
+    align-items: center;
+    color: $error-dark;
+    margin-top: $gap-2;
+    flex: 1;
+}
+
+.menu{
+    flex: 1;
+    margin-top: $gap-2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: $gap-2;
+    .itemMenu{
+        cursor: pointer;
+        transition: ease .3s;
+        flex: 1;
+        text-align: center;
+        padding: $gap-2 $gap-2;
+        background-color: $white-darken;
+        &:first-child{
+            border-top-left-radius: $gap-1;
+            border-bottom-left-radius: $gap-1;
+        }
+        &:last-child{
+            border-top-right-radius: $gap-1;
+            border-bottom-right-radius: $gap-1;
+        }
+        p{
+            color: $primary-darken;
+        }
+    }
+    
+    .itemMenuSelected{
+        p{
+            color: $white-dark;
+        }
+        background-color: $primary-dark;
+    }
+}

@@ -105,7 +105,10 @@ const GanttChart = ({ cronograma }) => {
                 }}
               >
                 <span className={styles.ganttBarText}>
-                  <p>{activity.nome}</p>
+                  <p>
+                    {activity.nome}
+                    {activity.atividade}
+                  </p>
                 </span>
               </div>
             </div>

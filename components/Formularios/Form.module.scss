@@ -159,13 +159,18 @@
         margin-bottom: $gap-1;
         .content{
             background-color: $white-darken;
-            border-top-right-radius: 6px;
-            border-bottom-right-radius: 6px;
+            border-radius: 6px;
             flex: 1;
             padding: $gap-1;
             display: flex;
             flex-direction: column;
             justify-content: center;
+        }
+        .withIcon{
+            border-top-right-radius: 6px;
+            border-bottom-right-radius: 6px;
+            border-top-left-radius: 0px;
+            border-bottom-left-radius: 0px;
         }
         .icon{
             cursor: pointer;

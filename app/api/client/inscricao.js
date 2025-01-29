@@ -21,7 +21,20 @@ export const createInscricao = async (tenantSlug, inscricaoData) => {
     throw error;
   }
 };
-
+export const submissaoInscricao = async (tenantSlug, inscricaoId) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+    const response = await req.get(
+      `/private/${tenantSlug}/inscricoes/${inscricaoId}/submissaoInscricao`,
+      { headers }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao submeter inscrição:", error);
+    throw error;
+  }
+};
 export const createInscricaoByUser = async (tenantSlug, inscricaoData) => {
   try {
     const headers = getAuthHeadersClient();

@@ -1,0 +1,33 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+.projetos{
+    margin-top: $gap-1;
+    .projeto{
+        display: flex;
+        &:not(:last-child){
+            margin-bottom: $gap-1;
+        }
+        align-items: center;
+        justify-content: space-between;
+        transition: ease .3s;
+        border: 1px solid $gray-50;
+        border-radius: $gap-1;
+        padding: $gap-2;
+        cursor: pointer;
+        &:hover{
+            transform: scale(1.01);
+            box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+        }
+        h6{
+            flex: 1;
+        }
+        .actions{
+            
+            svg{
+                width: 30px;
+                height: 30px;
+            }
+        }
+    }
+}

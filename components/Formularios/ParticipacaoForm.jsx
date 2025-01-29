@@ -19,11 +19,7 @@ const ParticipacaoForm = ({
   inscricaoId,
   onSuccess,
   onClose,
-  options = [
-    { label: "Selecione uma opção", value: "" },
-    { label: "Orientador", value: "orientador" },
-    { label: "Coorientador", value: "coorientador" },
-  ],
+  tipoParticipacao,
   showLabelInicio = true,
 }) => {
   //ESTADOS
@@ -52,6 +48,10 @@ const ParticipacaoForm = ({
       cvLattesId,
       inicio,
     };
+    // Se o tipo for aluno, adiciona o planoDeTrabalhoId
+    if (tipo === "aluno" && initialData.planoDeTrabalhoId) {
+      newData.planoDeTrabalhoId = `${initialData.planoDeTrabalhoId}`;
+    }
     //inscricaoId, cpf, nome, status, tipo, planoDeTrabalhoId
     setLoading(true);
     setError("");
@@ -82,8 +82,11 @@ const ParticipacaoForm = ({
         className="mb-2"
         control={control}
         name="tipo"
-        label="Tipo de orientador"
-        options={options}
+        label="Tipo de participação"
+        options={[
+          { label: "Selecione uma opção", value: "" },
+          { label: `${tipoParticipacao}`, value: `${tipoParticipacao}` },
+        ]}
         disabled={loading}
       />
       {showLabelInicio && (

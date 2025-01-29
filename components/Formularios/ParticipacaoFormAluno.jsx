@@ -47,7 +47,7 @@ const ParticipacaoFormAluno = ({
     const newData = {
       ...initialData,
       tipo,
-      planoDeTrabalhoId: planoDeTrabalhoId.toString(),
+      planoDeTrabalhoId: planoDeTrabalhoId?.toString(),
       inscricaoId,
       status,
       cvLattesId,

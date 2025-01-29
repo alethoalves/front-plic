@@ -1,6 +1,9 @@
 "use client";
 import {
   RiAlertLine,
+  RiArrowLeftLine,
+  RiArrowRightLine,
+  RiArrowRightSLine,
   RiCalendarEventFill,
   RiCheckDoubleLine,
   RiDraftLine,
@@ -94,8 +97,6 @@ const Page = ({ params }) => {
         // Atualiza a listagem de inscrições
         const minhasInscricoes = await getMinhasInscricoes(params.tenant);
         setInscricoes(minhasInscricoes);
-        // Abre o modal com os dados da inscrição criada
-        openModalAndSetData(response.inscricao);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -201,24 +202,40 @@ const Page = ({ params }) => {
                             .filter(
                               (inscricao) => inscricao.edital.id === item.id
                             )
-                            .map((inscricaoFiltered) => (
-                              <Link
-                                key={inscricaoFiltered.id}
-                                href={`/${params.tenant}/user/editais/inscricoes/${inscricaoFiltered.id}`}
-                              >
-                                <div
+                            .map((inscricaoFiltered) => {
+                              let href;
+                              if (inscricaoFiltered.status === "pendente") {
+                                href = `/${params.tenant}/user/editais/inscricoes/${inscricaoFiltered.id}`;
+                              } else {
+                                href = `/${params.tenant}/user/editais/inscricoes/${inscricaoFiltered.id}/acompanhamento`;
+                              }
+
+                              return (
+                                <Link
+                                  className={styles.itens}
                                   key={inscricaoFiltered.id}
-                                  className={`${styles.inscricaoItem}`}
+                                  href={href}
                                 >
-                                  <p>Inscrição nº {inscricaoFiltered.id}</p>
                                   <div
-                                    className={`${styles.status} ${styles.statusError}`}
+                                    key={inscricaoFiltered.id}
+                                    className={`${styles.inscricaoItem}`}
                                   >
-                                    <p>{inscricaoFiltered.status}</p>
+                                    <p>Inscrição nº {inscricaoFiltered.id}</p>
+                                    <div className={styles.rightSide}>
+                                      {inscricaoFiltered.status ===
+                                        "pendente" && (
+                                        <p
+                                          className={`${styles.status} ${styles.statusError}`}
+                                        >
+                                          {inscricaoFiltered.status}
+                                        </p>
+                                      )}
+                                      <RiArrowRightSLine />
+                                    </div>
                                   </div>
-                                </div>
-                              </Link>
-                            ))}
+                                </Link>
+                              );
+                            })}
                         </div>
                       )}
                       {errorMessages[item.id] && ( // Mostrar erro apenas no edital correspondente

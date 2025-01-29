@@ -34,11 +34,17 @@
             border: 1px solid red;
             padding: $gap-1 $gap-2;
             border-radius: 4px;
-
+            margin-right: $gap-1;
         }
         
     }
     
+}
+
+.rightSide{
+    display: flex;
+    align-items: center;
+    color: $primary-darken;
 }
 .editais{
     margin-top: $gap-2;
@@ -52,9 +58,7 @@
             border-radius: $gap-1;
             padding: $gap-1 $gap-2;
             background-color: $error-lighten;
-            p{
-                color: $error-dark;
-            }
+            color: $error-dark;
         }
         .statusWarning{
             border: 1px solid $warning-darken;
@@ -466,6 +470,14 @@
         }
     }
    
+}
+.itens{
+    display: flex;
+    flex-direction: column;
+    &:not(:last-child){
+        margin-bottom: $gap-1;
+    }
+    
 }
 
 

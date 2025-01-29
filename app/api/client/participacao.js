@@ -168,3 +168,28 @@ export const deleteParticipacao = async (tenantSlug, idParticipacao) => {
     throw error;
   }
 };
+
+export const validarParticipacao = async (tenantSlug, idParticipacao) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+
+    const response = await req.put(
+      `/private/${tenantSlug}/participacoes/validar/${idParticipacao}`,
+      {}, // Não há necessidade de enviar um body para essa requisição
+      { headers }
+    );
+
+    return response.data.participacao;
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      console.error("Participação não encontrada ou não pertence ao tenant:", error);
+      return null;
+    }
+
+    console.error("Erro ao validar participação:", error);
+    throw error;
+  }
+};

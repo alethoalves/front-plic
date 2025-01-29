@@ -43,9 +43,10 @@ const Campo = ({
   projetoId,
   onClose,
   onSuccess,
+  loading,
+  setLoading,
 }) => {
   //ESTADOS
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [editar, setEditar] = useState(false);
   const [initialData, setInitialData] = useState();
@@ -114,18 +115,20 @@ const Campo = ({
       value: "",
     },
   });
-
   useEffect(() => {
-    const initialDataArray = respostas?.filter(
-      (item) => item.campoId === schema?.id
-    );
-    setInitialData(initialDataArray[0]);
-    if (initialDataArray[0]) {
-      setValue("value", initialDataArray[0].value); // Sincroniza o formulário
-    } else {
-      reset();
+    if (
+      initialData?.value === undefined ||
+      initialData?.value !== watch("value")
+    ) {
+      const initialDataArray = respostas?.filter(
+        (item) => item.campoId === schema?.id
+      );
+      setInitialData(initialDataArray[0]);
+      if (initialDataArray[0]) {
+        setValue("value", initialDataArray[0].value); // Sincroniza o formulário
+      }
     }
-  }, [respostas, schema?.id, reset, setValue]);
+  }, [respostas, schema?.id, reset, setValue, initialData, watch]);
 
   const handleFileUpload = async (file) => {
     try {
@@ -197,7 +200,16 @@ const Campo = ({
       setInitialData(response); // Atualiza o estado com o objeto completo
       setValue("value", response.value); // Sincroniza o formulário
       setEditar(false);
-      onSuccess();
+      if (onSuccess) {
+        // Notifica o componente pai sobre a atualização
+        onSuccess({
+          id: participacaoId, // ID da participação sendo atualizada
+          respostas: [
+            ...(respostas?.filter((r) => r.campoId !== schema.id) || []),
+            response, // Inclui a resposta atualizada
+          ],
+        });
+      }
     } catch (error) {
       console.error("Error:", error);
       setError(

@@ -31,6 +31,7 @@ import { z } from "zod";
 import {
   createProjeto,
   createProjetoInscricao,
+  updateProjetoById,
 } from "@/app/api/client/projeto";
 import Textarea from "../Textarea";
 import { formatDateToISO } from "@/lib/formatarDatas";
@@ -108,6 +109,7 @@ const FormProjeto = ({
   idInscricao,
   onClose,
   onSuccess,
+  onSubmit,
 }) => {
   //ESTADOS
   const [loading, setLoading] = useState(false);
@@ -159,14 +161,44 @@ const FormProjeto = ({
       }
     };
     fetchData();
-
+    console.log(initialData);
     if (initialData) {
       setValue("titulo", initialData.titulo);
       setValue("areaId", initialData.areaId);
+      setValue("introducao", initialData.introducao);
+      setValue("justificativa", initialData.justificativa);
+      setValue("objetivos", initialData.objetivos);
+      setValue("fundamentacao", initialData.fundamentacao);
+      setValue("metodologia", initialData.metodologia);
+      setValue("resultados", initialData.resultados);
+      setValue("referencias", initialData.referencias);
+      setValue("envolveHumanos", initialData.envolveHumanos);
+      setValue("envolveAnimais", initialData.envolveAnimais);
+
+      // Popula cronograma
+      if (initialData.CronogramaProjeto) {
+        const mappedCronograma = initialData.CronogramaProjeto.map((item) => ({
+          nome: item.atividade,
+          inicio: item.inicio,
+          fim: item.fim,
+        }));
+        setCronograma(mappedCronograma);
+      }
+
+      // Popula anexos
+      if (initialData.AnexoProjeto) {
+        const mappedAnexos = initialData.AnexoProjeto.map((anexo) => ({
+          name: anexo.nomeAnexo,
+          file: null, // Arquivo real não está disponível, mas podemos usar a URL para exibição
+          previewUrl: anexo.link,
+        }));
+        setAnexos(mappedAnexos);
+      }
     } else {
       reset();
     }
-  }, [initialData, setValue, reset, tenantSlug]); //ALTEREI AQUI
+  }, [initialData, setValue, reset, tenantSlug]);
+
   const handleTabChange = (tab) => {
     setActiveTab(tab);
   };
@@ -254,47 +286,97 @@ const FormProjeto = ({
   const handleFormSubmit = async (data) => {
     setLoading(true);
     setError("");
-    console.log(anexos);
+
     try {
-      // 1. Prepare os dados do formulário
+      // Prepara os dados do formulário, incluindo o cronograma
       const payload = { ...data, cronograma };
 
-      // 2. Envie os dados do projeto para o backend
-      let projetoCriado = await createProjeto(tenantSlug, payload);
+      if (initialData) {
+        // Se há dados iniciais, o formulário está em modo de edição
+        const projetoId = initialData.id;
 
-      if (!projetoCriado || !projetoCriado.id) {
-        throw new Error("Erro ao criar o projeto. ID não retornado.");
-      }
+        // Atualiza o projeto
+        const projetoAtualizado = await updateProjetoById(
+          tenantSlug,
+          projetoId,
+          payload
+        );
 
-      const projetoId = projetoCriado.id;
+        if (!projetoAtualizado || !projetoAtualizado.id) {
+          throw new Error("Erro ao atualizar o projeto. ID não retornado.");
+        }
+        // Realiza o upload dos anexos vinculados ao projeto, se houver novos anexos
+        if (anexos.length > 0) {
+          const uploadedAnexos = [];
 
-      // 3. Realize o upload dos anexos vinculados ao projeto
-      if (anexos.length > 0) {
-        const uploadedAnexos = [];
-
-        for (const anexo of anexos) {
-          try {
-            const response = await uploadFileProjeto(
-              anexo.file,
-              tenantSlug,
-              projetoId
-            );
-            uploadedAnexos.push(response);
-          } catch (error) {
-            console.error(
-              `Erro ao fazer upload do anexo ${anexo.name}:`,
-              error
-            );
+          for (const anexo of anexos) {
+            // Verifica se o anexo é novo (tem `file` preenchido e `previewUrl` começa com "blob:")
+            if (anexo.file && anexo.previewUrl.startsWith("blob:")) {
+              try {
+                const response = await uploadFileProjeto(
+                  anexo.file,
+                  tenantSlug,
+                  projetoAtualizado.id
+                );
+                uploadedAnexos.push(response);
+              } catch (error) {
+                console.error(
+                  `Erro ao fazer upload do anexo ${anexo.name}:`,
+                  error
+                );
+              }
+            } else {
+              console.log(
+                `Anexo já existente, não será reenviado: ${anexo.name}`
+              );
+            }
           }
+
+          console.log("Novos anexos enviados com sucesso:", uploadedAnexos);
         }
 
-        console.log("Anexos enviados com sucesso:", uploadedAnexos);
+        // Atualiza a interface com o projeto editado
+        if (onSuccess) onSuccess(projetoAtualizado);
+
+        console.log("Projeto atualizado com sucesso.");
+      } else {
+        // Se não há dados iniciais, o formulário está em modo de criação
+
+        // Cria o projeto
+        const projetoCriado = await createProjeto(tenantSlug, payload);
+
+        if (!projetoCriado || !projetoCriado.id) {
+          throw new Error("Erro ao criar o projeto. ID não retornado.");
+        }
+
+        const projetoId = projetoCriado.id;
+
+        // Realiza o upload dos anexos vinculados ao projeto
+        if (anexos.length > 0) {
+          const uploadedAnexos = [];
+          for (const anexo of anexos) {
+            try {
+              const response = await uploadFileProjeto(
+                anexo.file,
+                tenantSlug,
+                projetoId
+              );
+              uploadedAnexos.push(response);
+            } catch (error) {
+              console.error(
+                `Erro ao fazer upload do anexo ${anexo.name}:`,
+                error
+              );
+            }
+          }
+          console.log("Anexos enviados com sucesso:", uploadedAnexos);
+        }
+
+        // Atualiza a interface com o projeto criado
+        if (onSuccess) onSuccess(projetoCriado);
+
+        console.log("Projeto e anexos enviados com sucesso.");
       }
-
-      // 4. Chama o callback de sucesso
-      if (onSuccess) onSuccess(projetoCriado);
-
-      console.log("Projeto e anexos enviados com sucesso.");
     } catch (error) {
       console.error("Erro ao enviar o formulário:", error);
       setError(error.message || "Erro ao enviar o formulário.");
@@ -388,6 +470,7 @@ const FormProjeto = ({
           {loading ? "Carregando..." : "Salvar Projeto"}
         </Button>
       </div>
+
       {error && (
         <div className={`notification notification-error`}>
           <p className="p5">{error}</p>
@@ -609,14 +692,20 @@ const FormProjeto = ({
           {/* Lista de anexos */}
           <div className={`${styles.lista}`}>
             {anexos.map((anexo, index) => (
-              <div key={index} className={`${styles.listaItem}`}>
+              <div key={index} className={`${styles.listaItem} `}>
+                {!initialData && (
+                  <div
+                    className={`${styles.icon}`}
+                    onClick={() => handleRemoveAnexo(index)}
+                  >
+                    <RiDeleteBinLine />
+                  </div>
+                )}
                 <div
-                  className={`${styles.icon}`}
-                  onClick={() => handleRemoveAnexo(index)}
+                  className={`${styles.content} ${
+                    !initialData ? styles.withIcon : ""
+                  }`}
                 >
-                  <RiDeleteBinLine />
-                </div>
-                <div className={`${styles.content}`}>
                   {/* Link para visualização em nova aba */}
                   <a
                     href={anexo.previewUrl}

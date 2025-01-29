@@ -14,7 +14,7 @@ const Layout = ({ children, params }) => {
   return (
     <div className={styles.dashboard}>
       {true && (
-        <div className={styles.item1}>
+        <div className={`${styles.item1} no-print`}>
           <SideNav pathLogo={pathLogo} menuType="user" />
         </div>
       )}
