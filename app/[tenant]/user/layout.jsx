@@ -19,7 +19,10 @@ const Layout = ({ children, params }) => {
         </div>
       )}
       <div className={styles.item2}>
-        <NavBarAluno pathLogo={pathLogo} slug={params.tenant} />
+        <div className="no-print">
+          <NavBarAluno pathLogo={pathLogo} slug={params.tenant} />
+        </div>
+
         <div className={styles.content}>{children}</div>
       </div>
     </div>
