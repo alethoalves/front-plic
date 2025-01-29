@@ -1,88 +1,46 @@
-"use client";
-import {
-  RiAlertLine,
-  RiCalendarEventFill,
-  RiCheckDoubleLine,
-  RiDraftLine,
-  RiEditLine,
-  RiFolder2Line,
-  RiFoldersLine,
-  RiGroupLine,
-  RiMenuLine,
-  RiSurveyLine,
-  RiUser2Line,
-} from "@remixicon/react";
+"use client"; // Mantenha o "use client"
+import { useEffect, useState } from "react"; // Importe useEffect e useState
+import { useRouter } from "next/navigation"; // Importe useRouter para redirecionamento
 import styles from "./page.module.scss";
-import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import Modal from "@/components/Modal";
-import Button from "@/components/Button";
-import {
-  getRegistroAtividadesByCPF,
-  getRegistroAtividadesByCpfEditaisVigentes,
-  updateRegistroAtividade,
-} from "@/app/api/client/registroAtividade";
-import Campo from "@/components/Campo";
-import { startSubmission } from "@/app/api/client/resposta";
-import FormArea from "@/components/Formularios/FormArea";
-import NoData from "@/components/NoData";
-import { getEditais, getEditaisByUser } from "@/app/api/client/edital";
-import { formatarData } from "@/lib/formatarDatas";
 import FluxoInscricaoEdital from "@/components/FluxoInscricaoEdital";
-import {
-  createInscricaoByUser,
-  getInscricoesByUser,
-  getMinhasInscricoes,
-} from "@/app/api/client/inscricao";
+import { getInscricaoUserById } from "@/app/api/client/inscricao";
 
-const Page = ({ params }) => {
-  const [loading, setLoading] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editais, setEditais] = useState([]);
-  const [inscricoes, setInscricoes] = useState([]);
-
-  const [inscricaoSelected, setInscricaoSelected] = useState(null);
-  const [errorMessages, setErrorMessages] = useState({}); // Alterado para armazenar erros por edital
-
+export default function Page({ params }) {
+  const [inscricao, setInscricao] = useState(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  // Busca os dados da inscrição no lado do cliente
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true);
       try {
-        const editais = await getEditais(params.tenant);
-        setEditais(editais);
-        const minhasInscricoes = await getMinhasInscricoes(params.tenant);
-        setInscricoes(minhasInscricoes);
+        const data = await getInscricaoUserById(
+          params.tenant,
+          params.idInscricao
+        );
+        if (data.status !== "pendente") {
+          router.push(
+            `/${params.tenant}/user/editais/inscricoes/${params.idInscricao}/acompanhamento`
+          );
+        } else {
+          setInscricao(data);
+        }
       } catch (error) {
         console.error("Erro ao buscar dados:", error);
       } finally {
         setLoading(false);
       }
     };
+
     fetchData();
-  }, [params.tenant]);
+  }, [params.tenant, params.idInscricao]);
 
-  const closeModalAndResetData = () => {
-    setIsModalOpen(false);
-    setInscricaoSelected(null);
-  };
+  // Exibe um carregamento enquanto os dados são buscados
+  if (loading) {
+    return <p>Carregando...</p>;
+  }
 
-  const renderModalContent = () => {
-    return (
-      <Modal
-        size="large"
-        isOpen={isModalOpen}
-        onClose={closeModalAndResetData}
-      ></Modal>
-    );
-  };
-
-  const openModalAndSetData = async (data) => {
-    setInscricaoSelected(data);
-    setIsModalOpen(true);
-  };
-
+  // Renderiza o conteúdo se a inscrição estiver "pendente"
   return (
     <>
       <div className={styles.navContent}>
@@ -95,6 +53,4 @@ const Page = ({ params }) => {
       </div>
     </>
   );
-};
-
-export default Page;
+}

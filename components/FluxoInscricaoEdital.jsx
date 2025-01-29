@@ -30,10 +30,11 @@ import { unlinkProjetoFromInscricao } from "@/app/api/client/projeto";
 import { deletePlanoDeTrabalho } from "@/app/api/client/planoDeTrabalho";
 import Button from "./Button";
 import VerInscricao from "./VerInscricao";
+import { useRouter } from "next/navigation";
 
 const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
   // ESTADOS
-  const [inscricao, setInscricao] = useState([]);
+  const [inscricao, setInscricao] = useState();
   const [activeStep, setActiveStep] = useState("orientador"); // Estado para a etapa ativa
   const [errorDelete, setErrorDelete] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -53,6 +54,7 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
   const [tipoParticipacao, setTipoParticipacao] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState([]);
+  const router = useRouter();
 
   const addProjetoVinculado = (projeto) => {
     setInscricao((prev) => ({
@@ -264,7 +266,7 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
       {renderModalPlanoDeTrabalho()}
       {renderModalInscricao()}
       {loading && <p>Carregando...</p>}
-      {!loading && (
+      {!loading && inscricao && (
         <div className={styles.inscricao}>
           {notFound && <NoData description="Inscrição não encontrada :/" />}
           {!notFound && (
