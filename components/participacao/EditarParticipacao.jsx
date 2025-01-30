@@ -241,6 +241,16 @@ const EditarParticipacao = ({
         <h6>CPF</h6>
         <p>{participacaoInfo?.user?.cpf}</p>
       </div>
+      {tipoParticipacao === "aluno" && (
+        <div className={styles.label}>
+          <h6>Tipo de participação?</h6>
+          <p>
+            {participacaoInfo?.solicitarBolsa
+              ? "Remunerada (a depender da disponibilidade de bolsas e dos critérios do edital)"
+              : "Voluntária"}
+          </p>
+        </div>
+      )}
       <div className={styles.label}>
         <h6>CV Lattes</h6>
         {participacaoInfo?.user?.cvLattes?.length > 0 && (

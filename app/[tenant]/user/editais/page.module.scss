@@ -59,6 +59,9 @@
             padding: $gap-1 $gap-2;
             background-color: $error-lighten;
             color: $error-dark;
+            p{
+                color: $error-dark;
+            }
         }
         .statusWarning{
             border: 1px solid $warning-darken;

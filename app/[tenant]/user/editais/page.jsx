@@ -173,7 +173,7 @@ const Page = ({ params }) => {
                       {statusMensagem &&
                         statusMensagem !== "Inscrições abertas" && (
                           <div
-                            className={`${styles.statusMensagem} ${statusClasse}`}
+                            className={`${styles.statusMensagem} ${statusClasse} mt-1`}
                           >
                             <p>{statusMensagem}</p>
                           </div>

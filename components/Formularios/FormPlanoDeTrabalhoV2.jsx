@@ -7,18 +7,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 //ESTILOS E ÍCONES
 import styles from "@/components/Formularios/Form.module.scss";
-import {
-  RiAddCircleLine,
-  RiDeleteBinLine,
-  RiSave2Line,
-} from "@remixicon/react";
+import { RiDeleteBinLine, RiSave2Line } from "@remixicon/react";
 
 //COMPONENTES
 import Button from "@/components/Button";
 import Input from "@/components/Input";
 
 //FUNÇÕES
-import { createRegistroAtividade } from "@/app/api/client/registroAtividade";
 
 import {
   createPlanoDeTrabalho,
@@ -27,14 +22,9 @@ import {
 import { getAreas } from "@/app/api/client/area";
 import SearchableSelect from "../SearchableSelect";
 import { z } from "zod";
-import {
-  createProjeto,
-  createProjetoInscricao,
-  updateProjetoById,
-} from "@/app/api/client/planoDeTrabalho";
+
 import Textarea from "../Textarea";
 import { formatDateToISO } from "@/lib/formatarDatas";
-import Link from "next/link";
 import GanttChart from "../GanttChart";
 // Função auxiliar para transformar datas no formato DD/MM/AAAA para Date
 const parseDate = (dateStr) => {

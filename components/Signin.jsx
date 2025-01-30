@@ -84,7 +84,14 @@ const Auth = ({
           router.push(`/${slug}/gestor`);
           return;
         }
-
+        if (existeAvaliador && isAvaliador) {
+          router.push(`/avaliador/home`);
+          return;
+        }
+        if (user) {
+          router.push(`/${slug}/user`);
+          return;
+        }
         if (existeOrientador) {
           router.push(`/${slug}/orientador`);
           return;
@@ -95,10 +102,6 @@ const Auth = ({
         }
         if (isRoot) {
           router.push(`/root/home`);
-          return;
-        }
-        if (existeAvaliador && isAvaliador) {
-          router.push(`/avaliador/home`);
           return;
         }
       } else {

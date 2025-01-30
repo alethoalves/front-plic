@@ -1,11 +1,6 @@
-//HOOKS
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-
-//ESTILOS E ÍCONES
 import styles from "@/components/Formularios/Form.module.scss";
-
-//COMPONENTES
 import Button from "@/components/Button";
 import Input from "@/components/Input";
 import Select from "@/components/Select";
@@ -22,11 +17,11 @@ const ParticipacaoForm = ({
   tipoParticipacao,
   showLabelInicio = true,
 }) => {
-  //ESTADOS
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showBolsaField, setShowBolsaField] = useState(false);
 
-  const { control, handleSubmit, setValue } = useForm({
+  const { control, handleSubmit, setValue, watch } = useForm({
     resolver: zodResolver(formNewParticipacao),
     defaultValues: {
       userId: "",
@@ -35,11 +30,19 @@ const ParticipacaoForm = ({
       cpf: "",
       tipo: "",
       cvLattesId: "",
+      solicitarBolsa: false,
       ...initialData,
     },
   });
+
+  const tipo = watch("tipo");
+
+  useEffect(() => {
+    setShowBolsaField(tipo === "aluno");
+  }, [tipo]);
+
   const handleFormSubmit = async (data) => {
-    const { tipo, inicio } = data;
+    const { tipo, inicio, solicitarBolsa } = data;
     const cvLattesId = "";
     const newData = {
       ...initialData,
@@ -47,17 +50,18 @@ const ParticipacaoForm = ({
       inscricaoId,
       cvLattesId,
       inicio,
+      solicitarBolsa: tipo === "aluno" ? solicitarBolsa : false,
     };
-    // Se o tipo for aluno, adiciona o planoDeTrabalhoId
+
     if (tipo === "aluno" && initialData.planoDeTrabalhoId) {
       newData.planoDeTrabalhoId = `${initialData.planoDeTrabalhoId}`;
     }
-    //inscricaoId, cpf, nome, status, tipo, planoDeTrabalhoId
+
     setLoading(true);
     setError("");
     try {
-      const response = await createParticipacao(tenantSlug, newData); // Supondo que a API retorne os dados da participação criada
-      onSuccess(response); // Passa a nova participação para o pai
+      const response = await createParticipacao(tenantSlug, newData);
+      onSuccess(response);
       onClose();
     } catch (error) {
       console.error("Error:", error);
@@ -97,6 +101,15 @@ const ParticipacaoForm = ({
           label="Início da participação"
           inputType="date"
           placeholder="DD/MM/AAAA"
+          disabled={loading}
+        />
+      )}
+      {showBolsaField && (
+        <Input
+          control={control}
+          name="solicitarBolsa"
+          label="Solicitar bolsa"
+          inputType="checkbox"
           disabled={loading}
         />
       )}
