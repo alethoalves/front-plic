@@ -1,0 +1,75 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+.participacao{
+    border: 1px solid $gray-50;
+    border-radius: $gap-1;
+    padding: $gap-2;
+    margin-top: $gap-2;
+    box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+    position: relative;
+    
+    h5{
+        font-size: 21px;
+        margin-bottom: $gap-2;
+    }
+    .label{
+        &:not(:last-child){
+            margin-bottom: $gap-2;
+        }
+        
+
+    }
+    .delete{
+        position: absolute;
+        background-color: $white-darken;
+        top: 0;
+        right: 0;
+        padding: $gap-1;
+        border-top-right-radius: $gap-1;
+        cursor: pointer;
+        transition: ease .3s;
+        color: $primary-dark;
+        &:hover{
+            opacity: 0.7;
+        }
+        
+    }
+}
+
+.urlCvLattes{
+    display: flex;
+    align-items: center;
+    margin-top: $gap-1;
+    transition: ease .3s;
+    color: $primary-darken;
+    &:hover{
+        transform: scale(1.01);
+        a{
+            color: $primary-darken;
+        }
+    }
+    svg{
+        margin-right: $gap-1;
+        width: 20px;
+        height: auto;
+    }
+    a {
+        transition: ease .3s;
+        margin: 0;
+        text-decoration: underline;
+        
+    }
+}
+
+.errorMsg{
+    background-color: $error-light;
+    border-radius: 4px;
+    margin-top: $gap-1;
+    p{
+        color: $white-light;
+        padding: $gap-1 $gap-2;
+        
+    }
+}

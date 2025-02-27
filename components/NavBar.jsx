@@ -9,6 +9,7 @@ const SideNav = ({ slug }) => {
   const router = useRouter();
   const handleClick = () => {
     logout();
+    console.log(slug);
     router.replace(`/${slug}`);
   };
   return (

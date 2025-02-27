@@ -72,7 +72,7 @@ const VerProjeto = ({
         <h6>Detalhes do Projeto</h6>
         <div className={`${styles.card} ${styles.titulo} `}>
           <h6 className={`${styles.label} `}>
-            Área: {projetoDetalhes.area.area}
+            Área: {projetoDetalhes.area?.area}
           </h6>
           <div className={`${styles.value} `}>
             <p className="uppercase">
@@ -112,81 +112,52 @@ const VerProjeto = ({
             >
               <p>Cronograma</p>
             </div>
-            <div
-              className={`${styles.itemMenu} ${
-                activeTab === "anexos" ? styles.itemMenuSelected : ""
-              }`}
-              onClick={() => handleTabChange("anexos")}
-            >
-              <p>Anexos</p>
-            </div>
+            {false && (
+              <div
+                className={`${styles.itemMenu} ${
+                  activeTab === "anexos" ? styles.itemMenuSelected : ""
+                }`}
+                onClick={() => handleTabChange("anexos")}
+              >
+                <p>Anexos</p>
+              </div>
+            )}
           </div>
         </div>
         {activeTab === "conteudo" && (
           <div className={`${styles.conteudo}`}>
-            <div className={`${styles.card} `}>
-              <h6 className={`${styles.label} `}>Introdução</h6>
-              <div className={`${styles.value} `}>
-                <p>{projetoDetalhes.introducao}</p>
-                <form className={`${styles.formulario}`}>
-                  <div className={`${styles.input}`}></div>
-                </form>
-              </div>
-            </div>
-            <div className={`${styles.card} `}>
-              <h6 className={`${styles.label} `}>Justificativa</h6>
-              <div className={`${styles.value} `}>
-                <p>{projetoDetalhes.justificativa}</p>
-                <form className={`${styles.formulario}`}>
-                  <div className={`${styles.input}`}></div>
-                </form>
-              </div>
-            </div>
-            <div className={`${styles.card} `}>
-              <h6 className={`${styles.label} `}>Objetivos</h6>
-              <div className={`${styles.value} `}>
-                <p>{projetoDetalhes.objetivos}</p>
-                <form className={`${styles.formulario}`}>
-                  <div className={`${styles.input}`}></div>
-                </form>
-              </div>
-            </div>
-            <div className={`${styles.card} `}>
-              <h6 className={`${styles.label} `}>Revisão bibliográfica</h6>
-              <div className={`${styles.value} `}>
-                <p>{projetoDetalhes.fundamentacao}</p>
-                <form className={`${styles.formulario}`}>
-                  <div className={`${styles.input}`}></div>
-                </form>
-              </div>
-            </div>
-            <div className={`${styles.card} `}>
-              <h6 className={`${styles.label} `}>Metodologia</h6>
-              <div className={`${styles.value} `}>
-                <p>{projetoDetalhes.metodologia}</p>
-                <form className={`${styles.formulario}`}>
-                  <div className={`${styles.input}`}></div>
-                </form>
-              </div>
-            </div>
-            <div className={`${styles.card} `}>
-              <h6 className={`${styles.label} `}>Resultados</h6>
-              <div className={`${styles.value} `}>
-                <p>{projetoDetalhes.resultados}</p>
-                <form className={`${styles.formulario}`}>
-                  <div className={`${styles.input}`}></div>
-                </form>
-              </div>
-            </div>
-            <div className={`${styles.card} `}>
-              <h6 className={`${styles.label} `}>Referências</h6>
-              <div className={`${styles.value} `}>
-                <p>{projetoDetalhes.referencias}</p>
-                <form className={`${styles.formulario}`}>
-                  <div className={`${styles.input}`}></div>
-                </form>
-              </div>
-            </div>
+            {projetoDetalhes.Resposta.sort(
+              (a, b) => a.campo.ordem - b.campo.ordem
+            ).map((item) => {
+              // Função para extrair o nome do arquivo da URL
+              const extractFileName = (url) => {
+                const parts = url.split("/");
+                const lastPart = parts[parts.length - 1];
+                return lastPart.split("_")[1] || lastPart; // Remove o timestamp inicial
+              };
+
+              return (
+                <div className={`${styles.card}`} key={item.id}>
+                  <h6 className={`${styles.label}`}>{item.campo.label}</h6>
+                  <div className={`${styles.value}`}>
+                    {["link", "arquivo"].includes(item.campo.tipo) ? (
+                      <a
+                        href={item.value}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.link}
+                      >
+                        {item.campo.tipo === "arquivo" && "📁 "}
+                        {item.campo.tipo === "link" && "🔗 "}
+                        {extractFileName(item.value)}
+                      </a>
+                    ) : (
+                      <p>{item.value}</p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
         {activeTab === "cronograma" && (

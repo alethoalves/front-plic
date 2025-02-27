@@ -1,12 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import styles from "./PlanoDeTrabalhoController.module.scss";
-import FormPlanoDeTrabalho from "../Formularios/FormPlanoDeTrabalho";
-import FormPlanoDeTrabalhoV2 from "../Formularios/FormPlanoDeTrabalhoV2";
+import FormPlanoDeTrabalhoCreateOrEdit from "../Formularios/FormPlanoDeTrabalhoCreateOrEdit";
 import VerPlanoDeTrabalho from "./VerPlanoDeTrabalho";
 import Button from "../Button";
-import { RiEditLine } from "@remixicon/react";
+import { RiArrowLeftLine, RiEditLine } from "@remixicon/react";
 
 const PlanoDeTrabalhoController = ({
   tenantSlug,
@@ -15,17 +13,17 @@ const PlanoDeTrabalhoController = ({
   planoDeTrabalhoDetalhes,
   onClose,
   onUpdatePlanoDeTrabalho,
+  editalFormularioId,
 }) => {
   const [currentPlanoDeTrabalho, setCurrentPlanoDeTrabalho] = useState(
     planoDeTrabalhoDetalhes
   );
+  const [edit, setEdit] = useState(false);
 
   useEffect(() => {
     // Sincroniza o estado local com os dados atualizados
     setCurrentPlanoDeTrabalho(planoDeTrabalhoDetalhes);
   }, [planoDeTrabalhoDetalhes]);
-
-  const [edit, setEdit] = useState(false);
 
   return (
     <>
@@ -34,14 +32,15 @@ const PlanoDeTrabalhoController = ({
         <Button
           className={`btn-secondary mt-2 mb-2`}
           type="button"
-          icon={RiEditLine}
+          icon={edit ? RiArrowLeftLine : RiEditLine}
           onClick={() => setEdit(!edit)}
         >
-          Editar
+          {edit ? "Voltar" : "Editar"}
         </Button>
       )}
+
       {(!currentPlanoDeTrabalho || edit) && (
-        <FormPlanoDeTrabalhoV2
+        <FormPlanoDeTrabalhoCreateOrEdit
           initialData={currentPlanoDeTrabalho}
           tenantSlug={tenantSlug}
           idInscricao={idInscricao}
@@ -51,6 +50,7 @@ const PlanoDeTrabalhoController = ({
             setCurrentPlanoDeTrabalho(updatedPlano); // Atualiza o estado local
             onUpdatePlanoDeTrabalho(updatedPlano); // Atualiza no Fluxo
           }}
+          idFormularioEdital={editalFormularioId}
         />
       )}
       {currentPlanoDeTrabalho && !edit && (

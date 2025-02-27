@@ -1,7 +1,35 @@
 import { getAuthHeadersClient } from "@/lib/headers.js";
 import { req } from "./../axios.js";
 import { getCookie } from 'cookies-next';
+const convertToFormData = (data) => {
+  const formData = new FormData();
 
+  // Campos simples
+  formData.append("titulo", data.titulo);
+  formData.append("areaId", data.areaId);
+  formData.append("conteudo", data.conteudo);
+  formData.append("projetoId", data.projetoId);
+
+  // Se o cronograma for necessário, pode ser convertido para JSON
+  if (data.cronograma) {
+    formData.append("cronograma", JSON.stringify(data.cronograma));
+  }
+
+  // Campos dinâmicos
+  if (data.camposDinamicos) {
+    Object.keys(data.camposDinamicos).forEach((key) => {
+      const value = data.camposDinamicos[key];
+      const fullKey = `camposDinamicos.${key}`; // Preserva o prefixo
+      if (value instanceof FileList && value.length > 0) {
+        formData.append(fullKey, value[0]);
+      } else {
+        formData.append(fullKey, value);
+      }
+    });
+  }
+
+  return formData;
+};
 /**************************
 PROJETO
 **************************/
@@ -14,10 +42,17 @@ export const createProjeto = async (
     if (!headers) {
       return false;
     }
+    const token = getCookie("authToken"); 
+    const formData = convertToFormData(projetoData);
     const response = await req.post(
       `/private/${tenantSlug}/projeto`,
-      projetoData,
-      { headers }
+      formData,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
     );
     return response.data.projeto;
   } catch (error) {
@@ -88,10 +123,17 @@ export const updateProjetoById = async (tenantSlug, projetoId, projetoData) => {
     if (!headers) {
       return false;
     }
+    const token = getCookie("authToken"); 
+    const formData = convertToFormData(projetoData);
     const response = await req.put(
       `/private/${tenantSlug}/projeto/${projetoId}`,
-      projetoData,
-      { headers }
+      formData,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
     );
     return response.data.projeto; // Retorna o projeto atualizado
   } catch (error) {
@@ -152,5 +194,19 @@ export const unlinkProjetoFromInscricao = async (tenantSlug, idInscricao, idProj
   } catch (error) {
     console.error("Erro ao desvincular projeto da inscrição:", error);
     throw error;
+  }
+};
+export const getInscricaoProjetoByTenant = async (tenantSlug) => {
+  try {
+      const headers = getAuthHeadersClient();
+      if (!headers) {
+          throw new Error("Usuário não autenticado.");
+      }
+
+      const response = await req.get(`/private/${tenantSlug}/inscricaoProjeto`, { headers });
+      return response.data.inscricoesProjeto;
+  } catch (error) {
+      console.error("Erro ao buscar inscrições de projetos por tenant:", error);
+      throw error;
   }
 };

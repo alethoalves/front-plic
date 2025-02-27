@@ -45,6 +45,7 @@ const Page = ({ params }) => {
   const [itemToEdit, setItemToEdit] = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [verifiedData, setVerifiedData] = useState(null);
+  const [tipoParticipacao, setTipoParticipacao] = useState(null);
 
   //ROTEAMENTO
   const router = useRouter();
@@ -86,10 +87,11 @@ const Page = ({ params }) => {
     }
   }, [params.tenant, params.idInscricao]);
 
-  const openModalAndSetData = (data) => {
+  const openModalAndSetData = (data, tipoParticipacao) => {
     setIsModalOpen(true);
     setItemToEdit(data);
     setVerifiedData(false);
+    setTipoParticipacao(tipoParticipacao);
   };
   const closeModalAndResetData = () => {
     setIsModalOpen(false);
@@ -98,6 +100,7 @@ const Page = ({ params }) => {
     setDeleteModalOpen(false);
     setErrorDelete("");
     setIsModalOpenInativar(false);
+    setTipoParticipacao("");
   };
 
   const renderModalContent = () => (
@@ -120,9 +123,11 @@ const Page = ({ params }) => {
         <ParticipacaoForm
           tenantSlug={params.tenant}
           inscricaoId={params.idInscricao}
-          initialData={verifiedData}
-          onClose={closeModalAndResetData}
+          initialData={verifiedData || {}}
+          onClose={() => {}}
           onSuccess={handleCreateOrEditSuccess}
+          showLabelInicio={false}
+          tipoParticipacao={tipoParticipacao}
         />
       )}
     </Modal>
@@ -194,13 +199,24 @@ const Page = ({ params }) => {
             <div className={styles.list}>
               <div
                 className={styles.addItem}
-                onClick={() => openModalAndSetData(null)}
+                onClick={() => openModalAndSetData(null, "orientador")}
               >
                 <div className={styles.icon}>
                   <RiAddCircleLine />
                 </div>
                 <p>Add orientador</p>
               </div>
+              {false && (
+                <div
+                  className={styles.addItem}
+                  onClick={() => openModalAndSetData(null, "coorientador")}
+                >
+                  <div className={styles.icon}>
+                    <RiAddCircleLine />
+                  </div>
+                  <p>Add Coorientador</p>
+                </div>
+              )}
 
               {loading && <p>Carregando...</p>}
               {error && <p>{error}</p>}

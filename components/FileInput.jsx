@@ -15,7 +15,7 @@ const FileInput = ({ label, onFileSelect, errorMessage, disabled }) => {
   return (
     <div className={styles.fileInputContainer}>
       <label className={styles.label}>
-        <p className={styles.labelP}>{label}</p>
+        <p>{label}</p>
         <input
           type="file"
           className={styles.fileInput}
@@ -23,7 +23,9 @@ const FileInput = ({ label, onFileSelect, errorMessage, disabled }) => {
           disabled={disabled}
         />
         <span className={styles.customButton}>
-          <p>{disabled ? "Carregando..." : "Selecione o arquivo em .XML"}</p>
+          <p>
+            {disabled ? "Carregando..." : "Selecione Arquivo em formato .XML"}
+          </p>
         </span>
       </label>
       {selectedFile && (

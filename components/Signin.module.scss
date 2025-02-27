@@ -1,7 +1,25 @@
 @import "./../styles/partials/colors";
 @import "./../styles/partials/layout";
 @import "./../styles/partials/spacing";
-
+.perfis{
+    display: flex;
+    flex-direction: column;
+    gap: $gap-1;
+    margin-top: $gap-1;
+    .perfil{
+        border: 1px solid $gray-50;
+        padding: $gap-2 $gap-3;
+        border-radius: $gap-1;
+        cursor: pointer;
+        transition: ease .3s;
+        &:hover{
+            box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+            transform: scale(1.03);
+            background-color: $white-darken;
+        }
+        
+    }
+}
 .auth{
     width: 416px;
    @include responsive (xs){

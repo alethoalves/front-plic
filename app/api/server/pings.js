@@ -12,6 +12,17 @@ export const pingGestor = async (token,tenant) => {
   }
 };
 
+export const pingAvaliadorTenant = async (token,tenant) => {
+  try {
+    const response = await req.get(`/private/${tenant}/ping/avaliadorTenant`, {
+      headers: getAuthHeadersServer(token)
+    });
+    return response.data.pong
+  } catch (error) {
+    return false
+  }
+};
+
 export const pingOrientador = async (token,tenant) => {
   try {
     const response = await req.get(`/private/${tenant}/ping/orientador`, {

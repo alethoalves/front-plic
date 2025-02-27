@@ -1,3 +1,14 @@
+.p-toast-message{
+    padding: $gap-1;
+    svg{
+        width: 30px;
+        
+    }
+    .p-toast-message-content{
+        gap: $gap-2;
+    }
+}
+
 .notification{
     border: 1px solid red;
     display: flex;

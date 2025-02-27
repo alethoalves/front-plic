@@ -85,3 +85,22 @@ try {
     throw error;
 }
 };
+
+export const getFormularioProjeto = async (tenantSlug) => {
+    try {
+        const headers = getAuthHeadersClient();
+        if (!headers) return false;
+        const response = await req.get(
+        `/private/${tenantSlug}/getFormularioProjeto`,
+        {headers}
+        );
+        return response.data.formulario;
+    } catch (error) {
+        if (error.response && error.response.status === 404) {
+        console.error("Formulário não encontrado:", error);
+        return null;
+        }
+        console.error("Erro ao obter as participações:", error);
+        throw error;
+    }
+    };

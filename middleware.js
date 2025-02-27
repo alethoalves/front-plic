@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { getCookie } from "cookies-next";
 import { cookies } from "next/headers";
 import { getTenant } from "./app/api/server/getTenant";
-import { pingAdminEvento, pingAluno, pingAvaliador, pingGestor, pingOrientador, pingRoot, pingUser } from "./app/api/server/pings";
+import { pingAdminEvento, pingAluno, pingAvaliador, pingAvaliadorTenant, pingGestor, pingOrientador, pingRoot, pingUser } from "./app/api/server/pings";
 import { getEventoBySlug } from "./app/api/serverReq";
 
 export const middleware = async (request) => {
@@ -34,6 +34,8 @@ export const middleware = async (request) => {
 
   const urlToGestor = new URL(request.url);
   urlToGestor.pathname = `/${tenant}/gestor`;
+  const urlToAvaliadorTenant = new URL(request.url);
+  urlToAvaliadorTenant.pathname = `/${tenant}/avaliador`;
   const urlToOrientador = new URL(request.url);
   urlToOrientador.pathname = `/${tenant}/orientador`;
   const urlToAluno = new URL(request.url);
@@ -42,6 +44,7 @@ export const middleware = async (request) => {
   urlToUser.pathname = `/${tenant}/user`;
   const { pathname } = request.nextUrl;
   const token = getCookie("authToken", { cookies });
+  const perfilSelecionado = getCookie("perfilSelecionado", { cookies });
   console.log('ENTROU NO MIDDLEWARE')
 
   
@@ -148,6 +151,8 @@ export const middleware = async (request) => {
     }
     let pongAvaliador;
     pongAvaliador = await pingAvaliador(token);
+    let pongAvaliadorTenant;
+    pongAvaliadorTenant = await pingAvaliadorTenant(token,tenant);
      /******************
      * MIDDLEWARE PARA AVALIADOR (/avaliador)
      * ****************/
@@ -225,18 +230,36 @@ export const middleware = async (request) => {
     pongUser = await pingUser(token, tenant);
 
     
+    
     /******************
      * MIDDLEWARE PARA SIGNIN (apenas /:tenant, não inclui /:tenant/qualquercoisa)
      * ****************/
     if (/^\/[^\/]+$/.test(pathname)) {
       //Se houver gestor:
       if (pongGestor) return NextResponse.redirect(urlToGestor);
-      if (pongOrientador) return NextResponse.redirect(urlToOrientador);
-      if (pongAluno) return NextResponse.redirect(urlToAluno);
+      //if (pongOrientador) return NextResponse.redirect(urlToOrientador);
+      //if (pongAluno) return NextResponse.redirect(urlToAluno);
       if (pongUser) return NextResponse.redirect(urlToUser);
+      if (perfilSelecionado && token) {
+        if (perfilSelecionado  === "gestor") return NextResponse.redirect(urlToGestor)
+        if (perfilSelecionado === "aluno") return NextResponse.redirect(urlToUser)
+        if (perfilSelecionado === "orientador") return NextResponse.redirect(urlToUser)
+        if (perfilSelecionado === "user") return NextResponse.redirect(urlToUser)
+        if (perfilSelecionado === "avaliador") return NextResponse.redirect(urlToAvaliadorTenant)
+      }
+      
 
       return NextResponseWithTenant
       
+    }
+    /******************
+     * MIDDLEWARE PARA AS ROTAS INTERNAS DE AVALIADOR (/:tenant)
+     * ****************/
+    // Middleware apenas para as rotas avaliador `/:tenant/avaliador`
+    if (url.pathname.startsWith(`/${tenant}/avaliador`)) {
+      // Não tem token válido OU não tem permissão de acesso -> redireciona
+      if (!pongAvaliadorTenant) return NextResponse.redirect(urlToSignin);
+      return NextResponseWithTenant
     }
     /******************
      * MIDDLEWARE PARA AS ROTAS INTERNAS DE GESTOR (/:tenant)

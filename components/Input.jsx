@@ -124,7 +124,7 @@ const Input = (props) => {
     >
       <div className={`${styles.label}`}>
         {props.inputType !== "file" && <p>{props.label}</p>}
-
+        {props.inputType === "file" && <p>{props.label}</p>}
         {fieldState.error?.message && (
           <p className={`${styles.errorMsg} ${styles.errorp}`}>
             {fieldState.error.message}

@@ -48,10 +48,10 @@ const EditarParticipacao = ({
       return;
     }
 
-    if (file.type !== "text/xml") {
+    if (file.type !== "text/xml" && file.type !== "application/zip") {
       setFileInputErrors((prev) => ({
         ...prev,
-        [userId]: "Por favor, selecione um arquivo XML válido.",
+        [userId]: "Por favor, selecione um arquivo XML ou ZIP válido.",
       }));
       return;
     }

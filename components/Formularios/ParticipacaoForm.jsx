@@ -30,7 +30,7 @@ const ParticipacaoForm = ({
       cpf: "",
       tipo: "",
       cvLattesId: "",
-      solicitarBolsa: false,
+      solicitarBolsa: "false",
       ...initialData,
     },
   });

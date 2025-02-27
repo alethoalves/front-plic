@@ -1,4 +1,25 @@
+.p-dropdown{
+    margin: 0;
+    span{
+        font-size: 14px;
+        @include responsive(s){
+            font-size: 12px;
+        }
+        @include responsive(xs){
+            font-size: 10px;
+        }
+       }
+    &:hover{
+        border: 1px solid $primary-normal;
+    }
+    
+   
+}
 
+.p-inputwrapper-focus{
+    box-shadow: 0 0 0 0.2rem $white-darken;
+    border-color: $primary-normal;
+}
 .input-container{
     p{
         color: $black-light;

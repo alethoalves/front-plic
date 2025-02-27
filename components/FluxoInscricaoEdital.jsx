@@ -4,22 +4,17 @@ import styles from "./FluxoInscricaoEdital.module.scss";
 import {
   RiAddCircleLine,
   RiAlertLine,
-  RiArrowRightSLine,
   RiArticleLine,
   RiCheckboxCircleLine,
   RiDeleteBinLine,
   RiEditLine,
   RiEyeLine,
   RiFolder5Line,
-  RiLink,
   RiLinkUnlink,
   RiSendPlaneLine,
   RiUserAddLine,
 } from "@remixicon/react";
-import {
-  getInscricaoUserById,
-  submissaoInscricao,
-} from "@/app/api/client/inscricao";
+import { getInscricaoUserById } from "@/app/api/client/inscricao";
 import Modal from "@/components/Modal";
 import ProjetoController from "./projeto/ProjetoController";
 import ParticipacaoController from "./participacao/ParticipacaoController";
@@ -81,7 +76,9 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
     };
     fetchData();
   }, [tenant, inscricaoSelected]);
+
   useEffect(() => {}, [inscricao]);
+
   const openModalAndSetData = (data) => {
     setIsModalOpen(true);
     setItemToEdit(data);
@@ -107,16 +104,17 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
         <RiEditLine />
       </div>
       <ParticipacaoController
-        itemToEdit={itemToEdit}
+        itemToEdit={itemToEdit} //é a participacao
         tenant={tenant}
-        inscricaoSelected={inscricaoSelected}
-        setInscricao={setInscricao}
+        inscricaoSelected={inscricaoSelected} //é o id da inscrição
+        setInscricao={setInscricao} //é a inscricao a ser atualizada
         closeModalAndResetData={closeModalAndResetData}
-        planoDeTrabalhoDetalhes={planoDeTrabalhoSelected}
+        planoDeTrabalhoDetalhes={planoDeTrabalhoSelected} //é objeto do plano de trabalho que deve ter o id do plano de trabalho
         tipoParticipacao={tipoParticipacao}
       />
     </Modal>
   );
+
   const openProjetoModal = (projetoId) => {
     setSelectedProjetoId(projetoId); // Define o ID do projeto
     setIsModalOpenProjeto(true); // Abre o modal
@@ -134,8 +132,9 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
         tenant={tenant}
         inscricaoSelected={inscricaoSelected}
         idProjeto={selectedProjetoId}
-        onProjetoVinculado={addProjetoVinculado} // Callback para atualizar a listagem
         closeModal={closeModalAndResetData}
+        onProjetoVinculado={addProjetoVinculado} // Callback para atualizar a listagem
+        editalFormularioId={editalInfo?.formProjetoId}
       />
     </Modal>
   );
@@ -153,9 +152,10 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
         tenantSlug={tenant}
         idInscricao={inscricaoSelected}
         idProjeto={selectedProjetoId}
-        planoDeTrabalhoDetalhes={planoDeTrabalhoSelected}
         onClose={closeModalAndResetData}
+        planoDeTrabalhoDetalhes={planoDeTrabalhoSelected}
         onUpdatePlanoDeTrabalho={updatePlanoDeTrabalhoList}
+        editalFormularioId={editalInfo?.formPlanoDeTrabalhoId}
       />
     </Modal>
   );
@@ -225,7 +225,6 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
       );
 
       let updatedPlanosDeTrabalho;
-      console.log("existingPlanoIndex   --- " + (existingPlanoIndex !== -1));
       if (existingPlanoIndex !== -1) {
         // Atualiza o plano existente
         updatedPlanosDeTrabalho = [...prev.planosDeTrabalho];
@@ -233,7 +232,6 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
       } else {
         // Adiciona um novo plano
         updatedPlanosDeTrabalho = [...prev.planosDeTrabalho, updatedPlano];
-        console.log(updatedPlanosDeTrabalho);
       }
 
       return {

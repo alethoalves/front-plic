@@ -2,25 +2,38 @@
 @import "./../styles/partials/layout";
 @import "./../styles/partials/spacing";
 
+.linkFile{
+  p{
+    cursor: 'pointer';          // Cursor de mãozinha
+    color: $primary-darken;               // Cor similar à de links
+    text-decoration: underline;
+  }
+}
 .fileInputContainer {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   width: 100%;
   position: relative;
+  margin-top: $gap-2;
     p{
         margin-bottom: 0;
+        color: $black-light;
     }
   .label {
     display: flex;
+    flex-direction: column;
     flex-wrap: wrap;
-    align-items: center;
+    align-items: left;
     position: relative;
     cursor: pointer;
     .labelP{
         margin-right: $gap-2;
+        
     }
+    margin-bottom: 4px;
     .customButton {
+      margin-top: 6px;
       padding: $gap-1 $gap-3;
       //background-color: $primary-normal;
       color: $white-normal;

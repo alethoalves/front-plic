@@ -8,6 +8,7 @@ import itensMenuAdmin from "@/lib/menuItensAdmin";
 import itensMenuAvaliador from "@/lib/menuItensAvaliador";
 import itensMenuRoot from "@/lib/menuItensRoot";
 import itensMenuUser from "@/lib/menuItensUser";
+import itensMenuAvaliadorTenant from "@/lib/menuItensAvaliadorTenant";
 
 import styles from "./SideNav.module.scss";
 import { RiQuestionAnswerLine } from "@remixicon/react";
@@ -25,6 +26,9 @@ const SideNav = ({ pathLogo, menuType = "gestor" }) => {
   }
   if (menuType === "orientador") {
     menuData = itensMenuOrientador;
+  }
+  if (menuType === "avaliadorTenant") {
+    menuData = itensMenuAvaliadorTenant;
   }
   if (menuType === "user") {
     menuData = itensMenuUser;

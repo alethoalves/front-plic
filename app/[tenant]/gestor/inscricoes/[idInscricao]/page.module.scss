@@ -14,6 +14,7 @@
     }
     
 }
+
 .mainContent{
     margin-top: $gap-2;
     .edital, .orientadores,.atividades{
@@ -84,7 +85,7 @@
     .edital{
         
         p:not(:last-child){
-                margin-bottom: 4px;
+                margin-bottom: 8px;
             }
     }
     .orientadores{

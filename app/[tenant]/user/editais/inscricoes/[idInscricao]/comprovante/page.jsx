@@ -139,19 +139,42 @@ const Page = ({ params }) => {
                           <div
                             className={`${styles.conteudo} ${styles.fadeIn}`}
                           >
-                            <div className={`${styles.card}`}>
-                              <h6 className={`${styles.label}`}>
-                                Conteúdo do projeto
-                              </h6>
-                              <div className={`${styles.value}`}>
-                                <p>{item.projeto.introducao}</p>
-                                <p>{item.projeto.justificativa}</p>
-                                <p>{item.projeto.metodologia}</p>
-                                <p>{item.projeto.objetivos}</p>
-                                <p>{item.projeto.referencias}</p>
-                                <p>{item.projeto.resultados}</p>
-                              </div>
-                            </div>
+                            {item.projeto.Resposta.sort(
+                              (a, b) => a.campo.ordem - b.campo.ordem
+                            ).map((item) => {
+                              // Função para extrair o nome do arquivo da URL
+                              const extractFileName = (url) => {
+                                const parts = url.split("/");
+                                const lastPart = parts[parts.length - 1];
+                                return lastPart.split("_")[1] || lastPart; // Remove o timestamp inicial
+                              };
+
+                              return (
+                                <div className={`${styles.card}`} key={item.id}>
+                                  <h6 className={`${styles.label}`}>
+                                    {item.campo.label}
+                                  </h6>
+                                  <div className={`${styles.value}`}>
+                                    {["link", "arquivo"].includes(
+                                      item.campo.tipo
+                                    ) ? (
+                                      <a
+                                        href={item.value}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className={styles.link}
+                                      >
+                                        {item.campo.tipo === "arquivo" && "📁 "}
+                                        {item.campo.tipo === "link" && "🔗 "}
+                                        {extractFileName(item.value)}
+                                      </a>
+                                    ) : (
+                                      <p>{item.value}</p>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </div>
 
                           {/* Exibe Cronograma do Projeto dentro do card pai */}
@@ -204,8 +227,48 @@ const Page = ({ params }) => {
                                   </p>
                                   <p>
                                     <strong>Conteúdo: </strong>
-                                    {plano.conteudo}
                                   </p>
+                                  {plano.Resposta.sort(
+                                    (a, b) => a.campo.ordem - b.campo.ordem
+                                  ).map((item) => {
+                                    // Função para extrair o nome do arquivo da URL
+                                    const extractFileName = (url) => {
+                                      const parts = url.split("/");
+                                      const lastPart = parts[parts.length - 1];
+                                      return lastPart.split("_")[1] || lastPart; // Remove o timestamp inicial
+                                    };
+
+                                    return (
+                                      <div
+                                        className={`${styles.card}`}
+                                        key={item.id}
+                                      >
+                                        <h6 className={`${styles.label}`}>
+                                          {item.campo.label}
+                                        </h6>
+                                        <div className={`${styles.value}`}>
+                                          {["link", "arquivo"].includes(
+                                            item.campo.tipo
+                                          ) ? (
+                                            <a
+                                              href={item.value}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className={styles.link}
+                                            >
+                                              {item.campo.tipo === "arquivo" &&
+                                                "📁 "}
+                                              {item.campo.tipo === "link" &&
+                                                "🔗 "}
+                                              {extractFileName(item.value)}
+                                            </a>
+                                          ) : (
+                                            <p>{item.value}</p>
+                                          )}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
                                 </div>
                               </div>
                             </div>

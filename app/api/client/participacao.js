@@ -41,6 +41,27 @@ export const getParticipacoes = async (tenantSlug, idInscricao, tipos, cpf, nome
   }
 };
 
+export const getParticipacao = async (tenantSlug, idParticipacao) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.get(
+      `/private/${tenantSlug}/participacoes/${idParticipacao}`,
+      { headers }
+    );
+    return response.data.participacao;
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      console.error("Participações não encontradas:", error);
+      return null;
+    }
+    console.error("Erro ao obter as participações:", error);
+    throw error;
+  }
+};
+
 export const getParticipacoesDashboard = async (tenantSlug, idInscricao, tipos, cpf, nome, status, editalId, page = 1, limit = 300) => {
   try {
     const headers = getAuthHeadersClient();

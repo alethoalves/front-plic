@@ -190,6 +190,7 @@ const Page = ({ params }) => {
                   registroAtividadeId={itemToEdit?.id}
                   onClose={closeModalAndResetData}
                   onSuccess={handleCreateOrEditSuccess}
+                  setLoading={setLoading}
                 />
               ))}
             </div>
@@ -265,6 +266,7 @@ const Page = ({ params }) => {
                   registroAtividadeId={itemToEdit?.id}
                   onClose={closeModalAndResetData}
                   onSuccess={handleCreateOrEditSuccess}
+                  setLoading={setLoading}
                 />
               ))}
             </div>

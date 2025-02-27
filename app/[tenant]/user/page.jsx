@@ -3,6 +3,7 @@ import {
   RiAwardFill,
   RiCalendarEventFill,
   RiCouponLine,
+  RiFileList3Line,
   RiListCheck2,
 } from "@remixicon/react";
 import styles from "./page.module.scss";
@@ -75,6 +76,20 @@ const Page = ({ params }) => {
         <div className={styles.content}>
           <h6>Bem-vindo(a) à </h6>
           <h4>Iniciação Científica</h4>
+          <Link href={`/${params.tenant}/user/editais`}>
+            <div className={styles.infoBox}>
+              <div className={styles.icon}>
+                <RiFileList3Line />
+              </div>
+              <div className={styles.infoBoxContent}>
+                <h6>Editais</h6>
+                <p>
+                  Inscreva-se nos editais de iniciação científica ou acompanhe
+                  suas inscrições!
+                </p>
+              </div>
+            </div>
+          </Link>
           <Link href={`/${params.tenant}/user/atividades`}>
             <div className={styles.infoBox}>
               {atividadesNaoEntregues > 0 && (

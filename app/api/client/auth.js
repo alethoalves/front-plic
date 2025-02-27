@@ -64,5 +64,6 @@ export const signup = async (data, reqParams) => {
 export const logout = () => {
   deleteCookie("authToken");
     deleteCookie("userProfiles");
+    deleteCookie("perfilSelecionado");
 };
 

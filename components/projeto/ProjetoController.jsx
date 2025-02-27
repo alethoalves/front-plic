@@ -17,6 +17,7 @@ import {
   isProjetoLinkedToInscricao,
   updateProjetoById,
 } from "@/app/api/client/projeto";
+import FormProjetoCreateOrEdit from "../Formularios/FormProjetoCreateOrEdit";
 
 const ProjetoController = ({
   tenant,
@@ -57,6 +58,8 @@ const ProjetoController = ({
   }, [idProjeto, tenant]);
 
   const handleCreateOrEditProjetoSuccess = (projetoAtualizado) => {
+    console.log("projetoAtualizado");
+    console.log(projetoAtualizado);
     setMeusProjetos((prevProjetos) => {
       const index = prevProjetos.findIndex(
         (p) => p.id === projetoAtualizado.id
@@ -72,6 +75,7 @@ const ProjetoController = ({
     });
     // Atualiza o modal para visualização do projeto criado/atualizado
     setSelectedProjeto(projetoAtualizado);
+    setProjetoDetalhes(projetoAtualizado);
     setModalView("view");
   };
   useEffect(() => {
@@ -221,22 +225,48 @@ const ProjetoController = ({
         />
       )}
       {modalView === "create" && (
-        <FormProjeto
-          tenantSlug={tenant}
-          idInscricao={inscricaoSelected}
-          onSuccess={handleCreateOrEditProjetoSuccess}
-        />
+        <>
+          {/** 
+          <FormProjeto
+            tenantSlug={tenant}
+            idInscricao={inscricaoSelected}
+            onSuccess={handleCreateOrEditProjetoSuccess}
+          />
+          */}
+          <FormProjetoCreateOrEdit
+            initialData={projetoDetalhes}
+            tenantSlug={tenant}
+            idInscricao={inscricaoSelected}
+            onSuccess={handleCreateOrEditProjetoSuccess}
+            onUpdateProjeto={(projetoData) =>
+              handleUpdateProjeto(selectedProjeto.id, projetoData)
+            }
+          />
+        </>
       )}
       {modalView === "edit" && selectedProjeto && (
-        <FormProjeto
-          tenantSlug={tenant}
-          idInscricao={inscricaoSelected}
-          initialData={projetoDetalhes} // Dados do projeto para edição
-          onSuccess={handleCreateOrEditProjetoSuccess} // Atualização do estado após sucesso
-          onSubmit={(projetoData) =>
-            handleUpdateProjeto(selectedProjeto.id, projetoData)
-          }
-        />
+        <>
+          {/**
+           * <FormProjeto
+            tenantSlug={tenant}
+            idInscricao={inscricaoSelected}
+            initialData={projetoDetalhes} // Dados do projeto para edição
+            onSuccess={handleCreateOrEditProjetoSuccess} // Atualização do estado após sucesso
+            onSubmit={(projetoData) =>
+              handleUpdateProjeto(selectedProjeto.id, projetoData)
+            }
+          />
+           */}
+          <FormProjetoCreateOrEdit
+            initialData={projetoDetalhes}
+            tenantSlug={tenant}
+            idInscricao={inscricaoSelected}
+            onSuccess={handleCreateOrEditProjetoSuccess}
+            onUpdateProjeto={(projetoData) =>
+              handleUpdateProjeto(selectedProjeto.id, projetoData)
+            }
+          />
+        </>
       )}
     </>
   );
