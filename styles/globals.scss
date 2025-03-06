@@ -97,6 +97,13 @@ svg, img{
 .p-dataview-content{
   background-color: transparent
 }
+.clickable-row {
+  cursor: pointer;
+  transition: ease .3s;
+  &:hover{
+    background-color: $white-darken
+  }
+}
 @import "partials/icons";
 @import "partials/input";
 @import "partials/auth";

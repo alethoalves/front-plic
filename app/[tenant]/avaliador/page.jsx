@@ -23,27 +23,31 @@ const Page = ({ params }) => {
         </Link>
         {/** LINK PARA AVALIAÇÃO APENAS DE PLANOS DE TRABALHO **/}
         {/** quando o edital prevê apenas formulário de avaliação do plano **/}
-        <Link href={`/avaliador/avaliacoes/planos`}>
-          <div className={styles.menu}>
-            <div className={styles.logo}>
-              <RiQuillPenLine />
+        {false && (
+          <Link href={`/avaliador/avaliacoes/planos`}>
+            <div className={styles.menu}>
+              <div className={styles.logo}>
+                <RiQuillPenLine />
+              </div>
+              <div className={styles.descricao}>
+                <h6>Avaliar Planos de Trabalho</h6>
+              </div>
             </div>
-            <div className={styles.descricao}>
-              <h6>Avaliar Planos de Trabalho</h6>
-            </div>
-          </div>
-        </Link>
+          </Link>
+        )}
         {/** LINK PARA AVALIAÇÃO DE ATIVIDADES **/}
-        <Link href={`${params.tenant}/avaliador/avaliacoes/atividades`}>
-          <div className={styles.menu}>
-            <div className={styles.logo}>
-              <RiQuillPenLine />
+        {false && (
+          <Link href={`${params.tenant}/avaliador/avaliacoes/atividades`}>
+            <div className={styles.menu}>
+              <div className={styles.logo}>
+                <RiQuillPenLine />
+              </div>
+              <div className={styles.descricao}>
+                <h6>Avaliar atividades</h6>
+              </div>
             </div>
-            <div className={styles.descricao}>
-              <h6>Avaliar atividades</h6>
-            </div>
-          </div>
-        </Link>
+          </Link>
+        )}
         {false && (
           <Link href={"/avaliador/home/certificados"}>
             <div className={styles.menu}>

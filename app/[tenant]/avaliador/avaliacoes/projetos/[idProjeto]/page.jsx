@@ -153,6 +153,7 @@ const Page = ({ params }) => {
         router.push(`/${params.tenant}/avaliador/avaliacoes/projetos`);
       } else {
         setError({ geral: response.message || "Erro ao processar avaliação." });
+        setLoading(false);
       }
     } catch (error) {
       // Captura erros específicos e exibe mensagem
@@ -161,113 +162,139 @@ const Page = ({ params }) => {
           error.response?.data?.message ||
           "Ocorreu um erro ao finalizar a avaliação.",
       });
+      setLoading(false);
     }
   };
   return (
     <>
       <div className={styles.navContent}>
-        {loading ? (
-          // Enquanto estiver carregando, exibe o carregamento
-          <p>Carregando...</p>
-        ) : inscricaoProjeto ? (
-          // Se não estiver carregando e houver dados, renderiza as informações do projeto
-          <>
-            <div className={styles.projeto}>
-              <div className={styles.card}>
-                <h6 className={styles.label}>Título</h6>
-                <div className={styles.value}>
-                  <p>{inscricaoProjeto.projeto.titulo}</p>
-                </div>
-              </div>
-              <div className={styles.card}>
-                <h6 className={styles.label}>Introdução</h6>
-                <div className={styles.value}>
-                  <p>{inscricaoProjeto.projeto.introducao}</p>
-                </div>
+        <>
+          <div className={styles.projeto}>
+            <div className={styles.card}>
+              <h6 className={styles.label}>Título</h6>
+              <div className={styles.value}>
+                <p>{inscricaoProjeto?.projeto?.titulo}</p>
               </div>
             </div>
-            <div className={styles.fichaDeAvaliacao}>
-              <h5>Ficha de Avaliação</h5>
+            <div className={styles.card}>
+              <h6 className={styles.label}>Área</h6>
+              <div className={styles.value}>
+                <p>{inscricaoProjeto?.projeto?.area.area}</p>
+              </div>
+            </div>
+            <div className={`${styles.conteudo}`}>
+              {inscricaoProjeto?.projeto?.Resposta?.sort(
+                (a, b) => a.campo.ordem - b.campo.ordem
+              ).map((item) => {
+                // Função para extrair o nome do arquivo da URL
+                const extractFileName = (url) => {
+                  const parts = url.split("/");
+                  const lastPart = parts[parts.length - 1];
+                  return lastPart.split("_")[1] || lastPart; // Remove o timestamp inicial
+                };
 
-              {fichaError ? ( // Se houver erro na ficha, exibe a mensagem de erro
-                <div className={styles.error}>
-                  <p>{fichaError}</p>
-                </div>
-              ) : (
-                // Caso contrário, renderiza a ficha de avaliação
-                <>
-                  <div className={styles.quesitos}>
-                    {fichaAvaliacao?.CriterioFormularioAvaliacao?.sort(
-                      (a, b) => a.id - b.id
-                    ).map((item, index) => {
-                      const valores = Array.from(
-                        { length: item.notaMaxima - item.notaMinima + 1 },
-                        (_, i) => item.notaMinima + i
-                      );
-                      return (
-                        <div className={styles.item} key={item.id}>
-                          <div className={styles.label}>
-                            <h6>
-                              <span>{index + 1}. </span>
-                              {item.label} (Peso: {item.peso}){" "}
-                              {/* Alteração aqui */}
-                            </h6>
-                          </div>
-                          <div className={styles.instructions}>
-                            <p style={{ whiteSpace: "pre-line" }}>
-                              {item.descricao}
-                            </p>
-                          </div>
-                          <div className={styles.values}>
-                            {valores.map((valor) => (
-                              <div
-                                key={valor}
-                                value={valor}
-                                className={`${styles.value} ${
-                                  selectedNotas[item.id] === valor
-                                    ? styles.selected
-                                    : ""
-                                }`}
-                                onClick={() =>
-                                  handleNotaSelecionada(item.id, valor)
-                                }
-                              >
-                                <p>{valor}</p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <div className={`${styles.item} mt-2`}>
-                    <div className={styles.label}>
-                      <h6>Feedback/Comentário ao aluno (OPCIONAL)</h6>
+                return (
+                  <div className={`${styles.card}`} key={item.id}>
+                    <h6 className={`${styles.label}`}>{item.campo.label}</h6>
+                    <div className={`${styles.value}`}>
+                      {["link", "arquivo"].includes(item.campo.tipo) ? (
+                        <a
+                          href={item.value}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={styles.link}
+                        >
+                          {item.campo.tipo === "arquivo" && "📁 "}
+                          {item.campo.tipo === "link" && "🔗 "}
+                          {extractFileName(item.value)}
+                        </a>
+                      ) : (
+                        <p>{item.value}</p>
+                      )}
                     </div>
-
-                    <textarea
-                      type="text"
-                      placeholder="Escreva aqui"
-                      //value={evento?.observaocao || ""}
-                      onChange={handleComentarioChange}
-                    ></textarea>
                   </div>
-
-                  {/* Nova div para exibir a nota final */}
-                  <div className={styles.notaFinal}>
-                    <h6>Nota Final:</h6>
-                    <p>{notaTotal.toFixed(2)}</p>{" "}
-                    {/* Exibe a nota com 2 casas decimais */}
-                  </div>
-                </>
-              )}
+                );
+              })}
             </div>
-          </>
-        ) : (
-          // Se não estiver carregando e não houver dados, exibe o NoData
-          <NoData description="Nada encontrado :/" />
-        )}
+          </div>
+          <div className={styles.fichaDeAvaliacao}>
+            <h5>Ficha de Avaliação</h5>
+
+            {fichaError ? ( // Se houver erro na ficha, exibe a mensagem de erro
+              <div className={styles.error}>
+                <p>{fichaError}</p>
+              </div>
+            ) : (
+              // Caso contrário, renderiza a ficha de avaliação
+              <>
+                <div className={styles.quesitos}>
+                  {fichaAvaliacao?.CriterioFormularioAvaliacao?.sort(
+                    (a, b) => a.id - b.id
+                  ).map((item, index) => {
+                    const valores = Array.from(
+                      { length: item.notaMaxima - item.notaMinima + 1 },
+                      (_, i) => item.notaMinima + i
+                    );
+                    return (
+                      <div className={styles.item} key={item.id}>
+                        <div className={styles.label}>
+                          <h6>
+                            <span>{index + 1}. </span>
+                            {item.label} (Peso: {item.peso}){" "}
+                            {/* Alteração aqui */}
+                          </h6>
+                        </div>
+                        <div className={styles.instructions}>
+                          <p style={{ whiteSpace: "pre-line" }}>
+                            {item.descricao}
+                          </p>
+                        </div>
+                        <div className={styles.values}>
+                          {valores.map((valor) => (
+                            <div
+                              key={valor}
+                              value={valor}
+                              className={`${styles.value} ${
+                                selectedNotas[item.id] === valor
+                                  ? styles.selected
+                                  : ""
+                              }`}
+                              onClick={() =>
+                                handleNotaSelecionada(item.id, valor)
+                              }
+                            >
+                              <p>{valor}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className={`${styles.item} mt-2`}>
+                  <div className={styles.label}>
+                    <h6>Feedback/Comentário ao aluno (OPCIONAL)</h6>
+                  </div>
+
+                  <textarea
+                    type="text"
+                    placeholder="Escreva aqui"
+                    //value={evento?.observaocao || ""}
+                    onChange={handleComentarioChange}
+                  ></textarea>
+                </div>
+
+                {/* Nova div para exibir a nota final */}
+                <div className={styles.notaFinal}>
+                  <h6>Nota Final:</h6>
+                  <p>{notaTotal.toFixed(2)}</p>{" "}
+                  {/* Exibe a nota com 2 casas decimais */}
+                </div>
+              </>
+            )}
+          </div>
+        </>
       </div>
       {error.geral && (
         <div className={`${styles.error} `}>
@@ -282,7 +309,7 @@ const Page = ({ params }) => {
             icon={RiQuillPenLine}
             disabled={loading}
           >
-            Terminar Avaliação
+            {loading ? "Aguarde. Carregando..." : "Terminar Avaliação"}
           </Button>
         ))}
     </>

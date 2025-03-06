@@ -225,9 +225,11 @@ const Page = ({ params }) => {
                                       .map((i) => i.user.nome)
                                       .join(", ")}
                                   </p>
-                                  <p>
-                                    <strong>Conteúdo: </strong>
-                                  </p>
+                                  {false && (
+                                    <p>
+                                      <strong>Conteúdo: </strong>
+                                    </p>
+                                  )}
                                   {plano.Resposta.sort(
                                     (a, b) => a.campo.ordem - b.campo.ordem
                                   ).map((item) => {

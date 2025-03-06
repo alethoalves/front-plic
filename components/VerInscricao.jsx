@@ -228,9 +228,7 @@ const VerInscricao = ({ inscricaoSelected, tenant, setErrors, onClose }) => {
                                         .map((i) => i.user.nome)
                                         .join(", ")}
                                     </p>
-                                    <p>
-                                      <strong>Conteúdo: </strong>
-                                    </p>
+
                                     {plano.Resposta.sort(
                                       (a, b) => a.campo.ordem - b.campo.ordem
                                     ).map((item) => {

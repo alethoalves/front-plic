@@ -22,8 +22,7 @@ const FileInput = ({
 
   // Utiliza o watch para observar o valor do campo de arquivo
   const watchedFile = watch(`camposDinamicos.campo_${campo.id}`);
-  console.log("watchedFile");
-  console.log(watchedFile);
+
   // Função para extrair o nome do arquivo
   const extractFileName = (url) => {
     const parts = url.split("/");

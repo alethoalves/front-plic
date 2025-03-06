@@ -20,6 +20,9 @@ import { Dropdown } from "primereact/dropdown";
 import { RiEditLine, RiEyeLine } from "@remixicon/react";
 import Modal from "@/components/Modal";
 import ModalInscricao from "@/components/ModalInscricao";
+import FormNewInscricao from "@/components/Formularios/FormNewInscricao";
+import { getEditais } from "@/app/api/client/edital";
+import Actions from "@/components/Actions";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(true);
@@ -27,6 +30,11 @@ const Page = ({ params }) => {
   const [itens, setItens] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpenNovaInscricao, setIsModalOpenNovaInscricao] =
+    useState(false);
+
+  const [editais, setEditais] = useState([]);
+
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
     "inscricao.edital.ano": {
@@ -52,6 +60,10 @@ const Page = ({ params }) => {
     projetoId: {
       operator: FilterOperator.AND,
       constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }], // Teste "EQUALS" ou outro modo compatível
+    },
+    "projeto.InscricaoProjeto.statusAvaliacao": {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
     },
     "projeto.InscricaoProjeto.projeto.area.area": {
       operator: FilterOperator.AND,
@@ -116,11 +128,12 @@ const Page = ({ params }) => {
       { header: "Status Inscrição", key: "status", width: 20 },
       { header: "Orientador", key: "orientador", width: 25 },
       { header: "ID_Projeto", key: "projetoId", width: 15 },
+      { header: "Status avaliação", key: "statusAvaliacaoProjeto", width: 15 },
       { header: "Área Projeto", key: "areaProjeto", width: 20 },
       { header: "Título Projeto", key: "tituloProjeto", width: 30 },
       { header: "Envolve Humanos", key: "envolveHumanos", width: 20 },
       { header: "Envolve Animais", key: "envolveAnimais", width: 20 },
-      { header: "Qtd. Fichas", key: "qtdFichas", width: 15 },
+      { header: "Qtd. Avaliações", key: "qtdFichas", width: 15 },
       { header: "Média Notas", key: "mediaNotas", width: 15 },
       { header: "Avaliadores", key: "avaliadores", width: 40 },
       { header: "ID_Plano", key: "idPlano", width: 15 },
@@ -138,6 +151,8 @@ const Page = ({ params }) => {
         status: item.inscricao?.status || "Não informado",
         orientador: item.inscricao?.orientadorParticipacoes || "Não informado",
         projetoId: item.projetoId,
+        statusAvaliacaoProjeto:
+          projeto.InscricaoProjeto.statusAvaliacao || "Não informado",
         areaProjeto:
           item.projeto?.InscricaoProjeto?.projeto?.area?.area ||
           "Não informado",
@@ -196,7 +211,11 @@ const Page = ({ params }) => {
               ?.map((p) => `${p.user?.nome} (${p.status})`)
               ?.join("; ") || "Nenhum aluno vinculado",
         }));
-
+        const fetchedEditais = await getEditais(params.tenant);
+        if (fetchedEditais) {
+          fetchedEditais.sort((a, b) => b.ano - a.ano);
+          setEditais(fetchedEditais);
+        }
         setItens(itensComCamposVirtuais || []);
         console.log(itensComCamposVirtuais);
       } catch (error) {
@@ -232,9 +251,16 @@ const Page = ({ params }) => {
   const openModalAndSetData = () => {};
   const closeModalAndResetData = () => {
     setIsModalOpen(false);
+    setIsModalOpenNovaInscricao(false);
     setSelected({});
   };
-
+  const renderModalNovaInscricao = () => (
+    <Modal isOpen={isModalOpenNovaInscricao} onClose={closeModalAndResetData}>
+      <h4>Nova Inscrição</h4>
+      <p>Preencha os dados abaixo para iniciar o processo de inscrição.</p>
+      <FormNewInscricao data={{ editais }} tenant={params.tenant} />
+    </Modal>
+  );
   const renderModalContent = () => (
     <Modal isOpen={isModalOpen} onClose={closeModalAndResetData}>
       <ModalInscricao
@@ -243,9 +269,20 @@ const Page = ({ params }) => {
       />
     </Modal>
   );
+  const handleRowClick = (event) => {
+    const rowData = event.data; // Dados da linha clicada
+    setIsModalOpen(true);
+    setSelected({
+      tenant: params.tenant,
+      item: "inscricao",
+      idInscricao: rowData.inscricaoId,
+    });
+  };
+
   return (
     <main>
       {renderModalContent()}
+      {renderModalNovaInscricao()}
       {loading ? (
         <div className="flex justify-center items-center h-20">
           <ProgressSpinner />
@@ -270,7 +307,13 @@ const Page = ({ params }) => {
               onClick={() => console.log("Itens selecionados:", selectedItems)}
             />
           </div>
-
+          {false && (
+            <Actions
+              onClickPlus={() => {
+                setIsModalOpenNovaInscricao(true);
+              }}
+            />
+          )}
           <DataTable
             ref={dataTableRef}
             value={itens}
@@ -292,6 +335,7 @@ const Page = ({ params }) => {
               "inscricao.status",
               "inscricao.orientadorParticipacoes",
               "projetoId",
+              "projeto.InscricaoProjeto.statusAvaliacao",
               "projeto.InscricaoProjeto.projeto.area.area",
               "projeto.titulo",
               "projeto.envolveHumanos",
@@ -305,6 +349,8 @@ const Page = ({ params }) => {
               "alunoParticipacoes",
             ]}
             emptyMessage="Nenhum item encontrado."
+            rowClassName="clickable-row"
+            onRowClick={handleRowClick}
           >
             <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
             {false && (
@@ -338,24 +384,6 @@ const Page = ({ params }) => {
               filterPlaceholder="Filtrar por ID"
               filterField="inscricaoId"
               style={{ minWidth: "8rem", maxWidth: "10rem" }}
-              body={(rowData) => (
-                <div
-                  onClick={() => {
-                    setIsModalOpen(true);
-                    setSelected({
-                      tenant: params.tenant,
-                      item: "inscricao",
-                      idInscricao: rowData.inscricaoId,
-                    });
-                  }}
-                  className="flex gap-2 link"
-                >
-                  <div className="icon">
-                    <RiEyeLine />
-                  </div>
-                  <span>{rowData.inscricaoId}</span>
-                </div>
-              )}
             />
             <Column
               field="inscricao.status"
@@ -380,6 +408,14 @@ const Page = ({ params }) => {
               filter
               filterPlaceholder="Filtrar por id"
               filterField="projetoId"
+            />
+            <Column
+              field="projeto.InscricaoProjeto.statusAvaliacao"
+              header="Status avaliação"
+              sortable
+              filter
+              filterPlaceholder="Filtrar por status"
+              filterField="projeto.InscricaoProjeto.statusAvaliacao"
             />
             <Column
               field="projeto.InscricaoProjeto.projeto.area.area"
@@ -452,7 +488,7 @@ const Page = ({ params }) => {
             {/* Coluna Qtd. Fichas */}
             <Column
               field="qtdFichas"
-              header="Qtd. Fichas"
+              header="Qtd. de Avaliações"
               sortable
               filter
               dataType="numeric"

@@ -9,7 +9,8 @@ const convertToFormData = (data) => {
   formData.append("areaId", data.areaId);
   formData.append("conteudo", data.conteudo);
   formData.append("projetoId", data.projetoId);
-
+  formData.append("envolveHumanos", data.envolveHumanos);
+  formData.append("envolveAnimais", data.envolveAnimais);
   // Se o cronograma for necessário, pode ser convertido para JSON
   if (data.cronograma) {
     formData.append("cronograma", JSON.stringify(data.cronograma));
@@ -118,6 +119,7 @@ export const getProjetoById = async (tenantSlug, projetoId) => {
 
 // Atualizar os detalhes de um projeto pelo ID
 export const updateProjetoById = async (tenantSlug, projetoId, projetoData) => {
+  console.log(projetoData)
   try {
     const headers = getAuthHeadersClient();
     if (!headers) {
@@ -208,5 +210,42 @@ export const getInscricaoProjetoByTenant = async (tenantSlug) => {
   } catch (error) {
       console.error("Erro ao buscar inscrições de projetos por tenant:", error);
       throw error;
+  }
+};
+
+export const getInscricaoProjetoById = async (tenantSlug, idInscricao,idProjeto) => {
+  try {
+      const headers = getAuthHeadersClient();
+      if (!headers) {
+          throw new Error("Usuário não autenticado.");
+      }
+
+      const response = await req.get(`/private/${tenantSlug}/inscricaoProjeto/${idInscricao}/${idProjeto}`, { headers });
+      return response.data.inscricaoProjeto;
+  } catch (error) {
+      console.error("Erro ao buscar inscrições de projetos por tenant:", error);
+      throw error;
+  }
+};
+
+export const updateInscricaoProjeto = async (
+  tenantSlug,
+  idInscricaoProjeto,
+  data
+) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.put(
+      `/private/${tenantSlug}/inscricaoProjeto/${idInscricaoProjeto}`,
+      data,
+      { headers }
+    );
+    return response.data.inscricaoProjeto;
+  } catch (error) {
+    console.error("Erro ao atualizar Registro de Atividade:", error);
+    throw error;
   }
 };

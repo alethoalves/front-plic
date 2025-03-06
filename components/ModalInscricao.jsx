@@ -30,6 +30,8 @@ import { getAllPlanoDeTrabalhosByTenant } from "@/app/api/client/planoDeTrabalho
 import calcularMedia from "@/lib/calcularMedia";
 import CPFVerificationForm from "./Formularios/CPFVerificationForm";
 import ParticipacaoForm from "./Formularios/ParticipacaoForm";
+import FormProjetoCreateOrEdit from "./Formularios/FormProjetoCreateOrEdit";
+import FormGestorProjetoCreateOrEdit from "./Formularios/FormGestorProjetoCreateOrEdit";
 
 const ModalInscricao = ({ selected, atualizarItens }) => {
   const [loading, setLoading] = useState(false);
@@ -38,6 +40,10 @@ const ModalInscricao = ({ selected, atualizarItens }) => {
   const [participacaoSelected, setParticipacaoSelected] = useState();
   const [verifiedData, setVerifiedData] = useState(null);
   const [tipoParticipacao, setTipoParticipacao] = useState(null);
+
+  const [isModalProjetoOpen, setIsModalProjetoOpen] = useState(false);
+  const [projetoSelected, setProjetoSelected] = useState();
+
   const toast = useRef(null);
   useEffect(() => {
     const fetchData = async () => {
@@ -153,6 +159,29 @@ const ModalInscricao = ({ selected, atualizarItens }) => {
       </div>
     );
   };
+  const listTemplatePlanosDeTrabalho = (planos) => {
+    return (
+      <div className={styles.list}>
+        {planos.map((plano) => (
+          <div
+            key={plano.id}
+            className={styles.itemList}
+            onClick={() => {
+              //setProjetoSelected(inscricaoProjeto.projeto);
+              //setIsModalProjetoOpen(true);
+            }}
+          >
+            <div className={styles.content1}>
+              <p>{plano.titulo}</p>
+            </div>
+            <div className={styles.content2}>
+              <RiArrowRightSLine />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
   const listTemplateProjeto = (projetos) => {
     return (
       <div className={styles.list}>
@@ -160,14 +189,22 @@ const ModalInscricao = ({ selected, atualizarItens }) => {
           <div
             key={inscricaoProjeto.id}
             className={styles.itemList}
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => {
+              setProjetoSelected(inscricaoProjeto.projeto);
+              setIsModalProjetoOpen(true);
+            }}
           >
             <div className={styles.content1}>
-              <p className={`${styles.status} ${styles.statusDefault}`}>
+              <p className={`mr-1 ${styles.status} ${styles.statusDefault}`}>
                 {inscricaoProjeto.notaFinal
                   ? `Nota Final: ${inscricaoProjeto.notaFinal}`
                   : "Não avaliado"}
               </p>
+              {inscricaoProjeto.statusAvaliacao && (
+                <p className={`${styles.status} ${styles.statusDefault}`}>
+                  {inscricaoProjeto.statusAvaliacao}
+                </p>
+              )}
               <p>{inscricaoProjeto.projeto.titulo}</p>
             </div>
             <div className={styles.content2}>
@@ -222,9 +259,34 @@ const ModalInscricao = ({ selected, atualizarItens }) => {
       )}
     </Modal>
   );
+  const renderModalProjeto = () => (
+    <Modal
+      isOpen={isModalProjetoOpen}
+      onClose={() => {
+        setIsModalProjetoOpen(false);
+        setProjetoSelected(null);
+      }}
+    >
+      <div className={`${styles.icon} mb-2`}>
+        <RiEditLine />
+      </div>
+
+      <FormGestorProjetoCreateOrEdit
+        projetoId={projetoSelected?.id}
+        tenantSlug={selected.tenant}
+        idInscricao={selected.idInscricao}
+        onSuccess={handleCreateOrEditSuccess}
+        onClose={() => {
+          setIsModalProjetoOpen(false);
+          setProjetoSelected(null);
+        }}
+      />
+    </Modal>
+  );
   return (
     <div className={styles.inscricao}>
       {renderModalParticipacao()}
+      {renderModalProjeto()}
       <div className={styles.toast}>
         <Toast ref={toast} />
       </div>
@@ -322,7 +384,13 @@ const ModalInscricao = ({ selected, atualizarItens }) => {
                   <RiFoldersLine />
                 </div>
                 <h6>Projetos</h6>
-                <div className={`ml-1 ${styles.icon}`}>
+                <div
+                  onClick={() => {
+                    setProjetoSelected(null);
+                    setIsModalProjetoOpen(true);
+                  }}
+                  className={`ml-1 ${styles.icon} ${styles.iconClick}`}
+                >
                   <RiAddCircleLine />
                 </div>
               </div>
@@ -344,6 +412,13 @@ const ModalInscricao = ({ selected, atualizarItens }) => {
                   <RiAddCircleLine />
                 </div>
               </div>
+              {itens?.planosDeTrabalho && itens.planosDeTrabalho.length > 0 && (
+                <DataView
+                  value={itens.planosDeTrabalho}
+                  listTemplate={listTemplatePlanosDeTrabalho}
+                  layout="list" // Define o layout como lista
+                />
+              )}
             </div>
             <div className={styles.box}>
               <div className={styles.header}>

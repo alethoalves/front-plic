@@ -29,12 +29,12 @@ const CPFVerificationForm = ({ tenantSlug, onCpfVerified }) => {
   const { control, setValue, watch, reset, handleSubmit } = useForm({
     defaultValues: {
       cpf: "",
-      dtNascimento: "",
+      //dtNascimento: "",
     },
   });
 
   const cpf = watch("cpf");
-  const dtNascimento = watch("dtNascimento");
+  //const dtNascimento = watch("dtNascimento");
 
   // Função para validar se a data está no formato correto e é válida
   // Tive que parar de usar essa função, pq estava impedindo de cadastrar datas com o mes 11 e 12
@@ -96,20 +96,23 @@ const CPFVerificationForm = ({ tenantSlug, onCpfVerified }) => {
           return;
         }
       }
-      if (!dtNascimento) {
-        setCpfError("Informe uma data de nascimento.");
-        setLoading(false);
-        return;
-      }
+      //if (!dtNascimento) {
+      //  setCpfError("Informe uma data de nascimento.");
+      //  setLoading(false);
+      //  return;
+      //}
       //Veja o comentário na outra ocorrencia de isValidDate
       //if (!isValidDate(dtNascimento)) {
       //  setCpfError("Informe uma data de nascimento válida.");
       //  setLoading(false);
       //  return;
       //}
-      const response = await cpfVerification(tenantSlug, { cpf, dtNascimento });
+      const response = await cpfVerification(tenantSlug, {
+        cpf,
+        //dtNascimento
+      });
       if (!response) {
-        setCpfError("Data de nascimento incompatível com o CPF.");
+        setCpfError("Erro na consulta do CPF.");
         setLoading(false);
       }
       if (response) {
@@ -129,7 +132,10 @@ const CPFVerificationForm = ({ tenantSlug, onCpfVerified }) => {
   };
 
   const handleCPFReset = () => {
-    reset({ cpf: "", dtNascimento: "" });
+    reset({
+      cpf: "",
+      //dtNascimento: ""
+    });
     setCpfNotFound(false);
     setStep(0);
     setIsCpfVerified(false);
@@ -150,7 +156,7 @@ const CPFVerificationForm = ({ tenantSlug, onCpfVerified }) => {
           disabled={loading || isCpfVerified}
         />
 
-        {cpfNotFound && (
+        {cpfNotFound && false && (
           <Input
             className="mb-2"
             control={control}

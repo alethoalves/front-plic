@@ -2,13 +2,14 @@
 
 import ParticipacaoForm from "../Formularios/ParticipacaoForm";
 import CPFVerificationForm from "../Formularios/CPFVerificationForm";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import EditarParticipacao from "./EditarParticipacao";
 import styles from "./ParticipacaoGestorController.module.scss";
 
 import {
   deleteParticipacao,
   getParticipacao,
+  updateParticipacao,
   validarParticipacao,
 } from "@/app/api/client/participacao";
 import ParticipacaoFormAluno from "../Formularios/ParticipacaoFormAluno";
@@ -19,6 +20,8 @@ import { RiDeleteBinLine, RiExternalLinkLine } from "@remixicon/react";
 import Button from "../Button";
 import { getFormulario } from "@/app/api/client/formulario";
 import { xmlLattes } from "@/app/api/clientReq";
+import { Dropdown } from "primereact/dropdown";
+import { Toast } from "primereact/toast";
 
 const ParticipacaoGestorController = ({
   tenant,
@@ -36,7 +39,7 @@ const ParticipacaoGestorController = ({
   const [errorMessages, setErrorMessages] = useState({});
   const [editalInfo, setEditalInfo] = useState(null);
   const [tipoParticipacao, setTipoParticipacao] = useState(null);
-
+  const toast = useRef(null);
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -171,11 +174,41 @@ const ParticipacaoGestorController = ({
       setDeletingId(null); // Desativa o loading
     }
   };
+  const handleStatusChange = async (e) => {
+    const newStatus = e.value;
+    try {
+      await updateParticipacao(tenant, participacaoId, {
+        status: newStatus,
+      });
+      await handleCreateOrEditSuccess();
+
+      // Exibe uma notificação de sucesso
+      toast.current.show({
+        severity: "success",
+        summary: "Sucesso",
+        detail: "Status da inscrição atualizado com sucesso!",
+        life: 3000,
+      });
+    } catch (error) {
+      console.error("Erro ao atualizar status:", error);
+
+      // Exibe uma notificação de erro
+      toast.current.show({
+        severity: "error",
+        summary: "Erro",
+        detail: "Ocorreu um erro ao atualizar o status da inscrição.",
+        life: 3000,
+      });
+    }
+  };
   return (
     <>
       {loading && <p>Carregando...</p>}
       {item && (
         <div className={styles.participacao}>
+          <div className={styles.toast}>
+            <Toast ref={toast} />
+          </div>
           <div className={styles.label}>
             <h6>Nome</h6>
             <p>{item?.user?.nome}</p>
@@ -186,14 +219,25 @@ const ParticipacaoGestorController = ({
           </div>
           {tipoParticipacao === "aluno" && (
             <div className={styles.label}>
-              <h6>Tipo de participação?</h6>
-              <p>
-                {item?.solicitarBolsa
-                  ? "Remunerada (a depender da disponibilidade de bolsas e dos critérios do edital)"
-                  : "Voluntária"}
-              </p>
+              <h6>Solicitou bolsa?</h6>
+              <p>{item?.solicitarBolsa ? "Sim" : "Não"}</p>
             </div>
           )}
+          <div className={`${styles.statusField} ${styles.label}`}>
+            <p>Status da Participação:</p>
+            <Dropdown
+              value={item?.status}
+              options={[
+                { label: "completo", value: "completo" },
+                { label: "incompleto", value: "incompleto" },
+              ]}
+              onChange={handleStatusChange}
+              placeholder="Selecione o status"
+              className={styles.statusDropdown}
+              optionLabel="label"
+              optionValue="value"
+            />
+          </div>
           <div className={styles.label}>
             <h6>CV Lattes</h6>
             {item?.user?.cvLattes?.length > 0 && (

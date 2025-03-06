@@ -6,6 +6,7 @@ import { useCallback, useState } from "react";
 import EditarParticipacao from "./EditarParticipacao";
 import { validarParticipacao } from "@/app/api/client/participacao";
 import ParticipacaoFormAluno from "../Formularios/ParticipacaoFormAluno";
+import { getInscricaoUserById } from "@/app/api/client/inscricao";
 
 const ParticipacaoController = ({
   itemToEdit,
@@ -43,15 +44,8 @@ const ParticipacaoController = ({
           "Participação validada com sucesso:",
           validatedParticipacao
         );
-        // Atualizar o estado local do status
-        setInscricao((prevState) => ({
-          ...prevState,
-          participacoes: prevState.participacoes.map((participacao) =>
-            participacao.id === newParticipacao.id
-              ? { ...participacao, status: validatedParticipacao.status }
-              : participacao
-          ),
-        }));
+        const response = await getInscricaoUserById(tenant, inscricaoSelected);
+        setInscricao(response);
       } else {
         console.warn("Validação da participação não foi concluída.");
       }

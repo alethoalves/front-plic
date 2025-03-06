@@ -1,5 +1,6 @@
 .p-dropdown{
     margin: 0;
+    margin-bottom: $gap-1;
     span{
         font-size: 14px;
         @include responsive(s){

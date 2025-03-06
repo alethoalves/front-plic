@@ -225,9 +225,9 @@ const FormProjetoCreateOrEdit = ({
             <Input
               control={control}
               name="titulo"
-              label="Título do Plano de Trabalho"
+              label="Título do Projeto"
               inputType="text"
-              placeholder="Digite aqui o título do planoDeTrabalho"
+              placeholder="Digite aqui o título do Projeto"
               disabled={loading}
             />
           </div>
@@ -235,7 +235,7 @@ const FormProjetoCreateOrEdit = ({
             <SearchableSelect
               control={control}
               name="areaId"
-              label="Área de Conhecimento do Plano de Trabalho"
+              label="Área de Conhecimento do Projeto"
               options={areas || []} // Garante que o options seja um array
               disabled={loading}
             />
