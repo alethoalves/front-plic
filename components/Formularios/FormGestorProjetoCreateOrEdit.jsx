@@ -328,7 +328,7 @@ const FormGestorProjetoCreateOrEdit = ({
             }}
           >
             <div className={styles.content1}>
-              <p>{avaliador.avaliador.nome}</p>
+              <p>{avaliador.avaliador?.nome}</p>
             </div>
             <div className={styles.content2}>
               <RiDeleteBinLine />
@@ -361,7 +361,7 @@ const FormGestorProjetoCreateOrEdit = ({
                 <p>
                   Avaliador:
                   <br />
-                  <strong>{ficha.avaliador.nome}</strong>
+                  <strong>{ficha.avaliador?.nome}</strong>
                 </p>
               </div>
               <div className={styles.content2}>
