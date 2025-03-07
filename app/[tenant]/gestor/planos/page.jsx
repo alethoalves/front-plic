@@ -152,7 +152,7 @@ const Page = ({ params }) => {
         orientador: item.inscricao?.orientadorParticipacoes || "Não informado",
         projetoId: item.projetoId,
         statusAvaliacaoProjeto:
-          projeto.InscricaoProjeto.statusAvaliacao || "Não informado",
+          item.projeto?.InscricaoProjeto?.statusAvaliacao || "Não informado",
         areaProjeto:
           item.projeto?.InscricaoProjeto?.projeto?.area?.area ||
           "Não informado",
