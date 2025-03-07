@@ -62,7 +62,7 @@ const Page = ({ params }) => {
 
   useEffect(() => {
     fetchData(); // Inicializa sem filtros
-  });
+  }, []);
 
   // Função de filtro por área, usando o nome da área
   const handleAreaSelection = (areaName) => {

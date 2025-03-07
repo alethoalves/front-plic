@@ -74,7 +74,7 @@ const Page = ({ params }) => {
 
   useEffect(() => {
     fetchData();
-  });
+  }, []);
 
   // Função para lidar com a seleção de notas
   const handleNotaSelecionada = (criterioId, valor) => {
