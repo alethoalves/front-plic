@@ -342,12 +342,15 @@ const Page = ({ params }) => {
     }
   };
 
-  const checkFormStatus = async (campos, respostas) => {
-    const result = await getFormWithRespostas(campos, respostas);
-    if (result.status === "completo") {
-      handleFormComplete();
-    }
-  };
+  const checkFormStatus = useCallback(
+    async (campos, respostas) => {
+      const result = await getFormWithRespostas(campos, respostas);
+      if (result.status === "completo") {
+        handleFormComplete();
+      }
+    },
+    [handleFormComplete]
+  ); // Dependência: handleFormComplete
 
   const handleFormComplete = useCallback(async () => {
     try {
