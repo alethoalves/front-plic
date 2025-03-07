@@ -88,7 +88,6 @@ const Page = ({ params }) => {
       console.error("Erro ao buscar dados:", error);
     }
   }, [params.tenant, itemToEdit?.id, checkFormStatus]);
-
   // Observa mudanças no itemToEdit e verifica o status do formulário
   useEffect(() => {
     if (itemToEdit) {
