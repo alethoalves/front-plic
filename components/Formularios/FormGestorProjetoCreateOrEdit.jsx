@@ -262,7 +262,7 @@ const FormGestorProjetoCreateOrEdit = ({
       await onSuccess();
 
       // Exibe uma notificação de sucesso
-      toast.current.show({
+      toast.current?.show({
         severity: "success",
         summary: "Sucesso",
         detail: "Atualizado com sucesso!",
@@ -272,7 +272,7 @@ const FormGestorProjetoCreateOrEdit = ({
       console.error("Erro ao atualizar status:", error);
 
       // Exibe uma notificação de erro
-      toast.current.show({
+      toast.current?.show({
         severity: "error",
         summary: "Erro",
         detail: "Ocorreu um erro ao atualizar o status.",
@@ -297,7 +297,7 @@ const FormGestorProjetoCreateOrEdit = ({
       await onSuccess();
 
       // Exibe uma notificação de sucesso
-      toast.current.show({
+      toast.current?.show({
         severity: "success",
         summary: "Sucesso",
         detail: "Atualizado com sucesso!",
@@ -307,7 +307,7 @@ const FormGestorProjetoCreateOrEdit = ({
       console.error("Erro ao atualizar status:", error);
 
       // Exibe uma notificação de erro
-      toast.current.show({
+      toast.current?.show({
         severity: "error",
         summary: "Erro",
         detail: "Ocorreu um erro ao atualizar o status.",

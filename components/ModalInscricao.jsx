@@ -102,7 +102,7 @@ const ModalInscricao = ({ selected, atualizarItens }) => {
       await handleCreateOrEditSuccess();
 
       // Exibe uma notificação de sucesso
-      toast.current.show({
+      toast.current?.show({
         severity: "success",
         summary: "Sucesso",
         detail: "Status da inscrição atualizado com sucesso!",
@@ -112,7 +112,7 @@ const ModalInscricao = ({ selected, atualizarItens }) => {
       console.error("Erro ao atualizar status:", error);
 
       // Exibe uma notificação de erro
-      toast.current.show({
+      toast.current?.show({
         severity: "error",
         summary: "Erro",
         detail: "Ocorreu um erro ao atualizar o status da inscrição.",
