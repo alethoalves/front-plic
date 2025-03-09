@@ -4,10 +4,11 @@
 .p-dataview-emptymessage{
 padding: 0 $gap-2 $gap-2 $gap-2;
 }
+
 .custom-card {
     max-width: calc(100vw - 270px); // Limita a largura máxima do Card
     @include responsive(s){
-        max-width: calc(100vw - 110px);
+        max-width: calc(100vw - 32px);
     }
     padding: 1rem; // Espaçamento interno
     padding-right: 0px;

@@ -291,7 +291,17 @@ p,a {
   }
 }
 
-
+.p-button-label.p-c {
+  letter-spacing: 0px;
+  
+  @include typeface-2(p3, desktop);
+  @include responsive(s) {
+    @include typeface-2(p3, mobile);
+  }
+  @include responsive(xs) {
+    @include typeface-2(p3, smallmobile);
+  }
+}
 .uppercase{
   text-transform: uppercase;
   letter-spacing: 1px;

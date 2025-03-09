@@ -19,13 +19,30 @@ export const createCargo = async (tenantSlug, data) => {
     throw error;
   }
 };
-export const getCargos = async (tenantSlug) => {
+export const getCargos = async (tenantSlug, filters = {}) => {
   try {
     const headers = getAuthHeadersClient();
     if (!headers) return false;
-    const response = await req.get(`/private/${tenantSlug}/cargos`, {
-      headers,
-    });
+
+    // Cria um objeto URLSearchParams para adicionar as queries de filtro
+    const queryParams = new URLSearchParams();
+
+    // Adiciona as queries ao objeto URLSearchParams, se existirem
+    if (filters.cargo) {
+      queryParams.append('cargo', filters.cargo);
+    }
+    if (filters.nivel) {
+      queryParams.append('nivel', filters.nivel);
+    }
+
+    // Constrói a URL com as queries, se houver
+    const url = `/private/${tenantSlug}/cargos${
+      queryParams.toString() ? `?${queryParams.toString()}` : ''
+    }`;
+
+    // Faz a requisição com a URL construída
+    const response = await req.get(url, { headers });
+
     return response.data.cargos;
   } catch (error) {
     if (error.response && error.response.status === 404) {
@@ -35,7 +52,7 @@ export const getCargos = async (tenantSlug) => {
     console.error("Erro ao obter os cargos:", error);
     throw error;
   }
-}; 
+};
 
 export const deleteCargo = async (tenantSlug, cargoId) => {
   try {

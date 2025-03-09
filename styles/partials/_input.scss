@@ -17,6 +17,20 @@
    
 }
 
+.p-multiselect, .p-multiselect-header {
+    padding: $gap-1;
+    
+}
+.p-multiselect-token{
+    padding: 4px 0 4px $gap-2;
+    margin-right: $gap-1;
+}
+.p-multiselect-item{
+    padding: $gap-1;
+    span{
+        margin-left: $gap-1;
+    }
+}
 .p-inputwrapper-focus{
     box-shadow: 0 0 0 0.2rem $white-darken;
     border-color: $primary-normal;

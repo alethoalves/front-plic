@@ -18,6 +18,7 @@ a.linkFile{
         }
     
 }
+
 .button{
     width: 100%;
     height: $gap-5;
@@ -50,10 +51,10 @@ a.linkFile{
     }
 }
 
-.btn-primary{
+.btn-primary, .p-button-success{
     background-color: $primary-dark;
     transition: all .3s ease;
-    
+    border: none;
     p,.btn-icon{
         color: $white-light;
     }

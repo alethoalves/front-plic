@@ -1,0 +1,24 @@
+@import "./styles/partials/colors";
+@import "./styles/partials/layout";
+@import "./styles/partials/spacing";
+
+
+
+.content{
+    margin-top: $gap-3;
+    
+    display: flex;
+    flex-wrap: wrap;
+    @include responsive(s){
+        flex-direction: column;
+    }
+    
+}
+
+
+
+
+.icon{
+    width: 24px;
+    color: $primary-normal;
+}
