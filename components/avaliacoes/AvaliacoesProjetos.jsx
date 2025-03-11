@@ -212,7 +212,7 @@ const AvaliacoesProjetos = ({ params, className }) => {
             style={{ width: "100%" }}
           />
           <label htmlFor="filtroStatus" className="block mt-2">
-            Filtrar por status:
+            Filtre por status:
           </label>
           <MultiSelect
             id="filtroStatus"
