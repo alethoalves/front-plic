@@ -17,7 +17,7 @@ import CPFVerificationForm from "@/components/Formularios/CPFVerificationForm";
 import NewCargo from "@/components/Formularios/NewCargo";
 import { RiDeleteBinLine } from "@remixicon/react";
 
-const Page = ({ params }) => {
+const AvaliadoresProjetos = ({ params }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [errorDelete, setErrorDelete] = useState(null);
@@ -336,4 +336,4 @@ const Page = ({ params }) => {
   );
 };
 
-export default Page;
+export default AvaliadoresProjetos;

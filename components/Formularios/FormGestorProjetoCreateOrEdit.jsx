@@ -220,7 +220,7 @@ const FormGestorProjetoCreateOrEdit = ({
             ...planoDeTrabalho, // Atualiza o objeto `projeto` com a resposta da API
           },
         }));
-        onSuccess();
+        await onSuccess();
         if (onUpdateProjeto) {
           onUpdateProjeto(planoDeTrabalho);
         }

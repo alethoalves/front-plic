@@ -198,14 +198,25 @@ export const unlinkProjetoFromInscricao = async (tenantSlug, idInscricao, idProj
     throw error;
   }
 };
-export const getInscricaoProjetoByTenant = async (tenantSlug) => {
+export const getInscricaoProjetoByTenant = async (tenantSlug, status) => {
   try {
       const headers = getAuthHeadersClient();
       if (!headers) {
           throw new Error("Usuário não autenticado.");
       }
 
-      const response = await req.get(`/private/${tenantSlug}/inscricaoProjeto`, { headers });
+      // Define os query parameters
+      const params = {};
+      if (status) {
+          params.status = status; // Adiciona o status como query parameter, se fornecido
+      }
+
+      // Faz a requisição GET com os query parameters
+      const response = await req.get(`/private/${tenantSlug}/inscricaoProjeto`, {
+          headers,
+          params // Passa os query parameters aqui
+      });
+
       return response.data.inscricoesProjeto;
   } catch (error) {
       console.error("Erro ao buscar inscrições de projetos por tenant:", error);

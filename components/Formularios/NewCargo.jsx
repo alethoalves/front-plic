@@ -1,17 +1,14 @@
-//HOOKS
-import { useState } from "react";
+"use client";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-
-//ESTILOS E ÍCONES
-import styles from "@/components/Formularios/Form.module.scss";
-
-//COMPONENTES
-import Button from "@/components/Button";
-import Input from "@/components/Input";
-import Select from "../Select";
-import { cargoSchema } from "@/lib/zodSchemas/cargoSchema";
-import { createCargo } from "@/app/api/client/cargo";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { cargoSchema } from "@/lib/zodSchemas/cargoSchema";
+import { createCargo, updateCargo } from "@/app/api/client/cargo";
+import { getAreas } from "@/app/api/client/area"; // Importe a função para buscar áreas
+import { MultiSelect } from "primereact/multiselect"; // Componente MultiSelect do PrimeReact
+import Button from "@/components/Button";
+import Select from "../Select";
+import styles from "@/components/Formularios/Form.module.scss";
 
 const NewCargo = ({
   tenantSlug,
@@ -20,33 +17,72 @@ const NewCargo = ({
   onClose,
   avaliador = false,
 }) => {
-  //ESTADOS
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [areas, setAreas] = useState([]); // Estado para armazenar as áreas disponíveis
 
-  const { control, handleSubmit, setValue } = useForm({
+  const { control, handleSubmit, setValue, watch } = useForm({
     resolver: zodResolver(cargoSchema),
     defaultValues: {
-      cargo: "",
-      nivel: "", // Adicionado campo para o nível
+      cargo: initialData.cargo || "", // Preenche o cargo com o valor existente
+      nivel: initialData.nivel?.toString() || "1", // Preenche o nível com o valor existente
+      areas:
+        initialData.user?.userArea?.map((ua) => ua.areaId.toString()) || [], // Preenche as áreas com os valores existentes
     },
   });
 
-  const handleFormSubmit = async (data) => {
-    const newData = {
-      cargo: data.cargo,
-      nivel: data.cargo === "avaliador" ? parseInt(data.nivel) : null, // Define o nível apenas para avaliadores
-      userId: initialData.userId,
+  // Carrega as áreas ao abrir o modal
+  useEffect(() => {
+    const fetchAreas = async () => {
+      try {
+        const areasData = await getAreas(tenantSlug);
+
+        // Ordena as áreas alfabeticamente pelo campo "label"
+        const areasOrdenadas = areasData
+          .map((area) => ({
+            label: area.area, // Nome da área
+            value: area.id.toString(), // ID da área como string
+          }))
+          .sort((a, b) => a.label.localeCompare(b.label)); // Ordena por label
+
+        setAreas(areasOrdenadas); // Atualiza o estado com as áreas ordenadas
+      } catch (error) {
+        console.error("Erro ao buscar áreas:", error);
+      }
     };
-    console.log(newData);
+
+    if (avaliador) {
+      fetchAreas();
+    }
+  }, [tenantSlug, avaliador]);
+
+  const handleFormSubmit = async (data) => {
     setLoading(true);
     setError("");
+    console.log(initialData);
+    const newData = {
+      id: initialData.id,
+      cargo: data.cargo,
+      nivel: data.cargo === "avaliador" ? parseInt(data.nivel) : null, // Define o nível apenas para avaliadores
+      userId: initialData.user?.id
+        ? `${initialData.user?.id}`
+        : initialData.userId,
+      areas: data.areas || [], // Inclui as áreas selecionadas
+    };
+
     try {
-      await createCargo(tenantSlug, newData);
+      if (initialData.user?.id) {
+        // Se houver um ID, significa que devemos atualizar o cargo existente
+        await updateCargo(tenantSlug, newData);
+      } else {
+        // Caso contrário, criamos um novo cargo
+        await createCargo(tenantSlug, newData);
+      }
+
       onSuccess();
       onClose();
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Erro ao salvar cargo:", error);
       setError(
         error.response?.data?.message ?? "Erro na conexão com o servidor."
       );
@@ -62,7 +98,7 @@ const NewCargo = ({
     >
       <p className={styles.infoLabel}>Nome</p>
       <div className={styles.info}>
-        <p>{initialData.nome}</p>
+        <p>{initialData.user?.nome || initialData.nome}</p>
       </div>
 
       {/* Select para o tipo de cargo */}
@@ -99,6 +135,25 @@ const NewCargo = ({
           ]}
           disabled={loading}
         />
+      )}
+
+      {/* MultiSelect para áreas (apenas se o cargo for "Avaliador") */}
+      {avaliador && (
+        <div className="mb-2">
+          <label htmlFor="areas" className="block mb-2">
+            Áreas de Atuação:
+          </label>
+          <MultiSelect
+            id="areas"
+            value={watch("areas") || []} // Valor atual do campo
+            options={areas} // Opções carregadas da API
+            onChange={(e) => setValue("areas", e.value)} // Atualiza o valor do campo
+            placeholder="Selecione as áreas"
+            display="chip"
+            style={{ width: "100%" }}
+            disabled={loading}
+          />
+        </div>
       )}
 
       <Button className="btn-primary" type="submit">

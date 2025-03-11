@@ -50,7 +50,13 @@ a.linkFile{
         color: $error-normal;
     }
 }
-
+.p-button.p-button-icon-only.p-button-rounded{
+    height: 1.5rem;
+    width: 1.5rem;
+    svg{
+        padding: 6px;
+    }
+}
 .btn-primary, .p-button-success{
     background-color: $primary-dark;
     transition: all .3s ease;

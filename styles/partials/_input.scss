@@ -25,6 +25,12 @@
     padding: 4px 0 4px $gap-2;
     margin-right: $gap-1;
 }
+.p-multiselect-token svg{
+    margin-right: $gap-1;
+}
+.p-multiselect-token span{
+    margin-right: $gap-1;
+}
 .p-multiselect-item{
     padding: $gap-1;
     span{

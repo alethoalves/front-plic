@@ -19,6 +19,22 @@ export const createCargo = async (tenantSlug, data) => {
     throw error;
   }
 };
+export const updateCargo = async (tenantSlug, data) => {
+  try {
+    console.log(data)
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+    const response = await req.put(`/private/${tenantSlug}/cargo/${data.id}`, data, {headers});
+    return response.data.cargo;
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      console.error('Edital não cadastrado:', error);
+      return null;
+    }
+    console.error('Erro ao cadastrar edital:', error);
+    throw error;
+  }
+};
 export const getCargos = async (tenantSlug, filters = {}) => {
   try {
     const headers = getAuthHeadersClient();
