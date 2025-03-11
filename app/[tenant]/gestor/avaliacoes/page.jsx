@@ -17,7 +17,7 @@ import Modal from "@/components/Modal"; // Importe o componente Modal personaliz
 import ModalInscricao from "@/components/ModalInscricao"; // Importe o componente ModalInscricao
 import FormGestorProjetoCreateOrEdit from "@/components/Formularios/FormGestorProjetoCreateOrEdit";
 import style from "./page.module.scss"; // Importe o componente Modal personalizado
-import AvaliacoesProjetos from "@/components/avaliacoes/avaliacoesProjetos";
+import AvaliacoesProjetos from "@/components/avaliacoes/AvaliacoesProjetos";
 import AvaliadoresProjetos from "@/components/avaliacoes/AvaliadoresProjetos";
 
 const Page = ({ params }) => {
