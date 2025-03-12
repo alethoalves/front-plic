@@ -17,15 +17,20 @@ import Modal from "@/components/Modal"; // Importe o componente Modal personaliz
 import ModalInscricao from "@/components/ModalInscricao"; // Importe o componente ModalInscricao
 import FormGestorProjetoCreateOrEdit from "@/components/Formularios/FormGestorProjetoCreateOrEdit";
 
-const AvaliacoesProjetos = ({ params, className }) => {
+const AvaliacoesProjetos = ({
+  params,
+  setProjetosSelecionados,
+  processarInscricoes,
+  inscricoesProjetos,
+  setInscricoesProjetos,
+}) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [inscricoesProjetos, setInscricoesProjetos] = useState([]);
   const [globalFilterValue, setGlobalFilterValue] = useState("");
   const [filtroStatus, setFiltroStatus] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false); // Estado para controlar a abertura do modal
   const [selectedInscricao, setSelectedInscricao] = useState(null); // Estado para armazenar a inscrição selecionada
-  const [selectedInscricoes, setSelectedInscricoes] = useState([]);
+  const [selectedProjetos, setSelectedProjetos] = useState([]);
 
   const dataTableRef = useRef(null);
 
@@ -60,55 +65,24 @@ const AvaliacoesProjetos = ({ params, className }) => {
       operator: FilterOperator.AND,
       constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }],
     },
+    quantidadeFichas: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
+    },
+    quantidadeAvaliadores: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
+    },
+    notaMedia: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
+    },
+    diferencaNotas: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
+    },
   });
-  const processarInscricoes = async (tenant, setInscricoesProjetos) => {
-    // Buscar os dados da API
-    const inscricoesProjetos = await getInscricaoProjetoByTenant(
-      tenant,
-      "enviada"
-    );
 
-    // Processar os dados
-    const inscricoesComColunasVirtuais = inscricoesProjetos.map((inscricao) => {
-      const quantidadeFichas = inscricao.FichaAvaliacao?.length || 0;
-      const notaMedia =
-        quantidadeFichas > 0
-          ? (
-              inscricao.FichaAvaliacao.reduce(
-                (sum, ficha) => sum + (ficha.notaTotal || 0),
-                0
-              ) / quantidadeFichas
-            ).toFixed(2)
-          : "N/A";
-
-      const avaliadores = inscricao.InscricaoProjetoAvaliador.map(
-        (avaliador) => avaliador.avaliador.nome
-      ).join(", ");
-
-      // Quantidade de avaliadores
-      const quantidadeAvaliadores =
-        inscricao.InscricaoProjetoAvaliador?.length || 0;
-
-      // Diferença entre a maior e a menor nota
-      const notas = inscricao.FichaAvaliacao.map(
-        (ficha) => ficha.notaTotal || 0
-      );
-      const diferencaNotas =
-        notas.length > 0 ? Math.max(...notas) - Math.min(...notas) : "N/A";
-
-      return {
-        ...inscricao,
-        quantidadeFichas,
-        notaMedia,
-        avaliadores,
-        quantidadeAvaliadores, // Nova coluna virtual
-        diferencaNotas, // Nova coluna virtual
-      };
-    });
-
-    // Atualizar o estado com os dados processados
-    setInscricoesProjetos(inscricoesComColunasVirtuais || []);
-  };
   // Buscar inscrições de projetos e criar colunas virtuais
   useEffect(() => {
     const fetchData = async () => {
@@ -203,7 +177,7 @@ const AvaliacoesProjetos = ({ params, className }) => {
         <h4 className="m-0 mr-2">Projetos</h4>
         <div className="m-2">
           <label htmlFor="filtroStatus" className="block ">
-            Busque por palavra-chave:
+            <p>Busque por palavra-chave:</p>
           </label>
           <InputText
             value={globalFilterValue}
@@ -212,7 +186,7 @@ const AvaliacoesProjetos = ({ params, className }) => {
             style={{ width: "100%" }}
           />
           <label htmlFor="filtroStatus" className="block mt-2">
-            Filtre por status:
+            <p>Filtre por status:</p>
           </label>
           <MultiSelect
             id="filtroStatus"
@@ -252,11 +226,6 @@ const AvaliacoesProjetos = ({ params, className }) => {
     setIsModalOpen(false);
     setSelectedInscricao(null);
   };
-  // Função para lidar com o clique no botão "Atribuir para Avaliador"
-  const handleAtribuirAvaliador = () => {
-    console.log("Inscrições selecionadas:", selectedInscricoes);
-    // Aqui você pode implementar a lógica para atribuir as inscrições selecionadas a um avaliador
-  };
 
   return (
     <>
@@ -288,15 +257,22 @@ const AvaliacoesProjetos = ({ params, className }) => {
                 "projeto.titulo",
                 "projeto.area.area",
                 "inscricao.proponente.nome",
-                "statusAvaliacao", // Adicionar o campo de filtro global
+                "statusAvaliacao",
+                "quantidadeFichas", // Adicionar o campo de filtro global
+                "quantidadeAvaliadores", // Adicionar o campo de filtro global
+                "notaMedia", // Adicionar o campo de filtro global
+                "diferencaNotas", // Adicionar o campo de filtro global
               ]}
               emptyMessage="Nenhuma inscrição de projeto encontrada."
               rowClassName="clickable-row"
               onRowClick={(e) => {
                 handleRowClick(e);
               }}
-              selection={selectedInscricoes}
-              onSelectionChange={(e) => setSelectedInscricoes(e.value)}
+              selection={selectedProjetos}
+              onSelectionChange={(e) => {
+                setSelectedProjetos(e.value);
+                setProjetosSelecionados(e.value);
+              }}
               paginatorRight={paginatorRight} // Adicione o botão de download aquiç
             >
               {/* Colunas existentes */}
@@ -375,14 +351,15 @@ const AvaliacoesProjetos = ({ params, className }) => {
                 sortable
                 filter
                 filterPlaceholder="Filtrar por quantidade"
+                filterField="quantidadeFichas" // Adicionar o campo de filtro
               />
-              {/* Nova coluna: quantidadeAvaliadores */}
               <Column
                 field="quantidadeAvaliadores"
                 header="Qtd. Avaliadores"
                 sortable
                 filter
                 filterPlaceholder="Filtrar por quantidade"
+                filterField="quantidadeAvaliadores" // Adicionar o campo de filtro
               />
               <Column
                 field="notaMedia"
@@ -390,14 +367,15 @@ const AvaliacoesProjetos = ({ params, className }) => {
                 sortable
                 filter
                 filterPlaceholder="Filtrar por nota média"
+                filterField="notaMedia" // Adicionar o campo de filtro
               />
-              {/* Nova coluna: diferencaNotas */}
               <Column
                 field="diferencaNotas"
                 header="Diferença de Notas"
                 sortable
                 filter
                 filterPlaceholder="Filtrar por diferença"
+                filterField="diferencaNotas" // Adicionar o campo de filtro
                 body={(rowData) =>
                   typeof rowData.diferencaNotas === "number"
                     ? rowData.diferencaNotas.toFixed(2)

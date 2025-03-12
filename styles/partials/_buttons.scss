@@ -57,6 +57,9 @@ a.linkFile{
         padding: 6px;
     }
 }
+.p-button-text span{
+    padding: $gap-1 0;
+}
 .btn-primary, .p-button-success{
     background-color: $primary-dark;
     transition: all .3s ease;

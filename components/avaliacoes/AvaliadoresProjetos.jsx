@@ -16,19 +16,35 @@ import Modal from "@/components/Modal";
 import CPFVerificationForm from "@/components/Formularios/CPFVerificationForm";
 import NewCargo from "@/components/Formularios/NewCargo";
 import { RiDeleteBinLine } from "@remixicon/react";
+import { GestorDesassociarAvaliadorInscricaoProjeto } from "@/app/api/client/avaliador";
+import { Toast } from "primereact/toast";
 
-const AvaliadoresProjetos = ({ params }) => {
+const AvaliadoresProjetos = ({
+  params,
+  setAvaliadoresSelecionados,
+  calcularProjetosAvaliados,
+  atualizarAvaliadores,
+  setAvaliadores,
+  avaliadores,
+  setTodasAreas,
+  todasAreas,
+  processarInscricoes,
+  setInscricoesProjetos,
+  inscricoesProjetos,
+}) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [errorDelete, setErrorDelete] = useState(null);
-  const [avaliadores, setAvaliadores] = useState([]);
+
   const [globalFilterValue, setGlobalFilterValue] = useState("");
   const [areasFiltro, setAreasFiltro] = useState([]);
-  const [todasAreas, setTodasAreas] = useState([]);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [avaliadorToEdit, setAvaliadorToEdit] = useState(null);
   const [verifiedData, setVerifiedData] = useState(null);
+  const [selectedAvaliadores, setSelectedAvaliadores] = useState([]);
   const dataTableRef = useRef(null);
+  const toast = useRef(null); // Referência para o Toast
 
   // Filtros
   const [filters, setFilters] = useState({
@@ -41,7 +57,19 @@ const AvaliadoresProjetos = ({ params }) => {
       operator: FilterOperator.AND,
       constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
     },
+    "user.celular": {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+    },
     nivel: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
+    },
+    projetosAtribuidos: {
+      operator: FilterOperator.AND,
+      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
+    },
+    projetosAvaliados: {
       operator: FilterOperator.AND,
       constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
     },
@@ -53,21 +81,10 @@ const AvaliadoresProjetos = ({ params }) => {
       setLoading(true);
       setError(null);
       try {
-        const avaliadores = await getCargos(params.tenant, {
-          cargo: "avaliador",
-        });
-        setAvaliadores(avaliadores || []);
-
-        // Extrair todas as áreas de atuação únicas
-        const areasUnicas = [
-          ...new Set(
-            avaliadores.flatMap((avaliador) =>
-              avaliador.user.userArea.map((ua) => ua.area.area)
-            )
-          ),
-        ];
-        setTodasAreas(
-          areasUnicas.map((area) => ({ label: area, value: area }))
+        await atualizarAvaliadores(
+          params.tenant,
+          setAvaliadores,
+          setTodasAreas
         );
       } catch (error) {
         console.error("Erro ao buscar avaliadores:", error);
@@ -101,6 +118,8 @@ const AvaliadoresProjetos = ({ params }) => {
       { header: "Celular", key: "celular", width: 15 },
       { header: "Nível", key: "nivel", width: 20 },
       { header: "Áreas de Atuação", key: "areas", width: 50 },
+      { header: "Projetos atribuídos", key: "projetosAtribuidos", width: 20 },
+      { header: "Projetos avaliados", key: "projetosAvaliados", width: 20 }, // Nova coluna
     ];
 
     // Adicionar dados
@@ -112,6 +131,8 @@ const AvaliadoresProjetos = ({ params }) => {
         nivel:
           avaliador.nivel === 1 ? "Comitê Institucional" : "Comitê Externo",
         areas: avaliador.user.userArea.map((ua) => ua.area.area).join(", "),
+        projetosAtribuidos: avaliador.user.InscricaoProjetoAvaliador.length,
+        projetosAvaliados: calcularProjetosAvaliados(avaliador), // Nova coluna
       });
     });
 
@@ -132,24 +153,57 @@ const AvaliadoresProjetos = ({ params }) => {
   // Cabeçalho da tabela
   const renderHeader = () => {
     return (
-      <div className="flex flex-wrap gap-2 justify-content-between align-items-center">
+      <div className="">
         <h4 className="m-0 mr-2">Avaliadores</h4>
-        <div className="flex gap-2">
+        <div className="m-2">
+          <label htmlFor="filtroStatus" className="block ">
+            <p>Busque por palavra-chave:</p>
+          </label>
           <InputText
             value={globalFilterValue}
             onChange={onGlobalFilterChange}
             placeholder="Pesquisar..."
+            style={{ width: "100%" }}
           />
-          <Button
-            icon="pi pi-plus"
-            label="Adicionar Avaliador"
-            className="p-button-success ml-1"
-            onClick={() => openModalAndSetData()}
+
+          <label htmlFor="filtroStatus" className="block mt-2">
+            <p>Filtre por área de atuação:</p>
+          </label>
+          <MultiSelect
+            id="areasFiltro"
+            value={areasFiltro}
+            options={todasAreas}
+            onChange={(e) => setAreasFiltro(e.value)}
+            placeholder="Selecione as áreas"
+            display="chip"
+            style={{ width: "100%" }}
           />
         </div>
       </div>
     );
   };
+
+  const paginatorRight = (
+    <Button
+      type="button"
+      icon="pi pi-download"
+      text
+      onClick={exportExcel}
+      tooltip="Exportar para Excel"
+      tooltipOptions={{ position: "top" }}
+    />
+  );
+
+  const paginatorLeft = (
+    <Button
+      type="button"
+      icon="pi pi-plus"
+      text
+      onClick={() => openModalAndSetData()}
+      tooltip="Adicionar avaliador"
+      tooltipOptions={{ position: "top" }}
+    />
+  );
 
   // Funções para manipulação de ações
   const handleCreateOrEditSuccess = useCallback(async () => {
@@ -220,11 +274,68 @@ const AvaliadoresProjetos = ({ params }) => {
       </div>
     </Modal>
   );
+  // Função para desassociar um avaliador de um projeto
+  const handleDesassociarAvaliador = async (
+    inscricaoProjetoId,
+    avaliadorId
+  ) => {
+    try {
+      await GestorDesassociarAvaliadorInscricaoProjeto(
+        params.tenant,
+        inscricaoProjetoId,
+        avaliadorId
+      );
+      processarInscricoes(params.tenant, setInscricoesProjetos);
+      // Atualiza a lista de avaliadores após a desassociação
+      await atualizarAvaliadores(params.tenant, setAvaliadores, setTodasAreas);
+      // Exibe mensagem de sucesso
+      toast.current.show({
+        severity: "success",
+        summary: "Sucesso",
+        detail: "Avaliador desassociado com sucesso!",
+        life: 3000,
+      });
+    } catch (error) {
+      // Exibe mensagem de erro
+      toast.current.show({
+        severity: "error",
+        summary: "Erro",
+        detail:
+          error.response?.data?.message || "Erro ao desassociar avaliador.",
+        life: 3000,
+      });
+    }
+  };
 
+  // Renderiza o botão de lixeira na coluna "Projetos atribuídos"
+  const projetosAtribuidosBodyTemplate = (rowData) => {
+    return (
+      <div>
+        {rowData.user.InscricaoProjetoAvaliador.length}
+        {rowData.user.InscricaoProjetoAvaliador.map((associacao) => (
+          <Button
+            key={associacao.id}
+            icon={<RiDeleteBinLine />}
+            className="p-button-danger p-button-rounded p-button-text"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDesassociarAvaliador(
+                associacao.inscricaoProjetoId,
+                rowData.user.id
+              );
+            }}
+            tooltip={`${associacao.inscricaoProjeto?.projeto?.titulo} - `}
+            tooltipOptions={{ position: "top" }}
+          />
+        ))}
+      </div>
+    );
+  };
   return (
     <>
       {renderModalContent()}
-
+      <Toast ref={toast} /> {/* Componente Toast */}
+      {renderModalContent()}
       <main>
         {loading ? (
           <div className="flex justify-center items-center h-20">
@@ -234,32 +345,6 @@ const AvaliadoresProjetos = ({ params }) => {
           <Message severity="error" text={error} />
         ) : (
           <Card className="custom-card">
-            <div className="flex gap-2 mb-4">
-              <Button
-                type="button"
-                icon="pi pi-file-excel"
-                label="Exportar Excel"
-                className="p-button-success mr-1 ml-2"
-                onClick={exportExcel}
-              />
-            </div>
-
-            {/* Filtro de áreas de atuação */}
-            <div className="m-2">
-              <label htmlFor="areasFiltro" className="block mb-2">
-                Filtrar por áreas de atuação:
-              </label>
-              <MultiSelect
-                id="areasFiltro"
-                value={areasFiltro}
-                options={todasAreas}
-                onChange={(e) => setAreasFiltro(e.value)}
-                placeholder="Selecione as áreas"
-                display="chip"
-                style={{ width: "100%" }}
-              />
-            </div>
-
             <DataTable
               ref={dataTableRef}
               value={avaliadoresFiltrados}
@@ -271,23 +356,28 @@ const AvaliadoresProjetos = ({ params }) => {
               header={renderHeader()}
               filters={filters}
               filterDisplay="menu"
-              globalFilterFields={["user.nome", "user.email", "nivel"]}
+              globalFilterFields={[
+                "user.nome",
+                "user.email",
+                "user.celular",
+                "nivel",
+                "projetosAtribuidos",
+                "projetosAvaliados",
+              ]}
               emptyMessage="Nenhum avaliador encontrado."
               onRowClick={(e) => openModalAndSetData(e.data)}
               rowClassName="clickable-row" // Adiciona cursor pointer e hover effect
+              paginatorRight={paginatorRight}
+              paginatorLeft={paginatorLeft}
+              selection={selectedAvaliadores}
+              onSelectionChange={(e) => {
+                setSelectedAvaliadores(e.value);
+                setAvaliadoresSelecionados(e.value);
+              }}
             >
               <Column
-                header="Ações"
-                body={(rowData) => (
-                  <Button
-                    icon={<RiDeleteBinLine />}
-                    className="p-button-danger p-button-rounded" // Adiciona borda redonda
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(rowData);
-                    }}
-                  />
-                )}
+                selectionMode="multiple"
+                headerStyle={{ width: "3rem" }}
               />
               <Column
                 field="user.nome"
@@ -295,6 +385,21 @@ const AvaliadoresProjetos = ({ params }) => {
                 sortable
                 filter
                 filterPlaceholder="Filtrar por nome"
+              />
+              <Column
+                field="projetosAvaliados" // Usar a coluna virtual
+                header="Projetos avaliados"
+                sortable
+                filter
+                filterPlaceholder="Filtrar por projetos avaliados"
+              />
+              <Column
+                field="projetosAtribuidos"
+                header="Projetos atribuídos"
+                body={projetosAtribuidosBodyTemplate} // Usa o template personalizado
+                sortable
+                filter
+                filterPlaceholder="Filtrar por projetos atribuídos"
               />
               <Column
                 header="Nível"
@@ -306,6 +411,12 @@ const AvaliadoresProjetos = ({ params }) => {
                 sortable
                 filter
                 filterPlaceholder="Filtrar por nível"
+              />
+              <Column
+                header="Áreas de Atuação"
+                body={(rowData) =>
+                  rowData.user.userArea.map((ua) => ua.area.area).join(", ")
+                }
               />
               <Column
                 field="user.email"
@@ -321,12 +432,18 @@ const AvaliadoresProjetos = ({ params }) => {
                 filter
                 filterPlaceholder="Filtrar por celular"
               />
-
               <Column
-                header="Áreas de Atuação"
-                body={(rowData) =>
-                  rowData.user.userArea.map((ua) => ua.area.area).join(", ")
-                }
+                header="Ações"
+                body={(rowData) => (
+                  <Button
+                    icon={<RiDeleteBinLine />}
+                    className="p-button-danger p-button-rounded"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(rowData);
+                    }}
+                  />
+                )}
               />
             </DataTable>
           </Card>

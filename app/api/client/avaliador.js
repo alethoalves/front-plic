@@ -150,6 +150,23 @@ export const desassociarAvaliadorInscricaoProjeto = async (tenant, idInscricaoPr
   }
 };
 
+export const GestorDesassociarAvaliadorInscricaoProjeto = async (tenant, idInscricaoProjeto,avaliadorId) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.get(
+      `/private/${tenant}/avaliador/${idInscricaoProjeto}/${avaliadorId}/gestorDesassociarAvaliadorInscricaoProjeto`,
+      { headers }
+    );
+    return response.data.submissao;
+  } catch (error) {
+      console.error("Erro ao atualizar campo:", error);
+      throw error;
+  }
+};
+
 export const processarFichaAvaliacao = async (tenant, body) => {
   try {
     const headers = getAuthHeadersClient();
@@ -158,6 +175,24 @@ export const processarFichaAvaliacao = async (tenant, body) => {
     }
     const response = await req.post(
       `/private/${tenant}/avaliador/processarFichaAvaliacao`,
+      body,
+      { headers }
+    );
+    return response.data;
+  } catch (error) {
+      console.error("Erro ao atualizar campo:", error);
+      throw error;
+  }
+};
+
+export const atribuicaoDeProjetosPeloGestor = async (tenant, body) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.post(
+      `/private/${tenant}/avaliador/atribuicaoDeProjetosPeloGestor`,
       body,
       { headers }
     );

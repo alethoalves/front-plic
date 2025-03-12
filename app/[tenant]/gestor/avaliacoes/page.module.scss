@@ -5,14 +5,21 @@
 
 
 .content{
-    margin-top: $gap-3;
+    
     display: flex;
     flex-wrap: wrap;
     gap: $gap-2;
     @include responsive(s){
         flex-direction: column;
     }
-    
+    button{
+        .btn-primary{
+            p{
+                color:$white-light
+            }
+        }
+        
+    }
 }
 
 
