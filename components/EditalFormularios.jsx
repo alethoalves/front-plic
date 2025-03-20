@@ -104,9 +104,13 @@ const EditalFormularios = ({ params }) => {
     <>
       {renderModalContent()}
       {renderItemForm("Orientador", edital.formOrientadorId)}
-      {renderItemForm("Coorientador", edital.formCoorientadorId)}
+      {
+        //renderItemForm("Coorientador", edital.formCoorientadorId)
+      }
       {renderItemForm("Aluno", edital.formAlunoId)}
-      {renderItemForm("Projeto", edital.formProjetoId)}
+      {
+        //renderItemForm("Projeto", edital.formProjetoId)
+      }
       {renderItemForm("PlanoDeTrabalho", edital.formPlanoDeTrabalhoId)}
     </>
   );

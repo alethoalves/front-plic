@@ -30,6 +30,7 @@ import { createDynamicSchema } from "@/lib/createDynamicSchema";
 import { renderDynamicFields } from "@/lib/renderDynamicFields";
 import { transformedArray } from "@/lib/transformedArray";
 import { createProjeto, updateProjetoById } from "@/app/api/client/projeto";
+import { Checkbox } from "primereact/checkbox";
 
 const FormProjetoCreateOrEdit = ({
   tenantSlug,
@@ -52,6 +53,8 @@ const FormProjetoCreateOrEdit = ({
   const planoDeTrabalhoSchema = z.object({
     titulo: z.string().min(1, "Campo obrigatório!"),
     areaId: z.number().int().positive("Campo obrigatório!"),
+    envolveHumanos: z.boolean().optional(), // Está correto
+    envolveAnimais: z.boolean().optional(), // Está correto
     cronograma: z
       .array(
         z.object({
@@ -78,6 +81,8 @@ const FormProjetoCreateOrEdit = ({
     defaultValues: {
       titulo: "",
       areaId: 0,
+      envolveAnimais: false,
+      envolveHumanos: false,
     },
   });
 
@@ -100,7 +105,8 @@ const FormProjetoCreateOrEdit = ({
     if (initialData) {
       setValue("titulo", initialData.titulo);
       setValue("areaId", initialData.areaId);
-
+      setValue("envolveAnimais", initialData.envolveAnimais);
+      setValue("envolveHumanos", initialData.envolveHumanos);
       // Popula cronograma
       if (initialData.CronogramaProjeto) {
         const mappedCronograma = initialData.CronogramaProjeto.map((item) => ({
@@ -147,6 +153,8 @@ const FormProjetoCreateOrEdit = ({
       const formValues = {
         titulo: initialData.titulo,
         areaId: initialData.areaId,
+        envolveAnimais: initialData.envolveAnimais,
+        envolveHumanos: initialData.envolveHumanos,
         ...dynamicValues,
       };
 
@@ -161,6 +169,7 @@ const FormProjetoCreateOrEdit = ({
   const handleFormSubmit = async (data) => {
     setLoading(true);
     setError("");
+    console.log(data);
     try {
       const payload = { ...data, cronograma };
       let planoDeTrabalho;
@@ -240,6 +249,35 @@ const FormProjetoCreateOrEdit = ({
               disabled={loading}
             />
           </div>
+          <div className="flex align-items-center mb-1">
+            <Checkbox
+              inputId="envolveHumanos"
+              name="envolveHumanos"
+              checked={watch("envolveHumanos") || false}
+              onChange={(e) => setValue("envolveHumanos", e.checked)}
+            />
+            <label
+              htmlFor="envolveHumanos"
+              className="flex align-items-center ml-1"
+            >
+              <h6>Envolve Humanos</h6>
+            </label>
+          </div>
+          <div className="flex align-items-center mb-2">
+            <Checkbox
+              inputId="envolveAnimais"
+              name="envolveAnimais"
+              checked={watch("envolveAnimais") || false}
+              onChange={(e) => setValue("envolveAnimais", e.checked)}
+            />
+            <label
+              htmlFor="envolveAnimais"
+              className="flex align-items-center ml-1"
+            >
+              <h6>Envolve Animais</h6>
+            </label>
+          </div>
+
           <div className={`${styles.camposDinamicos}`}>
             {renderDynamicFields(
               formularioEdital,

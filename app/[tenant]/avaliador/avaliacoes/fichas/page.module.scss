@@ -1,0 +1,442 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+.noData, .minhasAvaliacoes{
+    width: 100%;
+    border: 1px dashed $warning-dark;
+    border-radius: $gap-1;
+    margin-bottom: $gap-1;
+}
+.error{
+    border: 1px solid $error-light;
+    padding: $gap-2 $gap-3;
+    @include responsive(s){
+        padding: $gap-1 $gap-2; 
+    }
+    border-radius: $gap-1;
+    background-color: $error-lighten;
+    p{
+        color: $error-dark;
+    }
+    margin-top: $gap-1;
+    position: sticky;
+    top: 80px;
+    backdrop-filter: blur(10px); /* Aplique o desfoque */
+  -webkit-backdrop-filter: blur(10px); /* Para suporte ao Safari */
+}
+.waiting{
+    border: 1px solid $success-normal;
+    padding: $gap-2 $gap-3;
+    @include responsive(s){
+        padding: $gap-1 $gap-2; 
+    }
+    border-radius: $gap-1;
+    background-color: $success-lighten;
+   
+        color: $gray-600;
+    
+    margin-top: $gap-1;
+    
+}
+.modal{
+    h4{
+        line-height: 100%;
+        margin-bottom: $gap-2;
+    }
+    p{
+        margin-bottom: $gap-2;
+    }
+}
+.logo{
+    width: auto;
+    flex: 1;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: $gap-1;
+    position: relative;
+    img{
+        object-fit: contain;
+        object-position: left center;
+    }
+}
+.instituicao{
+    
+    border: 1px solid $gray-50;
+    padding: $gap-2;
+    border-radius: $gap-1;
+    margin-bottom: $gap-2;
+    transition: ease .3s;
+    
+    .descricao{
+        margin-top: $gap-1;
+    }
+}
+.totais{
+    padding: $gap-2;
+    display: flex;
+    flex-wrap: wrap;
+    @include responsive(s){
+        display: flex;
+    }
+    @include responsive(xs){
+        display: flex;
+        
+    }
+    .total{
+        &.selected{
+            background-color: $white-darken;
+        }
+        cursor: pointer;
+        border-radius: $gap-1;
+        display: inline-flex;
+        transition: ease .3s;
+        &:hover{
+            box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+            transform: scale(1.06);
+        }
+        
+       margin-right: $gap-1;
+        margin-bottom: $gap-1;
+        @include responsive(xs){
+            display: flex;
+            &:not(:last-child){
+                margin-bottom: $gap-1;
+            }
+        }
+        align-items: center;
+        border: 1px solid $gray-50;
+        border-radius: $gap-1;
+        box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+        &:not(:last-child){
+            margin-right: $gap-1;
+            
+        }
+        p{
+            padding: $gap-1;
+            @include responsive(s){
+                padding: $gap-1;
+                font-size: 14px;
+            }
+            background-color: $white-darken;
+            color: $primary-darken;
+            border-top-left-radius: 6.5px;
+            border-bottom-left-radius: 6.5px;
+            font-size: 18px;
+        }
+        h6{
+            padding: 0 $gap-2;
+            @include responsive(s){
+                padding: 0 $gap-2;
+                font-size: 12px;
+            };
+            text-transform: uppercase;
+        }
+        
+    }
+    .total.error{
+        p{
+            background-color: $error-light;
+        }
+    }
+    .total.success{
+        p{
+            background-color: $success-normal;
+        }
+    }
+    
+}
+
+.header{
+    padding:  $gap-2;
+    border-bottom: 1px solid $gray-50;
+    h5{
+        color: $gray-600;
+        font-size: 18px;
+    }
+}
+.dashboard{
+margin-bottom: $gap-2;
+display: flex;
+flex-wrap: wrap;
+}
+.subsessao{
+    @include responsive(xs){
+        flex: 1;
+    }
+    width:fit-content;
+    padding: $gap-2;
+    border: 1px solid $gray-50;
+    cursor: pointer;
+    transition: ease .3s;
+    &:hover{
+        border: 1px solid $primary-light;
+        box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+        transform: scaleX(1.01);
+    }
+    border-radius: $gap-1;
+    
+    margin: $gap-1;
+    &:first-child{
+        margin-left: 0;
+    }
+    display: flex;
+    
+    align-items: center;
+    //justify-content:space-between ;
+    @include responsive (xs){
+        display: flex;
+        flex-direction: column;
+        align-items:flex-start;
+        
+    }
+    .description{
+        &:not(:last-child){
+            margin-right: $gap-2;
+        }
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        @include responsive(xs){
+            flex-direction:row;
+            margin-bottom: $gap-1;
+        }
+        .infoBoxDescription{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            @include responsive(xs){
+                align-items: flex-start;
+            }
+            p{
+                margin-bottom: 0;
+            }
+            h6{
+                white-space: nowrap;
+                @include responsive(xs){
+                   font-size: 12px;
+                }
+            }
+        }
+        .icon{
+            @include responsive(xs){
+                margin-right: $gap-2;
+                width: 18px;
+            }
+            
+        }
+        p{
+            font-size: 12px;
+        }
+    }
+}
+.quesitos{
+    padding: $gap-2;
+    .quesito{
+        border-bottom: 1px solid $white-darken;
+        .label{
+            
+            padding: 4px $gap-1;
+        }
+        .nota{
+            text-align: right;
+            padding: 4px $gap-1;
+            margin-bottom: $gap-1;
+        }
+    }
+}
+.squares{
+    padding: 4px;
+    
+    .square{
+        border: 1px solid $gray-50;
+        border-radius: $gap-1;
+        padding: 3px;
+        
+        &:not(:last-child){
+            margin-bottom: $gap-1;
+        }
+        
+        .squareHeader, .squareContent, .squareContentEmpty{
+            background-color: $white-dark;
+            padding: $gap-1;
+            border-radius: 6px;
+        }
+        .squareHeader{
+            margin-right: 3px;
+            @include responsive (s){
+                margin-right: 0px;
+                margin-bottom: 3px;
+            }
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: center;
+            h6{
+                font-size: 22px;
+            }
+        }
+        .squareContentEmpty{
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: transparent;
+            border: 1px solid $white-darken;
+            transition: ease .3s;
+            cursor: pointer;
+            p{
+                text-align: center;
+                transition: ease .3s;
+                cursor: pointer;
+            }
+
+            &:hover{
+                background-color: $white-darken;
+                p{
+                    text-decoration: underline;
+                }
+            }
+        }
+        .squareContent{
+            flex: 1;
+            transition: ease .3s;
+            border: 1px solid transparent;
+            cursor: pointer;
+            &:hover{
+                border: 1px solid $primary-light;
+            }
+            .info{
+                display: flex;
+                margin-bottom: 6px;
+                .status{
+                    background-color: $primary-light;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    color: $white-normal;
+                    font-size: 10px;
+                    margin-right: 6px;
+                    &.error{
+                        background-color: $error-lighten;
+                        color: $error-dark;
+                    }
+                    &.warning{
+                        background-color: $warning-light;
+                        color: $error-dark;
+                    }
+                    &.success{
+                        background-color: $success-light;
+                        color: $primary-darken;
+                    }
+                }
+                .area{
+                    border: 1px solid $primary-light;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    color: $primary-light;
+                    font-size: 10px;
+                }
+            }
+            .submissaoData{
+                .participacoes{
+                    font-size: 12px;
+                }
+            }
+        }
+        &.squareWarning{
+            .squareHeader, .squareContent, .squareContentEmpty{
+                background-color: $warning-lighten;
+                
+            }
+
+            .squareContent{
+                cursor: pointer;
+                @include responsive(s){
+                    margin-right: 0px;
+                }
+                &:hover{
+                    border: 1px solid transparent;
+                }
+                .area{
+                    border: 1px solid $warning-darken;
+                    
+                    color: $warning-darken;
+                }
+            }
+            .actions{
+
+                display: flex;
+                flex-direction: column;
+                @include responsive(xs){
+                    
+                }
+                .item1{
+                    display: flex;
+                    @include responsive(xs){
+                        .action{
+                            flex: 1;
+                            &:last-child{
+                                margin-right: 0;
+                            }
+                        }
+                        
+                    }
+                }
+                
+                .action{
+                    cursor: pointer;
+                    border: 1px solid transparent;
+                    transition: ease .3s;
+                    color:$warning-darken;
+                    p{color:$warning-darken}
+                    &:hover{
+                        border: 1px solid $warning-dark;
+                        transform: scale(1.02)
+                    };
+                    @include responsive(s){
+                        margin-bottom: 0;
+                        margin-right: 4px;
+                        
+                    }
+                    &.actionPrimary{
+                        background-color: $warning-dark;
+                        color: $warning-lighten;
+                        flex: 1;
+                        margin-right: 0;
+                        @include responsive(xs){
+                            margin-top: 4px;
+                        }
+                        &:hover{
+                            transform: scale(1.005);
+                        }
+                        p{
+                            color: $warning-lighten;
+                        }
+                    }
+                    &.actionError{
+                        color: $error-dark;
+                        &:hover{
+                            border: 1px solid $error-dark;
+                           
+                        };
+                        p{
+                            color: $error-dark;
+                        }
+                    }
+                }
+            }
+            
+        }
+    }
+    
+}
+.icon{
+    width: 24px;
+    color: $primary-normal;
+}
+
+
+
+

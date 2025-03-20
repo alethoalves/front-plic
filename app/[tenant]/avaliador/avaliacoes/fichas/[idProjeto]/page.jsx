@@ -78,7 +78,6 @@ const Page = ({ params }) => {
 
   // Função para lidar com a seleção de notas
   const handleNotaSelecionada = (criterioId, valor) => {
-    console.log(valor);
     const novasNotas = {
       ...selectedNotas,
       [criterioId]: valor,
@@ -109,6 +108,7 @@ const Page = ({ params }) => {
         notaTotal: novaNotaTotal,
       };
     });
+    console.log(novaNotaTotal);
   };
 
   // Função para lidar com a mudança no campo de feedback
@@ -133,7 +133,7 @@ const Page = ({ params }) => {
       const notaSelecionada = notasSelecionadas[criterio.id] || 0;
       return acc + notaSelecionada * criterio.peso;
     }, 0);
-    console.log(somaNotasPonderadas);
+
     return somaNotasPonderadas;
   };
   const handleTerminarAvaliacao = async () => {
@@ -172,7 +172,7 @@ const Page = ({ params }) => {
         <>
           <div className={styles.projeto}>
             <div className={styles.card}>
-              <h6 className={styles.label}>Título </h6>
+              <h6 className={styles.label}>Título</h6>
               <div className={styles.value}>
                 <p>{inscricaoProjeto?.projeto?.titulo}</p>
               </div>

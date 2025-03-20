@@ -42,7 +42,7 @@ const Page = ({ params }) => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const cargos = await getCargos(params.tenant);
+        const cargos = await getCargos(params.tenant, { cargo: "gestor" });
         setCargos(cargos);
       } catch (error) {
         console.error("Erro ao buscar campos:", error);

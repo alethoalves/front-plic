@@ -116,6 +116,42 @@ export const getFichaAvaliacao = async (tenantSlug,objetoAvaliativo,editalId ) =
   }
 };
 
+export const getFichasAvaliacaoProjeto = async (tenantSlug ) => {
+  try {
+
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.get(
+      `/private/${tenantSlug}/avaliador/getFichasAvaliacaoProjeto`,
+      { headers }
+    );
+    return response.data.fichas;
+      
+  } catch (error) {
+      console.error("Erro ao buscar fichas:", error);
+      throw error;
+  }
+};
+export const deleteFichaAvaliacao = async (tenantSlug,fichaId ) => {
+  try {
+
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.delete(
+      `/private/${tenantSlug}/fichaAvaliacao/${fichaId}`,
+      { headers }
+    );
+    return response.data;
+      
+  } catch (error) {
+      console.error("Erro ao buscar fichas:", error);
+      throw error;
+  }
+};
 export const associarAvaliadorInscricaoProjeto = async (tenant, idInscricaoProjeto) => {
   try {
     const headers = getAuthHeadersClient();

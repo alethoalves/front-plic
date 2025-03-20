@@ -290,7 +290,9 @@ p,a {
     @include typeface-2(p3, smallmobile);
   }
 }
-
+.text-align-right{
+  text-align: right;
+}
 .p-button-label.p-c {
   letter-spacing: 0px;
   

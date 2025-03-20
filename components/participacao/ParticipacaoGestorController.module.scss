@@ -73,3 +73,38 @@
         
     }
 }
+
+.menu{
+    flex: 1;
+    margin-top: $gap-2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: $gap-2;
+    .itemMenu{
+        cursor: pointer;
+        transition: ease .3s;
+        flex: 1;
+        text-align: center;
+        padding: $gap-2 $gap-2;
+        background-color: $white-darken;
+        &:first-child{
+            border-top-left-radius: $gap-1;
+            border-bottom-left-radius: $gap-1;
+        }
+        &:last-child{
+            border-top-right-radius: $gap-1;
+            border-bottom-right-radius: $gap-1;
+        }
+        p{
+            color: $primary-darken;
+        }
+    }
+    
+    .itemMenuSelected{
+        p{
+            color: $white-dark;
+        }
+        background-color: $primary-dark;
+    }
+}

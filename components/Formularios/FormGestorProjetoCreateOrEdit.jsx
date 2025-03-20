@@ -55,6 +55,11 @@ import { DataView } from "primereact/dataview";
 import CPFVerificationForm from "./CPFVerificationForm";
 import NewCargo from "./NewCargo";
 import Modal from "../Modal";
+import {
+  GestorDesassociarAvaliadorInscricaoProjeto,
+  deleteFichaAvaliacao,
+} from "@/app/api/client/avaliador";
+import { Dialog } from "primereact/dialog";
 
 const FormGestorProjetoCreateOrEdit = ({
   tenantSlug,
@@ -315,22 +320,67 @@ const FormGestorProjetoCreateOrEdit = ({
       });
     }
   };
+  const handleDesassociarAvaliador = async (
+    inscricaoProjetoId,
+    avaliadorId
+  ) => {
+    try {
+      await GestorDesassociarAvaliadorInscricaoProjeto(
+        tenantSlug,
+        inscricaoProjetoId,
+        avaliadorId
+      );
+
+      // Atualiza o estado removendo o avaliador da lista
+      setInscricaoProjeto((prevState) => ({
+        ...prevState,
+        InscricaoProjetoAvaliador: prevState.InscricaoProjetoAvaliador.filter(
+          (avaliador) => avaliador.avaliadorId !== avaliadorId
+        ),
+      }));
+
+      // Exibe uma notificação de sucesso
+      toast.current?.show({
+        severity: "success",
+        summary: "Sucesso",
+        detail: "Avaliador removido com sucesso!",
+        life: 3000,
+      });
+
+      await onSuccess();
+    } catch (error) {
+      console.error("Erro ao desassociar avaliador:", error);
+
+      // Exibe uma notificação de erro
+      toast.current?.show({
+        severity: "error",
+        summary: "Erro",
+        detail: `${
+          error.response.data.message
+            ? error.response.data.message
+            : "Ocorreu um erro."
+        }`,
+        life: 3000,
+      });
+    }
+  };
   const listTemplateAvaliadores = (avaliadores) => {
     return (
       <div className={styles.list}>
         {avaliadores.map((avaliador) => (
-          <div
-            key={avaliador.id}
-            className={styles.itemList}
-            onClick={() => {
-              setParticipacaoSelected(participante);
-              setIsModalParticipacaoOpen(true);
-            }}
-          >
+          <div key={avaliador.id} className={styles.itemList}>
             <div className={styles.content1}>
               <p>{avaliador.avaliador?.nome}</p>
             </div>
-            <div className={styles.content2}>
+            <div
+              className={styles.content2}
+              onClick={() => {
+                handleDesassociarAvaliador(
+                  avaliador.inscricaoProjetoId,
+                  avaliador.avaliadorId
+                );
+              }}
+            >
               <RiDeleteBinLine />
             </div>
           </div>
@@ -338,16 +388,44 @@ const FormGestorProjetoCreateOrEdit = ({
       </div>
     );
   };
+  const handleDeleteClick = async (ficha) => {
+    // Diálogo de confirmação padrão do navegador
+    const confirmDelete = window.confirm(
+      "Tem certeza que deseja excluir esta ficha de avaliação?"
+    );
+
+    if (confirmDelete) {
+      try {
+        await deleteFichaAvaliacao(tenantSlug, ficha.id); // Chama a função de exclusão da API
+        // Atualiza o estado local removendo a ficha excluída
+        setInscricaoProjeto((prevState) => ({
+          ...prevState,
+          FichaAvaliacao: prevState.FichaAvaliacao.filter(
+            (item) => item.id !== ficha.id
+          ),
+        }));
+        await onSuccess(); // Atualiza a lista de fichas após a exclusão
+      } catch (error) {
+        console.error("Erro ao excluir ficha:", error);
+        toast.current?.show({
+          severity: "error",
+          summary: "Erro",
+          detail: "Ocorreu um erro ao excluir a ficha.",
+          life: 3000,
+        });
+      }
+    }
+  };
+  const [mostrarNotas, setMostrarNotas] = useState({});
+
+  const toggleNotas = (id) => {
+    setMostrarNotas((prevState) => ({
+      ...prevState,
+      [id]: !prevState[id], // Alterna entre true e false para o id da ficha
+    }));
+  };
+
   const listTemplateFichas = (fichas) => {
-    const [mostrarNotas, setMostrarNotas] = useState({});
-
-    const toggleNotas = (id) => {
-      setMostrarNotas((prevState) => ({
-        ...prevState,
-        [id]: !prevState[id], // Alterna entre true e false para o id da ficha
-      }));
-    };
-
     return (
       <div className={styles.list}>
         {fichas.map((ficha) => (
@@ -371,10 +449,25 @@ const FormGestorProjetoCreateOrEdit = ({
                 {mostrarNotas[ficha.id] ? <RiEyeOffLine /> : <RiEyeLine />}{" "}
                 {/* Alterna o ícone */}
               </div>
+              <div
+                className={styles.content3}
+                onClick={(e) => {
+                  e.stopPropagation(); // Impede que o clique no botão de exclusão propague para o container da ficha
+                  handleDeleteClick(ficha);
+                }}
+              >
+                <RiDeleteBinLine />
+              </div>
             </div>
 
             {mostrarNotas[ficha.id] && ( // Renderiza as notas se mostrarNotas[ficha.id] for true
               <div className={styles.quesitos}>
+                <div className={styles.quesito}>
+                  <p className={styles.label}>
+                    Observação:<br></br>
+                    <strong>{ficha.observacao}</strong>
+                  </p>
+                </div>
                 {ficha.RegistroFichaAvaliacao?.map((registro) => (
                   <div key={registro.id} className={styles.quesito}>
                     <p className={styles.label}>{registro.label}</p>

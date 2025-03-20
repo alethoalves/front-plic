@@ -96,16 +96,22 @@ const Auth = ({
         const avaliador = response.perfis?.some(
           (item) => item.tenant === slug && item.cargo === "avaliador"
         );
+        const avaliadorPlic = response.perfis?.some(
+          (item) => item.tenant === "plic" && item.cargo === "avaliador"
+        );
         const gestor = response.perfis?.some(
           (item) => item.tenant === slug && item.cargo === "gestor"
         );
 
-        if (isAvaliador && !avaliador) {
+        if (isAvaliador && !avaliadorPlic) {
           setErrorMessage(
             "Você não tem perfil de avaliador. Acesse digitando o código do evento."
           );
           reset();
           setTela(0);
+        }
+        if (isAvaliador && avaliadorPlic) {
+          router.push(`/avaliador/home`);
         }
 
         if (!user) {
@@ -232,7 +238,7 @@ const Auth = ({
           icon={RiKeyLine}
         />
       )}
-      {escolherPerfil && !showInputToken && (
+      {!isAvaliador && escolherPerfil && !showInputToken && (
         <>
           <h6>Escolha o perfil que deseja acessar</h6>
           <div className={styles.perfis}>

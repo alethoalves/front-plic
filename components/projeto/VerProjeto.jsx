@@ -78,9 +78,24 @@ const VerProjeto = ({
             <p className="uppercase">
               <strong>{projetoDetalhes.titulo}</strong>
             </p>
-            <form className={`${styles.formulario}`}>
-              <div className={`${styles.input}`}></div>
-            </form>
+          </div>
+        </div>
+        <div className={`${styles.card} ${styles.titulo} `}>
+          <h6 className={`${styles.label} `}>Comitê de ética em pesquisa</h6>
+          <div className={`${styles.value} `}>
+            <p>
+              {`${
+                projetoDetalhes.envolveAnimais && projetoDetalhes.envolveHumanos
+                  ? "Este projeto envolve pesquisa com animais e com seres humanos."
+                  : projetoDetalhes.envolveAnimais &&
+                    !projetoDetalhes.envolveHumanos
+                  ? "Este projeto envolve pesquisa apenas com animais"
+                  : !projetoDetalhes.envolveAnimais &&
+                    projetoDetalhes.envolveHumanos
+                  ? "Este projeto envolve pesquisa apenas com seres humanos"
+                  : "Este projeto não envolve pesquisa com seres humanos ou animais."
+              }`}
+            </p>
           </div>
         </div>
         {error && <p className={styles.error}>{error}</p>}{" "}
