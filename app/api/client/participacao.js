@@ -98,16 +98,29 @@ export const getParticipacoesDashboard = async (tenantSlug, idInscricao, tipos, 
   }
 };
 
-export const getParticipacoesByTenant = async (tenantSlug) => {
+export const getParticipacoesByTenant = async (tenantSlug, tipo, ano, solicitarBolsa) => {
   try {
     const headers = getAuthHeadersClient();
     if (!headers) {
       return false;
     }
+
+    // Configurar os parâmetros de consulta (query params)
+    const params = {};
+    if (tipo) params.tipo = tipo; // Adicionar tipo, se fornecido
+    if (ano) params.ano = ano;   // Adicionar ano, se fornecido
+    if (solicitarBolsa) params.solicitarBolsa = solicitarBolsa;
+
+    // Fazer a chamada à API com os parâmetros de consulta
     const response = await req.get(
       `/private/${tenantSlug}/getParticipacoesByTenant`,
-      { headers }
+      { 
+        headers,
+        params, // Passar os parâmetros de consulta
+      }
     );
+
+    // Retornar as participações
     return response.data.participacoes;
   } catch (error) {
     if (error.response && error.response.status === 404) {

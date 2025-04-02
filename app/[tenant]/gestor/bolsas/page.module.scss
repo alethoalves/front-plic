@@ -1,0 +1,69 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+.anos {
+    display: flex;
+    gap: $gap-1;
+    margin-top: $gap-1;
+    overflow: hidden; /* Oculta o conteúdo que ultrapassa o contêiner */
+    overflow-x: scroll; /* Permite rolagem horizontal */
+    padding: $gap-1 ;
+
+    /* Oculta a barra de rolagem no Chrome, Safari e Edge */
+    &::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Oculta a barra de rolagem no Firefox */
+    scrollbar-width: none;
+
+    /* Oculta a barra de rolagem no IE e Edge antigos */
+    -ms-overflow-style: none;
+
+    .ano {
+        background-color: $white-dark;
+        border: 1px solid $white-darken;
+        border-radius: $gap-1;
+        padding: $gap-1 $gap-2;
+        color: $primary-darken;
+        cursor: pointer;
+        transition: ease 0.3s;
+
+        &:hover {
+            background-color: $white-darken;
+            transform: scale(1.03);
+            border: 1px solid $primary-darken;
+        }
+    }
+
+    .ano.selected {
+        background-color: $primary-dark;
+        color: $white-light;
+    }
+}
+.quotas{
+    display: flex;
+    flex-wrap: wrap;
+    gap: $gap-2;
+    margin-top: $gap-2;
+    .quota{
+        background-color: $white-dark;
+        padding: $gap-2;
+        border-radius: $gap-1;
+        display: flex;
+        gap: $gap-2;
+        p{
+            display: flex;
+            &:not(:last-child){
+                margin-bottom: $gap-1;
+            }
+            justify-content: space-between;
+            strong{
+                width: 50px;
+                margin-left: $gap-1;
+                text-align: right;
+            }
+        }
+    }
+}
