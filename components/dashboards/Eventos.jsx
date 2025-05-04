@@ -315,7 +315,7 @@ const Inscricoes = ({ tenantSlug }) => {
   };
   // Calcula o total geral das submissões de todos os tenants
   const totalSubmissoesGeral = eventos
-    ? eventos[currentEventIndex].info.tenantsTotais.reduce(
+    ? eventos[currentEventIndex]?.info?.tenantsTotais.reduce(
         (total, tenant) => total + tenant.quantidadeSubmissoesTotal,
         0
       )

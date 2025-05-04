@@ -114,22 +114,32 @@ export const createPlanoDeTrabalho = async (
       throw error;
     }
   };
-  export const getAllPlanoDeTrabalhosByTenant = async (tenantSlug) => {
+  export const getAllPlanoDeTrabalhosByTenant = async (tenantSlug, ano = null) => {
     try {
       const headers = getAuthHeadersClient();
       if (!headers) {
         return false;
       }
+      
+      // Configurar os parâmetros da requisição
+      const params = {};
+      if (ano !== null) {
+        params.ano = ano;
+      }
+
       const response = await req.get(
         `/private/${tenantSlug}/planosDeTrabalho`,
-        {headers}
+        {
+          headers,
+          params // Envia os parâmetros como query string
+        }
       );
       return response.data.planosDeTrabalho;
     } catch (error) {
       console.error("Erro ao obter Planos de Trabalho:", error);
       throw error;
     }
-  };
+};
   export const getPlanoDeTrabalho = async (tenantSlug, inscricaoId, id) => {
     try {
       const headers = getAuthHeadersClient();
@@ -147,7 +157,38 @@ export const createPlanoDeTrabalho = async (
     }
   };
   
+/**************************
+ * APLICAÇÃO DE NOTA DE CORTE
+ **************************/
 
+export const aplicarNotaCorte = async (tenantSlug, notaCorte, classificados, desclassificados) => {
+  try {
+    const token = getCookie("authToken");
+    if (!token) {
+      throw new Error("Token de autenticação não encontrado");
+    }
+
+    const response = await req.put(
+      `/private/${tenantSlug}/planosDeTrabalho/aplicarNotaDeCorte`,
+      {
+        notaCorte,
+        classificados,
+        desclassificados
+      },
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao aplicar nota de corte:", error);
+    throw error;
+  }
+};
   
   export const updatePlanoDeTrabalhoPerfilUser = async (
     tenantSlug,

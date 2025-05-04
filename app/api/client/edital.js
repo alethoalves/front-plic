@@ -44,11 +44,21 @@ export const deleteEdital = async (tenantSlug, editalId) => {
   }
 };
 
-export const getEditais = async (tenantSlug) => {
+export const getEditais = async (tenantSlug, ano = null) => {
   try {
     const headers = getAuthHeadersClient();
     if (!headers) return false;
-    const response = await req.get(`/private/${tenantSlug}/edital`, { headers });
+    
+    const params = {};
+    if (ano !== null) {
+      params.ano = ano;
+    }
+
+    const response = await req.get(`/private/${tenantSlug}/edital`, { 
+      headers,
+      params 
+    });
+    
     return response.data.editais;
   } catch (error) {
     if (error.response && error.response.status === 404) {

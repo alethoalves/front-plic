@@ -5,12 +5,28 @@
 padding: 0 $gap-2 $gap-2 $gap-2;
 }
 
-.custom-card {
-    max-width: calc(100vw - 270px); // Limita a largura máxima do Card
+.p-datatable {
+    .p-tabmenu{
+        padding:0 $gap-2;
+        
+        ul{
+            a{
+                padding: $gap-1 $gap-2 $gap-1 $gap-2 ;
+                
+            }
+            svg{
+                height: 16px;
+            }
+            .p-menuitem-icon {
+                margin-right: $gap-1;
+            }
+        }
+    }
+    max-width: calc(100vw - 262px); // Limita a largura máxima do Card
     @include responsive(s){
         max-width: calc(100vw - 32px);
     }
-    padding: 1rem; // Espaçamento interno
+    padding: 0; // Espaçamento interno
     padding-right: 0px;
     padding-left: 0px;
     overflow-x: auto; // Permite scroll apenas dentro do card
@@ -27,9 +43,17 @@ padding: 0 $gap-2 $gap-2 $gap-2;
         padding: 8px;
         white-space: nowrap;
         overflow: hidden;
-        text-overflow: ellipsis
+        text-overflow: ellipsis;
+      
     }
- 
+   
+ .p-paginator-bottom{
+    padding: $gap-2;
+    background-color: transparent;
+    span{
+        display: flex
+    }
+ }
     .p-dropdown-label {
         display: flex;
         align-items: center;
@@ -56,7 +80,7 @@ padding: 0 $gap-2 $gap-2 $gap-2;
   }
  
   .p-datatable-wrapper{
-    margin: $gap-1 0;
+    margin: 0 0;
   }
 .table-responsive {
 overflow-x: auto; // Mantém o scroll apenas dentro dessa di
@@ -66,12 +90,7 @@ overflow-x: auto; // Mantém o scroll apenas dentro dessa di
     padding: $gap-2 0;
     border: none;
 }
-.p-button-success, .p-button-info{
-    padding: $gap-1 $gap-2;
-    .p-button-label{
-        margin-left: $gap-1;
-    }
-}
+
 .p-inputtext{
     padding: $gap-1;
 }
@@ -85,8 +104,8 @@ overflow-x: auto; // Mantém o scroll apenas dentro dessa di
 .p-column-filter-operator, .p-column-filter-constraint{
     padding: $gap-1 $gap-1 0 $gap-1 ;
 }
-.p-inputwrapper-filled{
-    margin-bottom: $gap-1;
+.p-column-filter{
+    gap: $gap-1;
 }
 
 .p-column-filter-add-rule{
@@ -113,4 +132,6 @@ overflow-x: auto; // Mantém o scroll apenas dentro dessa di
     }
 }
 
-
+.p-tag {
+    padding: 4px $gap-1;
+}

@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 
-import { getCookie } from "cookies-next";
+import { getCookie, setCookie } from "cookies-next";
 import { cookies } from "next/headers";
 import { getTenant } from "./app/api/server/getTenant";
 import { pingAdminEvento, pingAluno, pingAvaliador, pingAvaliadorTenant, pingGestor, pingOrientador, pingRoot, pingUser } from "./app/api/server/pings";
-import { getEventoBySlug } from "./app/api/serverReq";
+import { getEditais, getEventoBySlug } from "./app/api/serverReq";
 
 export const middleware = async (request) => {
   // Recebe um request, extrai a URL e identifica o tenant a partir do caminho.
@@ -32,8 +32,26 @@ export const middleware = async (request) => {
   const urlToRootPlic = new URL(request.url);
   urlToRootPlic.pathname = `/root`;
 
-  const urlToGestor = new URL(request.url);
-  urlToGestor.pathname = `/${tenant}/gestor`;
+  let urlToGestor = new URL(request.url);
+  let ano = getCookie("anoSelected",{ cookies });
+  const editaisData = await getEditais(tenant);
+  
+  if (!editaisData?.length>0) {
+    urlToGestor.pathname = `/${tenant}/gestor/configuracoes/editais`
+  } else {
+    const anoValidado = editaisData.some(edital => edital.ano === ano);
+    if (anoValidado) {
+      urlToGestor.pathname = `/${tenant}/gestor/${ano}`;
+    }else{
+      const editaisOrdenados = [...editaisData].sort((a, b) => b.ano - a.ano);
+      const anoMaisRecente = editaisOrdenados[0].ano;
+      
+      urlToGestor.pathname = `/${tenant}/gestor/${anoMaisRecente}`;
+    }
+  }
+  
+  const urlToConfiguracoes = new URL(request.url);
+  urlToConfiguracoes.pathname = `/${tenant}/configuracoes/gestor/editais`;
   const urlToAvaliadorTenant = new URL(request.url);
   urlToAvaliadorTenant.pathname = `/${tenant}/avaliador`;
   const urlToOrientador = new URL(request.url);
@@ -268,6 +286,8 @@ export const middleware = async (request) => {
     if (url.pathname.startsWith(`/${tenant}/gestor`)) {
       // Não tem token válido OU não tem permissão de acesso -> redireciona
       if (!pongGestor) return NextResponse.redirect(urlToSignin);
+      const editais = await getEditais(tenant);
+      if (!editais.length > 0) return NextResponse.redirect(urlToConfiguracoes);
       return NextResponseWithTenant
     }
     /******************
@@ -295,6 +315,12 @@ export const middleware = async (request) => {
     if (url.pathname.startsWith(`/${tenant}/user`)) {
       // Não tem token válido OU não tem permissão de acesso -> redireciona
       if (!pongUser) return NextResponse.redirect(urlToSignin);
+      return NextResponseWithTenant
+    }
+
+    if (url.pathname.startsWith(`/${tenant}/configuracoes/gestor`)) {
+      // Não tem token válido OU não tem permissão de acesso -> redireciona
+      if (!pongUser) return NextResponse.redirect(urlToConfiguracoes);
       return NextResponseWithTenant
     }
      

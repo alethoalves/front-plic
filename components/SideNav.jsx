@@ -14,7 +14,7 @@ import styles from "./SideNav.module.scss";
 import { RiQuestionAnswerLine } from "@remixicon/react";
 import { useState } from "react";
 
-const SideNav = ({ pathLogo, menuType = "gestor" }) => {
+const SideNav = ({ pathLogo, menuType = "gestor", existeEdital = true }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const toggleSidebar = () => {
@@ -66,7 +66,12 @@ const SideNav = ({ pathLogo, menuType = "gestor" }) => {
         </div>
       </div>
       <div className={styles.sideNavItem2}>
-        <Menu onClick={toggleSidebar} itensMenu={menuData} />
+        <Menu
+          onClick={toggleSidebar}
+          itensMenu={menuData}
+          existeEdital={existeEdital}
+          gestor={menuType === "gestor" ? true : false}
+        />
       </div>
       {false && (
         <div className={styles.sideNavItem3}>

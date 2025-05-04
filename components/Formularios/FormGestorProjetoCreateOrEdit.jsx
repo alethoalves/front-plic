@@ -553,7 +553,7 @@ const FormGestorProjetoCreateOrEdit = ({
                 </p>
                 <p className="mb-1">
                   <strong>Área: </strong>
-                  {inscricaoProjeto?.projeto.area.area}
+                  {inscricaoProjeto?.projeto.area?.area}
                 </p>
 
                 <div className={styles.statusField}>

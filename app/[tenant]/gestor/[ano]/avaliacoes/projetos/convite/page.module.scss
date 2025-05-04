@@ -1,0 +1,39 @@
+@import "./styles/partials/colors";
+@import "./styles/partials/layout";
+@import "./styles/partials/spacing";
+
+
+
+.content{
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    gap: $gap-2;
+    @include responsive(s){
+        flex-direction: column;
+    }
+    .cursor-pointer {
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+      
+        &:hover {
+          opacity: 0.8;
+        }
+      }
+    button{
+        .btn-primary{
+            p{
+                color:$white-light
+            }
+        }
+        
+    }
+}
+
+
+
+
+.icon{
+    width: 24px;
+    color: $primary-normal;
+}

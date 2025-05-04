@@ -18,6 +18,7 @@ import NewCargo from "@/components/Formularios/NewCargo";
 import { RiDeleteBinLine } from "@remixicon/react";
 import { GestorDesassociarAvaliadorInscricaoProjeto } from "@/app/api/client/avaliador";
 import { Toast } from "primereact/toast";
+import { ProgressBar } from "primereact/progressbar";
 
 const AvaliadoresProjetos = ({
   params,
@@ -184,14 +185,7 @@ const AvaliadoresProjetos = ({
   };
 
   const paginatorRight = (
-    <Button
-      type="button"
-      icon="pi pi-download"
-      text
-      onClick={exportExcel}
-      tooltip="Exportar para Excel"
-      tooltipOptions={{ position: "top" }}
-    />
+    <Button type="button" icon="pi pi-download" text onClick={exportExcel} />
   );
 
   const paginatorLeft = (
@@ -200,8 +194,6 @@ const AvaliadoresProjetos = ({
       icon="pi pi-plus"
       text
       onClick={() => openModalAndSetData()}
-      tooltip="Adicionar avaliador"
-      tooltipOptions={{ position: "top" }}
     />
   );
 
@@ -337,117 +329,117 @@ const AvaliadoresProjetos = ({
       <Toast ref={toast} /> {/* Componente Toast */}
       {renderModalContent()}
       <main>
-        {loading ? (
-          <div className="flex justify-center items-center h-20">
-            <ProgressSpinner />
-          </div>
-        ) : error ? (
-          <Message severity="error" text={error} />
-        ) : (
-          <Card className="custom-card">
-            <DataTable
-              ref={dataTableRef}
-              value={avaliadoresFiltrados}
-              paginator
-              rows={10}
-              rowsPerPageOptions={[10, 20, 50]}
-              scrollable
-              dataKey="id"
-              header={renderHeader()}
-              filters={filters}
-              filterDisplay="menu"
-              globalFilterFields={[
-                "user.nome",
-                "user.email",
-                "user.celular",
-                "nivel",
-                "projetosAtribuidos",
-                "projetosAvaliados",
-              ]}
-              emptyMessage="Nenhum avaliador encontrado."
-              onRowClick={(e) => openModalAndSetData(e.data)}
-              rowClassName="clickable-row" // Adiciona cursor pointer e hover effect
-              paginatorRight={paginatorRight}
-              paginatorLeft={paginatorLeft}
-              selection={selectedAvaliadores}
-              onSelectionChange={(e) => {
-                setSelectedAvaliadores(e.value);
-                setAvaliadoresSelecionados(e.value);
-              }}
-            >
-              <Column
-                selectionMode="multiple"
-                headerStyle={{ width: "3rem" }}
-              />
-              <Column
-                field="user.nome"
-                header="Nome"
-                sortable
-                filter
-                filterPlaceholder="Filtrar por nome"
-              />
-              <Column
-                field="projetosAvaliados" // Usar a coluna virtual
-                header="Projetos avaliados"
-                sortable
-                filter
-                filterPlaceholder="Filtrar por projetos avaliados"
-              />
-              <Column
-                field="projetosAtribuidos"
-                header="Projetos atribuídos"
-                body={projetosAtribuidosBodyTemplate} // Usa o template personalizado
-                sortable
-                filter
-                filterPlaceholder="Filtrar por projetos atribuídos"
-              />
-              <Column
-                header="Nível"
-                body={(rowData) =>
-                  rowData.nivel === 1
-                    ? "Comitê Institucional"
-                    : "Comitê Externo"
-                }
-                sortable
-                filter
-                filterPlaceholder="Filtrar por nível"
-              />
-              <Column
-                header="Áreas de Atuação"
-                body={(rowData) =>
-                  rowData.user.userArea.map((ua) => ua.area.area).join(", ")
-                }
-              />
-              <Column
-                field="user.email"
-                header="Email"
-                sortable
-                filter
-                filterPlaceholder="Filtrar por email"
-              />
-              <Column
-                field="user.celular"
-                header="Celular"
-                sortable
-                filter
-                filterPlaceholder="Filtrar por celular"
-              />
-              <Column
-                header="Ações"
-                body={(rowData) => (
-                  <Button
-                    icon={<RiDeleteBinLine />}
-                    className="p-button-danger p-button-rounded"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(rowData);
-                    }}
-                  />
-                )}
-              />
-            </DataTable>
-          </Card>
-        )}
+        <Card className="custom-card">
+          {loading ? (
+            <div className="pr-2 pl-2">
+              <ProgressBar mode="indeterminate" style={{ height: "6px" }} />
+            </div>
+          ) : (
+            <>
+              <DataTable
+                ref={dataTableRef}
+                value={avaliadoresFiltrados}
+                paginator
+                rows={10}
+                rowsPerPageOptions={[10, 20, 50]}
+                scrollable
+                dataKey="id"
+                header={renderHeader()}
+                filters={filters}
+                filterDisplay="menu"
+                globalFilterFields={[
+                  "user.nome",
+                  "user.email",
+                  "user.celular",
+                  "nivel",
+                  "projetosAtribuidos",
+                  "projetosAvaliados",
+                ]}
+                emptyMessage="Nenhum avaliador encontrado."
+                onRowClick={(e) => openModalAndSetData(e.data)}
+                rowClassName="clickable-row" // Adiciona cursor pointer e hover effect
+                paginatorRight={paginatorRight}
+                paginatorLeft={paginatorLeft}
+                selection={selectedAvaliadores}
+                onSelectionChange={(e) => {
+                  setSelectedAvaliadores(e.value);
+                  setAvaliadoresSelecionados(e.value);
+                }}
+              >
+                <Column
+                  selectionMode="multiple"
+                  headerStyle={{ width: "3rem" }}
+                />
+                <Column
+                  field="user.nome"
+                  header="Nome"
+                  sortable
+                  filter
+                  filterPlaceholder="Filtrar por nome"
+                />
+                <Column
+                  field="projetosAvaliados" // Usar a coluna virtual
+                  header="Projetos avaliados"
+                  sortable
+                  filter
+                  filterPlaceholder="Filtrar por projetos avaliados"
+                />
+                <Column
+                  field="projetosAtribuidos"
+                  header="Projetos atribuídos"
+                  body={projetosAtribuidosBodyTemplate} // Usa o template personalizado
+                  sortable
+                  filter
+                  filterPlaceholder="Filtrar por projetos atribuídos"
+                />
+                <Column
+                  header="Nível"
+                  body={(rowData) =>
+                    rowData.nivel === 1
+                      ? "Comitê Institucional"
+                      : "Comitê Externo"
+                  }
+                  sortable
+                  filter
+                  filterPlaceholder="Filtrar por nível"
+                />
+                <Column
+                  header="Áreas de Atuação"
+                  body={(rowData) =>
+                    rowData.user.userArea.map((ua) => ua.area.area).join(", ")
+                  }
+                />
+                <Column
+                  field="user.email"
+                  header="Email"
+                  sortable
+                  filter
+                  filterPlaceholder="Filtrar por email"
+                />
+                <Column
+                  field="user.celular"
+                  header="Celular"
+                  sortable
+                  filter
+                  filterPlaceholder="Filtrar por celular"
+                />
+                <Column
+                  header="Ações"
+                  body={(rowData) => (
+                    <Button
+                      icon={<RiDeleteBinLine />}
+                      className="p-button-danger p-button-rounded"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(rowData);
+                      }}
+                    />
+                  )}
+                />
+              </DataTable>
+            </>
+          )}
+        </Card>
       </main>
     </>
   );

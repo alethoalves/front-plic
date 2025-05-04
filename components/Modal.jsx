@@ -16,6 +16,7 @@ const Modal = ({
   children,
   noPadding = false,
   size = "small",
+  showIconClose = true,
 }) => {
   const [visible, setVisible] = useState(false);
   useEffect(() => {
@@ -41,9 +42,11 @@ const Modal = ({
       }`}
     >
       <div className={`${styles.modalContent} `}>
-        <div onClick={handleCloseWithDelay} className={styles.closeIcon}>
-          <RiCloseLargeLine />
-        </div>
+        {showIconClose && (
+          <div onClick={handleCloseWithDelay} className={styles.closeIcon}>
+            <RiCloseLargeLine />
+          </div>
+        )}
         <div className={`${noPadding ? styles.padding : styles.content}`}>
           {edit && (
             <>

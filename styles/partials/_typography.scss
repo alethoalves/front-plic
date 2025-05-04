@@ -254,7 +254,8 @@ h4 {
 }
 
 h5 {
-  color: $black-light;
+  color: $primary-dark;
+  font-weight: 400;
   @include typeface-1(h5, desktop);
   @include responsive(s) {
     @include typeface-1(h5, mobile);

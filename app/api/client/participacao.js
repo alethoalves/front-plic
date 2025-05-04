@@ -153,7 +153,56 @@ export const createParticipacao = async (tenantSlug, participacaoData) => {
     throw error;
   }
 };
+/**************************
+ * APROVAR/REPROVAR PARTICIPAÇÕES
+ **************************/
+export const aprovarParticipacoes = async (tenantSlug, participacaoIds) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
 
+    const response = await req.put(
+      `/private/${tenantSlug}/aprovar/participacao`,
+      { participacaoIds },
+      { headers }
+    );
+    
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      console.error("Participações não encontradas:", error);
+      return null;
+    }
+    console.error("Erro ao aprovar participações:", error);
+    throw error;
+  }
+};
+
+export const reprovarParticipacoes = async (tenantSlug, participacaoIds, justificativa) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+
+    const response = await req.put(
+      `/private/${tenantSlug}/reprovar/participacao`,
+      { participacaoIds, justificativa },
+      { headers }
+    );
+    
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      console.error("Participações não encontradas:", error);
+      return null;
+    }
+    console.error("Erro ao reprovar participações:", error);
+    throw error;
+  }
+};
 export const updateParticipacao = async (
   tenantSlug,
   idParticipacao,
@@ -179,28 +228,65 @@ export const updateParticipacao = async (
     throw error;
   }
 };
-export const inativarParticipacao = async (
-  tenantSlug,
-  idParticipacao,
-  fim
-) => {
+export const ativarParticipacao = async (tenantSlug, idParticipacao) => {
   try {
     const headers = getAuthHeadersClient();
     if (!headers) {
       return false;
     }
     const response = await req.put(
-      `/private/${tenantSlug}/participacoes/inativar/${idParticipacao}`,{fim},
+      `/private/${tenantSlug}/participacoes/ativar/${idParticipacao}`,
+      {}, // Não precisa de body para esta requisição
       { headers }
     );
     return response.data.participacao;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Participação não atualizada:", error);
+      console.error("Participação não encontrada:", error);
       throw error;
     }
-    console.error("Erro ao atualizar participação:", error);
+    console.error("Erro ao ativar participação:", error);
     throw error;
+  }
+};
+export const inativarParticipacao = async (
+  tenantSlug,
+  idParticipacao,
+  { fim, justificativa }
+) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      throw new Error('Não autenticado');
+    }
+
+    const response = await req.put(
+      `/private/${tenantSlug}/participacoes/inativar/${idParticipacao}`,
+      { fim, justificativa },
+      { headers }
+    );
+
+    return response.data.participacao;
+  } catch (error) {
+    // Tratamento específico para erros 400 (validação)
+    if (error.response?.status === 400) {
+      const errorMessage = error.response.data?.message || 'Dados inválidos para inativação';
+      throw new Error(errorMessage);
+    }
+
+    // Tratamento específico para erro 404 (não encontrado)
+    if (error.response?.status === 404) {
+      throw new Error('Participação não encontrada');
+    }
+
+    // Tratamento específico para erro 403 (sem permissão)
+    if (error.response?.status === 403) {
+      throw new Error('Você não tem permissão para inativar esta participação');
+    }
+
+    // Tratamento para outros erros
+    console.error("Erro ao inativar participação:", error);
+    throw new Error(error.response?.data?.message || 'Erro ao inativar participação');
   }
 };
 export const deleteParticipacao = async (tenantSlug, idParticipacao) => {

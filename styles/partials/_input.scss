@@ -16,7 +16,12 @@
     
    
 }
-
+.p-column-filter-row-item{
+    padding: $gap-2;
+}
+.p-inputnumber-input{
+    width: 100%;
+}
 .p-multiselect, .p-multiselect-header {
     padding: $gap-1;
     
@@ -157,6 +162,10 @@
     
     
     
+}
+textarea{
+    width: 100%;
+    resize: none;
 }
 
 

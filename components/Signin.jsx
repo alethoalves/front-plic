@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { signinSchema, signupSchema } from "@/lib/zodSchemas/authSchema";
-import { setCookie } from "cookies-next";
+import { getCookie, setCookie } from "cookies-next";
 
 // Estilizações
 import {
@@ -31,6 +31,7 @@ import BuscadorBack from "./BuscadorBack";
 import { verificarCodAvaliador } from "@/app/api/client/conviteEvento";
 import Link from "next/link";
 import { cadastrarAvaliador } from "@/app/api/client/avaliador";
+import { getEditais } from "@/app/api/client/edital";
 
 const Auth = ({
   slug,
@@ -57,9 +58,8 @@ const Auth = ({
   });
   const router = useRouter();
 
-  const handlePerfilSelecionado = (perfil) => {
+  const handlePerfilSelecionado = async (perfil) => {
     setCookie("perfilSelecionado", perfil, { maxAge: 60 * 60 * 24 * 7 }); // Expira em 7 dias
-    console.log("Perfil salvo nos cookies:", perfil);
 
     // Redirecionamento baseado no perfil escolhido
     if (perfil === "orientador") {
@@ -71,7 +71,29 @@ const Auth = ({
         ? setShowInputToken(true)
         : router.push(`/${slug}/avaliador`);
     } else if (perfil === "gestor") {
-      router.push(`/${slug}/gestor`);
+      let ano = getCookie("anoSelected");
+
+      const editaisData = await getEditais(slug);
+      if (!editaisData.length > 0) {
+        router.push(`/${slug}/configuracoes/gestor/editais`);
+      } else {
+        const anoValidado = editaisData.some(
+          (edital) => edital.ano === parseInt(ano)
+        );
+
+        if (anoValidado) {
+          router.push(`/${slug}/gestor/${ano}`);
+        } else {
+          const editaisOrdenados = [...editaisData].sort(
+            (a, b) => b.ano - a.ano
+          );
+          const anoMaisRecente = editaisOrdenados[0].ano;
+          setCookie("anoSelected", anoMaisRecente, {
+            maxAge: 60 * 60 * 24 * 365,
+          });
+          router.push(`/${slug}/gestor/${anoMaisRecente}`);
+        }
+      }
     } else {
       router.push("/"); // Redireciona para a home caso o perfil não seja reconhecido
     }

@@ -1,0 +1,179 @@
+@import "./styles/partials/colors";
+@import "./styles/partials/layout";
+@import "./styles/partials/spacing";
+.dashboard{
+    display: flex;
+    flex-wrap: wrap;
+    gap: $gap-2;
+
+}
+.card_style1{
+    display: flex;
+    flex: 1;
+    .left{
+        width: 100px;
+        border-top-left-radius:$gap-1 ;
+        border-bottom-left-radius:$gap-1 ;
+        background-color: $white-darken;
+        border-right: 2px solid $white-light;
+        h5{
+            color:$primary-darken;
+        }
+        h6{
+            color:$primary-darken;
+            text-align: center;
+        }
+        display: flex;
+        gap: 4px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: $gap-2;
+    }
+    .right{
+        //width: 166px;
+       flex: 1;
+        background-color:$white-darken;
+        border-top-right-radius:$gap-1 ;
+        border-bottom-right-radius:$gap-1 ;
+        display: flex;
+        flex-direction: column;
+        align-items: left;
+        justify-content: center;
+        padding: $gap-2;
+        p{
+            display: flex;
+            justify-content: space-between;
+            &:not(:last-child){
+                margin-bottom: $gap-1;
+            }
+        }
+    }
+}
+
+.content{
+    margin-top: $gap-3;
+    
+
+}
+.anos {
+    display: flex;
+    gap: $gap-1;
+    overflow: hidden; /* Oculta o conteúdo que ultrapassa o contêiner */
+    overflow-x: scroll; /* Permite rolagem horizontal */
+    padding-left: $gap-2;
+    /* Oculta a barra de rolagem no Chrome, Safari e Edge */
+    &::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Oculta a barra de rolagem no Firefox */
+    scrollbar-width: none;
+
+    /* Oculta a barra de rolagem no IE e Edge antigos */
+    -ms-overflow-style: none;
+
+    .ano {
+        background-color: $white-dark;
+        border: 1px solid $white-darken;
+        border-radius: $gap-1;
+        padding: $gap-1 $gap-2;
+        color: $primary-darken;
+        cursor: pointer;
+        transition: ease 0.3s;
+
+        &:hover {
+            background-color: $white-darken;
+            transform: scale(1.03);
+            border: 1px solid $primary-darken;
+        }
+    }
+
+    .ano.selected {
+        background-color: $primary-dark;
+        color: $white-light;
+    }
+}
+
+
+
+.icon{
+    width: 24px;
+    color: $primary-normal;
+}
+.status{
+    margin-bottom: $gap-1;
+    display: inline-block;
+    padding: 4px $gap-2;
+    border-radius: 20px;
+    p{
+        font-size: 12px;
+    }
+}
+.incompleto{
+    background-color: $warning-light;
+    p{color:red}
+}
+.ativo{
+    background-color: $success-light;
+}
+.inativo{
+    background-color: $gray-50;
+}
+.modalTable{
+    h4{
+        margin-bottom: $gap-4;
+    }
+    .campo{
+        background-color: $white-light;
+        border: 1px solid $gray-50;
+        box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+        min-width: 300px;
+        @include responsive(xs){
+            width: 100%;
+            margin-right: 0;
+            min-width: 200px;
+        }
+        margin-top: $gap-2;
+        border-radius: $gap-1;
+        display: flex;
+        
+        align-items: center;
+        justify-content:space-between;
+        padding: $gap-2;
+        .required{
+            display: inline-block;
+            background-color: $primary-dark;
+            border-radius: 4px;
+            padding: 4px $gap-2;
+            margin-top: $gap-1;
+            p{
+                font-size: 12px;
+                color: $white-light;
+                font-weight: 300;
+            }
+        }
+    }
+    .actions{
+        display: flex;
+        margin-left: $gap-2;
+        p{
+            display: none;
+        }
+        .btn1{
+            
+            max-width: 250px;
+            @include responsive(xs){
+                flex: 1;
+                max-width: none;
+            }
+        }
+        .btn2{
+            max-width: 250px;
+            margin-left: $gap-1;
+            
+        }
+        
+    }
+}
+

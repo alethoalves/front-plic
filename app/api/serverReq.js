@@ -44,6 +44,30 @@ export const getEdital = async (tenantSlug, editalId) => {
   }
 };
 
+export const getEditais = async (tenantSlug) => {
+  try {
+    const token = getCookie('authToken',{cookies});
+    if (!token) {
+      return false;
+    }
+    const response = await req.get(`/private/${tenantSlug}/edital`, {
+      headers: {
+        "Authorization": `Token ${token}`
+      }
+    });
+    return response.data.editais;
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      console.error('Edital não encontrado:', error);
+      return null;
+    }
+    console.error('Erro ao obter o edital:', error);
+    throw error;
+  }
+};
+
+
+
 export const getEventoBySlug = async (slug) => {
   try {
     

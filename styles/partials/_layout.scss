@@ -160,11 +160,22 @@ $gutter: 32px;
 
   }
 }
-
+.p-progressbar-value{
+  background-color: $primary-dark;
+}
 .flex {
   display: flex;
 }
+.align-items-center{
+  align-items: center;
+}
+.justify-content-center{
+  justify-content: center;
+}
 
+.cursor-pointer{
+  cursor: pointer;
+}
 .flex-start-row {
   display: flex;
   justify-content: flex-start;

@@ -2,26 +2,27 @@
 @import "/styles/partials/layout";
 @import "/styles/partials/spacing";
 
-.participacao{
-    border: 1px solid $gray-50;
+.participacao {
+    
     border-radius: $gap-1;
     padding: $gap-2;
     margin-top: $gap-2;
+    border: 1px solid $gray-50;
     box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
     position: relative;
     
-    h5{
+    h5 {
         font-size: 21px;
         margin-bottom: $gap-2;
     }
-    .label{
-        &:not(:last-child){
+    
+    .label {
+        &:not(:last-child) {
             margin-bottom: $gap-2;
         }
-        
-
     }
-    .delete{
+    
+    .delete {
         position: absolute;
         background-color: $white-darken;
         top: 0;
@@ -31,80 +32,326 @@
         cursor: pointer;
         transition: ease .3s;
         color: $primary-dark;
-        &:hover{
+        
+        &:hover {
             opacity: 0.7;
         }
-        
     }
 }
 
-.urlCvLattes{
-    display: flex;
-    align-items: center;
-    margin-top: $gap-1;
-    transition: ease .3s;
-    color: $primary-darken;
-    &:hover{
-        transform: scale(1.01);
-        a{
-            color: $primary-darken;
-        }
-    }
-    svg{
-        margin-right: $gap-1;
-        width: 20px;
-        height: auto;
-    }
-    a {
-        transition: ease .3s;
-        margin: 0;
-        text-decoration: underline;
-        
-    }
-}
 
-.errorMsg{
+.errorMsg {
     background-color: $error-light;
     border-radius: 4px;
     margin-top: $gap-1;
-    p{
+    
+    p {
         color: $white-light;
         padding: $gap-1 $gap-2;
-        
     }
 }
 
-.menu{
+.menu {
     flex: 1;
     margin-top: $gap-2;
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: $gap-2;
-    .itemMenu{
+    
+    .itemMenu {
         cursor: pointer;
         transition: ease .3s;
         flex: 1;
         text-align: center;
         padding: $gap-2 $gap-2;
         background-color: $white-darken;
-        &:first-child{
+        
+        &:first-child {
             border-top-left-radius: $gap-1;
             border-bottom-left-radius: $gap-1;
         }
-        &:last-child{
+        
+        &:last-child {
             border-top-right-radius: $gap-1;
             border-bottom-right-radius: $gap-1;
         }
-        p{
+        
+        p {
             color: $primary-darken;
         }
     }
     
-    .itemMenuSelected{
-        p{
+    .itemMenuSelected {
+        p {
             color: $white-dark;
         }
         background-color: $primary-dark;
     }
 }
+
+.content {
+    margin-top: $gap-3;
+    margin-bottom: $gap-7;
+    max-width: 990px;
+                 
+    @include responsive(s) {
+        flex-direction: column;
+    }
+    
+    .mainContent {
+        margin-top: $gap-2;
+        
+        .box {
+            border: 1px solid $gray-50;
+            box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+            border-radius: $gap-1;
+            
+            &:not(:last-child) {
+                margin-bottom: $gap-1;
+            }
+        }
+    }
+    
+    .header {
+        display: flex;
+        align-items: center;
+        margin-bottom: $gap-2;
+        padding: $gap-2 $gap-2 0 $gap-2;
+        
+        h6 {
+            margin-left: $gap-2;
+            flex: 1;
+        }
+    }
+    
+    .icon {
+        width: 24px;
+        color: $primary-normal;
+    }
+}
+
+.statusField {
+    .statusDropdown {
+        margin-top: $gap-1;
+        width: 100%;
+    }
+}
+
+.list{
+    border-bottom-left-radius: $gap-1;
+    border-bottom-right-radius: $gap-1;
+    .content1{
+        flex: 1;
+    }
+    .content2{
+        display: flex;
+        align-items: center;
+        svg{
+            width: 24px;
+            margin-right: $gap-1;
+        }
+        
+    }
+    .itemList{
+        margin-top: 0px;
+        border-bottom: 1px solid $white-darken;
+        padding: $gap-2;
+        background-color: $white-normal;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        transition: ease .3s;
+        &:hover{
+            background-color: $white-darken;
+            color: $primary-darken;
+        }
+        &:last-child{
+            border-bottom-left-radius: $gap-1;
+            border-bottom-right-radius: $gap-1;
+            border: none;
+        }
+    }
+    
+}
+.userCard{
+    
+    .user{
+        background-color: $white-darken;
+        
+        display: flex;
+        @include responsive(xs){
+            flex-direction: column;
+        }
+        justify-content: space-between;
+        border-top-left-radius:$gap-1 ;
+        border-top-right-radius:$gap-1 ;
+        h6{
+            padding: $gap-1;
+            padding-left: $gap-2;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: inherit;
+            color: $black-dark;
+            display: flex;
+            align-items: center;
+        }
+        .actions{
+            .action{
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                cursor: pointer;
+                border-left: 1px solid $white-light;
+            }
+            @include responsive(xs){
+                .action{
+                    flex: 1;
+                }
+            }
+            
+    
+            div{
+                padding: $gap-1;
+            }
+            .normal{
+                transition: ease .3s;
+                &:hover{
+                    background-color: $primary-lighten;
+                    color: $white-light;
+                    p{
+                        color: $white-light;
+                        
+                    }
+                }
+            }
+            .warning{
+                transition: ease .3s;
+                &:hover{
+                    background-color: $warning-light;
+                    color: $black-dark;
+                    p{
+                        color: $black-dark;
+                        
+                    }
+                }
+            }
+            .error{
+                transition: ease .3s;
+                border-top-right-radius: $gap-1;
+                &:hover{
+                    background-color: $error-light-1;
+                    color: $white-light;
+                    p{
+                        color: $white-light;
+                    }
+                }
+                
+            }
+            
+            display: flex;
+            p{
+                font-size: 10px;
+            }
+            
+            
+        }
+        
+    }
+    .contentCard{
+        border-left: 1px solid $gray-50;
+        border-right: 1px solid $gray-50;
+        border-bottom: 1px solid $gray-50;
+        box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+        padding: $gap-2;
+        border-bottom-left-radius: $gap-1;
+        border-bottom-right-radius: $gap-1;
+        .statusParticipacao{
+            margin-bottom: $gap-1;
+            p{
+                display: inline-block;
+                padding: 4px $gap-2;
+                font-size: 12px;
+                border-radius: 50px;
+            }
+        }
+        .statusParticipacaoSuccess{
+            p{
+                background-color: $success-lighten;
+                color: $black-dark;
+            }
+            
+        }
+        .statusParticipacaoWarning{
+            p{
+                background-color: $warning-light;
+                color: $black-dark;
+            }
+            
+        }
+        .statusParticipacaoError{
+            p{
+                background-color: $error-lighten;
+                color: $black-dark;
+            }
+            
+        }
+        .checkboxList{
+            
+            .checkboxItemList:not(:last-child){
+                margin-bottom: $gap-1;
+            }
+            
+        }
+    }
+}
+/* Estilos para a lista de checkboxes */
+.checkboxList {
+    width: 100%;
+  }
+  
+  .checkboxItemList {
+    position: relative;
+    padding-right: 30px;
+    display: flex;
+    align-items: center;
+  }
+  
+  /* Estilo para itens desconsiderados */
+  .disregardedItem {
+    opacity: 0.6;
+    text-decoration: line-through;
+  }
+  
+  /* Estilo para texto de itens não selecionados */
+  .unselectedText {
+    color: #666;
+  }
+  
+  /* Ícones */
+  .disregardIcon {
+    position: absolute;
+    right: 0;
+    cursor: pointer;
+    color: #ff4d4f;
+    transition: all 0.2s;
+    width: 35px;
+  }
+  
+  .disregardIcon:hover {
+    transform: scale(1.1);
+  }
+  
+  .reactivateIcon {
+    width: 35px;
+    position: absolute;
+    right: 0;
+    cursor: pointer;
+    color: #52c41a;
+    transition: all 0.2s;
+  }
+  
+  .reactivateIcon:hover {
+    transform: scale(1.1);
+  }

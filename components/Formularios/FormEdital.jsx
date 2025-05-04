@@ -42,12 +42,13 @@ const FormEdital = ({ tenantSlug, initialData, onClose, onSuccess }) => {
     setLoading(true);
     setError("");
     try {
+      let edital;
       if (initialData) {
-        await updateEdital(tenantSlug, initialData.id, data);
+        edital = await updateEdital(tenantSlug, initialData.id, data);
       } else {
-        await createEdital(tenantSlug, data);
+        edital = await createEdital(tenantSlug, data);
       }
-      onSuccess();
+      onSuccess(edital);
       onClose();
     } catch (error) {
       console.error("Error:", error);

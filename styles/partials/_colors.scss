@@ -39,6 +39,7 @@ $neutral:#D8DBE3;
 $error-normal: #F03D3D;
 $error-dark: #d03333;
 $error-light: rgb(240, 84, 84);
+$error-light-1: rgb(234, 145, 145);
 $error-lighten: rgba(240, 84, 84,0.4);;
 
 $success-normal: #0BB07B;
@@ -51,7 +52,12 @@ $warning-darken: #8d7228;
 $warning-dark: #d9b043;
 $warning-light: #ffd76b;
 $warning-lighten: #fffbf1;
-
+.text-green-500{
+    color: $success-dark
+}
+.text-red-400{
+    color: $error-light;
+}
 
 .color-white{
     color: $white-normal;

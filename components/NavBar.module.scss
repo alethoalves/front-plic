@@ -11,12 +11,27 @@
     width: 100vw;
     position: fixed;
     color: $primary-darken;
-    padding-left: 218px;
+    padding-left: 236px;
     z-index: 998;
     //box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+    .anoSelecionado{
+        margin-bottom: 4px;
+
+        @include responsive (xs){
+            display: none;
+        }
+    }
+    button{
+        background-color: $primary-dark;
+        border: $primary-dark;
+        padding: 4px $gap-1;
+        transition: ease .3s;
+        &:hover{
+            transform: scale(1.03);
+        }
+    }
     
     .navBarItem1{
-        width: 100px;
         flex: 1;
         .logoImg{
             width: auto;
@@ -34,11 +49,31 @@
         }
     }
     .navBarItem2{
+        align-items: center;
+    }
+    .navBarItem3{
         display: flex;
         justify-content: right;
         padding-right: $gap-2;
         width: 300px;
         flex: 1;
+    }
+}
+.navBarGestor{
+    display: flex;
+    justify-content: space-between;
+    
+
+    .btnEdital{
+        &:hover{
+            background-color:  $white-darken;
+            border: 1px solid $primary-light;
+        }
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: ease .3s;
+        padding: $gap-1;
+        border-radius: $gap-1;
     }
 }
 .logout{

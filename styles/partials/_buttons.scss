@@ -57,10 +57,14 @@ a.linkFile{
         padding: 6px;
     }
 }
-.p-button-text span{
-    padding: $gap-1 0;
+
+
+.p-button-success,.p-button,.p-button-secondary,.p-button-danger, .p-button-info,.p-button-help, .p-button-warning{
+    padding: $gap-1 $gap-2;
+    
 }
-.btn-primary, .p-button-success{
+
+.btn-primary, .p-button-success {
     background-color: $primary-dark;
     transition: all .3s ease;
     border: none;
@@ -203,3 +207,38 @@ button[type="submit"]:disabled, button:disabled{
         opacity: 1;
     }
 }
+.p-button-icon{
+    margin-right: 4px;
+}
+#popup_menu_left{
+    .p-submenu-header{
+        padding: $gap-1;
+    }
+    .p-menuitem-link{
+        padding: $gap-2;
+    }
+    
+}
+.p-steps-item{
+    &::before{
+        top: 30%;
+    }
+    a{
+        display: flex;
+    flex-direction: column;
+    gap: $gap-1;
+}
+    }
+.p-steps-title{
+    padding-bottom: 4px;
+}
+
+.p-steps-number{
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    width: 40px;
+}
+

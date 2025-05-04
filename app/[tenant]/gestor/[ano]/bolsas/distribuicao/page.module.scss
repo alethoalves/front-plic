@@ -1,0 +1,101 @@
+@import "./styles/partials/colors";
+@import "./styles/partials/layout";
+@import "./styles/partials/spacing";
+
+
+.notaCorte{
+    margin-left: $gap-2;
+    
+    div{
+        flex-wrap: wrap;
+        flex-direction: column;
+        align-items: start;
+    }
+}
+
+.cotaBtn{
+    background-color: $primary-lighten;
+    padding: $gap-2;
+    border-radius: $gap-1;
+    margin: $gap-1;
+    p{
+        color: $white-light;
+        text-align: center;
+    }
+    cursor: pointer;
+    transition: ease .3s;
+    &:hover{
+        transform: scale(1.02);
+        background-color: $primary-dark;
+        
+    }
+}
+.title{
+    display: flex;
+    padding: $gap-2;
+    align-items: center;
+    svg{
+        width: 30px;
+        cursor: pointer;
+        transition: ease .3s;
+        &:hover{
+            color: $primary-darken;
+            transform: scale(1.1);
+        }
+    }
+}
+.cotaEbtn{
+    background-color: $white-dark;
+    border-radius: $gap-1;
+}
+.cotas{
+    display: flex;
+    flex-wrap: wrap;
+    gap: $gap-2;
+    padding: 0 $gap-2 $gap-2 $gap-2;
+    .cota{
+        
+        padding: $gap-2;
+        
+        display: flex;
+        gap: $gap-2;
+        p{
+            display: flex;
+            &:not(:last-child){
+                margin-bottom: $gap-1;
+            }
+            justify-content: space-between;
+            strong{
+                margin-left: $gap-1;
+                margin-right: $gap-2;
+                text-align: right;
+            }
+        }
+    }
+}
+.content{
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    gap: $gap-2;
+    padding-bottom: $gap-2;
+    @include responsive(s){
+        flex-direction: column;
+    }
+    button{
+        .btn-primary{
+            p{
+                color:$white-light
+            }
+        }
+        
+    }
+}
+
+
+
+
+.icon{
+    width: 24px;
+    color: $primary-normal;
+}

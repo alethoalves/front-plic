@@ -1,0 +1,32 @@
+@import "./styles/partials/colors";
+@import "./styles/partials/layout";
+@import "./styles/partials/spacing";
+
+
+
+.content{
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    gap: $gap-2;
+    padding-bottom: $gap-2;
+    @include responsive(s){
+        flex-direction: column;
+    }
+    button{
+        .btn-primary{
+            p{
+                color:$white-light
+            }
+        }
+        
+    }
+}
+
+
+
+
+.icon{
+    width: 24px;
+    color: $primary-normal;
+}

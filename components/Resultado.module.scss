@@ -1,0 +1,31 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+.clickableRow {
+    cursor: pointer;
+    
+    &:hover {
+      background-color: #f8f9fa;
+    }
+  }
+.actions{
+    display: flex;
+    justify-content: flex-end;
+    z-index: 999;
+    position: fixed;
+    bottom: 25px;
+    right: 35px;
+    @include responsive(s){
+        p{
+            display: none;
+        }
+    }
+}
+
+.clickableTag {
+    cursor: pointer;
+    &:hover {
+      text-decoration: underline;
+    }
+  }

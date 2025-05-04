@@ -86,7 +86,9 @@ const EditalFormularios = ({ params }) => {
       nomeFormulario={getNomeFormulario(formId)}
       onEdit={() => openModalAndSetData(formId, tipo)}
       onView={() => {
-        router.push(`/${params.tenant}/gestor/formularios/${formId}`);
+        router.push(
+          `/${params.tenant}/configuracoes/gestor/formularios/${formId}`
+        );
       }}
     />
   );
