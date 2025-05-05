@@ -102,9 +102,16 @@ const Page = ({ params }) => {
     };
 
     itens.forEach((item) => {
-      const status = item.projeto?.InscricaoProjeto[0]?.statusAvaliacao;
-      if (status && statusCount.hasOwnProperty(status)) {
+      const status =
+        item.inscricaoProjeto?.statusAvaliacao ||
+        item.statusAvaliacao ||
+        "AGUARDANDO_AVALIACAO";
+
+      if (statusCount.hasOwnProperty(status)) {
         statusCount[status]++;
+      } else {
+        // Caso haja um status não previsto
+        statusCount["AGUARDANDO_AVALIACAO"]++;
       }
     });
 
@@ -315,7 +322,7 @@ const Page = ({ params }) => {
   const calcularMediaAlunos = (participacoes) => {
     const notas =
       participacoes
-        ?.filter((p) => p.tipo === "aluno" && p.notaAluno !== null)
+        ?.filter((p) => p.notaAluno !== null)
         ?.map((p) => p.notaAluno) || [];
     return notas.length > 0
       ? notas.reduce((a, b) => a + b, 0) / notas.length
@@ -324,10 +331,7 @@ const Page = ({ params }) => {
   const calcularMediaRA = (participacoes) => {
     const ras =
       participacoes
-        ?.filter(
-          (p) =>
-            p.tipo === "aluno" && p.userTenant?.rendimentoAcademico !== null
-        )
+        ?.filter((p) => p.userTenant?.rendimentoAcademico !== null)
         ?.map((p) => p.userTenant?.rendimentoAcademico)
         ?.filter((ra) => ra !== undefined) || [];
 
@@ -365,20 +369,16 @@ const Page = ({ params }) => {
       // Orientadores
       if (item.inscricao?.participacoes) {
         item.inscricao.participacoes.forEach((p) => {
-          if (p.tipo === "orientador") {
-            acc[editalKey].orientadores.add(p.user?.nome);
-          }
+          acc[editalKey].orientadores.add(p.user?.nome);
         });
       }
 
       // Alunos e solicitações de bolsa
       if (item.participacoes) {
         item.participacoes.forEach((p) => {
-          if (p.tipo === "aluno") {
-            acc[editalKey].alunos.add(p.user?.nome);
-            if (p.solicitarBolsa) {
-              acc[editalKey].solicitacoesBolsa += 1;
-            }
+          acc[editalKey].alunos.add(p.user?.nome);
+          if (p.solicitarBolsa) {
+            acc[editalKey].solicitacoesBolsa += 1;
           }
         });
       }
@@ -435,8 +435,8 @@ const Page = ({ params }) => {
           item.projeto?.InscricaoProjeto[0]?.FichaAvaliacao || []
         );
         const notaPlano = calcularMedia(item.FichaAvaliacao || []) || 0;
-        const notaOrientador = item.inscricao?.notaOrientador || 0;
-        const mediaAlunos = calcularMediaAlunos(item.participacoes) || 0;
+        const notaOrientador = item.notaOrientador || 0;
+        const mediaAlunos = item.notaAluno || 0;
         const mediaRA = calcularMediaRA(item.participacoes) || 0;
         const notaTotal =
           notaProjeto + notaPlano + notaOrientador + mediaAlunos;
@@ -459,10 +459,9 @@ const Page = ({ params }) => {
               ?.map((p) => `${p.user?.nome} (${p.status})`)
               ?.join("; ") || "Nenhum aluno vinculado",
           qtdSolicitacoesBolsa:
-            item.participacoes?.filter(
-              (p) => p.tipo === "aluno" && p.solicitarBolsa === true
-            ).length || 0,
-          notaProjeto: parseFloat(notaProjeto.toFixed(4)), // Convertendo para float com 2 casas decimais
+            item.participacoes?.filter((p) => p.solicitarBolsa === true)
+              .length || 0,
+          notaProjeto: notaProjeto, // Convertendo para float com 2 casas decimais
           diferencaNotasProjeto: parseFloat(
             calcularDiferencaNotas(
               item.projeto?.InscricaoProjeto[0]?.FichaAvaliacao
@@ -475,7 +474,7 @@ const Page = ({ params }) => {
           notaTotal: parseFloat(notaTotal.toFixed(4)),
         };
       });
-
+      console.log(itensComCamposVirtuais);
       setItens(itensComCamposVirtuais || []);
     } catch (error) {
       console.error("Erro ao buscar dados:", error);

@@ -7,6 +7,7 @@ import {
   ativarParticipacao,
   getParticipacao,
   inativarParticipacao,
+  substituirAlunoParticipacao,
 } from "@/app/api/client/participacao";
 import { Checkbox } from "primereact/checkbox";
 
@@ -34,6 +35,8 @@ import { formatarData } from "@/lib/formatarDatas";
 import { toggleStatusSolicitacaoBolsa } from "@/app/api/client/bolsa";
 import { Tag } from "primereact/tag";
 import { formatStatusText, getSeverityByStatus } from "@/lib/tagUtils";
+import { InputText } from "primereact/inputtext";
+import { InputTextarea } from "primereact/inputtextarea";
 
 const ParticipacaoGestorController = ({
   tenant,
@@ -48,8 +51,9 @@ const ParticipacaoGestorController = ({
   const [camposFormAluno, setCamposFormAluno] = useState([]);
   const [editalInfo, setEditalInfo] = useState(null);
   const [tipoParticipacao, setTipoParticipacao] = useState(null);
-  const [isModalAvaliadorOpen, setIsModalAvaliadorOpen] = useState(false);
-  const [avaliadorToEdit, setAvaliadorToEdit] = useState(null);
+  const [isModalSubstituicaoAlunoOpen, setIsModalSubstituicaoAlunoOpen] =
+    useState(false);
+  const [alunoToEdit, setAlunoToEdit] = useState(null);
   const [verifiedData, setVerifiedData] = useState(null);
   const [isModalCancelamentoOpen, setIsModalCancelamentoOpen] = useState(false);
   const [dataInativacao, setDataInativacao] = useState("");
@@ -305,58 +309,176 @@ const ParticipacaoGestorController = ({
               // 4. Falta data de inativação (se houver data de início)
               (item?.inicio && !dataInativacao)
             }
-            tooltip={
-              item?.statusParticipacao !== "APROVADA"
-                ? "Só é possível inativar participações com status APROVADA"
-                : item?.VinculoSolicitacaoBolsa?.some(
-                    (v) => v.status !== "RECUSADO"
-                  )
-                ? "Recuse todos os vínculos de bolsa antes de inativar"
-                : !justificativaInativacao
-                ? "Informe uma justificativa"
-                : item?.inicio && !dataInativacao
-                ? "Informe a data de inativação"
-                : "Confirmar inativação"
-            }
           />
         </div>
       </div>
     </Modal>
   );
 
-  const openModalAvaliador = (data) => {
+  const openModalSubstituicao = (data) => {
     setIsModalAvaliadorOpen(true);
-    setAvaliadorToEdit(data);
+    setAlunoToEdit(data);
     setVerifiedData(null);
   };
 
   const closeModalAvaliador = () => {
     setIsModalAvaliadorOpen(false);
-    setAvaliadorToEdit(null);
+    setAlunoToEdit(null);
     setVerifiedData(null);
   };
-  const renderModalAvaliador = () => (
-    <Modal isOpen={isModalAvaliadorOpen} onClose={closeModalAvaliador}>
+  // Estados para substituição de aluno
+  const [cpfVerificado, setCpfVerificado] = useState(null);
+  const [novoAluno, setNovoAluno] = useState(null);
+  const [motivoSubstituicao, setMotivoSubstituicao] = useState("");
+  const [dataInicioSubstituicao, setDataInicioSubstituicao] = useState(null);
+  const [loadingSubstituicao, setLoadingSubstituicao] = useState(false);
+
+  // Função para lidar com a substituição
+  const handleSubstituirAluno = async () => {
+    if (!motivoSubstituicao.trim()) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Erro",
+        detail: "Por favor, informe o motivo da substituição",
+        life: 3000,
+      });
+      return;
+    }
+
+    if (item?.inicio && !dataInicioSubstituicao) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Erro",
+        detail: "Por favor, informe a data de início para a nova participação",
+        life: 3000,
+      });
+      return;
+    }
+
+    try {
+      setLoadingSubstituicao(true);
+      const resultado = await substituirAlunoParticipacao(
+        tenant,
+        participacaoId,
+        cpfVerificado.userId,
+        motivoSubstituicao,
+        dataInicioSubstituicao
+          ? formatarDataParaBackend(dataInicioSubstituicao)
+          : null
+      );
+
+      toast.current?.show({
+        severity: "success",
+        summary: "Sucesso",
+        detail: "Aluno substituído com sucesso!",
+        life: 3000,
+      });
+
+      if (onSuccess) {
+        await onSuccess();
+      }
+      setCpfVerificado();
+      setNovoAluno();
+      setMotivoSubstituicao("");
+
+      setIsModalSubstituicaoAlunoOpen(false);
+    } catch (error) {
+      console.error("Erro ao substituir aluno:", error);
+      toast.current?.show({
+        severity: "error",
+        summary: "Erro",
+        detail: error.message || "Ocorreu um erro ao substituir o aluno",
+        life: 3000,
+      });
+    } finally {
+      setLoadingSubstituicao(false);
+    }
+  };
+
+  // Modal de substituição de aluno
+  const renderModalSubstituicaoAluno = () => (
+    <Modal
+      isOpen={isModalSubstituicaoAlunoOpen}
+      onClose={() => {
+        setIsModalSubstituicaoAlunoOpen(false);
+        setCpfVerificado();
+        setNovoAluno();
+        setMotivoSubstituicao("");
+      }}
+    >
       <div className="mb-2">
-        <h4>Editar Avaliador</h4>
-        <p>Preencha os dados abaixo para editar o avaliador.</p>
-        {!avaliadorToEdit && (
+        <h4 className="mb-2">Substituir Aluno</h4>
+
+        {!cpfVerificado ? (
           <CPFVerificationForm
             tenantSlug={tenant}
-            onCpfVerified={setVerifiedData}
-          />
-        )}
-        {(verifiedData || avaliadorToEdit) && (
-          <NewCargo
-            tenantSlug={tenant}
-            initialData={{ ...verifiedData, ...avaliadorToEdit }}
-            onClose={closeModalAvaliador}
-            onSuccess={() => {
-              // Adicione aqui qualquer lógica de sucesso necessária
-              closeModalAvaliador();
+            onCpfVerified={(data) => {
+              setCpfVerificado(data);
+              setNovoAluno(data);
             }}
-            //avaliador={true}
           />
+        ) : (
+          <div className="flex flex-column gap-3">
+            <div className="field mb-2">
+              <label htmlFor="novoAluno">Novo Aluno</label>
+              <InputText
+                className="w-100"
+                id="novoAluno"
+                value={novoAluno.nome}
+                disabled
+              />
+            </div>
+
+            <div className="field">
+              <label htmlFor="motivo">Motivo da Substituição *</label>
+              <InputTextarea
+                id="motivo"
+                value={motivoSubstituicao}
+                onChange={(e) => setMotivoSubstituicao(e.target.value)}
+                placeholder="Informe o motivo da substituição"
+              />
+            </div>
+
+            {item?.inicio && (
+              <div className="field">
+                <label htmlFor="dataInicio">Nova Data de Início *</label>
+                <Calendar
+                  id="dataInicio"
+                  value={dataInicioSubstituicao}
+                  onChange={(e) => setDataInicioSubstituicao(e.value)}
+                  dateFormat="dd/mm/yy"
+                  showIcon
+                />
+              </div>
+            )}
+
+            <div className="flex justify-content-end gap-1 mt-3">
+              <Button
+                label="Cancelar"
+                severity="secondary"
+                outlined
+                onClick={() => {
+                  setIsModalSubstituicaoAlunoOpen(false);
+                  setCpfVerificado();
+                  setNovoAluno();
+                  setMotivoSubstituicao("");
+                }}
+              />
+              <Button
+                label={
+                  loadingSubstituicao
+                    ? "Substituindo..."
+                    : "Confirmar Substituição"
+                }
+                icon={loadingSubstituicao ? "pi pi-spinner pi-spin" : ""}
+                onClick={handleSubstituirAluno}
+                disabled={
+                  !motivoSubstituicao.trim() ||
+                  (item?.inicio && !dataInicioSubstituicao)
+                }
+              />
+            </div>
+          </div>
         )}
       </div>
     </Modal>
@@ -529,7 +651,7 @@ const ParticipacaoGestorController = ({
   return (
     <>
       <Toast ref={toast} />
-      {renderModalAvaliador()}
+      {renderModalSubstituicaoAluno()}
       {renderModalCancelamento()}
       {loading && <p>Carregando...</p>}
       {item && !loading && (
@@ -566,8 +688,19 @@ const ParticipacaoGestorController = ({
                       )}
 
                       <div
-                        onClick={() => openModalAvaliador()}
+                        onClick={() => {
+                          setIsModalSubstituicaoAlunoOpen(true);
+                          setCpfVerificado();
+                          setNovoAluno();
+                          setMotivoSubstituicao("");
+                        }}
                         className={`${styles.action} ${styles.warning}`}
+                        disabled={item.statusParticipacao !== "APROVADA"}
+                        title={
+                          item.statusParticipacao !== "APROVADA"
+                            ? "Só é possível substituir alunos em participações com status APROVADA"
+                            : "Substituir aluno"
+                        }
                       >
                         <RiP2pFill />
                         <p>Substituir</p>
@@ -593,6 +726,18 @@ const ParticipacaoGestorController = ({
                       >
                         <RiUserUnfollowLine />
                         <p>Cancelar</p>
+                      </div>
+                      <div
+                        onClick={handleToggleStatusBolsa}
+                        className={`${styles.action} ${styles.normal}`}
+                        disabled={isLoadingToggle}
+                      >
+                        {isLoadingToggle ? (
+                          <i className="pi pi-spinner pi-spin" />
+                        ) : (
+                          <RiCheckboxCircleLine />
+                        )}
+                        <p>Ativar</p>
                       </div>
                     </div>
                   </div>
@@ -671,20 +816,8 @@ const ParticipacaoGestorController = ({
                           className={`${styles.userCard} mt-2`}
                         >
                           <div className={styles.user}>
-                            <h6>Bolsa</h6>
+                            <h6>Vinculação</h6>
                             <div className={styles.actions}>
-                              <div
-                                onClick={handleToggleStatusBolsa}
-                                className={`${styles.action} ${styles.warning}`}
-                                disabled={isLoadingToggle}
-                              >
-                                {isLoadingToggle ? (
-                                  <i className="pi pi-spinner pi-spin" />
-                                ) : (
-                                  <RiProhibited2Line />
-                                )}
-                                <p>Inativar</p>
-                              </div>
                               <div
                                 onClick={handleToggleStatusBolsa}
                                 className={`${styles.action} ${styles.normal}`}
@@ -697,33 +830,9 @@ const ParticipacaoGestorController = ({
                                 )}
                                 <p>Ativar</p>
                               </div>
-                              <div
-                                className={`${styles.action} ${styles.normal}`}
-                              >
-                                <RiExchangeLine />
-                                <p>Transferir</p>
-                              </div>
-                              <div
-                                className={`${styles.action} ${styles.error}`}
-                              >
-                                <RiSwapLine />
-                                <p>Devolver Bolsa</p>
-                              </div>
                             </div>
                           </div>
                           <div className={styles.contentCard}>
-                            <h6>Status da solicitação da Bolsa: </h6>
-                            <Tag
-                              className="mb-1"
-                              rounded
-                              severity={getSeverityByStatus(
-                                vinculo.solicitacaoBolsa?.status
-                              )}
-                            >
-                              {formatStatusText(
-                                vinculo.solicitacaoBolsa?.status
-                              )}
-                            </Tag>
                             <h6>Status da vinculação entre aluno e Bolsa: </h6>
                             <Tag
                               className="mb-1"
@@ -732,8 +841,50 @@ const ParticipacaoGestorController = ({
                             >
                               {formatStatusText(vinculo?.status)}
                             </Tag>
-                            <h6>Fonte pagadora: </h6>
-                            <p>Aluno deve aguardar disponbilização de bolsa</p>
+
+                            <div
+                              key={vinculo.id}
+                              className={`${styles.userCard} mt-2`}
+                            >
+                              <div className={styles.user}>
+                                <h6>Bolsa</h6>
+                                <div className={styles.actions}>
+                                  <div
+                                    className={`${styles.action} ${styles.normal}`}
+                                  >
+                                    <RiExchangeLine />
+                                    <p>Transferir</p>
+                                  </div>
+                                  <div
+                                    className={`${styles.action} ${styles.error}`}
+                                  >
+                                    <RiSwapLine />
+                                    <p>Devolver</p>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className={styles.contentCard}>
+                                <h6>Status da solicitação da Bolsa: </h6>
+                                <Tag
+                                  className="mb-1"
+                                  rounded
+                                  severity={getSeverityByStatus(
+                                    vinculo.solicitacaoBolsa?.status
+                                  )}
+                                >
+                                  {formatStatusText(
+                                    vinculo.solicitacaoBolsa?.status
+                                  )}
+                                </Tag>
+
+                                <h6>Fonte pagadora: </h6>
+                                <p>
+                                  {vinculo.solicitacaoBolsa?.bolsa?.cota
+                                    .instituicaoPagadora ||
+                                    "Aluno deve aguardar disponbilização de bolsa"}
+                                </p>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       ))}

@@ -234,8 +234,8 @@ const Page = ({ params }) => {
       }
 
       // Projetos únicos
-      if (item.projetoId) {
-        acc[editalKey].projetos.add(item.projetoId);
+      if (item.inscricaoProjeto?.projeto?.id) {
+        acc[editalKey].projetos.add(item.inscricaoProjeto.projeto.id);
       }
 
       // Planos únicos
@@ -244,20 +244,16 @@ const Page = ({ params }) => {
       // Orientadores
       if (item.inscricao?.participacoes) {
         item.inscricao.participacoes.forEach((p) => {
-          if (p.tipo === "orientador") {
-            acc[editalKey].orientadores.add(p.user?.nome);
-          }
+          acc[editalKey].orientadores.add(p.user?.nome);
         });
       }
 
       // Alunos e solicitações de bolsa
       if (item.participacoes) {
         item.participacoes.forEach((p) => {
-          if (p.tipo === "aluno") {
-            acc[editalKey].alunos.add(p.user?.nome);
-            if (p.solicitarBolsa) {
-              acc[editalKey].solicitacoesBolsa += 1;
-            }
+          acc[editalKey].alunos.add(p.user?.nome);
+          if (p.solicitarBolsa) {
+            acc[editalKey].solicitacoesBolsa += 1;
           }
         });
       }
@@ -328,9 +324,8 @@ const Page = ({ params }) => {
             ?.map((p) => `${p.user?.nome} (${p.status})`)
             ?.join("; ") || "Nenhum aluno vinculado",
         qtdSolicitacoesBolsa:
-          item.participacoes?.filter(
-            (p) => p.tipo === "aluno" && p.solicitarBolsa === true
-          ).length || 0,
+          item.participacoes?.filter((p) => p.solicitarBolsa === true).length ||
+          0,
       }));
 
       setItens(itensComCamposVirtuais || []);
@@ -412,8 +407,11 @@ const Page = ({ params }) => {
               <div className={styles.left}>
                 <h5>
                   {
-                    new Set(itens.map((item) => item.projetoId).filter(Boolean))
-                      .size
+                    new Set(
+                      itens
+                        .map((item) => item.inscricaoProjeto?.projeto?.id)
+                        .filter(Boolean)
+                    ).size
                   }
                 </h5>
               </div>
@@ -439,7 +437,6 @@ const Page = ({ params }) => {
                       itens.flatMap(
                         (item) =>
                           item.inscricao?.participacoes
-                            ?.filter((p) => p.tipo === "orientador")
                             ?.map((p) => p.user?.nome)
                             ?.filter(Boolean) || []
                       )
@@ -460,7 +457,6 @@ const Page = ({ params }) => {
                       itens.flatMap(
                         (item) =>
                           item.participacoes
-                            ?.filter((p) => p.tipo === "aluno")
                             ?.map((p) => p.user?.nome)
                             ?.filter(Boolean) || []
                       )

@@ -334,3 +334,49 @@ export const validarParticipacao = async (tenantSlug, idParticipacao) => {
     throw error;
   }
 };
+
+/**************************
+ * SUBSTITUIR PARTICIPAÇÃO DE ALUNO
+ **************************/
+export const substituirAlunoParticipacao = async (
+  tenantSlug,
+  participacaoId,
+  userId,
+  motivo,
+  dataInicio
+) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      throw new Error('Não autenticado');
+    }
+
+    const response = await req.put(
+      `/private/${tenantSlug}/substituicao/aluno`,
+      { participacaoId, userId, motivo, dataInicio },
+      { headers }
+    );
+
+    return response.data;
+  } catch (error) {
+    // Tratamento específico para erros 400 (validação)
+    if (error.response?.status === 400) {
+      const errorMessage = error.response.data?.message || 'Dados inválidos para substituição';
+      throw new Error(errorMessage);
+    }
+
+    // Tratamento específico para erro 404 (não encontrado)
+    if (error.response?.status === 404) {
+      throw new Error('Participação ou usuário não encontrado');
+    }
+
+    // Tratamento específico para erro 403 (sem permissão)
+    if (error.response?.status === 403) {
+      throw new Error('Você não tem permissão para realizar esta substituição');
+    }
+
+    // Tratamento para outros erros
+    console.error("Erro ao substituir participação de aluno:", error);
+    throw new Error(error.response?.data?.message || 'Erro ao substituir participação de aluno');
+  }
+};
