@@ -22,7 +22,16 @@ import { Dropdown } from "primereact/dropdown";
 import { FilterService } from "primereact/api";
 import { InputNumber } from "primereact/inputnumber";
 import { Tag } from "primereact/tag";
-import { formatStatusText, getSeverityByStatus } from "@/lib/tagUtils";
+import {
+  formatStatusText,
+  getSeverityByStatus,
+  renderStatusTagWithJustificativa,
+} from "@/lib/tagUtils";
+import {
+  notaRowFilterTemplate,
+  statusClassificacaoFilterTemplate,
+} from "@/lib/tableTemplates";
+import { statusOptions } from "@/lib/statusOptions";
 
 // Filtro customizado para intervalo de IRA
 FilterService.register("ira_intervalo", (value, filters) => {
@@ -45,9 +54,10 @@ const Page = ({ params }) => {
   const [loadingAprovar, setLoadingAprovar] = useState(false);
   const [loadingReprovar, setLoadingReprovar] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [justificativasAtuais, setJustificativasAtuais] = useState("");
+  const [showJustificativas, setShowJustificativas] = useState(false);
 
   // Opções para os filtros
-  const [statusOptions, setStatusOptions] = useState([]);
   const [cursosOptions, setCursosOptions] = useState([]);
   const [formasIngressoOptions, setFormasIngressoOptions] = useState([]);
   const [editaisOptions, setEditaisOptions] = useState([]);
@@ -70,7 +80,12 @@ const Page = ({ params }) => {
       value: null,
       matchMode: FilterMatchMode.IN,
     },
+
     statusParticipacao: {
+      value: null,
+      matchMode: FilterMatchMode.IN,
+    },
+    "planoDeTrabalho.statusClassificacao": {
       value: null,
       matchMode: FilterMatchMode.IN,
     },
@@ -121,53 +136,6 @@ const Page = ({ params }) => {
     );
   };
 
-  // Componente para a tag de status
-  // Componente para a tag de status
-  const StatusTag = ({ status, justificativa }) => {
-    const [showModal, setShowModal] = useState(false);
-
-    // Mapeamento de cores para cada status
-    const getSeverity = (status) => {
-      switch (status?.toLowerCase()) {
-        case "aprovada":
-          return "success";
-        case "reprovada":
-        case "reprovado":
-          return "danger";
-        case "pendente":
-          return "warning";
-        case "completo":
-          return "info";
-        case "enviada":
-          return "primary";
-        default:
-          return null;
-      }
-    };
-
-    const formattedStatus =
-      status?.charAt(0).toUpperCase() + status?.slice(1).toLowerCase();
-
-    return (
-      <>
-        <div
-          className="flex align-items-center gap-2 cursor-pointer"
-          onClick={() => justificativa && setShowModal(true)}
-          style={{ display: "inline-flex" }}
-        >
-          <Tag rounded severity={getSeverityByStatus(status)}>
-            {formatStatusText(status)}
-          </Tag>
-        </div>
-
-        <JustificativaModal
-          justificativa={justificativa}
-          visible={showModal}
-          onHide={() => setShowModal(false)}
-        />
-      </>
-    );
-  };
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -207,7 +175,6 @@ const Page = ({ params }) => {
           .filter(Boolean)
           .map((edital) => ({ label: edital, value: edital }));
 
-        setStatusOptions(statusUnicos);
         setCursosOptions(cursosUnicos);
         setFormasIngressoOptions(formasIngressoUnicas);
         setEditaisOptions(editaisUnicos);
@@ -244,20 +211,7 @@ const Page = ({ params }) => {
   };
 
   // Template genérico para filtros MultiSelect
-  const multiSelectFilterTemplate = (options, filterOptions) => {
-    return (
-      <MultiSelect
-        value={options.value || []}
-        options={filterOptions}
-        onChange={(e) => options.filterApplyCallback(e.value || [])}
-        optionLabel="label"
-        placeholder="Selecione"
-        className="p-column-filter"
-        maxSelectedLabels={3}
-        style={{ minWidth: "14rem" }}
-      />
-    );
-  };
+
   const BATCH_SIZE = 20;
 
   const processarEmLotes = async (ids, callback) => {
@@ -540,27 +494,35 @@ const Page = ({ params }) => {
               filter
               filterField="inscricao.edital.titulo"
               filterElement={(options) =>
-                multiSelectFilterTemplate(options, editaisOptions)
+                statusClassificacaoFilterTemplate(options, editaisOptions)
               }
+              body={(rowData) => rowData.inscricao.edital.titulo}
               showFilterMenu={false}
             />
             <Column
               field="planoDeTrabalho.statusClassificacao"
               header="Status Plano de Trabalho"
               sortable
+              filter
               showFilterMenu={false}
-              body={(rowData) => (
-                <Tag
-                  rounded
-                  severity={getSeverityByStatus(
-                    rowData.planoDeTrabalho.statusClassificacao
-                  )}
-                >
-                  {formatStatusText(
-                    rowData.planoDeTrabalho.statusClassificacao
-                  )}
-                </Tag>
-              )}
+              filterElement={(options) =>
+                statusClassificacaoFilterTemplate(
+                  options,
+                  statusOptions.classificacao
+                )
+              }
+              body={(rowData) =>
+                renderStatusTagWithJustificativa(
+                  rowData.planoDeTrabalho.statusClassificacao,
+                  rowData.planoDeTrabalho.justificativa,
+                  {
+                    onShowJustificativa: (justificativa) => {
+                      setJustificativasAtuais(justificativa);
+                      setShowJustificativas(true);
+                    },
+                  }
+                )
+              }
             />
             {/* Coluna Status com MultiSelect */}
             <Column
@@ -568,16 +530,25 @@ const Page = ({ params }) => {
               header="Status"
               sortable
               filter
-              filterElement={(options) =>
-                multiSelectFilterTemplate(options, statusOptions)
-              }
               showFilterMenu={false}
-              body={(rowData) => (
-                <StatusTag
-                  status={rowData.statusParticipacao}
-                  justificativa={rowData.justificativa}
-                />
-              )}
+              filterElement={(options) =>
+                statusClassificacaoFilterTemplate(
+                  options,
+                  statusOptions.participacao
+                )
+              }
+              body={(rowData) =>
+                renderStatusTagWithJustificativa(
+                  rowData.statusParticipacao,
+                  rowData.justificativa,
+                  {
+                    onShowJustificativa: (justificativa) => {
+                      setJustificativasAtuais(justificativa);
+                      setShowJustificativas(true);
+                    },
+                  }
+                )
+              }
             />
 
             <Column
@@ -609,7 +580,7 @@ const Page = ({ params }) => {
               filter
               filterField="user.UserTenant.0.curso.curso"
               filterElement={(options) =>
-                multiSelectFilterTemplate(options, cursosOptions)
+                statusClassificacaoFilterTemplate(options, cursosOptions)
               }
               showFilterMenu={false}
             />
@@ -622,50 +593,24 @@ const Page = ({ params }) => {
               filter
               filterField="user.UserTenant.0.formaIngresso.formaIngresso"
               filterElement={(options) =>
-                multiSelectFilterTemplate(options, formasIngressoOptions)
+                statusClassificacaoFilterTemplate(
+                  options,
+                  formasIngressoOptions
+                )
               }
               showFilterMenu={false}
             />
-
             <Column
               field="ira"
-              header="IRA"
+              header="Rendimento Acadêmico"
               sortable
-              dataType="numeric"
               filter
               filterField="ira"
+              filterElement={notaRowFilterTemplate}
               filterMatchMode="ira_intervalo"
-              filterElement={(options) => {
-                const [min, max] = options.value || [null, null];
-                return (
-                  <div className="flex gap-1" style={{ alignItems: "center" }}>
-                    <InputNumber
-                      value={min}
-                      onChange={(e) =>
-                        options.filterApplyCallback([e.value, max])
-                      }
-                      placeholder="Mín"
-                      mode="decimal"
-                      minFractionDigits={2}
-                      maxFractionDigits={4}
-                      style={{ width: "5rem" }}
-                    />
-                    <span>a</span>
-                    <InputNumber
-                      value={max}
-                      onChange={(e) =>
-                        options.filterApplyCallback([min, e.value])
-                      }
-                      placeholder="Máx"
-                      mode="decimal"
-                      minFractionDigits={2}
-                      maxFractionDigits={4}
-                      style={{ width: "5rem" }}
-                    />
-                  </div>
-                );
-              }}
-              body={(rowData) => getIra(rowData)}
+              dataType="numeric"
+              body={(rowData) => rowData.ira}
+              style={{ textAlign: "left", width: "8rem" }}
             />
 
             <Column
@@ -735,6 +680,17 @@ const Page = ({ params }) => {
             </small>
           </div>
         )}
+      </Dialog>
+      {/* Modal de Justificativas */}
+      <Dialog
+        header="Justificativas"
+        visible={showJustificativas}
+        style={{ width: "50vw" }}
+        onHide={() => setShowJustificativas(false)}
+      >
+        <div style={{ whiteSpace: "pre-line", marginBottom: "12px" }}>
+          {justificativasAtuais}
+        </div>
       </Dialog>
     </main>
   );

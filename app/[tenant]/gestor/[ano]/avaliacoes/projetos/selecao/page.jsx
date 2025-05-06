@@ -44,7 +44,7 @@ const Page = ({ params }) => {
   return (
     <>
       <main className={styles.main}>
-        <Header className="mb-3" titulo="Seleção de Planos de Trabalho" />
+        <Header className="mb-3" titulo="Aplicar nota de corte" />
         <TabelaPlanoDeTrabalho params={params} />
       </main>
     </>
