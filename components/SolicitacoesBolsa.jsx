@@ -442,6 +442,7 @@ const SolicitacoesBolsa = ({}) => {
   const hasSolicitacoesEmAnalise = processedData.some(
     (item) => item.solicitacaoBolsa?.status === "EM_ANALISE"
   );
+  console.log(hasSolicitacoesEmAnalise);
   const renderHeader = () => {
     return (
       <div className="justify-content-between align-items-center">
@@ -457,7 +458,7 @@ const SolicitacoesBolsa = ({}) => {
             onClick={clearFilters}
             className="p-button-outlined p-button-secondary"
           />
-          {hasSolicitacoesEmAnalise && (
+          {true && (
             <Button
               label={`Processar Solicitações`}
               icon="pi pi-cog"
