@@ -63,6 +63,9 @@ a.linkFile{
     padding: $gap-1 $gap-2;
     
 }
+.p-button-info svg{
+    width: 20px;
+}
 
 .btn-primary, .p-button-success {
     background-color: $primary-dark;

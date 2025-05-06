@@ -431,9 +431,8 @@ const Page = ({ params }) => {
       );
       console.log(itens);
       const itensComCamposVirtuais = itens.map((item) => {
-        const notaProjeto = calcularMedia(
-          item.projeto?.InscricaoProjeto[0]?.FichaAvaliacao || []
-        );
+        const notaProjeto =
+          calcularMedia(item.inscricaoProjeto?.FichaAvaliacao || []) || 0;
         const notaPlano = calcularMedia(item.FichaAvaliacao || []) || 0;
         const notaOrientador = item.notaOrientador || 0;
         const mediaAlunos = item.notaAluno || 0;
