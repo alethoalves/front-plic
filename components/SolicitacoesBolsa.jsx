@@ -2,9 +2,19 @@
 import { useParams } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import {
+  // ===== ENDPOINTS JÁ EXISTENTES =====
   getVinculosByTenant,
   processarSolicitacoesBolsa,
+  aprovarVinculo,
+  recusarVinculo,
+  // ===== ENDPOINTS DE COTAS/BOLSAS =====
+  createCota,
+  deleteCota,
+  getCotas,
+  alocarBolsa,
+  desalocarBolsa,
 } from "@/app/api/client/bolsa";
+
 import { Card } from "primereact/card";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
@@ -14,22 +24,29 @@ import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { InputTextarea } from "primereact/inputtextarea";
 import { ProgressBar } from "primereact/progressbar";
-import { FilterMatchMode, FilterOperator } from "primereact/api";
-import styles from "./SolicitacoesBolsa.module.scss";
+import { FilterMatchMode } from "primereact/api";
 import { InputText } from "primereact/inputtext";
 import { FilterService } from "primereact/api";
+
 import {
   notaRowFilterTemplate,
   statusClassificacaoFilterTemplate,
 } from "@/lib/tableTemplates";
 import {
-  formatStatusText,
-  getSeverityByStatus,
   renderStatusTagWithJustificativa,
+  getSeverityByStatus,
 } from "@/lib/tagUtils";
-import { aprovarVinculo, recusarVinculo } from "@/app/api/client/bolsa";
 import { statusOptions } from "@/lib/statusOptions";
 
+import {
+  RiAddCircleLine,
+  RiPencilLine,
+  RiDeleteBinLine,
+} from "@remixicon/react";
+
+import styles from "./SolicitacoesBolsa.module.scss";
+
+/* ----------------------------- filtros custom ---------------------------- */
 FilterService.register("intervalo", (value, filters) => {
   const [min, max] = filters || [null, null];
   if (min === null && max === null) return true;
@@ -37,8 +54,10 @@ FilterService.register("intervalo", (value, filters) => {
   if (max !== null && value > max) return false;
   return true;
 });
+
 const getInitialFilters = () => ({
   global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  /* ---------- filtros já existentes ---------- */
   "participacao.inscricao.edital.titulo": {
     value: null,
     matchMode: FilterMatchMode.IN,
@@ -51,448 +70,488 @@ const getInitialFilters = () => ({
     value: null,
     matchMode: FilterMatchMode.IN,
   },
-  "solicitacaoBolsa.status": {
-    value: null,
-    matchMode: FilterMatchMode.IN,
-  },
-  orientadores: {
-    // Novo filtro para orientadores
-    value: null,
-    matchMode: FilterMatchMode.CONTAINS,
-  },
+  "solicitacaoBolsa.status": { value: null, matchMode: FilterMatchMode.IN },
+  orientadores: { value: null, matchMode: FilterMatchMode.CONTAINS },
   status: { value: null, matchMode: FilterMatchMode.IN },
   "participacao.user.nome": {
     value: null,
     matchMode: FilterMatchMode.CONTAINS,
   },
-  vinculosAprovados: {
-    value: [null, null],
-    matchMode: "intervalo",
-  },
-  notaTotal: {
-    value: [null, null],
-    matchMode: "intervalo",
-  },
-  rendimentoAcademico: {
-    value: [null, null],
-    matchMode: "intervalo",
-  },
+  vinculosAprovados: { value: [null, null], matchMode: "intervalo" },
+  notaTotal: { value: [null, null], matchMode: "intervalo" },
+  rendimentoAcademico: { value: [null, null], matchMode: "intervalo" },
   "solicitacaoBolsa.ordemRecebimentoBolsa": {
     value: [null, null],
     matchMode: "intervalo",
   },
+  /* ---------- novo filtro de Bolsa (cota) ---------- */
+  instituicaoPagadora: { value: null, matchMode: FilterMatchMode.IN },
 });
-const SolicitacoesBolsa = ({}) => {
-  const params = useParams();
-  const { tenant, ano } = params;
+
+/* ======================================================================= */
+/*                               COMPONENTE                                */
+/* ======================================================================= */
+export default function SolicitacoesBolsa() {
+  const { tenant, ano } = useParams();
   const toast = useRef(null);
 
-  // Estados principais
+  /* ------------------------- estados principais ------------------------- */
   const [processedData, setProcessedData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  /* ---- seleção, processamento em lote, aprovação/recusa de vínculo ---- */
   const [selectedItems, setSelectedItems] = useState([]);
   const [loadingProcessar, setLoadingProcessar] = useState(false);
   const [progressProcessar, setProgressProcessar] = useState(0);
-  // Estados para diálogos
+  const [loadingAprovarVinculo, setLoadingAprovarVinculo] = useState(false);
+  const [loadingRecusarVinculo, setLoadingRecusarVinculo] = useState(false);
   const [displayNegarDialog, setDisplayNegarDialog] = useState(false);
   const [justificativa, setJustificativa] = useState("");
+
+  /* ----------------------- estados de filtros UI ----------------------- */
+  const [filters, setFilters] = useState(getInitialFilters());
+  const [globalFilterValue, setGlobalFilterValue] = useState("");
   const [editaisOptions, setEditaisOptions] = useState([]);
   const [classificacaoStatusOptions, setClassificacaoStatusOptions] = useState(
     []
   );
-  const [solicitacaoStatusOptions, setSolicitacaoStatusOptions] = useState([]);
-  const [vinculoStatusOptions, setVinculoStatusOptions] = useState([]);
   const [participacaoStatusOptions, setParticipacaoStatusOptions] = useState(
     []
   );
-  const [loadingAprovarVinculo, setLoadingAprovarVinculo] = useState(false);
-  const [loadingRecusarVinculo, setLoadingRecusarVinculo] = useState(false);
+  const [solicitacaoStatusOptions, setSolicitacaoStatusOptions] = useState([]);
+  const [vinculoStatusOptions, setVinculoStatusOptions] = useState([]);
+  const [
+    instituicoesPagadorasDisponiveis,
+    setInstituicoesPagadorasDisponiveis,
+  ] = useState([]);
 
-  // Estados para loading
-  const [loadingNegar, setLoadingNegar] = useState(false);
-  const [progress, setProgress] = useState(0);
-  // Estados para o diálogo de justificativa
-  const [displayJustificativaDialog, setDisplayJustificativaDialog] =
-    useState(false);
-  const [justificativaAtual, setJustificativaAtual] = useState("");
+  /* --------------------------- Cotas & bolsas --------------------------- */
+  const [cotas, setCotas] = useState([]);
+  const [distribuindo, setDistribuindo] = useState(false);
+  const [desalocando, setDesalocando] = useState(false);
+  const [progressoDistribuicao, setProgressoDistribuicao] = useState({
+    atual: 0,
+    total: 0,
+  });
+  const [showCotaModal, setShowCotaModal] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [currentCota, setCurrentCota] = useState(null);
+  const [cotaForm, setCotaForm] = useState({
+    ano: parseInt(ano),
+    quantidadeBolsas: 0,
+    instituicaoPagadora: "",
+  });
 
-  // Função para mostrar o diálogo
-  const showJustificativaDialog = (justificativa) => {
-    setJustificativaAtual(justificativa);
-    setDisplayJustificativaDialog(true);
-  };
-
-  // Efeito para disponibilizar a função globalmente
-  useEffect(() => {
-    window.showJustificativaDialog = showJustificativaDialog;
-    return () => {
-      delete window.showJustificativaDialog;
-    };
-  }, []);
-  // Estados para diálogos
-  // Filtros
-  // Estado dos filtros usando a função utilitária
-  const [filters, setFilters] = useState(getInitialFilters());
-  const [globalFilterValue, setGlobalFilterValue] = useState("");
-
-  const onGlobalFilterChange = (e) => {
-    const value = e.target.value;
-    let _filters = { ...filters };
-    _filters["global"].value = value;
-    setFilters(_filters);
-    setGlobalFilterValue(value);
-  };
-  const clearFilters = () => {
-    setFilters(getInitialFilters());
-    setGlobalFilterValue("");
-  };
-  // Extrair a lógica de processamento para uma função reutilizável
+  /* ==================================================================== */
+  /*                  FUNÇÃO DE PRÉ‑PROCESSAMENTO DOS DADOS               */
+  /* ==================================================================== */
   const processarDados = async (rawData) => {
-    // Extrair editais únicos
-    const editaisUnicos = [
-      ...new Set(
-        rawData.map(
-          (item) => item.participacao?.inscricao?.edital?.titulo || "N/A"
-        )
-      ),
-    ]
-      .filter(Boolean)
-      .map((edital) => ({ label: edital, value: edital }));
-
-    setEditaisOptions(editaisUnicos);
-
+    /* opções de filtros globais */
+    setEditaisOptions(
+      [
+        ...new Set(
+          rawData.map((i) => i.participacao?.inscricao?.edital?.titulo || "N/A")
+        ),
+      ]
+        .filter(Boolean)
+        .map((edital) => ({ label: edital, value: edital }))
+    );
     setClassificacaoStatusOptions(statusOptions.classificacao);
     setParticipacaoStatusOptions(statusOptions.participacao);
     setSolicitacaoStatusOptions(statusOptions.solicitacao);
     setVinculoStatusOptions(statusOptions.vinculo);
 
-    const countVinculosAprovadosPorAluno = (data) => {
-      const contagemPorAluno = {};
+    /* contagem de vínculos aprovados por aluno */
+    const countAprovados = {};
+    rawData.forEach((item) => {
+      const alunoId = item.participacao?.user?.id;
+      if (!alunoId) return;
+      if (!countAprovados[alunoId]) countAprovados[alunoId] = 0;
+      if (item.status === "APROVADO") countAprovados[alunoId]++;
+    });
 
-      data.forEach((item) => {
-        const alunoId = item.participacao?.user?.id;
-        if (alunoId) {
-          if (!contagemPorAluno[alunoId]) {
-            contagemPorAluno[alunoId] = 0;
-          }
-          if (item.status === "APROVADO") {
-            contagemPorAluno[alunoId]++;
-          }
-        }
-      });
-
-      return contagemPorAluno;
-    };
-
-    // Primeiro conta os vínculos aprovados por aluno
-    const contagemAprovados = countVinculosAprovadosPorAluno(rawData);
-
-    const rawDataComNotaTotal = rawData.map((item) => {
+    return rawData.map((item) => {
       const plano = item.participacao?.planoDeTrabalho;
       const notaTotal = plano
         ? (
-            (plano.notaAluno || 0) +
-            (plano.notaOrientador || 0) +
-            (plano.notaPlano || 0) +
-            (plano.notaProjeto || 0)
+            plano.notaAluno +
+            plano.notaOrientador +
+            plano.notaPlano +
+            plano.notaProjeto
           ).toFixed(4)
         : null;
-      const alunoId = item.participacao?.user?.id;
       const orientadores =
         item.participacao?.inscricao?.participacoes
-          ?.map((part) => part.user?.nome)
+          ?.map((p) => p.user?.nome)
           .filter(Boolean)
           .join(", ") || "N/A";
+
       return {
         ...item,
         notaTotal: notaTotal ? parseFloat(notaTotal) : null,
         rendimentoAcademico:
-          item.participacao.user.UserTenant[0].rendimentoAcademico,
-        vinculosAprovados: alunoId ? contagemAprovados[alunoId] || 0 : 0,
+          item.participacao?.user?.UserTenant[0]?.rendimentoAcademico,
+        vinculosAprovados: countAprovados[item.participacao.user.id] || 0,
         orientadores,
+        /* --------- campo usado para coluna/filtragem de bolsa ---------- */
+        instituicaoPagadora:
+          item.solicitacaoBolsa?.bolsa?.cota?.instituicaoPagadora ??
+          "Não alocado",
       };
     });
-
-    return rawDataComNotaTotal;
   };
+  /* ------ Justificativa: estado + função para abrir dialog ------ */
+  const [displayJustificativaDialog, setDisplayJustificativaDialog] =
+    useState(false);
+  const [justificativaAtual, setJustificativaAtual] = useState("");
 
-  // Atualizar o useEffect para usar a função processarDados
+  const showJustificativaDialog = (texto) => {
+    setJustificativaAtual(texto);
+    setDisplayJustificativaDialog(true);
+  };
+  /* ==================================================================== */
+  /*                              LOAD DATA                               */
+  /* ==================================================================== */
   useEffect(() => {
-    const fetchAndProcessData = async () => {
+    const fetchEverything = async () => {
       try {
         setLoading(true);
-        const rawData = await getVinculosByTenant(tenant, ano);
-        console.log(rawData);
-
-        const processed = await processarDados(rawData);
+        /* -- vínculos -- */
+        const rawVinculos = await getVinculosByTenant(tenant, ano);
+        const processed = await processarDados(rawVinculos);
         setProcessedData(processed);
+
+        /* -- cotas -- */
+        const cotasResp = await getCotas(tenant, ano);
+        setCotas(cotasResp.cotas || []);
+
+        /* opções de instituições */
+        const insts = [
+          ...new Set((cotasResp.cotas || []).map((c) => c.instituicaoPagadora)),
+        ].filter(Boolean);
+        setInstituicoesPagadorasDisponiveis([
+          { label: "Não alocado", value: "Não alocado" },
+          ...insts.map((i) => ({ label: i, value: i })),
+        ]);
       } catch (err) {
         setError(err);
-        console.error("Failed to fetch solicitacoes:", err);
       } finally {
         setLoading(false);
       }
     };
-    fetchAndProcessData();
+    fetchEverything();
   }, [tenant, ano]);
 
-  // Atualizar handleProcessarSolicitacoes para processar os dados após a atualização
-  const handleProcessarSolicitacoes = async () => {
-    setLoadingProcessar(true);
-    setProgressProcessar(0);
+  /* ==================================================================== */
+  /*                            CRUD DE COTAS                             */
+  /* ==================================================================== */
+  const resetCotaForm = () =>
+    setCotaForm({
+      ano: parseInt(ano),
+      quantidadeBolsas: 0,
+      instituicaoPagadora: "",
+    });
 
+  const handleCreateCota = async () => {
     try {
-      const ids = processedData
-        .map((item) => item.solicitacaoBolsa?.id)
-        .filter(Boolean);
-
-      // Dividir em lotes de 10 IDs
-      const batchSize = 10;
-      const batches = [];
-      for (let i = 0; i < ids.length; i += batchSize) {
-        batches.push(ids.slice(i, i + batchSize));
-      }
-
-      let totalProcessed = 0;
-
-      for (const batch of batches) {
-        try {
-          const response = await processarSolicitacoesBolsa(tenant, batch);
-
-          toast.current.show({
-            severity: "success",
-            summary: "Processado",
-            detail: `Lote de ${batch.length} solicitações processado com sucesso`,
-            life: 3000,
-          });
-
-          totalProcessed += batch.length;
-          setProgressProcessar(Math.round((totalProcessed / ids.length) * 100));
-
-          // Atualizar os dados após cada lote
-          const rawData = await getVinculosByTenant(tenant, ano);
-          const processed = await processarDados(rawData);
-          setProcessedData(processed);
-        } catch (error) {
-          console.error("Erro no lote:", error);
-          toast.current.show({
-            severity: "error",
-            summary: "Erro no lote",
-            detail: error.message || "Erro ao processar lote de solicitações",
-            life: 4000,
-          });
-        }
-      }
-
-      toast.current.show({
-        severity: "success",
-        summary: "Concluído",
-        detail: `Processamento concluído! ${totalProcessed} de ${ids.length} solicitações processadas`,
-        life: 5000,
+      const { quota } = await createCota(tenant, {
+        ...cotaForm,
+        tenantId: tenant,
       });
-    } catch (error) {
-      console.error("Erro geral:", error);
-      toast.current.show({
-        severity: "error",
-        summary: "Erro",
-        detail: error.message || "Erro ao processar solicitações",
-        life: 4000,
-      });
+      setCotas((prev) => [...prev, quota]);
+      showToast("success", "Sucesso", "Cota criada!");
+    } catch (e) {
+      showToast("error", "Erro", "Falha ao criar cota");
     } finally {
-      setLoadingProcessar(false);
-      setProgressProcessar(0);
+      setShowCotaModal(false);
+      resetCotaForm();
     }
   };
 
-  const handleAprovarVinculo = async () => {
-    if (selectedItems.length === 0) {
-      toast.current.show({
-        severity: "warn",
-        summary: "Aviso",
-        detail: "Selecione pelo menos um vínculo para aprovar",
-        life: 3000,
-      });
-      return;
-    }
-
-    setLoadingAprovarVinculo(true);
-
+  const handleUpdateCota = async () => {
     try {
-      let sucesso = 0;
+      const { quota } = await updateCota(tenant, currentCota.id, cotaForm);
+      setCotas((prev) => prev.map((c) => (c.id === quota.id ? quota : c)));
+      showToast("success", "Sucesso", "Cota atualizada!");
+    } catch (e) {
+      showToast("error", "Erro", "Falha ao atualizar cota");
+    } finally {
+      setShowCotaModal(false);
+      resetCotaForm();
+    }
+  };
 
-      for (const item of selectedItems) {
-        const response = await aprovarVinculo(tenant, item.id);
+  const handleDeleteCota = async () => {
+    try {
+      await deleteCota(tenant, currentCota.id);
+      setCotas((prev) => prev.filter((c) => c.id !== currentCota.id));
+      showToast("success", "Sucesso", "Cota excluída!");
+    } catch (e) {
+      showToast("error", "Erro", "Falha ao excluir cota");
+    } finally {
+      setShowDeleteDialog(false);
+    }
+  };
 
-        toast.current.show({
-          severity: response.status === "success" ? "success" : "error",
-          summary: "Resultado",
-          detail: response.message,
-          life: 4000,
+  /* ==================================================================== */
+  /*                    DISTRIBUIÇÃO / DESALOC. DE BOLSAS                 */
+  /* ==================================================================== */
+  const distribuirBolsasParaSelecionados = async (cotaId) => {
+    if (!selectedItems.length)
+      return showToast("warn", "Aviso", "Nenhuma solicitação selecionada.");
+
+    setDistribuindo(true);
+    setProgressoDistribuicao({ atual: 0, total: selectedItems.length });
+
+    for (let i = 0; i < selectedItems.length; i++) {
+      const item = selectedItems[i];
+      try {
+        const {
+          solicitacaoBolsa,
+          bolsa,
+          cotas: updatedCotas,
+        } = await alocarBolsa(tenant, {
+          solicitacaoBolsaId: item.solicitacaoBolsa.id,
+          cotaId,
+        }).then((r) => r.data);
+
+        /* ---- atualiza linha ---- */
+        setProcessedData((prev) =>
+          prev.map((p) =>
+            p.id === item.id
+              ? {
+                  ...p,
+                  solicitacaoBolsa: { ...solicitacaoBolsa, bolsaId: bolsa.id },
+                  instituicaoPagadora: bolsa?.cota?.instituicaoPagadora,
+                }
+              : p
+          )
+        );
+
+        /* ---- atualiza cotas ---- */
+        setCotas(updatedCotas);
+
+        /* ---- garante filtro ---- */
+        setInstituicoesPagadorasDisponiveis((prev) => {
+          const nome = bolsa.cota?.instituicaoPagadora;
+          return prev.some((opt) => opt.value === nome)
+            ? prev
+            : [...prev, { label: nome, value: nome }];
         });
 
-        if (response.status === "success") {
-          sucesso++;
+        showToast("success", "Bolsa alocada");
+      } catch (err) {
+        const msg = err?.response?.data?.message || "Erro ao alocar bolsa";
+        showToast("error", "Erro", msg);
+        if (msg.includes("Não há bolsas disponíveis")) break;
+      }
 
-          setProcessedData((prevData) =>
-            prevData.map((prevItem) =>
-              prevItem.id === item.id
+      setProgressoDistribuicao((p) => ({ ...p, atual: p.atual + 1 }));
+    }
+
+    setDistribuindo(false);
+    setSelectedItems([]);
+  };
+
+  const desalocarBolsasSelecionadas = async () => {
+    if (!selectedItems.length)
+      return showToast("warn", "Aviso", "Nenhuma solicitação selecionada.");
+
+    setDesalocando(true);
+
+    for (const item of selectedItems.filter(
+      (i) => i.solicitacaoBolsa?.bolsaId
+    )) {
+      try {
+        await desalocarBolsa(tenant, {
+          solicitacaoBolsaId: item.solicitacaoBolsa.id,
+        });
+
+        const cotaId = item.solicitacaoBolsa?.bolsa?.cota?.id;
+        /* ---- linha ---- */
+        setProcessedData((prev) =>
+          prev.map((p) =>
+            p.id === item.id
+              ? {
+                  ...p,
+                  solicitacaoBolsa: { ...p.solicitacaoBolsa, bolsaId: null },
+                  instituicaoPagadora: "Não alocado",
+                }
+              : p
+          )
+        );
+        /* ---- cota ---- */
+        if (cotaId) {
+          setCotas((prev) =>
+            prev.map((c) =>
+              c.id === cotaId
                 ? {
-                    ...prevItem,
-                    status: "APROVADO",
-                    statusFormatado: "Aprovado",
+                    ...c,
+                    Bolsa: (c.Bolsa || []).filter(
+                      (b) => b.id !== item.solicitacaoBolsa.bolsaId
+                    ),
                   }
-                : prevItem
+                : c
             )
           );
         }
+        showToast("info", "Bolsa removida");
+      } catch {
+        showToast("error", "Erro", "Falha ao desalocar bolsa");
       }
-
-      toast.current.show({
-        severity: sucesso === selectedItems.length ? "success" : "warn",
-        summary: "Finalizado",
-        detail: `${sucesso} de ${selectedItems.length} vínculos aprovados`,
-        life: 5000,
-      });
-
-      setSelectedItems([]);
-    } catch (error) {
-      console.error("Erro geral:", error);
-      toast.current.show({
-        severity: "error",
-        summary: "Erro",
-        detail: error.response.data.message || "Erro ao processar aprovação",
-        life: 4000,
-      });
-    } finally {
-      setLoadingAprovarVinculo(false);
     }
+
+    setDesalocando(false);
+    setSelectedItems([]);
+  };
+  /* ==================================================================== */
+  /*                APROVAR / RECUSAR VÍNCULOS INDIVIDUAIS                */
+  /* ==================================================================== */
+  const handleRecusarVinculo = () => {
+    if (!selectedItems.length) {
+      showToast(
+        "warn",
+        "Aviso",
+        "Selecione pelo menos um vínculo para recusar."
+      );
+      return;
+    }
+    setDisplayNegarDialog(true); // abre o modal de justificativa
   };
 
   const confirmarRecusaVinculo = async () => {
     if (!justificativa.trim()) {
-      toast.current.show({
-        severity: "error",
-        summary: "Erro",
-        detail: "Digite o motivo da recusa",
-        life: 3000,
-      });
+      showToast("error", "Erro", "Digite o motivo da recusa.");
       return;
     }
 
     setLoadingRecusarVinculo(true);
+    let sucesso = 0;
 
-    try {
-      let sucesso = 0;
+    for (const item of selectedItems) {
+      try {
+        await recusarVinculo(tenant, item.id, justificativa);
+        sucesso++;
 
-      for (const item of selectedItems) {
-        const response = await recusarVinculo(tenant, item.id, justificativa);
-
-        toast.current.show({
-          severity: response.status === "success" ? "success" : "error",
-          summary: "Resultado",
-          detail: response.message,
-          life: 4000,
-        });
-
-        if (response.status === "success") {
-          sucesso++;
-
-          setProcessedData((prevData) =>
-            prevData.map((prevItem) =>
-              prevItem.id === item.id
-                ? {
-                    ...prevItem,
-                    status: "RECUSADO",
-                    statusFormatado: "Recusado",
-                    motivoRecusa: justificativa,
-                  }
-                : prevItem
-            )
-          );
-        }
+        /* marca a linha como recusada e armazena a justificativa */
+        setProcessedData((prev) =>
+          prev.map((p) =>
+            p.id === item.id
+              ? { ...p, status: "RECUSADO", motivoRecusa: justificativa }
+              : p
+          )
+        );
+      } catch (err) {
+        const msg = err?.response?.data?.message || "Erro ao recusar vínculo";
+        showToast("error", "Erro", msg);
       }
-
-      toast.current.show({
-        severity: sucesso === selectedItems.length ? "success" : "warn",
-        summary: "Finalizado",
-        detail: `${sucesso} de ${selectedItems.length} vínculos recusados`,
-        life: 5000,
-      });
-
-      setJustificativa("");
-      setDisplayNegarDialog(false);
-      setSelectedItems([]);
-    } catch (error) {
-      console.error("Erro geral:", error);
-      toast.current.show({
-        severity: "error",
-        summary: "Erro",
-        detail: error.response.data.message || "Erro ao processar recusas",
-        life: 4000,
-      });
-    } finally {
-      setLoadingRecusarVinculo(false);
     }
-  };
 
-  const handleRecusarVinculo = async () => {
-    if (selectedItems.length === 0) {
-      toast.current.show({
-        severity: "warn",
-        summary: "Aviso",
-        detail: "Selecione pelo menos um vínculo para recusar",
-        life: 3000,
-      });
+    showToast(
+      sucesso === selectedItems.length ? "success" : "warn",
+      "Concluído",
+      `${sucesso} de ${selectedItems.length} vínculo(s) recusado(s).`
+    );
+
+    setLoadingRecusarVinculo(false);
+    setDisplayNegarDialog(false);
+    setJustificativa("");
+    setSelectedItems([]);
+  };
+  /* ==================================================================== */
+  /*                         APROVAR VÍNCULOS                             */
+  /* ==================================================================== */
+  const handleAprovarVinculo = async () => {
+    if (!selectedItems.length) {
+      showToast(
+        "warn",
+        "Aviso",
+        "Selecione pelo menos um vínculo para aprovar."
+      );
       return;
     }
 
-    setDisplayNegarDialog(true);
+    setLoadingAprovarVinculo(true);
+    let sucesso = 0;
+
+    for (const item of selectedItems) {
+      try {
+        await aprovarVinculo(tenant, item.id); // chamada à API
+        sucesso++;
+
+        /* atualiza a linha aprovada */
+        setProcessedData((prev) =>
+          prev.map((p) => (p.id === item.id ? { ...p, status: "APROVADO" } : p))
+        );
+      } catch (err) {
+        const msg = err?.response?.data?.message || "Erro ao aprovar vínculo";
+        showToast("error", "Erro", msg);
+      }
+    }
+
+    showToast(
+      sucesso === selectedItems.length ? "success" : "warn",
+      "Concluído",
+      `${sucesso} de ${selectedItems.length} vínculo(s) aprovado(s).`
+    );
+
+    setLoadingAprovarVinculo(false);
+    setSelectedItems([]);
   };
-  const hasSolicitacoesEmAnalise = processedData.some(
-    (item) => item.solicitacaoBolsa?.status === "EM_ANALISE"
-  );
-  const renderHeader = () => {
-    return (
-      <div className="justify-content-between align-items-center">
-        <span className="p-input-icon-left flex flex-wrap gap-1 mb-2">
-          <InputText
-            value={globalFilterValue}
-            onChange={onGlobalFilterChange}
-            placeholder="Buscar..."
-          />
+
+  /* ==================================================================== */
+  /*                              UTILITIES                               */
+  /* ==================================================================== */
+  const showToast = (severity, summary, detail) =>
+    toast.current?.show({ severity, summary, detail, life: 3000 });
+
+  const onGlobalFilterChange = (e) => {
+    const val = e.target.value;
+    setGlobalFilterValue(val);
+    setFilters((f) => ({
+      ...f,
+      global: { value: val, matchMode: FilterMatchMode.CONTAINS },
+    }));
+  };
+
+  const clearFilters = () => {
+    setFilters(getInitialFilters());
+    setGlobalFilterValue("");
+  };
+
+  /* ==================================================================== */
+  /*                               HEADER                                 */
+  /* ==================================================================== */
+  const renderHeader = () => (
+    <div className="justify-content-between align-items-center">
+      <span className="p-input-icon-left flex flex-wrap gap-1 mb-2">
+        <InputText
+          value={globalFilterValue}
+          onChange={onGlobalFilterChange}
+          placeholder="Buscar..."
+        />
+        <Button
+          icon="pi pi-filter-slash"
+          label="Limpar"
+          onClick={clearFilters}
+          className="p-button-outlined p-button-secondary"
+        />
+
+        {processedData.some(
+          (i) => i.solicitacaoBolsa?.status === "EM_ANALISE"
+        ) && (
           <Button
-            icon="pi pi-filter-slash"
-            label="Limpar Filtros"
-            onClick={clearFilters}
-            className="p-button-outlined p-button-secondary"
+            label="Processar Solicitações"
+            icon="pi pi-cog"
+            className="p-button-info"
+            onClick={handleProcessarSolicitacoes}
+            loading={loadingProcessar}
           />
-          {hasSolicitacoesEmAnalise && (
-            <Button
-              label={`Processar Solicitações`}
-              icon="pi pi-cog"
-              className="p-button-info"
-              onClick={handleProcessarSolicitacoes}
-              loading={loadingProcessar}
-            />
-          )}
-          {loadingProcessar && (
-            <div className="mt-2">
-              <ProgressBar
-                value={progressProcessar}
-                showValue={false}
-                style={{ height: "6px" }}
-              />
-              <small className="block text-center mt-1">
-                Processando... {progressProcessar}%
-              </small>
-            </div>
-          )}
-        </span>
+        )}
 
         {selectedItems.length > 0 && (
-          <div className="flex gap-1 flex-wrap">
-            {/* Add the new buttons here */}
+          <>
             <Button
               label={`Aprovar Vínculo (${selectedItems.length})`}
               icon="pi pi-check-circle"
@@ -507,261 +566,441 @@ const SolicitacoesBolsa = ({}) => {
               onClick={handleRecusarVinculo}
               loading={loadingRecusarVinculo}
             />
-          </div>
+            <Button
+              label={`Desalocar Bolsa (${selectedItems.length})`}
+              icon="pi pi-times"
+              className="p-button-warning"
+              onClick={desalocarBolsasSelecionadas}
+              loading={desalocando}
+            />
+          </>
         )}
-      </div>
-    );
-  };
+      </span>
+    </div>
+  );
 
-  if (loading) {
-    return (
-      <div className="p-2">
-        <ProgressBar mode="indeterminate" style={{ height: "6px" }} />
-      </div>
-    );
-  }
+  /* ==================================================================== */
+  /*                               RENDER                                 */
+  /* ==================================================================== */
+  if (loading)
+    return <ProgressBar mode="indeterminate" style={{ height: "6px" }} />;
 
-  if (error) {
+  if (error)
     return (
-      <div className={styles.SolicitacoesBolsa}>
-        Erro ao carregar solicitações
-      </div>
+      <div className={styles.SolicitacoesBolsa}>Erro ao carregar dados</div>
     );
-  }
 
   return (
     <div className={styles.SolicitacoesBolsa}>
       <Toast ref={toast} />
-      {processedData.length === 0 ? (
-        <div className="p-2">
-          <ProgressBar mode="indeterminate" style={{ height: "6px" }} />
+
+      {/* ======================= CARD DE COTAS ======================= */}
+      <Card className="mb-2">
+        <div className={styles.title}>
+          <h5>Cotas de Bolsas</h5>
+          <RiAddCircleLine
+            size={22}
+            className="cursor-pointer"
+            onClick={() => {
+              setCurrentCota(null);
+              resetCotaForm();
+              setShowCotaModal(true);
+            }}
+          />
         </div>
-      ) : (
-        <Card>
-          <h5 className="pt-2 pl-2 pr-2">Solicitações de Bolsa</h5>
-          {
-            <DataTable
-              value={processedData}
-              stripedRows
-              scrollable
-              paginator
-              rows={10}
-              rowsPerPageOptions={[5, 10, 25, 50]}
-              emptyMessage="Nenhuma solicitação encontrada"
-              resizableColumns
-              columnResizeMode="expand"
-              sortMode="multiple"
-              selectionMode="checkbox"
-              selection={selectedItems}
-              onSelectionChange={(e) => setSelectedItems(e.value)}
-              dataKey="id"
-              header={renderHeader}
-              filters={filters}
-              globalFilterFields={["nomeParticipante", "orientadores"]}
-              onFilter={(e) => {
-                setFilters(e.filters);
-                //setFilteredItens(e.filteredValue || itens);
-                setSelectedItems([]); // limpa a seleção com os novos filtros aplicados
-              }}
-              filterDisplay="row"
-              paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-              currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros"
-            >
-              <Column
-                selectionMode="multiple"
-                headerStyle={{ width: "3rem" }}
-                frozen
-              />
 
-              <Column
-                field="participacao.inscricao.edital.titulo"
-                header="Edital"
-                sortable
-                filter
-                filterField="participacao.inscricao.edital.titulo"
-                filterElement={(options) =>
-                  statusClassificacaoFilterTemplate(options, editaisOptions)
-                }
-                showFilterMenu={false}
-              />
+        <div className={styles.cotas}>
+          {cotas.map((cota) => {
+            const disponibilizadas = cota.quantidadeBolsas || 0;
+            const criadas = cota.Bolsa?.length || 0;
+            const naoCriadas = Math.max(0, disponibilizadas - criadas);
+            const alocadas =
+              cota.Bolsa?.filter((b) => b?.SolicitacaoBolsa).length || 0;
+            const naoAlocadas = Math.max(0, criadas - alocadas);
 
-              <Column
-                field="participacao.planoDeTrabalho.statusClassificacao"
-                header="Status Plano"
-                sortable
-                filter
-                filterElement={(options) =>
-                  statusClassificacaoFilterTemplate(
-                    options,
-                    classificacaoStatusOptions
-                  )
-                }
-                showFilterMenu={false}
-                filterField="participacao.planoDeTrabalho.statusClassificacao"
-                body={(rowData) =>
-                  renderStatusTagWithJustificativa(
-                    rowData.participacao.planoDeTrabalho.statusClassificacao,
-                    rowData.participacao.planoDeTrabalho.justificativa,
-                    {
-                      onShowJustificativa: showJustificativaDialog,
+            return (
+              <div key={cota.id} className={styles.cotaEbtn}>
+                <div className={styles.cota}>
+                  <h6>{cota.instituicaoPagadora}</h6>
+                  <div className={styles.cotaInfo}>
+                    <p>
+                      <strong>Disponibilizadas:</strong> {disponibilizadas}
+                    </p>
+                    <p>
+                      <strong>Criadas:</strong> {criadas}
+                    </p>
+                    <p>
+                      <strong>Não criadas:</strong> {naoCriadas}
+                    </p>
+                    <p>
+                      <strong>Alocadas:</strong> {alocadas}
+                    </p>
+                    <p>
+                      <strong>Não alocadas:</strong> {naoAlocadas}
+                    </p>
+                  </div>
+                  <div className={styles.cotaActions}>
+                    <RiPencilLine
+                      size={18}
+                      className="cursor-pointer"
+                      onClick={() => {
+                        setCurrentCota(cota);
+                        setCotaForm({ ...cota });
+                        setShowCotaModal(true);
+                      }}
+                    />
+                    <RiDeleteBinLine
+                      size={18}
+                      className="cursor-pointer text-red-500"
+                      onClick={() => {
+                        setCurrentCota(cota);
+                        setShowDeleteDialog(true);
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {selectedItems.length > 0 && (
+                  <Button
+                    label={
+                      distribuindo
+                        ? `Distribuindo... ${progressoDistribuicao.atual}/${progressoDistribuicao.total}`
+                        : `Distribuir esta cota para ${
+                            selectedItems.length
+                          } aluno${selectedItems.length > 1 ? "s" : ""}`
                     }
-                  )
-                }
-                style={{ width: "12rem" }}
-              />
-              <Column
-                field="participacao.statusParticipacao"
-                header="Status Aluno"
-                sortable
-                filter
-                filterElement={(options) =>
-                  statusClassificacaoFilterTemplate(
-                    options,
-                    participacaoStatusOptions
-                  )
-                }
-                showFilterMenu={false}
-                filterField="participacao.statusParticipacao"
-                body={(rowData) =>
-                  renderStatusTagWithJustificativa(
-                    rowData.participacao.statusParticipacao,
-                    rowData.participacao.justificativa,
-                    {
-                      onShowJustificativa: showJustificativaDialog,
-                    }
-                  )
-                }
-                style={{ width: "12rem" }}
-              />
-              <Column
-                field="solicitacaoBolsa.status"
-                header="Status solicitação de bolsa"
-                sortable
-                filter
-                filterElement={(options) =>
-                  statusClassificacaoFilterTemplate(
-                    options,
-                    solicitacaoStatusOptions
-                  )
-                }
-                showFilterMenu={false}
-                filterField="solicitacaoBolsa.status"
-                body={(rowData) =>
-                  renderStatusTagWithJustificativa(
-                    rowData.solicitacaoBolsa.status,
-                    rowData.solicitacaoBolsa.justificativa,
-                    {
-                      onShowJustificativa: showJustificativaDialog,
-                    }
-                  )
-                }
-                style={{ width: "12rem" }}
-              />
-              <Column
-                field="status"
-                header="Status vinculação de bolsa"
-                sortable
-                filter
-                filterElement={(options) =>
-                  statusClassificacaoFilterTemplate(
-                    options,
-                    vinculoStatusOptions
-                  )
-                }
-                showFilterMenu={false}
-                filterField="status"
-                body={(rowData) =>
-                  renderStatusTagWithJustificativa(
-                    rowData.status,
-                    rowData.motivoRecusa,
-                    {
-                      onShowJustificativa: showJustificativaDialog,
-                    }
-                  )
-                }
-                style={{ width: "12rem" }}
-              />
-              <Column
-                field="participacao.user.nome"
-                header="Aluno"
-                sortable
-                filter
-                showFilterMenu={true}
-                filterField="participacao.user.nome"
-                filterPlaceholder="Filtrar por nome"
-              />
-              <Column
-                field="orientadores"
-                header="Orientador"
-                sortable
-                filter
-                showFilterMenu={true}
-                filterField="orientadores"
-                filterPlaceholder="Filtrar por nome"
-              />
-              <Column
-                field="vinculosAprovados"
-                header="Bolsas Aprovadas por aluno"
-                body={(rowData) => (
-                  <Tag
-                    severity={
-                      rowData.vinculosAprovados > 0 ? "success" : "info"
-                    }
-                    value={rowData.vinculosAprovados}
+                    className="p-button-success w-100"
+                    icon="pi pi-send"
+                    disabled={distribuindo || desalocando}
+                    onClick={() => distribuirBolsasParaSelecionados(cota.id)}
                   />
                 )}
-                sortable
-                style={{ textAlign: "center", width: "8rem" }}
-              />
-              <Column
-                field="notaTotal"
-                header="Nota Total"
-                showFilterMenu={false}
-                sortable
-                filter
-                filterField="notaTotal"
-                filterElement={notaRowFilterTemplate}
-                filterMatchMode="intervalo"
-                dataType="numeric"
-                body={(rowData) =>
-                  rowData.notaTotal !== null
-                    ? rowData.notaTotal?.toFixed(4)
-                    : "N/A"
-                }
-                style={{ textAlign: "center", width: "8rem" }}
-              />
-              <Column
-                field="rendimentoAcademico"
-                header="Rendimento Acadêmico"
-                showFilterMenu={false}
-                sortable
-                filter
-                filterField="rendimentoAcademico"
-                filterElement={notaRowFilterTemplate}
-                filterMatchMode="intervalo"
-                dataType="numeric"
-                body={(rowData) => rowData.rendimentoAcademico}
-                style={{ textAlign: "center", width: "8rem" }}
-              />
+              </div>
+            );
+          })}
+        </div>
+      </Card>
 
-              <Column
-                field="solicitacaoBolsa.ordemRecebimentoBolsa"
-                header="Ordem da Bolsa"
-                body={(rowData) =>
-                  rowData.solicitacaoBolsa.ordemRecebimentoBolsa
-                }
-                sortable
-                filter
-                filterField="solicitacaoBolsa.ordemRecebimentoBolsa"
-                filterMatchMode="intervalo"
-                filterElement={notaRowFilterTemplate}
-                dataType="numeric"
-                style={{ textAlign: "left" }}
+      {/* ================= TABELA PRINCIPAL ================= */}
+      <Card>
+        <h5 className="pt-2 pl-2 pr-2">Solicitações de Bolsa</h5>
+        <DataTable
+          value={processedData}
+          stripedRows
+          scrollable
+          paginator
+          rows={10}
+          rowsPerPageOptions={[5, 10, 25, 50]}
+          emptyMessage="Nenhuma solicitação encontrada"
+          resizableColumns
+          columnResizeMode="expand"
+          sortMode="multiple"
+          selectionMode="checkbox"
+          selection={selectedItems}
+          onSelectionChange={(e) => setSelectedItems(e.value)}
+          dataKey="id"
+          header={renderHeader}
+          filters={filters}
+          globalFilterFields={["participacao.user.nome", "orientadores"]}
+          onFilter={(e) => {
+            setFilters(e.filters);
+            setSelectedItems([]);
+          }}
+          filterDisplay="row"
+          paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+          currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros"
+        >
+          {/* seleção */}
+          <Column
+            selectionMode="multiple"
+            headerStyle={{ width: "3rem" }}
+            frozen
+          />
+
+          {/* EDITAL */}
+          <Column
+            field="participacao.inscricao.edital.titulo"
+            header="Edital"
+            sortable
+            filter
+            filterField="participacao.inscricao.edital.titulo"
+            filterElement={(opts) =>
+              statusClassificacaoFilterTemplate(opts, editaisOptions)
+            }
+            showFilterMenu={false}
+          />
+
+          {/* STATUS PLANO */}
+          <Column
+            field="participacao.planoDeTrabalho.statusClassificacao"
+            header="Status Plano"
+            sortable
+            filter
+            filterField="participacao.planoDeTrabalho.statusClassificacao"
+            filterElement={(opts) =>
+              statusClassificacaoFilterTemplate(
+                opts,
+                classificacaoStatusOptions
+              )
+            }
+            showFilterMenu={false}
+            body={(row) =>
+              renderStatusTagWithJustificativa(
+                row.participacao.planoDeTrabalho.statusClassificacao,
+                row.participacao.planoDeTrabalho.justificativa,
+                { onShowJustificativa: showJustificativaDialog }
+              )
+            }
+            style={{ width: "12rem" }}
+          />
+
+          {/* STATUS ALUNO */}
+          <Column
+            field="participacao.statusParticipacao"
+            header="Status Aluno"
+            sortable
+            filter
+            filterField="participacao.statusParticipacao"
+            filterElement={(opts) =>
+              statusClassificacaoFilterTemplate(opts, participacaoStatusOptions)
+            }
+            showFilterMenu={false}
+            body={(row) =>
+              renderStatusTagWithJustificativa(
+                row.participacao.statusParticipacao,
+                row.participacao.justificativa,
+                { onShowJustificativa: showJustificativaDialog }
+              )
+            }
+            style={{ width: "12rem" }}
+          />
+
+          {/* STATUS SOLICITAÇÃO */}
+          <Column
+            field="solicitacaoBolsa.status"
+            header="Status Solicitação"
+            sortable
+            filter
+            filterField="solicitacaoBolsa.status"
+            filterElement={(opts) =>
+              statusClassificacaoFilterTemplate(opts, solicitacaoStatusOptions)
+            }
+            showFilterMenu={false}
+            body={(row) =>
+              renderStatusTagWithJustificativa(
+                row.solicitacaoBolsa.status,
+                row.solicitacaoBolsa.justificativa,
+                { onShowJustificativa: showJustificativaDialog }
+              )
+            }
+            style={{ width: "12rem" }}
+          />
+
+          {/* STATUS VÍNCULO */}
+          <Column
+            field="status"
+            header="Status Vínculo"
+            sortable
+            filter
+            filterField="status"
+            filterElement={(opts) =>
+              statusClassificacaoFilterTemplate(opts, vinculoStatusOptions)
+            }
+            showFilterMenu={false}
+            body={(row) =>
+              renderStatusTagWithJustificativa(row.status, row.motivoRecusa, {
+                onShowJustificativa: showJustificativaDialog,
+              })
+            }
+            style={{ width: "12rem" }}
+          />
+
+          {/* ALUNO */}
+          <Column
+            field="participacao.user.nome"
+            header="Aluno"
+            sortable
+            filter
+            showFilterMenu
+            filterField="participacao.user.nome"
+            filterPlaceholder="Filtrar por nome"
+          />
+
+          {/* ORIENTADOR(ES) */}
+          <Column
+            field="orientadores"
+            header="Orientador"
+            sortable
+            filter
+            showFilterMenu
+            filterField="orientadores"
+            filterPlaceholder="Filtrar por nome"
+          />
+
+          {/* VÍNCULOS APROVADOS */}
+          <Column
+            field="vinculosAprovados"
+            header="Bolsas Aprovadas"
+            body={(row) => (
+              <Tag
+                value={row.vinculosAprovados}
+                severity={row.vinculosAprovados > 0 ? "success" : "info"}
               />
-            </DataTable>
-          }
-        </Card>
-      )}
+            )}
+            sortable
+            style={{ textAlign: "center", width: "8rem" }}
+          />
+
+          {/* NOTA TOTAL */}
+          <Column
+            field="notaTotal"
+            header="Nota Total"
+            sortable
+            filter
+            filterField="notaTotal"
+            filterMatchMode="intervalo"
+            filterElement={notaRowFilterTemplate}
+            dataType="numeric"
+            body={(row) =>
+              row.notaTotal !== null ? row.notaTotal.toFixed(4) : "N/A"
+            }
+            style={{ textAlign: "center", width: "8rem" }}
+          />
+
+          {/* RENDIMENTO ACADÊMICO */}
+          <Column
+            field="rendimentoAcademico"
+            header="Rend. Acadêmico"
+            sortable
+            filter
+            filterField="rendimentoAcademico"
+            filterMatchMode="intervalo"
+            filterElement={notaRowFilterTemplate}
+            dataType="numeric"
+            body={(row) => row.rendimentoAcademico}
+            style={{ textAlign: "center", width: "8rem" }}
+          />
+
+          {/* ORDEM DA BOLSA */}
+          <Column
+            field="solicitacaoBolsa.ordemRecebimentoBolsa"
+            header="Ordem Bolsa"
+            sortable
+            filter
+            filterField="solicitacaoBolsa.ordemRecebimentoBolsa"
+            filterMatchMode="intervalo"
+            filterElement={notaRowFilterTemplate}
+            dataType="numeric"
+            body={(row) => row.solicitacaoBolsa.ordemRecebimentoBolsa}
+            style={{ textAlign: "center" }}
+          />
+
+          {/* NOVA COLUNA ‑ INSTITUIÇÃO (COTA) */}
+          <Column
+            field="instituicaoPagadora"
+            header="Bolsa"
+            sortable
+            filter
+            filterField="instituicaoPagadora"
+            filterElement={(opts) =>
+              statusClassificacaoFilterTemplate(
+                opts,
+                instituicoesPagadorasDisponiveis
+              )
+            }
+            body={(row) => (
+              <Tag
+                value={row.instituicaoPagadora}
+                severity={
+                  row.instituicaoPagadora === "Não alocado" ? "info" : "success"
+                }
+              />
+            )}
+            style={{ textAlign: "center", width: "12rem" }}
+          />
+        </DataTable>
+      </Card>
+
+      {/* =================== MODAIS (cota, delete, justificativa…) =================== */}
+      {/* -- modal de criar/editar cota -- */}
+      <Dialog
+        header={currentCota ? "Editar Cota" : "Criar Cota"}
+        visible={showCotaModal}
+        style={{ width: "50vw" }}
+        onHide={() => setShowCotaModal(false)}
+        footer={
+          <div>
+            <Button
+              label="Cancelar"
+              className="p-button-text"
+              onClick={() => setShowCotaModal(false)}
+            />
+            <Button
+              label={currentCota ? "Atualizar" : "Criar"}
+              icon="pi pi-check"
+              onClick={currentCota ? handleUpdateCota : handleCreateCota}
+              autoFocus
+            />
+          </div>
+        }
+      >
+        <div className="p-fluid">
+          <div className="p-field mb-2">
+            <label>Instituição Pagadora</label>
+            <InputText
+              value={cotaForm.instituicaoPagadora}
+              onChange={(e) =>
+                setCotaForm({
+                  ...cotaForm,
+                  instituicaoPagadora: e.target.value,
+                })
+              }
+              placeholder="Ex: FAP‑DF, CNPq"
+            />
+          </div>
+          <div className="p-field">
+            <label>Quantidade de Bolsas</label>
+            <InputText
+              keyfilter="pint"
+              value={cotaForm.quantidadeBolsas}
+              onChange={(e) =>
+                setCotaForm({
+                  ...cotaForm,
+                  quantidadeBolsas: parseInt(e.target.value || "0", 10),
+                })
+              }
+            />
+          </div>
+        </div>
+      </Dialog>
+
+      {/* -- dialog confirmar delete -- */}
+      <Dialog
+        header="Confirmar Exclusão"
+        visible={showDeleteDialog}
+        style={{ width: "30vw" }}
+        onHide={() => setShowDeleteDialog(false)}
+        footer={
+          <div>
+            <Button
+              label="Cancelar"
+              className="p-button-text"
+              onClick={() => setShowDeleteDialog(false)}
+            />
+            <Button
+              label="Excluir"
+              className="p-button-danger"
+              icon="pi pi-trash"
+              onClick={handleDeleteCota}
+              autoFocus
+            />
+          </div>
+        }
+      >
+        Tem certeza que deseja excluir a cota{" "}
+        <strong>{currentCota?.instituicaoPagadora}</strong>?
+      </Dialog>
+      {/* ------------ Dialog de Justificativa (somente leitura) ------------ */}
       <Dialog
         header="Justificativa"
         visible={displayJustificativaDialog}
@@ -771,13 +1010,15 @@ const SolicitacoesBolsa = ({}) => {
           <Button
             label="Fechar"
             icon="pi pi-times"
-            onClick={() => setDisplayJustificativaDialog(false)}
             className="p-button-text"
+            onClick={() => setDisplayJustificativaDialog(false)}
           />
         }
       >
-        <div className="p-fluid">{justificativaAtual}</div>
+        <div style={{ whiteSpace: "pre-line" }}>{justificativaAtual}</div>
       </Dialog>
+
+      {/* -- dialog recusar vínculo -- */}
       <Dialog
         header="Confirmar Recusa"
         visible={displayNegarDialog}
@@ -787,67 +1028,32 @@ const SolicitacoesBolsa = ({}) => {
           setJustificativa("");
         }}
         footer={
-          <div>
-            {(loadingNegar || loadingRecusarVinculo) && (
-              <div className="mb-3">
-                <ProgressBar value={progress} showValue={false} />
-                <small className="block text-center mt-1">
-                  {progress}% completo
-                </small>
-              </div>
-            )}
-            <div className="flex justify-content-end gap-2">
-              <Button
-                label="Cancelar"
-                icon="pi pi-times"
-                className="p-button-text"
-                onClick={() => {
-                  setDisplayNegarDialog(false);
-                  setJustificativa("");
-                }}
-                disabled={loadingNegar || loadingRecusarVinculo}
-              />
-              <Button
-                label={
-                  loadingNegar || loadingRecusarVinculo
-                    ? "Processando..."
-                    : "Confirmar"
-                }
-                icon={!(loadingNegar || loadingRecusarVinculo) && "pi pi-check"}
-                className="p-button-danger"
-                onClick={confirmarRecusaVinculo} // Fixed this line
-                loading={loadingNegar || loadingRecusarVinculo}
-                autoFocus
-                disabled={loadingNegar || loadingRecusarVinculo}
-              />
-            </div>
+          <div className="flex justify-content-end gap-2">
+            <Button
+              label="Cancelar"
+              className="p-button-text"
+              onClick={() => {
+                setDisplayNegarDialog(false);
+                setJustificativa("");
+              }}
+            />
+            <Button
+              label="Confirmar"
+              className="p-button-danger"
+              onClick={confirmarRecusaVinculo}
+              loading={loadingRecusarVinculo}
+            />
           </div>
         }
       >
-        <div className="p-fluid">
-          <div className="p-field">
-            <label htmlFor="justificativa">
-              {loadingRecusarVinculo
-                ? "Motivo da Recusa"
-                : "Justificativa para Negação"}
-            </label>
-            <InputTextarea
-              id="justificativa"
-              value={justificativa}
-              onChange={(e) => setJustificativa(e.target.value)}
-              rows={3}
-              autoResize
-              placeholder={
-                loadingRecusarVinculo
-                  ? "Digite o motivo da recusa..."
-                  : "Digite a justificativa para negação..."
-              }
-            />
-          </div>
-        </div>
+        <InputTextarea
+          value={justificativa}
+          onChange={(e) => setJustificativa(e.target.value)}
+          rows={3}
+          autoResize
+          placeholder="Digite o motivo da recusa..."
+        />
       </Dialog>
     </div>
   );
-};
-
-export default SolicitacoesBolsa;
+}
