@@ -204,6 +204,123 @@ export const recusarVinculo = async (tenantSlug, vinculoId, motivoRecusa) => {
     throw error;
   }
 };
+export const ativarVinculo = async (tenantSlug, vinculoId) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+
+    const response = await req.put(
+      `/private/${tenantSlug}/ativar-vinculo`,
+      { vinculoId },
+      { headers }
+    );
+    
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      console.error("Erro na ativacão:", error);
+      return null;
+    }
+    console.error("Erro ao ativar:", error);
+    throw error;
+  }
+};
+export const tornarPendenteVinculo = async (tenantSlug, vinculoId, observacao) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+
+    const response = await req.put(
+      `/private/${tenantSlug}/tornar-pendente-vinculo`,
+      { vinculoId, observacao },
+      { headers }
+    );
+    
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      console.error("Erro na ativacão:", error);
+      return null;
+    }
+    console.error("Erro ao ativar:", error);
+    throw error;
+  }
+};
+export const cancelarVinculo = async (tenantSlug, vinculoId, observacao) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+
+    const response = await req.put(
+      `/private/${tenantSlug}/cancelar-vinculo`,
+      { vinculoId, observacao },
+      { headers }
+    );
+    
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      console.error("Erro na ativacão:", error);
+      return null;
+    }
+    console.error("Erro ao ativar:", error);
+    throw error;
+  }
+};
+
+export const devolverBolsa = async (tenantSlug, solicitacaoBolsaId, observacao) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+
+    const response = await await req.put(
+      `/private/${tenantSlug}/devolver-bolsa`,
+      { solicitacaoBolsaId, observacao },
+      { headers }
+  
+    );
+    
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      console.error("Erro na ativacão:", error);
+      return null;
+    }
+    console.error("Erro ao ativar:", error);
+    throw error;
+  }
+};
+export const transferirBolsa = async (tenantSlug, vinculoOrigemId, participacaoDestinoId, observacao) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+
+    const response = await req.put(
+      `/private/${tenantSlug}/transferir-bolsa`,
+      { vinculoOrigemId, participacaoDestinoId, observacao },
+      { headers }
+    );
+    
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      console.error("Erro na ativacão:", error);
+      return null;
+    }
+    console.error("Erro ao ativar:", error);
+    throw error;
+  }
+};
 /**************************
  * COTAS
  **************************/

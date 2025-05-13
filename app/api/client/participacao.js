@@ -380,3 +380,47 @@ export const substituirAlunoParticipacao = async (
     throw new Error(error.response?.data?.message || 'Erro ao substituir participação de aluno');
   }
 };
+
+export const ativarOuPendenteParticipacao = async (
+  tenantSlug,
+  participacaoId,
+  observacao = null
+) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      throw new Error('Não autenticado');
+    }
+
+    // O corpo da requisição só inclui observação se estiver definida
+    const body = observacao ? { observacao } : {};
+
+    const response = await req.put(
+      `/private/${tenantSlug}/ativar-pendente/participacao/${participacaoId}`,
+      body,
+      { headers }
+    );
+
+    return response.data;
+  } catch (error) {
+    // Tratamento específico para erros 400 (validação)
+    if (error.response?.status === 400) {
+      const errorMessage = error.response.data?.message || 'Dados inválidos para alteração de status';
+      throw new Error(errorMessage);
+    }
+
+    // Tratamento específico para erro 404 (não encontrado)
+    if (error.response?.status === 404) {
+      throw new Error('Participação não encontrada');
+    }
+
+    // Tratamento específico para erro 403 (sem permissão)
+    if (error.response?.status === 403) {
+      throw new Error('Você não tem permissão para alterar o status desta participação');
+    }
+
+    // Tratamento para outros erros
+    console.error("Erro ao alterar status da participação:", error);
+    throw new Error(error.response?.data?.message || 'Erro ao alterar status da participação');
+  }
+};

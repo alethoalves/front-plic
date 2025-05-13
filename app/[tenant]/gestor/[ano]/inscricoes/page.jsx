@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 // ESTILO E ÍCONES
 import styles from "./page.module.scss";
-import { RiEditLine } from "@remixicon/react";
+import { RiEditLine, RiSettings5Fill, RiSettings5Line } from "@remixicon/react";
 // COMPONENTES
 import Header from "@/components/Header";
 import Modal from "@/components/Modal";
@@ -24,17 +24,27 @@ import { Chart } from "primereact/chart";
 import { getAllPlanoDeTrabalhosByTenant } from "@/app/api/client/planoDeTrabalho";
 import calcularMedia from "@/lib/calcularMedia";
 import TabelaPlanoDeTrabalho from "@/components/tabelas/TabelaPlanoDeTrabalho";
+import NoData from "@/components/NoData";
+import PeriodoInscricao from "@/components/PeriodoInscricao";
+import { Dialog } from "primereact/dialog";
+import RestricaoInscricao from "@/components/RestricaoInscricao";
+import PermissoesInscricao from "@/components/PermissoesInscricao";
 
 const Page = ({ params }) => {
   // ESTADOS
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeModal, setActiveModal] = useState(null);
+
   const [editais, setEditais] = useState([]);
   const [itens, setItens] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
   const [chartData, setChartData] = useState({});
   const [globalFilterValue, setGlobalFilterValue] = useState("");
   const [chartMultiAxisData, setChartMultiAxisData] = useState({});
+  const [showPeriodoInscricaoDialog, setShowPeriodoInscricaoDialog] =
+    useState(false);
+
   const dataTableRef = useRef(null);
   // Configure as opções do gráfico Multi Axis
   const multiAxisOptions = {
@@ -383,20 +393,58 @@ const Page = ({ params }) => {
   return (
     <>
       {renderModalContent()}
-
+      <Modal
+        isOpen={activeModal !== null}
+        onClose={() => setActiveModal(null)}
+        size="medium"
+      >
+        {(() => {
+          switch (activeModal) {
+            case "inscricoes":
+              return <PeriodoInscricao params={params} />;
+            case "restricoes":
+              return <RestricaoInscricao params={params} />;
+            case "permissoes":
+              return <PermissoesInscricao params={params} />;
+            default:
+              return null;
+          }
+        })()}
+      </Modal>
       <main className={styles.main}>
-        <Header className="mb-3" titulo="Inscrições" />
+        <Card className="mb-4 p-2">
+          <div className={styles.configuracoes}>
+            <div className={styles.icon}>
+              <RiSettings5Line />
+            </div>
+            <ul>
+              <li onClick={() => setActiveModal("permissoes")}>
+                <p>Permissões</p>
+              </li>
+              <li onClick={() => setActiveModal("inscricoes")}>
+                <p>Inscrições</p>
+              </li>
+              <li onClick={() => setActiveModal("restricoes")}>
+                <p>Restrições</p>
+              </li>
+            </ul>
+          </div>
+        </Card>
         <Card className="mb-4 p-2">
           <h5 className="mb-2">Evolução das Inscrições</h5>
-          {Object.keys(chartMultiAxisData).length > 0 ? (
-            <Chart
-              type="line"
-              data={chartMultiAxisData}
-              options={multiAxisOptions}
-              style={{ height: "400px" }}
-            />
-          ) : (
-            <p>Carregando gráfico...</p>
+
+          {Object.keys(chartMultiAxisData) &&
+            Object.keys(chartMultiAxisData).length > 0 && (
+              <Chart
+                type="line"
+                data={chartMultiAxisData}
+                options={multiAxisOptions}
+                style={{ height: "400px" }}
+              />
+            )}
+          {loading && <p>Carregando dados do gráfico...</p>}
+          {!loading && Object.keys(chartMultiAxisData).length === 0 && (
+            <NoData description="Nenhum dado encontrado" />
           )}
         </Card>
         {/* Gráfico de Barras */}
@@ -482,16 +530,16 @@ const Page = ({ params }) => {
               </div>
             </div>
           </div>
-          {Object.keys(chartData).length > 0 ? (
+
+          {Object.keys(chartData) && Object.keys(chartData).length > 0 && (
             <Chart
               type="bar"
               data={chartData}
               options={chartOptions}
               style={{ height: "400px" }}
             />
-          ) : (
-            <p>Carregando dados do gráfico...</p>
           )}
+          {loading && <p>Carregando dados do gráfico...</p>}
         </Card>
 
         <Card className="custom-card mb-2">

@@ -4,23 +4,19 @@ import CPFVerificationForm from "../Formularios/CPFVerificationForm";
 import { useEffect, useRef, useState } from "react";
 import styles from "./ParticipacaoGestorController.module.scss";
 import {
-  ativarParticipacao,
+  ativarOuPendenteParticipacao,
   getParticipacao,
   inativarParticipacao,
   substituirAlunoParticipacao,
 } from "@/app/api/client/participacao";
-import { Checkbox } from "primereact/checkbox";
 
 import {
-  RiAddCircleLine,
   RiArrowRightSLine,
   RiCheckboxCircleLine,
-  RiCheckboxFill,
-  RiCheckboxLine,
-  RiCloseLine,
+  RiErrorWarningLine,
   RiExchangeLine,
+  RiForbid2Line,
   RiGroupLine,
-  RiMoneyDollarCircleLine,
   RiP2pFill,
   RiProhibited2Line,
   RiSwapLine,
@@ -28,21 +24,31 @@ import {
 } from "@remixicon/react";
 import { getFormulario } from "@/app/api/client/formulario";
 import Modal from "../Modal";
-import NewCargo from "../Formularios/NewCargo";
 import { Button } from "primereact/button";
 import { Toast } from "primereact/toast";
-import { formatarData } from "@/lib/formatarDatas";
-import { toggleStatusSolicitacaoBolsa } from "@/app/api/client/bolsa";
+import {
+  ativarVinculo,
+  cancelarVinculo,
+  devolverBolsa,
+  toggleStatusSolicitacaoBolsa,
+  tornarPendenteVinculo,
+  transferirBolsa,
+} from "@/app/api/client/bolsa";
 import { Tag } from "primereact/tag";
-import { formatStatusText, getSeverityByStatus } from "@/lib/tagUtils";
+import { getSeverityByStatus } from "@/lib/tagUtils";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
+import { Timeline } from "primereact/timeline";
+import { mapHistorico } from "@/lib/mapHistorico";
+import { Calendar } from "primereact/calendar";
+import { LinhaTempo } from "@/lib/linhaDoTempo";
+import { Dropdown } from "primereact/dropdown";
+import { getInscricao, getInscricaoUserById } from "@/app/api/client/inscricao";
 
 const ParticipacaoGestorController = ({
   tenant,
   participacaoId,
   onSuccess,
-  onClose,
 }) => {
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -53,102 +59,166 @@ const ParticipacaoGestorController = ({
   const [tipoParticipacao, setTipoParticipacao] = useState(null);
   const [isModalSubstituicaoAlunoOpen, setIsModalSubstituicaoAlunoOpen] =
     useState(false);
-  const [alunoToEdit, setAlunoToEdit] = useState(null);
-  const [verifiedData, setVerifiedData] = useState(null);
   const [isModalCancelamentoOpen, setIsModalCancelamentoOpen] = useState(false);
   const [dataInativacao, setDataInativacao] = useState("");
   const [isLoadingAtivacao, setIsLoadingAtivacao] = useState(false);
   const [isLoadingToggle, setIsLoadingToggle] = useState(false);
+  const [isModalAtivarPendenteOpen, setIsModalAtivarPendenteOpen] =
+    useState(false);
+  const [observacaoPendencia, setObservacaoPendencia] = useState("");
+  const [statusAcao, setStatusAcao] = useState(null); // 'ATIVAR' ou 'PENDENTE'
   // Adicione este estado no componente
   const [justificativaInativacao, setJustificativaInativacao] = useState("");
-  const handleToggleStatusBolsa = async () => {
-    setIsLoadingToggle(true);
+
+  const renderModalAtivarPendente = () => (
+    <Modal
+      isOpen={isModalAtivarPendenteOpen}
+      onClose={() => setIsModalAtivarPendenteOpen(false)}
+    >
+      <div className="mb-2">
+        <h4>
+          {statusAcao === "ATIVAR"
+            ? "Confirmar Ativação"
+            : "Confirmar Pendência"}
+        </h4>
+
+        {statusAcao === "PENDENTE" && (
+          <div className="field mt-3">
+            <label htmlFor="observacao">Motivo da Pendência *</label>
+            <InputTextarea
+              id="observacao"
+              value={observacaoPendencia}
+              onChange={(e) => setObservacaoPendencia(e.target.value)}
+              rows={3}
+              placeholder="Informe o motivo para tornar a participação pendente..."
+            />
+          </div>
+        )}
+
+        <div className="flex justify-content-end gap-1 mt-4">
+          <Button
+            label="Cancelar"
+            severity="secondary"
+            outlined
+            onClick={() => setIsModalAtivarPendenteOpen(false)}
+          />
+          <Button
+            label={
+              isLoadingConfirmacao ? (
+                <>
+                  <i className="pi pi-spinner pi-spin mr-2" />
+                  Processando...
+                </>
+              ) : (
+                "Confirmar Pendência"
+              )
+            }
+            onClick={handleConfirmarAtivarPendente}
+            disabled={!observacaoPendencia.trim() || isLoadingConfirmacao}
+          />
+        </div>
+      </div>
+    </Modal>
+  );
+  const fetch = async () => {
+    const item = await getParticipacao(tenant, participacaoId);
+    console.log(item);
+    setItem(item);
+    setHistPart(mapHistorico(item.HistoricoStatusParticipacao));
+
+    const vinculos = item.VinculoSolicitacaoBolsa ?? [];
+    setHistVinc(
+      Object.fromEntries(
+        vinculos.map((v) => [v.id, mapHistorico(v.HistoricoStatusVinculo)])
+      )
+    );
+    setHistSol(
+      Object.fromEntries(
+        vinculos.map((v) => [
+          v.id,
+          mapHistorico(v.solicitacaoBolsa?.HistoricoStatusSolicitacaoBolsa),
+        ])
+      )
+    );
+  };
+  const [isLoadingConfirmacao, setIsLoadingConfirmacao] = useState(false);
+
+  const handleConfirmarAtivarPendente = async () => {
+    setIsLoadingConfirmacao(true);
     try {
-      if (!item?.SolicitacaoBolsa?.id) {
-        throw new Error("Solicitação de bolsa não encontrada");
-      }
-
-      const result = await toggleStatusSolicitacaoBolsa(
+      const resultado = await ativarOuPendenteParticipacao(
         tenant,
-        item.SolicitacaoBolsa.id
+        participacaoId,
+        observacaoPendencia
       );
-
-      // Atualiza o estado local
-      setItem((prev) => ({
-        ...prev,
-        SolicitacaoBolsa: {
-          ...prev.SolicitacaoBolsa,
-          pendente: !prev.SolicitacaoBolsa.pendente,
-        },
-      }));
-
+      await fetch();
       toast.current?.show({
         severity: "success",
         summary: "Sucesso",
-        detail: `Bolsa ${
-          !item.SolicitacaoBolsa.pendente ? "ativada" : "inativada"
-        } com sucesso!`,
+        detail: "Participação tornada pendente com sucesso!",
         life: 3000,
       });
+      if (onSuccess) await onSuccess();
     } catch (error) {
-      console.error("Erro ao alternar status da bolsa:", error);
-
+      console.error("Erro ao alterar status da participação:", error);
       toast.current?.show({
         severity: "error",
         summary: "Erro",
-        detail: error.message || "Ocorreu um erro ao alterar o status da bolsa",
+        detail:
+          error.message ||
+          "Ocorreu um erro ao alterar o status da participação",
         life: 3000,
       });
     } finally {
-      setIsLoadingToggle(false);
+      setIsLoadingConfirmacao(false);
+      setIsModalAtivarPendenteOpen(false);
+      setObservacaoPendencia("");
     }
   };
-  const handleAtivarParticipacao = async () => {
-    setIsLoadingAtivacao(true);
-    try {
-      const participacaoAtivada = await ativarParticipacao(
-        tenant,
-        participacaoId
-      );
+  const handleToggleAtivarPendente = async () => {
+    const statusAtual = item.statusParticipacao || "EM_ANALISE";
 
-      // Atualiza o estado local imediatamente
-      setItem((prev) => ({
-        ...prev,
-        status: "ativo",
-        inicio: participacaoAtivada.inicio, // Atualiza a data de início se retornada pela API
-      }));
-
-      toast.current?.show({
-        severity: "success",
-        summary: "Sucesso",
-        detail: "Participação ativada com sucesso!",
-        life: 3000,
-      });
-
-      // Opcional: ainda chamamos onSuccess() para atualizar qualquer estado externo se necessário
-      if (onSuccess) {
-        await onSuccess();
+    if (statusAtual === "ATIVA") {
+      // Tornar pendente - abrir modal para justificativa
+      setStatusAcao("PENDENTE");
+      setObservacaoPendencia("");
+      setIsModalAtivarPendenteOpen(true);
+    } else if (statusAtual === "PENDENTE" || statusAtual === "APROVADA") {
+      // Ativar diretamente sem modal
+      setIsLoadingAtivacao(true);
+      try {
+        const resultado = await ativarOuPendenteParticipacao(
+          tenant,
+          participacaoId,
+          null
+        );
+        await fetch();
+        toast.current?.show({
+          severity: "success",
+          summary: "Sucesso",
+          detail: "Participação ativada com sucesso!",
+          life: 3000,
+        });
+        if (onSuccess) await onSuccess();
+      } catch (error) {
+        console.error("Erro ao ativar participação:", error);
+        toast.current?.show({
+          severity: "error",
+          summary: "Erro",
+          detail: error.message || "Ocorreu um erro ao ativar a participação",
+          life: 3000,
+        });
+      } finally {
+        setIsLoadingAtivacao(false);
       }
-    } catch (error) {
-      console.error("Erro ao ativar participação:", error);
-
-      let errorMessage = "Ocorreu um erro ao ativar a participação";
-      if (error.response) {
-        if (error.response.status === 400) {
-          errorMessage = error.response.data.message || errorMessage;
-        } else if (error.response.status === 404) {
-          errorMessage = "Participação não encontrada";
-        }
-      }
-
+    } else {
       toast.current?.show({
         severity: "error",
         summary: "Erro",
-        detail: errorMessage,
+        detail:
+          "A participação não está em um status que permita esta operação",
         life: 3000,
       });
-    } finally {
-      setIsLoadingAtivacao(false);
     }
   };
   // Funções para abrir/fechar o modal de cancelamento
@@ -195,17 +265,17 @@ const ParticipacaoGestorController = ({
       });
       const item = await getParticipacao(tenant, participacaoId);
       setItem(item);
+      await fetch();
       toast.current?.show({
         severity: "success",
         summary: "Sucesso",
         detail: "Participação inativada com sucesso",
         life: 3000,
       });
-
-      closeModalCancelamento();
       if (onSuccess) {
         await onSuccess();
       }
+      closeModalCancelamento();
     } catch (error) {
       console.error("Erro ao inativar participação:", error);
       toast.current?.show({
@@ -224,12 +294,13 @@ const ParticipacaoGestorController = ({
         <h4>Confirmar Inativação</h4>
 
         {/* Mensagens de erro/bloqueio */}
-        {item?.statusParticipacao !== "APROVADA" && (
-          <div className="p-message p-message-error mb-3 mt-3">
-            Esta participação não pode ser inativada porque seu status não é
-            "APROVADO"
-          </div>
-        )}
+        {item?.statusParticipacao !== "APROVADA" ||
+          (item?.statusParticipacao !== "PENDENTE" && (
+            <div className="p-message p-message-error mb-3 mt-3">
+              Esta participação não pode ser inativada porque seu status não é
+              "APROVADO" ou "PENDENTE"
+            </div>
+          ))}
 
         {item?.VinculoSolicitacaoBolsa?.some(
           (v) => v.status !== "RECUSADO"
@@ -241,7 +312,8 @@ const ParticipacaoGestorController = ({
         )}
 
         {/* Mostrar campos apenas se a participação puder ser inativada */}
-        {item?.statusParticipacao === "APROVADA" &&
+        {(item?.statusParticipacao === "APROVADA" ||
+          item?.statusParticipacao === "PENDENTE") &&
           (!item?.VinculoSolicitacaoBolsa?.length ||
             item?.VinculoSolicitacaoBolsa?.every(
               (v) => v.status === "RECUSADO"
@@ -298,9 +370,10 @@ const ParticipacaoGestorController = ({
             disabled={
               // Desabilitar se:
               // 1. Status não for APROVADA
-              item?.statusParticipacao !== "APROVADA" ||
-              // 2. Há vínculos não recusados
-              (item?.VinculoSolicitacaoBolsa?.length > 0 &&
+              (item?.statusParticipacao !== "APROVADA" &&
+                item?.statusParticipacao !== "PENDENTE" &&
+                // 2. Há vínculos não recusados
+                item?.VinculoSolicitacaoBolsa?.length > 0 &&
                 item?.VinculoSolicitacaoBolsa?.some(
                   (v) => v.status !== "RECUSADO"
                 )) ||
@@ -315,17 +388,6 @@ const ParticipacaoGestorController = ({
     </Modal>
   );
 
-  const openModalSubstituicao = (data) => {
-    setIsModalAvaliadorOpen(true);
-    setAlunoToEdit(data);
-    setVerifiedData(null);
-  };
-
-  const closeModalAvaliador = () => {
-    setIsModalAvaliadorOpen(false);
-    setAlunoToEdit(null);
-    setVerifiedData(null);
-  };
   // Estados para substituição de aluno
   const [cpfVerificado, setCpfVerificado] = useState(null);
   const [novoAluno, setNovoAluno] = useState(null);
@@ -373,7 +435,7 @@ const ParticipacaoGestorController = ({
         detail: "Aluno substituído com sucesso!",
         life: 3000,
       });
-
+      await fetch();
       if (onSuccess) {
         await onSuccess();
       }
@@ -483,6 +545,9 @@ const ParticipacaoGestorController = ({
       </div>
     </Modal>
   );
+  const [historicoParticipacao, setHistPart] = useState([]);
+  const [historicoVinculo, setHistVinc] = useState({});
+  const [historicoSolicitacao, setHistSol] = useState({});
 
   const toast = useRef(null);
   useEffect(() => {
@@ -492,6 +557,22 @@ const ParticipacaoGestorController = ({
         const item = await getParticipacao(tenant, participacaoId);
         console.log(item);
         setItem(item);
+        setHistPart(mapHistorico(item.HistoricoStatusParticipacao));
+
+        const vinculos = item.VinculoSolicitacaoBolsa ?? [];
+        setHistVinc(
+          Object.fromEntries(
+            vinculos.map((v) => [v.id, mapHistorico(v.HistoricoStatusVinculo)])
+          )
+        );
+        setHistSol(
+          Object.fromEntries(
+            vinculos.map((v) => [
+              v.id,
+              mapHistorico(v.solicitacaoBolsa?.HistoricoStatusSolicitacaoBolsa),
+            ])
+          )
+        );
         setEditalInfo(item.inscricao.edital);
         setTipoParticipacao(item.tipo);
         if (
@@ -536,111 +617,6 @@ const ParticipacaoGestorController = ({
     fetchData();
   }, [tenant, participacaoId]);
 
-  const documentosBolsa = [
-    { name: "Termo de Compromisso", key: "TC" },
-    { name: "Declaração de Vínculo", key: "DV" },
-    { name: "Comprovante de Conta Bancária", key: "CCB" },
-    { name: "Histórico Escolar", key: "HE" },
-  ];
-
-  const documentosAluno = [
-    { name: "RG e CPF", key: "RG_CPF" },
-    { name: "Comprovante de Matrícula", key: "CM" },
-    { name: "Plano de Trabalho", key: "PT" },
-    { name: "Declaração de Disponibilidade", key: "DD" },
-  ];
-
-  // Estados para documentos da bolsa
-  const [selectedDocBolsa, setSelectedDocBolsa] = useState([]);
-  const [disregardedDocBolsa, setDisregardedDocBolsa] = useState([]);
-
-  // Estados para documentos do aluno
-  const [selectedDocAluno, setSelectedDocAluno] = useState([]);
-  const [disregardedDocAluno, setDisregardedDocAluno] = useState([]);
-
-  // Estados para comprovantes de pagamento
-  const [selectedComprovantes, setSelectedComprovantes] = useState([]);
-  const [disregardedComprovantes, setDisregardedComprovantes] = useState([]);
-
-  // Lista de comprovantes mensais
-  const comprovantesPagamento = [
-    { name: "Janeiro", key: "CP_01" },
-    { name: "Fevereiro", key: "CP_02" },
-    { name: "Março", key: "CP_03" },
-    { name: "Abril", key: "CP_04" },
-    { name: "Maio", key: "CP_05" },
-    { name: "Junho", key: "CP_06" },
-    { name: "Julho", key: "CP_07" },
-    { name: "Agosto", key: "CP_08" },
-    { name: "Setembro", key: "CP_09" },
-    { name: "Outubro", key: "CP_10" },
-    { name: "Novembro", key: "CP_11" },
-    { name: "Dezembro", key: "CP_12" },
-  ];
-  // Função genérica para alternar desconsideração
-  const toggleDisregard = (docKey, type) => {
-    if (type === "bolsa") {
-      setSelectedDocBolsa((prev) => prev.filter((item) => item.key !== docKey));
-      setDisregardedDocBolsa((prev) =>
-        prev.includes(docKey)
-          ? prev.filter((key) => key !== docKey)
-          : [...prev, docKey]
-      );
-    } else {
-      setSelectedDocAluno((prev) => prev.filter((item) => item.key !== docKey));
-      setDisregardedDocAluno((prev) =>
-        prev.includes(docKey)
-          ? prev.filter((key) => key !== docKey)
-          : [...prev, docKey]
-      );
-    }
-  };
-
-  // Função genérica para alterar seleção
-  const onDocChange = (e, type) => {
-    const newSelection = e.checked
-      ? [...(type === "bolsa" ? selectedDocBolsa : selectedDocAluno), e.value]
-      : (type === "bolsa" ? selectedDocBolsa : selectedDocAluno).filter(
-          (doc) => doc.key !== e.value.key
-        );
-
-    type === "bolsa"
-      ? setSelectedDocBolsa(newSelection)
-      : setSelectedDocAluno(newSelection);
-  };
-
-  // Determina o status de cada item
-  const getItemStatus = (docKey, type) => {
-    const selectedList = type === "bolsa" ? selectedDocBolsa : selectedDocAluno;
-    const disregardedList =
-      type === "bolsa" ? disregardedDocBolsa : disregardedDocAluno;
-
-    const isSelected = selectedList.some((doc) => doc.key === docKey);
-    const isDisregarded = disregardedList.includes(docKey);
-
-    return {
-      isSelected,
-      isDisregarded,
-      isUnselected: !isSelected && !isDisregarded,
-    };
-  };
-  // Função para comprovantes
-  const toggleComprovante = (compKey) => {
-    setSelectedComprovantes((prev) =>
-      prev.includes(compKey)
-        ? prev.filter((key) => key !== compKey)
-        : [...prev, compKey]
-    );
-  };
-
-  const toggleDisregardComprovante = (compKey) => {
-    setSelectedComprovantes((prev) => prev.filter((key) => key !== compKey));
-    setDisregardedComprovantes((prev) =>
-      prev.includes(compKey)
-        ? prev.filter((key) => key !== compKey)
-        : [...prev, compKey]
-    );
-  };
   const formatarDataParaBackend = (dataISO) => {
     const date = new Date(dataISO);
     const day = String(date.getDate()).padStart(2, "0");
@@ -648,11 +624,436 @@ const ParticipacaoGestorController = ({
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   };
+  const [loadingVinculoId, setLoadingVinculoId] = useState(null);
+
+  const handleAtivarVinculo = async (vinculoId) => {
+    setLoadingVinculoId(vinculoId);
+    try {
+      await ativarVinculo(tenant, vinculoId); // chamada à API
+      await fetch(); // atualiza os dados
+      toast.current?.show({
+        severity: "success",
+        summary: "Sucesso",
+        detail: "Vínculo ativado com sucesso!",
+        life: 3000,
+      });
+      if (onSuccess) await onSuccess();
+    } catch (err) {
+      console.error("Erro ao ativar vínculo:", err);
+      toast.current?.show({
+        severity: "error",
+        summary: "Erro",
+        detail:
+          err?.response?.data?.message ||
+          err.message ||
+          "Falha ao ativar vínculo",
+        life: 4000,
+      });
+    } finally {
+      setLoadingVinculoId(null);
+    }
+  };
+  const [loadingPendenciaId, setLoadingPendenciaId] = useState(null);
+  const [modalPendenciaVinculoId, setModalPendenciaVinculoId] = useState(null);
+  const [justPendencia, setJustPendencia] = useState("");
+  const handleTornarPendente = async () => {
+    if (!justPendencia.trim()) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Erro",
+        detail: "Informe a justificativa da pendência",
+        life: 3000,
+      });
+      return;
+    }
+
+    setLoadingPendenciaId(modalPendenciaVinculoId);
+    try {
+      await tornarPendenteVinculo(
+        tenant,
+        modalPendenciaVinculoId,
+        justPendencia.trim()
+      );
+      await fetch(); // atualiza a tela
+      toast.current?.show({
+        severity: "success",
+        summary: "Sucesso",
+        detail: "Vínculo tornado pendente com sucesso",
+        life: 3000,
+      });
+      if (onSuccess) await onSuccess();
+      setModalPendenciaVinculoId(null); // fecha modal
+      setJustPendencia("");
+    } catch (err) {
+      console.error("Erro:", err);
+      toast.current?.show({
+        severity: "error",
+        summary: "Erro",
+        detail:
+          err?.response?.data?.message ||
+          err.message ||
+          "Falha ao alterar status",
+        life: 4000,
+      });
+    } finally {
+      setLoadingPendenciaId(null);
+    }
+  };
+  {
+    /* fora do return principal, mas dentro do componente */
+  }
+  const renderModalPendenciaVinculo = () => (
+    <Modal
+      isOpen={!!modalPendenciaVinculoId}
+      onClose={() => {
+        setModalPendenciaVinculoId(null);
+        setJustPendencia("");
+      }}
+    >
+      <h4 className="mb-3">Justificativa da Pendência</h4>
+
+      <InputTextarea
+        rows={4}
+        className="w-full"
+        value={justPendencia}
+        onChange={(e) => setJustPendencia(e.target.value)}
+        placeholder="Descreva o motivo…"
+      />
+
+      <div className="flex justify-content-end gap-2 mt-4">
+        <Button
+          label="Cancelar"
+          severity="secondary"
+          outlined
+          onClick={() => {
+            setModalPendenciaVinculoId(null);
+            setJustPendencia("");
+          }}
+        />
+        <Button
+          label={
+            loadingPendenciaId ? (
+              <>
+                <i className="pi pi-spinner pi-spin mr-2" />
+                Processando…
+              </>
+            ) : (
+              "Confirmar"
+            )
+          }
+          disabled={loadingPendenciaId}
+          onClick={handleTornarPendente}
+        />
+      </div>
+    </Modal>
+  );
+  const [loadingCancelId, setLoadingCancelId] = useState(null);
+  const [modalCancelVincId, setModalCancelVincId] = useState(null);
+  const [justCancel, setJustCancel] = useState("");
+  const handleCancelarVinculo = async () => {
+    if (!justCancel.trim()) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Erro",
+        detail: "Informe a justificativa do cancelamento",
+        life: 3000,
+      });
+      return;
+    }
+
+    setLoadingCancelId(modalCancelVincId);
+    try {
+      await cancelarVinculo(tenant, modalCancelVincId, justCancel.trim());
+      await fetch(); // atualiza a tela
+      toast.current?.show({
+        severity: "success",
+        summary: "Sucesso",
+        detail: "Vínculo cancelado com sucesso",
+        life: 3000,
+      });
+      if (onSuccess) await onSuccess();
+      setModalCancelVincId(null);
+      setJustCancel("");
+    } catch (err) {
+      console.error(err);
+      toast.current?.show({
+        severity: "error",
+        summary: "Erro",
+        detail:
+          err?.response?.data?.message ||
+          err.message ||
+          "Falha ao cancelar vínculo",
+        life: 4000,
+      });
+    } finally {
+      setLoadingCancelId(null);
+    }
+  };
+  const renderModalCancelVinculo = () => (
+    <Modal
+      isOpen={!!modalCancelVincId}
+      onClose={() => {
+        setModalCancelVincId(null);
+        setJustCancel("");
+      }}
+    >
+      <h4 className="mb-3">Justificativa de Cancelamento</h4>
+
+      <InputTextarea
+        rows={4}
+        className="w-full"
+        value={justCancel}
+        onChange={(e) => setJustCancel(e.target.value)}
+        placeholder="Explique por que o vínculo está sendo cancelado…"
+      />
+
+      <div className="flex justify-content-end gap-2 mt-4">
+        <Button
+          label="Cancelar"
+          severity="secondary"
+          outlined
+          onClick={() => {
+            setModalCancelVincId(null);
+            setJustCancel("");
+          }}
+        />
+        <Button
+          label={
+            loadingCancelId ? (
+              <>
+                <i className="pi pi-spinner pi-spin mr-2" /> Processando…
+              </>
+            ) : (
+              "Confirmar cancelamento"
+            )
+          }
+          disabled={loadingCancelId}
+          onClick={handleCancelarVinculo}
+        />
+      </div>
+    </Modal>
+  );
+  const [loadingDevolucaoId, setLoadingDevolucaoId] = useState(null);
+  const [modalDevolucaoId, setModalDevolucaoId] = useState(null);
+  const [justDevolucao, setJustDevolucao] = useState("");
+  const handleDevolverBolsa = async () => {
+    if (!justDevolucao.trim()) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Erro",
+        detail: "Informe a justificativa da devolução",
+        life: 3000,
+      });
+      return;
+    }
+
+    setLoadingDevolucaoId(modalDevolucaoId);
+    try {
+      await devolverBolsa(tenant, modalDevolucaoId, justDevolucao.trim());
+      await fetch();
+      toast.current?.show({
+        severity: "success",
+        summary: "Sucesso",
+        detail: "Bolsa devolvida com sucesso",
+        life: 3000,
+      });
+      onSuccess && (await onSuccess());
+      setModalDevolucaoId(null);
+      setJustDevolucao("");
+    } catch (err) {
+      console.error(err);
+      toast.current?.show({
+        severity: "error",
+        summary: "Erro",
+        detail:
+          err?.response?.data?.message || err.message || "Falha na devolução",
+        life: 4000,
+      });
+    } finally {
+      setLoadingDevolucaoId(null);
+    }
+  };
+  const renderModalDevolucao = () => (
+    <Modal
+      isOpen={!!modalDevolucaoId}
+      onClose={() => {
+        setModalDevolucaoId(null);
+        setJustDevolucao("");
+      }}
+    >
+      <h4 className="mb-3">Justificativa da Devolução</h4>
+
+      <InputTextarea
+        rows={4}
+        className="w-full"
+        value={justDevolucao}
+        onChange={(e) => setJustDevolucao(e.target.value)}
+        placeholder="Explique o motivo da devolução da bolsa…"
+      />
+
+      <div className="flex justify-content-end gap-2 mt-4">
+        <Button
+          label="Cancelar"
+          severity="secondary"
+          outlined
+          onClick={() => {
+            setModalDevolucaoId(null);
+            setJustDevolucao("");
+          }}
+        />
+        <Button
+          label={
+            loadingDevolucaoId ? (
+              <>
+                <i className="pi pi-spinner pi-spin mr-2" /> Processando…
+              </>
+            ) : (
+              "Confirmar devolução"
+            )
+          }
+          disabled={loadingDevolucaoId}
+          onClick={handleDevolverBolsa}
+        />
+      </div>
+    </Modal>
+  );
+  const [modalTransferOpen, setModalTransferOpen] = useState(false);
+  const [loadingAlunos, setLoadingAlunos] = useState(false);
+  const [alunosOptions, setAlunosOptions] = useState([]);
+  const [alunoDestinoId, setAlunoDestinoId] = useState(null);
+  const [justTransfer, setJustTransfer] = useState("");
+  const [loadingTransfer, setLoadingTransfer] = useState(false);
+  const [vinculoOrigemSelecionado, setVinculoOrigemSelecionado] =
+    useState(null);
+
+  const loadAlunosInscricao = async () => {
+    if (loadingAlunos || alunosOptions.length) return; // já carregado
+    try {
+      setLoadingAlunos(true);
+      const dados = await getInscricao(tenant, item.inscricao.id);
+      console.log(item.inscricao.id);
+      console.log(dados);
+      setAlunosOptions(
+        (dados.alunos || []).map((p) => ({
+          label: p.nome_aluno, // campo vindo do back-end achatado
+          value: p.id, // id da Participacao
+        }))
+      );
+    } catch (err) {
+      console.error(err);
+      toast.current?.show({
+        severity: "error",
+        summary: "Erro",
+        detail: "Não foi possível carregar os alunos desta inscrição",
+      });
+    } finally {
+      setLoadingAlunos(false);
+    }
+  };
+  const renderModalTransferencia = () => (
+    <Modal
+      isOpen={modalTransferOpen}
+      onClose={() => {
+        setModalTransferOpen(false);
+        setAlunoDestinoId(null);
+        setJustTransfer("");
+        setVinculoOrigemSelecionado(null);
+      }}
+    >
+      <h4 className="mb-3">Transferir bolsa para outro aluno</h4>
+
+      {loadingAlunos ? (
+        <p>Carregando alunos…</p>
+      ) : (
+        <Dropdown
+          className="w-full mb-3"
+          placeholder="Selecione o aluno"
+          options={alunosOptions}
+          value={alunoDestinoId}
+          onChange={(e) => setAlunoDestinoId(e.value)}
+        />
+      )}
+
+      <InputTextarea
+        rows={4}
+        className="w-full"
+        placeholder="Justificativa da transferência"
+        value={justTransfer}
+        onChange={(e) => setJustTransfer(e.target.value)}
+      />
+
+      <div className="flex justify-content-end gap-2 mt-4">
+        <Button
+          label="Cancelar"
+          severity="secondary"
+          outlined
+          onClick={() => setModalTransferOpen(false)}
+        />
+        <Button
+          label={
+            loadingTransfer ? (
+              <>
+                <i className="pi pi-spinner pi-spin mr-2" /> Processando…
+              </>
+            ) : (
+              "Confirmar"
+            )
+          }
+          disabled={loadingTransfer}
+          onClick={async () => {
+            if (!alunoDestinoId || !justTransfer.trim()) {
+              toast.current?.show({
+                severity: "error",
+                summary: "Erro",
+                detail: "Selecione o aluno e informe a justificativa",
+              });
+              return;
+            }
+            try {
+              setLoadingTransfer(true);
+              await transferirBolsa(
+                tenant,
+                vinculoOrigemSelecionado, // use o solicitacaoBolsaId atual
+                alunoDestinoId,
+                justTransfer.trim()
+              );
+              await fetch();
+              toast.current?.show({
+                severity: "success",
+                summary: "Sucesso",
+                detail: "Transferência concluída",
+              });
+              onSuccess && (await onSuccess());
+              setModalTransferOpen(false);
+              setAlunoDestinoId(null);
+              setJustTransfer("");
+            } catch (err) {
+              console.error(err);
+              toast.current?.show({
+                severity: "error",
+                summary: "Erro",
+                detail: err?.response?.data?.message || err.message,
+              });
+            } finally {
+              setLoadingTransfer(false);
+            }
+          }}
+        />
+      </div>
+    </Modal>
+  );
+
   return (
     <>
       <Toast ref={toast} />
       {renderModalSubstituicaoAluno()}
       {renderModalCancelamento()}
+      {renderModalAtivarPendente()}
+      {renderModalPendenciaVinculo()}
+      {renderModalCancelVinculo()}
+      {renderModalDevolucao()}
+      {renderModalTransferencia()}
+
       {loading && <p>Carregando...</p>}
       {item && !loading && (
         <>
@@ -664,29 +1065,6 @@ const ParticipacaoGestorController = ({
                   <div className={styles.user}>
                     <h6>{item.user?.nome}</h6>
                     <div className={styles.actions}>
-                      {item.status === "aprovada" && (
-                        <div
-                          onClick={handleAtivarParticipacao}
-                          className={`${styles.action} ${styles.normal}`}
-                          disabled={
-                            isLoadingAtivacao ||
-                            item.statusParticipacao !== "APROVADA"
-                          }
-                          title={
-                            item.statusParticipacao !== "APROVADA"
-                              ? "Só é possível ativar participações com status APROVADA"
-                              : "Ativar participação"
-                          }
-                        >
-                          {isLoadingAtivacao ? (
-                            <i className="pi pi-spinner pi-spin" />
-                          ) : (
-                            <RiCheckboxCircleLine />
-                          )}
-                          <p>Ativar</p>
-                        </div>
-                      )}
-
                       <div
                         onClick={() => {
                           setIsModalSubstituicaoAlunoOpen(true);
@@ -706,6 +1084,42 @@ const ParticipacaoGestorController = ({
                         <p>Substituir</p>
                       </div>
                       <div
+                        onClick={handleToggleAtivarPendente}
+                        className={`${styles.action} ${
+                          item.statusParticipacao === "ATIVA"
+                            ? styles.error
+                            : styles.normal
+                        }`}
+                        disabled={
+                          isLoadingAtivacao ||
+                          !["PENDENTE", "ATIVA", "APROVADA"].includes(
+                            item.statusParticipacao
+                          )
+                        }
+                        title={
+                          !["PENDENTE", "ATIVA", "APROVADA"].includes(
+                            item.statusParticipacao
+                          )
+                            ? "Só é possível alternar entre status ATIVA e PENDENTE"
+                            : item.statusParticipacao === "ATIVA"
+                            ? "Tornar participação pendente"
+                            : "Ativar participação"
+                        }
+                      >
+                        {isLoadingAtivacao ? (
+                          <i className="pi pi-spinner pi-spin" />
+                        ) : item.statusParticipacao === "ATIVA" ? (
+                          <RiForbid2Line />
+                        ) : (
+                          <RiCheckboxCircleLine />
+                        )}
+                        <p>
+                          {item.statusParticipacao === "ATIVA"
+                            ? "Pendente"
+                            : "Ativar"}
+                        </p>
+                      </div>
+                      <div
                         onClick={openModalCancelamento}
                         className={`${styles.action} ${styles.error}`}
                         disabled={
@@ -715,8 +1129,9 @@ const ParticipacaoGestorController = ({
                           )
                         }
                         title={
-                          item.statusParticipacao !== "APROVADA"
-                            ? "Só é possível inativar participações com status APROVADA"
+                          item.statusParticipacao !== "APROVADA" ||
+                          item.statusParticipacao !== "PENDENTE"
+                            ? "Só é possível inativar participações com status APROVADA ou PENDENTE"
                             : item.VinculoSolicitacaoBolsa?.some(
                                 (v) => v.status !== "RECUSADO"
                               )
@@ -727,88 +1142,16 @@ const ParticipacaoGestorController = ({
                         <RiUserUnfollowLine />
                         <p>Cancelar</p>
                       </div>
-                      <div
-                        onClick={handleToggleStatusBolsa}
-                        className={`${styles.action} ${styles.normal}`}
-                        disabled={isLoadingToggle}
-                      >
-                        {isLoadingToggle ? (
-                          <i className="pi pi-spinner pi-spin" />
-                        ) : (
-                          <RiCheckboxCircleLine />
-                        )}
-                        <p>Ativar</p>
-                      </div>
                     </div>
                   </div>
                   <div className={styles.contentCard}>
-                    <Tag
-                      rounded
-                      className="mb-1"
-                      severity={getSeverityByStatus(item.statusParticipacao)}
-                      value={formatStatusText(item.statusParticipacao)}
-                    ></Tag>
+                    <div className={styles.historico}>
+                      <LinhaTempo data={historicoParticipacao} />
+                    </div>
+
                     <div
                       className={`flex flex-column  ${styles.checkboxList} `}
-                    >
-                      {false && (
-                        <>
-                          <h6 className="mb-2">Documentos do Aluno:</h6>
-                          {documentosAluno.map((doc) => {
-                            const { isSelected, isDisregarded, isUnselected } =
-                              getItemStatus(doc.key, "aluno");
-                            return (
-                              <div
-                                key={`aluno-${doc.key}`}
-                                className={`flex align-items-center ${
-                                  styles.checkboxItemList
-                                } ${
-                                  isDisregarded ? styles.disregardedItem : ""
-                                }`}
-                              >
-                                <Checkbox
-                                  inputId={`aluno-${doc.key}`}
-                                  name="docAluno"
-                                  value={doc}
-                                  onChange={(e) => onDocChange(e, "aluno")}
-                                  checked={isSelected}
-                                  disabled={isDisregarded}
-                                />
-                                <label
-                                  htmlFor={`aluno-${doc.key}`}
-                                  className="ml-2"
-                                >
-                                  <p
-                                    className={
-                                      isUnselected ? styles.unselectedText : ""
-                                    }
-                                  >
-                                    {doc.name}
-                                  </p>
-                                </label>
-                                {isDisregarded ? (
-                                  <RiAddCircleLine
-                                    className={styles.reactivateIcon}
-                                    onClick={() =>
-                                      toggleDisregard(doc.key, "aluno")
-                                    }
-                                    title="Reativar item"
-                                  />
-                                ) : (
-                                  <RiCloseLine
-                                    className={styles.disregardIcon}
-                                    onClick={() =>
-                                      toggleDisregard(doc.key, "aluno")
-                                    }
-                                    title="Desconsiderar e desmarcar item"
-                                  />
-                                )}
-                              </div>
-                            );
-                          })}
-                        </>
-                      )}
-                    </div>
+                    ></div>
                     {item.VinculoSolicitacaoBolsa.length > 0 &&
                       item.VinculoSolicitacaoBolsa.map((vinculo) => (
                         <div
@@ -817,13 +1160,49 @@ const ParticipacaoGestorController = ({
                         >
                           <div className={styles.user}>
                             <h6>Vinculação</h6>
+
                             <div className={styles.actions}>
                               <div
-                                onClick={handleToggleStatusBolsa}
+                                onClick={() => {
+                                  setModalCancelVincId(vinculo.id);
+                                  setJustCancel("");
+                                }}
                                 className={`${styles.action} ${styles.normal}`}
-                                disabled={isLoadingToggle}
+                                disabled={
+                                  loadingCancelId === vinculo.id ||
+                                  ["EM_ANALISE", "APROVADA"].includes(
+                                    vinculo.solicitacaoBolsa?.status || ""
+                                  )
+                                }
                               >
-                                {isLoadingToggle ? (
+                                {loadingCancelId === vinculo.id ? (
+                                  <i className="pi pi-spinner pi-spin" />
+                                ) : (
+                                  <RiProhibited2Line />
+                                )}
+                                <p>Cancelar</p>
+                              </div>
+                              <div
+                                onClick={() => {
+                                  setModalPendenciaVinculoId(vinculo.id);
+                                  setJustPendencia("");
+                                }}
+                                className={`${styles.action} ${styles.normal}`}
+                                disabled={loadingPendenciaId === vinculo.id}
+                              >
+                                {loadingPendenciaId === vinculo.id ? (
+                                  <i className="pi pi-spinner pi-spin" />
+                                ) : (
+                                  <RiErrorWarningLine />
+                                )}
+                                <p>Pendência</p>
+                              </div>
+                              <div
+                                onClick={() => handleAtivarVinculo(vinculo.id)}
+                                className={`${styles.action} ${styles.normal}`}
+                                disabled={loadingVinculoId === vinculo.id}
+                              >
+                                {loadingVinculoId === vinculo.id ? (
                                   <i className="pi pi-spinner pi-spin" />
                                 ) : (
                                   <RiCheckboxCircleLine />
@@ -834,55 +1213,71 @@ const ParticipacaoGestorController = ({
                           </div>
                           <div className={styles.contentCard}>
                             <h6>Status da vinculação entre aluno e Bolsa: </h6>
-                            <Tag
-                              className="mb-1"
-                              rounded
-                              severity={getSeverityByStatus(vinculo?.status)}
-                            >
-                              {formatStatusText(vinculo?.status)}
-                            </Tag>
 
+                            <div className={styles.historico}>
+                              <LinhaTempo data={historicoVinculo[vinculo.id]} />
+                            </div>
                             <div
                               key={vinculo.id}
                               className={`${styles.userCard} mt-2`}
                             >
                               <div className={styles.user}>
-                                <h6>Bolsa</h6>
+                                <h6>
+                                  Solicitação de Bolsa ID-
+                                  {vinculo.solicitacaoBolsa.id}
+                                </h6>
                                 <div className={styles.actions}>
                                   <div
                                     className={`${styles.action} ${styles.normal}`}
+                                    onClick={async () => {
+                                      setVinculoOrigemSelecionado(vinculo.id); // ➜ NOVO estado
+                                      await loadAlunosInscricao();
+                                      setModalTransferOpen(true);
+                                    }}
                                   >
                                     <RiExchangeLine />
                                     <p>Transferir</p>
                                   </div>
+
                                   <div
                                     className={`${styles.action} ${styles.error}`}
+                                    onClick={() => {
+                                      setModalDevolucaoId(
+                                        vinculo.solicitacaoBolsa?.id
+                                      );
+                                      setJustDevolucao("");
+                                    }}
+                                    disabled={
+                                      loadingDevolucaoId ===
+                                        vinculo.solicitacaoBolsa?.id ||
+                                      // bloqueia se status EM_ANALISE ou APROVADA
+                                      ["EM_ANALISE", "APROVADA"].includes(
+                                        vinculo.solicitacaoBolsa?.status
+                                      )
+                                    }
                                   >
-                                    <RiSwapLine />
+                                    {loadingDevolucaoId ===
+                                    vinculo.solicitacaoBolsa?.id ? (
+                                      <i className="pi pi-spinner pi-spin" />
+                                    ) : (
+                                      <RiSwapLine />
+                                    )}
                                     <p>Devolver</p>
                                   </div>
                                 </div>
                               </div>
                               <div className={styles.contentCard}>
-                                <h6>Status da solicitação da Bolsa: </h6>
-                                <Tag
-                                  className="mb-1"
-                                  rounded
-                                  severity={getSeverityByStatus(
-                                    vinculo.solicitacaoBolsa?.status
-                                  )}
-                                >
-                                  {formatStatusText(
-                                    vinculo.solicitacaoBolsa?.status
-                                  )}
-                                </Tag>
-
                                 <h6>Fonte pagadora: </h6>
                                 <p>
                                   {vinculo.solicitacaoBolsa?.bolsa?.cota
                                     .instituicaoPagadora ||
                                     "Aluno deve aguardar disponbilização de bolsa"}
                                 </p>
+                                <div className={styles.historico}>
+                                  <LinhaTempo
+                                    data={historicoSolicitacao[vinculo.id]}
+                                  />
+                                </div>
                               </div>
                             </div>
                           </div>

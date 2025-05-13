@@ -7,6 +7,28 @@
     gap: $gap-2;
 
 }
+
+.configuracoes{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    .icon{
+        color: $primary-dark;
+    }
+    ul{
+        display: flex;
+        gap: $gap-2;
+        li{
+            cursor: pointer;
+            transition: ease .3s;
+            &:hover{
+                p{
+                    text-decoration: underline;
+                }
+            }
+        }
+    }
+}
 .card_style1{
     display: flex;
     flex: 1;

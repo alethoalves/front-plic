@@ -187,6 +187,7 @@
         justify-content: space-between;
         border-top-left-radius:$gap-1 ;
         border-top-right-radius:$gap-1 ;
+        
         h6{
             padding: $gap-1;
             padding-left: $gap-2;
@@ -198,12 +199,16 @@
             align-items: center;
         }
         .actions{
+            
             .action{
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 cursor: pointer;
                 border-left: 1px solid $white-light;
+                &:last-child{
+                    border-top-right-radius: $gap-1;
+                }
             }
             @include responsive(xs){
                 .action{
@@ -237,9 +242,10 @@
                     }
                 }
             }
+            
             .error{
                 transition: ease .3s;
-                border-top-right-radius: $gap-1;
+                //border-top-right-radius: $gap-1;
                 &:hover{
                     background-color: $error-light-1;
                     color: $white-light;

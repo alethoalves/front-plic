@@ -323,3 +323,24 @@ $gutter: 32px;
 .br-gray{
   border-right: 2px solid $white-darken;
 }
+.p-timeline-event-separator{
+  margin: 0 8px;
+}
+.p-timeline-event-marker{
+  border-color: $primary-dark;
+}
+.p-calendar{
+  display: inline-flex;
+  
+}
+.p-datepicker-calendar-container{
+  span{
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+.justify-content-between{
+  justify-content: space-between;
+}

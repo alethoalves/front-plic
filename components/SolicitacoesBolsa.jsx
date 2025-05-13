@@ -219,6 +219,7 @@ export default function SolicitacoesBolsa() {
         setLoading(true);
         /* -- vínculos -- */
         const rawVinculos = await getVinculosByTenant(tenant, ano);
+        console.log(rawVinculos);
         const processed = await processarDados(rawVinculos);
         setProcessedData(processed);
 
@@ -660,21 +661,22 @@ export default function SolicitacoesBolsa() {
                   </div>
                 </div>
 
-                {selectedItems.length > 0 && (
-                  <Button
-                    label={
-                      distribuindo
-                        ? `Distribuindo... ${progressoDistribuicao.atual}/${progressoDistribuicao.total}`
-                        : `Distribuir esta cota para ${
-                            selectedItems.length
-                          } aluno${selectedItems.length > 1 ? "s" : ""}`
-                    }
-                    className="p-button-success w-100"
-                    icon="pi pi-send"
-                    disabled={distribuindo || desalocando}
-                    onClick={() => distribuirBolsasParaSelecionados(cota.id)}
-                  />
-                )}
+                {selectedItems.length > 0 &&
+                  (naoAlocadas > 0 || naoCriadas > 0) && (
+                    <Button
+                      label={
+                        distribuindo
+                          ? `Distribuindo... ${progressoDistribuicao.atual}/${progressoDistribuicao.total}`
+                          : `Distribuir esta cota para ${
+                              selectedItems.length
+                            } aluno${selectedItems.length > 1 ? "s" : ""}`
+                      }
+                      className="p-button-success w-100"
+                      icon="pi pi-send"
+                      disabled={distribuindo || desalocando}
+                      onClick={() => distribuirBolsasParaSelecionados(cota.id)}
+                    />
+                  )}
               </div>
             );
           })}
@@ -897,7 +899,7 @@ export default function SolicitacoesBolsa() {
 
           {/* NOVA COLUNA ‑ INSTITUIÇÃO (COTA) */}
           <Column
-            field="instituicaoPagadora"
+            field="solicitacaoBolsa.bolsa.cota.instituicaoPagadora"
             header="Bolsa"
             sortable
             filter
@@ -912,7 +914,9 @@ export default function SolicitacoesBolsa() {
               <Tag
                 value={row.instituicaoPagadora}
                 severity={
-                  row.instituicaoPagadora === "Não alocado" ? "info" : "success"
+                  row.solicitacaoBolsa.bolsa?.cota.instituicaoPagadora
+                    ? "success"
+                    : "warning"
                 }
               />
             )}
