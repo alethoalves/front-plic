@@ -29,7 +29,6 @@ const FormNewFormulario = ({ tenantSlug, initialData, onClose, onSuccess }) => {
       titulo: "",
       descricao: "",
       tipo: "",
-      onSubmitStatus: "",
     },
   });
 
@@ -38,7 +37,6 @@ const FormNewFormulario = ({ tenantSlug, initialData, onClose, onSuccess }) => {
       setValue("titulo", initialData.titulo);
       setValue("descricao", initialData.descricao);
       setValue("tipo", initialData.tipo);
-      setValue("onSubmitStatus", initialData.onSubmitStatus);
     } else {
       reset();
     }
@@ -90,33 +88,24 @@ const FormNewFormulario = ({ tenantSlug, initialData, onClose, onSuccess }) => {
           placeholder="Digite aqui o título do formulário"
           disabled={loading}
         />
-        <Select
-          className="mb-2"
-          control={control}
-          name="tipo"
-          label="Tipo de formulário"
-          options={[
-            { label: "Selecione uma opção", value: "" },
-            { label: "orientador", value: "orientador" },
-            { label: "aluno", value: "aluno" },
-            { label: "projeto", value: "projeto" },
-            { label: "plano de trabalho", value: "planoDeTrabalho" },
-            { label: "atividade", value: "atividade" },
-            { label: "avaliacao", value: "avaliacao" },
-          ]}
-          disabled={loading}
-        />
-        <Select
-          control={control}
-          name="onSubmitStatus"
-          label="Status após submissão"
-          options={[
-            { label: "Selecione uma opção", value: "" },
-            { label: "Concluído", value: "concluido" },
-            { label: "Aguardando Avaliação", value: "aguardandoAvaliacao" },
-          ]}
-          disabled={loading}
-        />
+        {!initialData && (
+          <Select
+            className="mb-2"
+            control={control}
+            name="tipo"
+            label="Tipo de formulário"
+            options={[
+              { label: "Selecione uma opção", value: "" },
+              { label: "orientador", value: "orientador" },
+              { label: "aluno", value: "aluno" },
+              { label: "projeto", value: "projeto" },
+              { label: "plano de trabalho", value: "planoDeTrabalho" },
+              { label: "atividade", value: "atividade" },
+              { label: "avaliacao", value: "avaliacao" },
+            ]}
+            disabled={loading}
+          />
+        )}
       </div>
       <div className={`${styles.btnSubmit}`}>
         <Button

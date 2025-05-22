@@ -24,7 +24,7 @@ const AvaliacoesProjetos = ({
   processarInscricoes,
   inscricoesProjetos,
   setInscricoesProjetos,
-  acompanhamento = false,
+  acompanhamento = true,
 }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -243,9 +243,15 @@ const AvaliacoesProjetos = ({
                 ref={dataTableRef}
                 value={inscricoesFiltradas}
                 paginator
-                rows={100}
-                rowsPerPageOptions={[100, 200, 500]}
+                rows={10}
+                rowsPerPageOptions={[10, 20, 50]}
                 scrollable
+                selectionMode={"checkbox"}
+                selection={selectedProjetos}
+                onSelectionChange={(e) => {
+                  setSelectedProjetos(e.value);
+                  setProjetosSelecionados(e.value);
+                }}
                 dataKey="id"
                 header={renderHeader()}
                 filters={filters}
@@ -262,15 +268,10 @@ const AvaliacoesProjetos = ({
                   "notaMedia", // Adicionar o campo de filtro global
                   "diferencaNotas", // Adicionar o campo de filtro global
                 ]}
-                emptyMessage="Nenhuma inscrição de projeto encontrada."
+                emptyMessage="Nenhum dado encontrado."
                 rowClassName="clickable-row"
                 onRowClick={(e) => {
                   handleRowClick(e);
-                }}
-                selection={selectedProjetos}
-                onSelectionChange={(e) => {
-                  setSelectedProjetos(e.value);
-                  setProjetosSelecionados(e.value);
                 }}
                 paginatorRight={paginatorRight} // Adicione o botão de download aquiç
               >

@@ -131,8 +131,8 @@ const FormCampo = ({
             { label: "Selecione uma opção", value: "" },
             { label: "Texto curto", value: "text" },
             { label: "Texto longo", value: "textLong" },
-            { label: "Palavras-chave", value: "flag" },
-            { label: "Seleção", value: "select" },
+            //{ label: "Palavras-chave", value: "flag" },
+            //{ label: "Seleção", value: "select" },
             { label: "Arquivo", value: "arquivo" },
             { label: "Link", value: "link" },
           ]}

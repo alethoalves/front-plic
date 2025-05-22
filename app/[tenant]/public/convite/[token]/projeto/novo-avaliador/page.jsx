@@ -18,11 +18,9 @@ import {
 import Button from "@/components/Button";
 import { getAreas } from "@/app/api/client/area";
 import { conviteAvaliadorSchema } from "@/lib/zodSchemas/conviteAvaliadorSchema";
-import {
-  aceitarConvite,
-  consultarConviteByToken,
-  recusarConvite,
-} from "@/app/api/client/conviteEvento";
+
+import { getTenantBySlug } from "@/app/api/client/tenant";
+import { consultarConviteByToken } from "@/app/api/client/avaliador";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
@@ -38,6 +36,7 @@ const Page = ({ params }) => {
   const [convite, setConvite] = useState();
   const [conviteRecusado, setConviteRecusado] = useState(false);
   const [conviteAceito, setConviteAceito] = useState(false);
+  const [tenant, setTenant] = useState();
 
   const [errorMessage, setErrorMessage] = useState();
 
@@ -46,6 +45,13 @@ const Page = ({ params }) => {
     const fetchData = async () => {
       setLoading(true);
       try {
+        const areas = await getAreas();
+        setAreas(areas);
+
+        const convite = await consultarConviteByToken(params.token);
+        setConvite(convite);
+        setTenant(convite.tenant);
+        console.log(convite);
       } catch (error) {
         console.error("Erro ao buscar eventos:", error);
         setErrorMessage(error.response.data.message);
@@ -55,6 +61,39 @@ const Page = ({ params }) => {
     };
     fetchData();
   }, [params.eventoSlug]);
+
+  const updateAreas = (selectedGrandesAreas) => {
+    //console.log("Atualizando Areas com as Grandes Areas Selecionadas:",selectedGrandesAreas);
+    const uniqueAreas = [];
+    const areasSet = new Set();
+
+    subsessoes.forEach((subs) => {
+      subs.areas.forEach((area) => {
+        if (selectedGrandesAreas.includes(area.area.grandeArea.id)) {
+          if (!areasSet.has(area.area.id)) {
+            areasSet.add(area.area.id);
+            uniqueAreas.push(area.area);
+          }
+        }
+      });
+    });
+
+    setAreas(uniqueAreas);
+    //console.log("Areas Atualizadas:", uniqueAreas);
+  };
+
+  const updateSubsessoes = (selectedAreas) => {
+    //console.log("Atualizando Subsessoes com as Areas Selecionadas:",selectedAreas);
+    const filteredSubsessoes = subsessoes.filter((subs) =>
+      subs.areas.some(
+        (area) =>
+          grandesAreasSelecionadas.includes(area.area.grandeArea.id) &&
+          selectedAreas.includes(area.area.id)
+      )
+    );
+    setSubsessoes(filteredSubsessoes);
+    //console.log("Subsessoes Atualizadas:", filteredSubsessoes);
+  };
 
   const handleGrandeAreaClick = (id) => {
     setGrandesAreasSelecionadas((prev) => {
@@ -147,34 +186,40 @@ const Page = ({ params }) => {
 
   return (
     <main className={styles.main}>
-      <div className={styles.content}>
-        <div
-          className={styles.banner}
-          style={{
-            backgroundColor: evento?.bgColor ? evento.bgColor : "#FFF",
-          }}
-        >
-          <Image
-            priority
-            fill
-            src={`/image/${evento.pathBanner}`}
-            alt="logo"
-            sizes="300 500 700"
-          />
+      {loading && !tenant && (
+        <div className={styles.content}>
+          <p>Carregando...</p>
         </div>
-        {convite && (
+      )}
+      {tenant && (
+        <div className={styles.content}>
+          <div className={styles.logo}>
+            {tenant?.pathLogo ? (
+              <Image
+                priority
+                fill
+                src={`/image/${tenant.pathLogo}`}
+                alt="logo do tenant"
+                sizes="300 500 700"
+              />
+            ) : (
+              /* enquanto carrega pode exibir um skeleton, spinner ou nada */
+              <div style={{ height: 120 }} /> // placeholder
+            )}
+          </div>
+
           <div className={`${styles.box} }`}>
             <div className={`${styles.header}`}>
               <h4>Faça parte do Comitê Avaliador!</h4>
             </div>
             <div className={`${styles.boxContent} `}>
               <p>
-                Você recebeu um convite para ser avaliador(a) do{" "}
-                <strong>{evento?.nomeEvento}</strong>
+                {`Você recebeu um convite para avaliar os projetos de Iniciação Científica dos editais de ${convite.ano} da instituição`}{" "}
+                <strong>{convite.tenant.nome}</strong>
               </p>
               <br></br>
               <p>
-                As avaliações ocorrerão nos dias{" "}
+                As avaliações ocorrerão de forma remota entre os dias
                 <strong>4, 5 e 6 de novembro de 2024 </strong>
                 de forma{" "}
                 <strong>presencial, no Centro Comunitário Athos Bulcão</strong>,
@@ -269,7 +314,7 @@ const Page = ({ params }) => {
                       </Button>
                     </>
                   )}
-                  {step === 2 && (
+                  {step === 1 && (
                     <>
                       <h6>Agora selecione as ÁREAS de maior interesse</h6>
                       <div className={styles.areas}>
@@ -305,55 +350,8 @@ const Page = ({ params }) => {
                       </Button>
                     </>
                   )}
-                  {step === 3 && (
-                    <>
-                      <h6>
-                        Escolha as sessões de avaliação que você poderá
-                        comparecer:
-                      </h6>
-                      <div className={styles.subsessoes}>
-                        {subsessoes
-                          .filter((subs) =>
-                            areasSelecionadas.some((areaId) =>
-                              subs.areas.some((area) => area.area.id === areaId)
-                            )
-                          )
-                          .map((subs) => (
-                            <div
-                              key={subs.id}
-                              className={`${styles.subsessao} ${
-                                subsessoesSelecionadas.includes(subs.id) &&
-                                styles.selected
-                              }`}
-                              onClick={() => handleSubsessaoClick(subs.id)}
-                            >
-                              <h6>{formatarData(subs.inicio)}</h6>
-                              <p>
-                                de {formatarHora(subs.inicio)} às{" "}
-                                {formatarHora(subs.fim)}
-                              </p>
-                            </div>
-                          ))}
-                      </div>
-                      <Button
-                        className="btn-primary mt-2"
-                        type="button" // submit, reset, button
-                        disabled={loading}
-                        onClick={() => {
-                          if (subsessoesSelecionadas.length > 0) {
-                            setStep(4);
-                            setErrorMessage();
-                          } else {
-                            setErrorMessage("Selecione ao menos uma sessão.");
-                          }
-                        }}
-                      >
-                        Salvar e continuar
-                      </Button>
-                    </>
-                  )}
 
-                  {step === 4 && (
+                  {step === 3 && (
                     <>
                       <div className={styles.formInput}>
                         <Input
@@ -547,13 +545,13 @@ const Page = ({ params }) => {
               </form>
             </div>
           </div>
-        )}
-        {errorMessage && (
-          <div className={`${styles.errorMsg} mb-3`}>
-            <p>{errorMessage}</p>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
+      {!loading && !tenant && (
+        <div className={styles.content}>
+          <p>Token não encontrado.</p>
+        </div>
+      )}
     </main>
   );
 };

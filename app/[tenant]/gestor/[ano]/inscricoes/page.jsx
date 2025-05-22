@@ -29,6 +29,7 @@ import PeriodoInscricao from "@/components/PeriodoInscricao";
 import { Dialog } from "primereact/dialog";
 import RestricaoInscricao from "@/components/RestricaoInscricao";
 import PermissoesInscricao from "@/components/PermissoesInscricao";
+import Formularios from "@/components/Formularios";
 
 const Page = ({ params }) => {
   // ESTADOS
@@ -406,6 +407,8 @@ const Page = ({ params }) => {
               return <RestricaoInscricao params={params} />;
             case "permissoes":
               return <PermissoesInscricao params={params} />;
+            case "formularios":
+              return <Formularios params={params} />;
             default:
               return null;
           }
@@ -426,6 +429,9 @@ const Page = ({ params }) => {
               </li>
               <li onClick={() => setActiveModal("restricoes")}>
                 <p>Restrições</p>
+              </li>
+              <li onClick={() => setActiveModal("formularios")}>
+                <p>Formulários</p>
               </li>
             </ul>
           </div>

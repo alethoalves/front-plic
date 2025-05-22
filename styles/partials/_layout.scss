@@ -344,3 +344,7 @@ $gutter: 32px;
 .justify-content-between{
   justify-content: space-between;
 }
+.flex-col{
+  display: flex;
+  flex-direction: column;
+}

@@ -2,6 +2,45 @@ import { getAuthHeadersClient } from "@/lib/headers.js";
 import { req } from "./../axios.js";
 import { getCookie } from 'cookies-next';
 
+
+export const enviarConvitesAvaliadores = async (tenantSlug, payload) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+
+    const { data } = await req.post(
+      `/private/${tenantSlug}/enviar-convite`,
+      payload,
+      { headers }
+    );
+    return data;                           // { status, resumo }
+  } catch (error) {
+    console.error("Erro ao enviar convites:", error);
+    throw error;
+  }
+};
+
+// busca o registro ConviteAvaliadorAno pelo token único
+export const consultarConviteByToken = async (token) => {
+  try {
+    const response = await req.get(`/public/convite/${token}`);
+    return response.data.data;              // { status: 'success', data: { …convite } }
+  } catch (error) {
+    console.error("Erro ao consultar convite:", error);
+    throw error;
+  }
+};
+
+// busca o registro AvaliadorAno (avaliador interno) pelo token único
+export const consultarAvaliadorByToken = async (token) => {
+  try {
+    const response = await req.get(`/public/convite/avaliador/${token}`);
+    return response.data.data;              // { status: 'success', data: { …avaliador } }
+  } catch (error) {
+    console.error("Erro ao consultar avaliador:", error);
+    throw error;
+  }
+};
 /**************************
 AVALIADOR
 **************************/

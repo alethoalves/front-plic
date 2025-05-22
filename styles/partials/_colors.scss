@@ -81,6 +81,11 @@ $warning-lighten: #fffbf1;
     background: linear-gradient(224.78deg, #1B69D2 8.12%, #0E366C 92.21%);
 }
 
+.bg-primary{
+    background-color: $white-darken;
+    color: $primary-darken;
+}
+
 
 
 

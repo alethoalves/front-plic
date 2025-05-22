@@ -26,7 +26,26 @@ export const getTenantById = async (tenantSlug, ano) => {
     throw error;
   }
 };
+export const getTenantBySlug = async (tenant) => {
+  try {
+      
 
+      const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+
+    const response = await req.get(
+      `/tenant/${tenant}`,
+      { headers }
+    );
+    return response.data.tenant;
+  } catch (error) {
+      // Para outros erros, relança o erro para que o chamador possa tratá-lo
+      console.error('Erro ao obter o tenant:', error);
+      throw error;
+  }
+};
 /**************************
  * CPF AUTORIZADO
  **************************/

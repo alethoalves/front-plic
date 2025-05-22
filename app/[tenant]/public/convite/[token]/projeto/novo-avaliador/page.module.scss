@@ -1,0 +1,260 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+.logo{
+    max-width: 300px;
+    min-width: 180px;
+    height: 100px;
+    position: relative;
+    margin: $gap-2 0;
+            
+            img{
+                border-radius: $gap-2;
+                object-fit: contain;
+                object-position: left center;
+            }
+}
+.successMsg{
+    width: 100%;
+    box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.15);
+    border-radius: $gap-2;
+    
+   h3{
+    background-color: $success-normal;
+    border-top-left-radius: $gap-2;
+    border-top-right-radius: $gap-2;
+    padding: $gap-4 ;
+    
+    padding-top: $gap-7;
+    @include responsive(xs){
+        padding-top: $gap-3;
+    }
+    padding-bottom: $gap-8;
+    color: $white-light;
+    line-height: 100%;
+   }
+   .successMsgContent{
+    margin-top: -30px;
+    padding: $gap-4 ;
+    border-radius: $gap-2;
+    border-top-right-radius: $gap-2;
+    border-top-left-radius: $gap-2;
+    @include responsive(xs){
+        
+        padding: $gap-2 ;
+    };
+    background-color:$white-light;
+    .boxButton{
+        margin-top: -80px;
+        @include responsive(xs){
+            margin-top: -60px;
+        }
+        padding: $gap-2;
+        border-radius: $gap-1;
+        background-color: $white-light;
+        border: none;
+        box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.15);
+        .sessao{
+            border: 1px solid $gray-50;
+            border-radius: $gap-1;
+            padding: $gap-1;
+            &:not(:last-child){
+                margin-bottom: $gap-1;
+            }
+        }
+        .description{
+            &:not(:last-child){
+                margin-bottom: $gap-2;
+            }
+            display: flex;
+            align-items: center;
+            .icon{
+                margin-right: $gap-1;
+                
+                svg{
+                    color: $success-normal;
+                }
+            }
+            .infoBoxDescription{
+                flex: 1;
+            }
+        }
+    }
+   }
+}
+
+.main{
+    background-color: $white-normal;
+    height: 100vh;
+    display: flex;
+    overflow: auto;
+    
+    .content{
+        height: 100vh;
+        margin: 0 auto;
+        padding: $gap-2;
+        width: 900px;
+        
+        .banner{
+            
+            height: 350px;
+            @include responsive(xs){
+                height: 80px;
+                display: none;
+            }
+            @include responsive(s){
+                height: 250px;
+            }
+            box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+            border-radius: $gap-2;
+            position: relative;
+            
+            img{
+                border-radius: $gap-2;
+                object-fit: contain;
+                object-position: center center;
+            }
+        }
+        .box{
+            
+            margin-top: $gap-2;
+            box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+            border: 1px solid $gray-50;
+            border-radius: $gap-1;
+            display: flex;
+            flex-direction: column;
+            background: $white-light;
+            margin-bottom: $gap-2;
+            .header{
+                
+                padding: $gap-3;
+                border-top-left-radius: $gap-1;
+                border-top-right-radius: $gap-1;
+                h4{
+                    color: $white-darken;
+                    text-align: center;
+                    color: $primary-darken;
+                }
+            }
+            .boxContent{
+                background-color: $white-light;
+                padding: 0 $gap-3 $gap-3 $gap-3;
+                border-bottom-left-radius: $gap-1;
+                border-bottom-right-radius: $gap-1;
+                
+                
+            }
+            
+            
+            
+        }
+        .errorMsg{
+            background-color: $error-light;
+            border-radius: $gap-1;
+            margin-top: $gap-1;
+            p{
+                color: $white-light;
+                padding: $gap-1 $gap-2;
+                
+            }
+        }
+        form{
+            width: 400px;
+            @include responsive(xs){
+                width: 100%;
+            }
+            margin: 0 auto;
+            .grandesAreas{
+                margin-bottom: $gap-1;
+                display: flex;
+                flex-wrap: wrap;
+                
+               
+                    flex-direction: column;
+                
+                .grandeArea.selected{
+                    border: 1px solid $success-normal;
+                    background-color: $success-normal;
+                    color: $white-light;
+                }
+                .grandeArea{
+                    
+                    border: 1px solid $gray-50;
+                    margin: 4px 0 ;
+                    
+                    padding: $gap-2;
+                    border-radius: $gap-1;
+                    cursor: pointer;
+                    transition: ease .3s;
+                    &:hover{
+                        transform: scale(1.04);
+                    }
+                    
+                }
+            }
+            .areas{
+                margin-bottom: $gap-1;
+                display: flex;
+                flex-wrap: wrap;
+                //flex-direction: column;
+                gap: $gap-1;
+                .area{
+                    border: 1px solid $gray-50;
+                    padding: 4px $gap-2;
+                    border-radius: $gap-1;
+                    font-size: 12px;
+                    cursor: pointer;
+                    transition: ease .3s;
+                    
+                    @include responsive(xs){
+                        padding: $gap-2 $gap-2;
+                        
+                    }
+                    &:hover{
+                        transform: scale(1.04);
+                    }
+                    &.selected{
+                        border: 1px solid $white-darken;
+                        background-color: $white-darken;
+                        color: $primary-darken;
+                    }
+                }
+            }
+            .subsessoes{
+                margin-bottom: $gap-1;
+                display: flex;
+                flex-wrap: wrap;
+                flex-direction: column;
+                .subsessao{
+                    border: 1px solid $gray-50;
+                    margin: 4px 0 ;
+                    padding: $gap-2 $gap-3;
+                    border-radius: $gap-1;
+                    font-size: 12px;
+                    cursor: pointer;
+                    transition: ease .3s;
+                    @include responsive(xs){
+                        padding: $gap-2 $gap-2;
+                        
+                    }
+                    &:hover{
+                        transform: scale(1.04);
+                    }
+                    &.selected{
+                        border: 1px solid $success-normal;
+                        background-color: $success-normal;
+                        p{
+                            color: $white-light;
+                            
+                        }
+                        
+                    }
+                }
+            }
+            
+        }
+    }
+    
+}
+
+

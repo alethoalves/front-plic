@@ -9,6 +9,7 @@ import { MultiSelect } from "primereact/multiselect"; // Componente MultiSelect 
 import Button from "@/components/Button";
 import Select from "../Select";
 import styles from "@/components/Formularios/Form.module.scss";
+import Input from "../Input";
 
 const NewCargo = ({
   tenantSlug,
@@ -21,13 +22,14 @@ const NewCargo = ({
   const [error, setError] = useState("");
   const [areas, setAreas] = useState([]); // Estado para armazenar as áreas disponíveis
 
-  const { control, handleSubmit, setValue, watch } = useForm({
+  const { control, handleSubmit, setValue, watch, register } = useForm({
     resolver: zodResolver(cargoSchema),
     defaultValues: {
       cargo: initialData.cargo || "", // Preenche o cargo com o valor existente
       nivel: initialData.nivel?.toString() || "1", // Preenche o nível com o valor existente
       areas:
         initialData.user?.userArea?.map((ua) => ua.areaId.toString()) || [], // Preenche as áreas com os valores existentes
+      email: initialData.user?.email || initialData.email || "", // Preenche o email com o valor existente
     },
   });
 
@@ -68,6 +70,7 @@ const NewCargo = ({
         ? `${initialData.user?.id}`
         : initialData.userId,
       areas: data.areas || [], // Inclui as áreas selecionadas
+      email: data.email, // Inclui o email
     };
 
     try {
@@ -101,6 +104,17 @@ const NewCargo = ({
         <p>{initialData.user?.nome || initialData.nome}</p>
       </div>
 
+      {/* Campo de email */}
+      <Input
+        className="mb-2"
+        control={control}
+        name="email"
+        label="Email"
+        inputType="email"
+        placeholder="Digite o email"
+        disabled={loading}
+      />
+
       {/* Select para o tipo de cargo */}
       <Select
         className="mb-2"
@@ -130,6 +144,7 @@ const NewCargo = ({
           label="Nível do Comitê"
           options={[
             { label: "Selecione uma opção", value: "" },
+            { label: "Ad hoc", value: "0" },
             { label: "Comitê Institucional", value: "1" },
             { label: "Comitê Externo", value: "2" },
           ]}
@@ -157,7 +172,7 @@ const NewCargo = ({
       )}
 
       <Button className="btn-primary" type="submit">
-        Enviar
+        {loading ? "Enviando..." : "Enviar"}
       </Button>
 
       {error && (

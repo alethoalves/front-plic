@@ -1,0 +1,49 @@
+@import "./styles/partials/colors";
+@import "./styles/partials/layout";
+@import "./styles/partials/spacing";
+
+
+
+.content{
+    margin-top: $gap-3;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    .card{
+        
+        margin-bottom: $gap-3;
+        margin-right: 0;
+        
+    }
+    .btnNewItem{
+        width: auto;
+        height: auto;
+        padding: $gap-2;
+        
+        border-radius: $gap-1;
+        cursor: pointer;
+        border: 1px dashed  $primary-normal;
+        background-color: $white-light;
+        &:hover{
+            background-color: $white-normal;
+        }
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        .icon {
+            width: 30px;
+            height: 30px;
+            color: $primary-normal;
+            svg{
+                width: 100%;
+                height: 100%;
+            }
+            }
+    } 
+}
+
+.icon{
+    width: 24px;
+    color: $primary-normal;
+}

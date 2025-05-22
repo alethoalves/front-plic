@@ -50,6 +50,10 @@ export const getCargos = async (tenantSlug, filters = {}) => {
     if (filters.nivel) {
       queryParams.append('nivel', filters.nivel);
     }
+    if (filters.ano) {
+      queryParams.append('ano', filters.ano);
+    }
+    console.log(filters)
 
     // Constrói a URL com as queries, se houver
     const url = `/private/${tenantSlug}/cargos${

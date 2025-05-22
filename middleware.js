@@ -19,6 +19,10 @@ export const middleware = async (request) => {
   urlToSignin.pathname = `/${tenant}`;
   const urlToEventos = new URL(request.url);
   urlToEventos.pathname = `/eventos`;
+
+  const urlToPublic = new URL(request.url);
+  urlToPublic.pathname = `/public`;
+
   const urlToRoot = new URL(request.url);
   urlToRoot.pathname = `/`;
 
@@ -77,7 +81,7 @@ export const middleware = async (request) => {
       console.log('ENTROU NA RAIZ OU NO ERRO') 
       return NextResponse.next();
     }
-
+    
     /******************
      * MIDDLEWARE PARA EVENTO (/evento)
      * ****************/
@@ -248,7 +252,11 @@ export const middleware = async (request) => {
     pongUser = await pingUser(token, tenant);
 
     
-    
+    if (url.pathname.startsWith(`/${tenant}/public`)) {
+      console.log('ENTROU NA ROTA /public')
+      return NextResponseWithTenant;
+    }
+
     /******************
      * MIDDLEWARE PARA SIGNIN (apenas /:tenant, não inclui /:tenant/qualquercoisa)
      * ****************/

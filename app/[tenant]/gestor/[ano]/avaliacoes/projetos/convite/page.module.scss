@@ -3,7 +3,29 @@
 @import "./styles/partials/spacing";
 
 
-
+.configuracoes{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    .icon{
+        color: $primary-dark;
+    }
+    ul{
+        display: flex;
+        gap: $gap-2;
+        li{
+            cursor: pointer;
+            transition: ease .3s;
+            
+            &:hover{
+                p{
+                    text-decoration: underline;
+                    
+                }
+            }
+        }
+    }
+}
 .content{
     display: flex;
     flex-direction: column;

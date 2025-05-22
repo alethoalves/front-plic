@@ -28,6 +28,7 @@
     "primeicons": "^7.0.0",
     "primereact": "^10.9.2",
     "puppeteer": "^22.13.0",
+    "quill": "^2.0.3",
     "react": "^18",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18",

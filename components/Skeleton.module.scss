@@ -4,8 +4,7 @@
 @import "./../styles/partials/spacing";
 
 .skeleton {
-  min-width: 338px;
-  max-width: 338px;
+  
   flex: 1;
   height: 227px;
   border-radius: $gap-1;
@@ -15,7 +14,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  margin-right: $gap-3;
+  
     margin-bottom: $gap-3;
     @include responsive(s){
         margin-right: 0;

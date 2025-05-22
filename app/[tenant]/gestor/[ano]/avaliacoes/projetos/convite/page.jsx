@@ -15,14 +15,22 @@ import { saveAs } from "file-saver";
 import Modal from "@/components/Modal";
 import CPFVerificationForm from "@/components/Formularios/CPFVerificationForm";
 import NewCargo from "@/components/Formularios/NewCargo";
-import { RiDeleteBinLine } from "@remixicon/react";
+import { RiDeleteBinLine, RiSettings5Line } from "@remixicon/react";
 import { ProgressBar } from "primereact/progressbar";
 import Header from "@/components/Header";
 import { classNames } from "primereact/utils";
+import { enviarConvitesAvaliadores } from "@/app/api/client/avaliador";
+import { renderStatusTagWithJustificativa } from "@/lib/tagUtils";
+import { Calendar } from "primereact/calendar";
+import { InputTextarea } from "primereact/inputtextarea";
+import { getTenantBySlug } from "@/app/api/client/tenant";
+import { Editor } from "primereact/editor";
+import { InputMask } from "primereact/inputmask";
 
 const Page = ({ params }) => {
   const [todasAreas, setTodasAreas] = useState([]);
   const [avaliadores, setAvaliadores] = useState([]);
+
   const toast = useRef(null); // Referência para o Toast
 
   // Função para exibir mensagens de sucesso ou erro no Toast
@@ -41,8 +49,18 @@ const Page = ({ params }) => {
   const [avaliadorToEdit, setAvaliadorToEdit] = useState(null);
   const [verifiedData, setVerifiedData] = useState(null);
   const [verifiedRows, setVerifiedRows] = useState({});
-
   const [checkedRows, setCheckedRows] = useState({});
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [emailContent, setEmailContent] = useState("");
+  const [dataInicial, setDataInicial] = useState(null); // Date | null
+  const [dataFinal, setDataFinal] = useState(null); // Date | null
+  const [tenant, setTenant] = useState();
+  const [instituicaoNome, setInstituicaoNome] = useState("");
+  const [gestorNome, setGestorNome] = useState("");
+  const [contatoEmail, setContatoEmail] = useState("");
+  const [contatoFone, setContatoFone] = useState("");
+  const [nomeDestinatario, setNomeDestinatario] = useState("");
+
   const dataTableRef = useRef(null);
   const handleVerificationClick = (rowData) => {
     const rowId = rowData.id;
@@ -99,6 +117,13 @@ const Page = ({ params }) => {
           setAvaliadores,
           setTodasAreas
         );
+        const tenant = await getTenantBySlug(params.tenant);
+
+        setTenant(tenant);
+        setInstituicaoNome(tenant.nome || "");
+        setGestorNome(tenant.nomeGestorIc || "");
+        setContatoEmail(tenant.emailTenant || "");
+        setContatoFone(tenant.telefoneTenant || "");
       } catch (error) {
         console.error("Erro ao buscar avaliadores:", error);
         setError("Erro ao buscar avaliadores.");
@@ -108,6 +133,51 @@ const Page = ({ params }) => {
     };
     fetchData();
   }, [params.tenant]);
+  const montarMensagem = (inst, gestor, email, fone, dataIni, dataFim) => {
+    const fmt = (d) => (d ? d.toLocaleDateString("pt-BR") : "__/__/____");
+
+    return `
+      <p>
+        Você recebeu um convite para avaliar os projetos de Iniciação Científica
+        da instituição <strong>${inst}</strong>.
+      </p>
+      <p>
+        As avaliações ocorrerão, <strong>de forma online,</strong> entre os dias
+        <strong>${fmt(dataIni)}</strong> e
+        <strong>${fmt(dataFim)}</strong>.
+      </p>
+      <p>Após o período avaliativo, será disponibilizado certificado de avaliação.</p>
+      <p>Caso possa avaliar, clique no botão abaixo e complete seu cadastro.</p>
+      <p>
+        Em caso de dúvida, entre em contato pelo e-mail
+        <a href="mailto:${email}">${email}</a>
+        ou pelo telefone ${fone}.
+      </p>
+      <br/>
+      <p>Atenciosamente,<br/>${gestor}</p>
+    `;
+  };
+
+  // Regera o conteúdo sempre que as datas ou o tenant mudarem
+  useEffect(() => {
+    setEmailContent(
+      montarMensagem(
+        instituicaoNome,
+        gestorNome,
+        contatoEmail,
+        contatoFone,
+        dataInicial,
+        dataFinal
+      )
+    );
+  }, [
+    instituicaoNome,
+    gestorNome,
+    contatoEmail,
+    contatoFone,
+    dataInicial,
+    dataFinal,
+  ]);
 
   // Filtrar avaliadores por áreas de atuação
   const avaliadoresFiltrados =
@@ -142,7 +212,11 @@ const Page = ({ params }) => {
         email: avaliador.user.email,
         celular: avaliador.user.celular,
         nivel:
-          avaliador.nivel === 1 ? "Comitê Institucional" : "Comitê Externo",
+          avaliador.nivel === 0
+            ? "Ad hoc"
+            : avaliador.nivel === 1
+            ? "Comitê Institucional"
+            : "Comitê Externo",
         areas: avaliador.user.userArea.map((ua) => ua.area.area).join(", "),
         projetosAtribuidos: avaliador.user.InscricaoProjetoAvaliador.length,
         projetosAvaliados: calcularProjetosAvaliados(avaliador), // Nova coluna
@@ -209,16 +283,17 @@ const Page = ({ params }) => {
   );
 
   // Funções para manipulação de ações
-  const handleCreateOrEditSuccess =
-    (async () => {
-      try {
-        const data = await getCargos(params.tenant, { cargo: "avaliador" });
-        setAvaliadores(data);
-      } catch (error) {
-        console.error("Erro ao buscar avaliadores:", error);
-      }
-    },
-    [params.tenant]);
+  const handleCreateOrEditSuccess = async () => {
+    try {
+      const data = await getCargos(params.tenant, {
+        cargo: "avaliador",
+        ano: params.ano,
+      });
+      setAvaliadores(data);
+    } catch (error) {
+      console.error("Erro ao buscar avaliadores:", error);
+    }
+  };
 
   const handleDelete = useCallback(
     async (avaliador) => {
@@ -253,6 +328,7 @@ const Page = ({ params }) => {
     setAvaliadorToEdit(null);
     setErrorDelete(null);
     setVerifiedData(null);
+    setSelectedRows([]);
   };
 
   // Renderização do modal
@@ -286,7 +362,10 @@ const Page = ({ params }) => {
     setTodasAreas
   ) => {
     try {
-      const data = await getCargos(tenant, { cargo: "avaliador" });
+      const data = await getCargos(tenant, {
+        cargo: "avaliador",
+        ano: params.ano,
+      });
       setAvaliadores(data);
 
       // Extrair todas as áreas únicas dos avaliadores
@@ -318,13 +397,258 @@ const Page = ({ params }) => {
 
     console.log("Linha selecionada:", rowData); // Log dos dados da linha
   };
+  const selectedCount = selectedRows.length;
+  // modal de convite
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [paraField, setParaField] = useState(""); // texto do campo "Para:"
+  const selecionados = selectedRows;
+  const abrirModalConvite = () => {
+    if (selecionados.length) {
+      // pré-preenche com e-mails ou nomes; ajuste como preferir
+      setParaField(selecionados.map((a) => a.user.email).join("; "));
+    } else {
+      setParaField("");
+    }
+    setInviteModalOpen(true);
+  };
+  {
+    /* modal para enviar convite */
+  }
+
   return (
     <>
+      <Modal isOpen={inviteModalOpen} onClose={() => setInviteModalOpen(false)}>
+        <h4>Enviar convite</h4>
+        <p>Informe os destinatários e personalize a mensagem.</p>
+
+        {/* --- dados de cabeçalho ----- */}
+        <div className="mt-1  ">
+          <div className="mt-1">
+            <label className=" mt-2 mb-1">Para:</label>
+            <InputText
+              style={{ width: "100%" }}
+              value={paraField}
+              disabled={selecionados.length > 0}
+              onChange={(e) => setParaField(e.target.value)}
+            />
+          </div>
+
+          <div className="mt-1">
+            <label className="">Instituição:</label>
+            <InputText
+              style={{ width: "100%" }}
+              value={instituicaoNome}
+              onChange={(e) => setInstituicaoNome(e.target.value)}
+            />
+          </div>
+          <div className="mt-1">
+            <label className="">Nome do gestor IC:</label>
+            <InputText
+              style={{ width: "100%" }}
+              value={gestorNome}
+              onChange={(e) => setGestorNome(e.target.value)}
+            />
+          </div>
+          <div className="mt-1">
+            <label className="">E-mail de suporte:</label>
+            <InputText
+              keyfilter="email"
+              style={{ width: "100%" }}
+              value={contatoEmail}
+              onChange={(e) => setContatoEmail(e.target.value)}
+            />
+          </div>
+          <div className="mt-1">
+            <label className="">Telefone de suporte:</label>
+            <InputMask
+              mask="(99) 99999-9999"
+              placeholder="(61) 91234-5678"
+              style={{ width: "100%" }}
+              value={contatoFone}
+              onChange={(e) => setContatoFone(e.value)}
+            />
+          </div>
+          <div className="flex gap-1 mt-1 mb-1">
+            <div className="">
+              <label className="">Data inicial:</label>
+              <Calendar
+                value={dataInicial}
+                onChange={(e) => setDataInicial(e.value)}
+                showIcon
+                dateFormat="dd/mm/yy"
+                style={{ width: "100%" }}
+              />
+            </div>
+            <div className="">
+              <label className="">Data final:</label>
+              <Calendar
+                value={dataFinal}
+                onChange={(e) => setDataFinal(e.value)}
+                showIcon
+                dateFormat="dd/mm/yy"
+                style={{ width: "100%" }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* --- campo CONTEÚDO ----- */}
+        <label className="">Conteúdo do e-mail:</label>
+        <Editor
+          style={{ height: 240 }}
+          value={emailContent}
+          onTextChange={(e) => setEmailContent(e.htmlValue)}
+        />
+
+        {/* --- botões ----- */}
+        <div className="flex justify-content-end mt-4">
+          <Button
+            label="Enviar"
+            icon="pi pi-check"
+            onClick={async () => {
+              /* ───── validações rápidas ───── */
+              if (!emailContent.trim()) {
+                showToast(
+                  "warn",
+                  "Mensagem vazia",
+                  "Digite o conteúdo do e-mail."
+                );
+                return;
+              }
+
+              // Validação de campos obrigatórios
+              if (!instituicaoNome.trim()) {
+                showToast(
+                  "warn",
+                  "Instituição vazia",
+                  "Informe o nome da instituição."
+                );
+                return;
+              }
+
+              if (!gestorNome.trim()) {
+                showToast("warn", "Gestor vazio", "Informe o nome do gestor.");
+                return;
+              }
+
+              if (!contatoEmail.trim()) {
+                showToast(
+                  "warn",
+                  "E-mail vazio",
+                  "Informe o e-mail de contato."
+                );
+                return;
+              }
+
+              if (!contatoFone.trim()) {
+                showToast(
+                  "warn",
+                  "Telefone vazio",
+                  "Informe o telefone de contato."
+                );
+                return;
+              }
+
+              if (!dataInicial || !dataFinal) {
+                showToast("warn", "Datas faltando", "Informe as duas datas.");
+                return;
+              }
+
+              if (dataInicial > dataFinal) {
+                showToast(
+                  "error",
+                  "Datas inconsistentes",
+                  "A data inicial deve ser anterior à final."
+                );
+                return;
+              }
+
+              /* ───── validação do campo PARA quando não há linhas selecionadas ───── */
+              if (!selecionados.length && !paraField.trim()) {
+                showToast(
+                  "error",
+                  "Destinatários faltando",
+                  "Informe os destinatários ou selecione avaliadores na tabela."
+                );
+                return;
+              }
+
+              if (!selecionados.length && paraField.trim()) {
+                const reEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                const emailsDigitados = paraField
+                  .split(";")
+                  .map((e) => e.trim())
+                  .filter(Boolean);
+                const algumInvalido = emailsDigitados.some(
+                  (em) => !reEmail.test(em)
+                );
+                if (emailsDigitados.length === 0 || algumInvalido) {
+                  showToast(
+                    "error",
+                    "Formato inválido",
+                    "Separe os e-mails com ponto-e-vírgula (;) e use endereços válidos."
+                  );
+                  return;
+                }
+              }
+
+              try {
+                const payload = {
+                  ano: Number(params.ano),
+                  emails: selecionados.length
+                    ? selectedRows.map((row) => ({ cargoId: row.id })) // internos
+                    : paraField
+                        .split(";")
+                        .map((e) => e.trim())
+                        .filter(Boolean), // externos
+                  mensagem: emailContent,
+                  dataInicial: dataInicial.toISOString(),
+                  dataFinal: dataFinal.toISOString(),
+                };
+
+                const resp = await enviarConvitesAvaliadores(
+                  params.tenant,
+                  payload
+                );
+                showToast("success", "Convites enviados", resp.message);
+              } catch (err) {
+                console.error(err);
+                showToast(
+                  "error",
+                  "Erro",
+                  err.response?.data?.message || "Falha no envio"
+                );
+              }
+
+              /* limpa & fecha */
+              setInviteModalOpen(false);
+              setEmailContent("");
+              setDataInicial(null);
+              setDataFinal(null);
+            }}
+          />
+        </div>
+      </Modal>
       {renderModalContent()}
       <Toast ref={toast} /> {/* Componente Toast */}
-      {renderModalContent()}
       <main>
-        <Header className="mb-3" titulo="Avaliadores" />
+        <Card className="mb-4 p-2">
+          <div className={style.configuracoes}>
+            <div className={style.icon}>
+              <RiSettings5Line />
+            </div>
+            <ul>
+              <li onClick={abrirModalConvite}>
+                <Button icon="pi pi-send">
+                  Enviar convite
+                  {selectedCount > 0 && (
+                    <span className={style.badge}>{selectedCount}</span>
+                  )}
+                </Button>
+              </li>
+            </ul>
+          </div>
+        </Card>
         <Card className="custom-card">
           {loading ? (
             <div className="pr-2 pl-2 pb-2 pt-2">
@@ -332,6 +656,7 @@ const Page = ({ params }) => {
             </div>
           ) : (
             <>
+              <h5 className="pt-2 pl-2 pr-2">Avaliadores</h5>
               <DataTable
                 ref={dataTableRef}
                 value={avaliadoresFiltrados}
@@ -350,11 +675,21 @@ const Page = ({ params }) => {
                   "nivel",
                 ]}
                 emptyMessage="Nenhum avaliador encontrado."
-                onRowClick={(e) => openModalAndSetData(e.data)}
+                onRowClick={(e) => {
+                  setSelectedRows([]);
+                  openModalAndSetData(e.data);
+                }}
                 rowClassName="clickable-row" // Adiciona cursor pointer e hover effect
                 paginatorRight={paginatorRight}
                 paginatorLeft={paginatorLeft}
+                selection={selectedRows}
+                onSelectionChange={(e) => setSelectedRows(e.value)}
               >
+                <Column
+                  selectionMode="multiple"
+                  headerStyle={{ width: "3rem" }}
+                  frozen
+                />
                 <Column
                   header="Nome"
                   body={(rowData) => (
@@ -378,13 +713,27 @@ const Page = ({ params }) => {
                 <Column
                   header="Nível"
                   body={(rowData) =>
-                    rowData.nivel === 1
+                    rowData.nivel === 0
+                      ? "Ad hoc"
+                      : rowData.nivel === 1
                       ? "Comitê Institucional"
                       : "Comitê Externo"
                   }
                   sortable
                   filter
                   filterPlaceholder="Filtrar por nível"
+                />
+                <Column
+                  header="Status do Convite"
+                  body={(rowData) =>
+                    renderStatusTagWithJustificativa(
+                      rowData.user.avaliadorAnoStatus
+                    )
+                  }
+                  style={{ textAlign: "center" }}
+                  sortable
+                  filter
+                  //filterPlaceholder="Filtrar por nível"
                 />
                 <Column
                   header="Disponível pra avaliar"
@@ -413,18 +762,15 @@ const Page = ({ params }) => {
                 <Column
                   body={(rowData) => (
                     <div
-                      className="flex
-                      align-items-center
-                      justify-content-center
-                      cursor-pointer"
+                      className="flex align-items-center justify-content-center cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(rowData);
+                      }}
                     >
-                      <Button
-                        icon={<RiDeleteBinLine />}
-                        className="p-button-danger p-button-rounded"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(rowData);
-                        }}
+                      <i
+                        className={classNames("pi", "pi-trash", "text-red-400")}
+                        style={{ fontSize: "1.25rem" }}
                       />
                     </div>
                   )}
