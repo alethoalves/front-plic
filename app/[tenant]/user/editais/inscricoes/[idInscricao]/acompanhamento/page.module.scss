@@ -10,6 +10,7 @@
         padding: $gap-1 $gap-2;
     }
 }
+
 .info{
     margin-top: $gap-2;
     margin-bottom: $gap-2;
@@ -24,10 +25,10 @@
 }
 
 .acompanhamento{
-    .btn{
-        max-width: 200px;
-        min-width: 170px;
-    }
+    //.btn{
+        //max-width: 200px;
+        //min-width: 170px;
+    //}
     .status{
         display: flex;
         align-items: center;

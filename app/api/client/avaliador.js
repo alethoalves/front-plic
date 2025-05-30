@@ -41,6 +41,91 @@ export const consultarAvaliadorByToken = async (token) => {
     throw error;
   }
 };
+
+export const recusarConvitePorToken = async (token) => {
+  try {
+    const response = await req.get(`/public/recusar-convite/avaliador/${token}`);
+    return response.data.data;              // { status: 'success', data: { …avaliador } }
+  } catch (error) {
+    console.error("Erro ao recusar convite:", error);
+    throw error;
+  }
+};
+
+export const toggleStatusAvaliadorAno = async (payload) => {
+  try {
+    const { data } = await req.post(
+      `/avaliador/toggle-status`,
+      payload,
+      
+    );
+    
+    if (data.status === 'success') {
+      return data;
+    } else {
+      throw new Error(data.message || 'Erro ao alterar status');
+    }
+  } catch (error) {
+    console.error("Erro ao alterar status:", error);
+    throw error;
+  }
+};
+
+export const aceitarConviteAvaliador = async (
+  token,
+  cpf,
+  areasSelecionadas
+) => {
+  try {
+    // rota pública não precisa de cabeçalhos de autenticação
+    const { data } = await req.post(
+      `/public/aceitar-convite/avaliador/${token}`,
+      { cpf, areasSelecionadas } // body
+    );
+
+    return data;                // { status: 'success', message, … }
+  } catch (error) {
+    console.error('Erro ao aceitar convite:', error);
+    throw error;
+  }
+};
+
+export const getAvaliadoresComProjetosPendentes = async (tenant, ano) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      throw new Error('Não foi possível obter os headers de autenticação');
+    }
+
+    const response = await req.get(
+      `/private/${tenant}/${ano}/lista-avaliadores-com-avaliacoes-pendentes`,
+      { headers }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao buscar avaliadores com projetos pendentes:", error);
+    throw error;
+  }
+};
+export const enviarNotificacaoAvaliador = async (tenantSlug, payload) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) throw new Error("Headers de autenticação ausentes");
+
+    const { data } = await req.post(
+      `/private/${tenantSlug}/avaliador/notificar-avaliadores`,
+      payload,
+      { headers }
+    );
+
+    return data; // { status: 'success', message: '...', resultado: [...] }
+  } catch (error) {
+    console.error("Erro ao enviar notificações para avaliadores:", error);
+    throw error;
+  }
+};
+
 /**************************
 AVALIADOR
 **************************/

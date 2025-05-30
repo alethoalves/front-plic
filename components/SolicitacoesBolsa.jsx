@@ -460,6 +460,82 @@ export default function SolicitacoesBolsa() {
     setJustificativa("");
     setSelectedItems([]);
   };
+  // Atualizar handleProcessarSolicitacoes para processar os dados após a atualização
+  /* ==================================================================== */
+  /*                    PROCESSAR SOLICITAÇÕES DE BOLSA                   */
+  /*  (passa todas que estão EM_ANALISE pelo endpoint processarSolicitacoesBolsa) */
+  /* ==================================================================== */
+  const handleProcessarSolicitacoes = async () => {
+    setLoadingProcessar(true);
+    setProgressProcessar(0);
+
+    try {
+      /* 1. pega IDs de todas as solicitações ligadas aos itens da tabela */
+      const ids = processedData
+        .map((it) => it.solicitacaoBolsa?.id)
+        .filter(Boolean);
+
+      if (ids.length === 0) {
+        showToast(
+          "info",
+          "Nada a processar",
+          "Não há solicitações nesta lista."
+        );
+        setLoadingProcessar(false);
+        return;
+      }
+
+      /* 2. divide em lotes de 10 para não sobrecarregar o servidor */
+      const batchSize = 10;
+      const batches = [];
+      for (let i = 0; i < ids.length; i += batchSize) {
+        batches.push(ids.slice(i, i + batchSize));
+      }
+
+      let totalProcessed = 0;
+
+      for (const batch of batches) {
+        try {
+          /* chama a API */
+          await processarSolicitacoesBolsa(tenant, batch);
+
+          totalProcessed += batch.length;
+          setProgressProcessar(Math.round((totalProcessed / ids.length) * 100));
+
+          showToast(
+            "success",
+            "Processado",
+            `Lote com ${batch.length} solicitações processado`
+          );
+
+          /* 3. recarrega dados após cada lote para refletir novos status */
+          const raw = await getVinculosByTenant(tenant, ano);
+          setProcessedData(await processarDados(raw));
+        } catch (err) {
+          const msg =
+            err?.response?.data?.message ||
+            "Erro ao processar lote de solicitações";
+          console.error(msg);
+          showToast("error", "Erro no lote", msg);
+        }
+      }
+
+      showToast(
+        "success",
+        "Concluído",
+        `${totalProcessed} de ${ids.length} solicitações processadas`
+      );
+    } catch (err) {
+      const msg =
+        err?.response?.data?.message || "Erro ao processar solicitações";
+      console.error(msg);
+      showToast("error", "Erro", msg);
+    } finally {
+      setLoadingProcessar(false);
+      setProgressProcessar(0);
+    }
+  };
+
   /* ==================================================================== */
   /*                         APROVAR VÍNCULOS                             */
   /* ==================================================================== */

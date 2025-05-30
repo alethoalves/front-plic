@@ -8,14 +8,6 @@ import {
 import { MultiSelect } from "primereact/multiselect";
 import { useEffect, useState } from "react";
 
-/* mapeia o tipo do formulário → campo no Edital */
-const fieldMap = {
-  orientador: "formOrientadorId",
-  aluno: "formAlunoId",
-  planoDeTrabalho: "formPlanoDeTrabalhoId",
-  /* projeto não entra: é global */
-};
-
 const Card = ({
   title,
   subtitle,
@@ -26,29 +18,46 @@ const Card = ({
   tenantSlug,
   onLinkChange,
   formulario,
+  campoEdital, // Nova prop para substituir o fieldMap interno
+  isGlobal, // Nova prop para controlar se é global
+  additionalInfo, // Nova prop para informações adicionais
 }) => {
-  const isGlobal = formulario.tipo === "projeto";
+  // Lógica para compatibilidade com o Formularios.jsx
+  const fieldMapLegacy = {
+    orientador: "formOrientadorId",
+    aluno: "formAlunoId",
+    planoDeTrabalho: "formPlanoDeTrabalhoId",
+    avaliacaoProjeto: "formAvaliacaoProjetoId",
+    avaliacaoPlano: "formAvaliacaoPlanoDeTrabalhoId",
+  };
 
-  /* se não houver campo no map, não precisamos de MultiSelect */
-  const campo = fieldMap[formulario.tipo];
+  // Determina o campo a ser usado (prioriza a prop campoEdital se existir)
+  const campo =
+    campoEdital || (formulario?.tipo ? fieldMapLegacy[formulario.tipo] : null);
 
-  /* seleção inicial (somente se houver MultiSelect) */
+  // Determina se é global (prioriza a prop isGlobal se existir)
+  const global =
+    isGlobal !== undefined ? isGlobal : formulario?.tipo === "projeto";
+
+  /* seleção inicial (somente se não for global e houver campo) */
   const initial =
-    !isGlobal && campo
+    !global && campo
       ? editais.filter((e) => e[campo] === formulario.id).map((e) => e.id)
       : [];
 
   const [selectedIds, setSelectedIds] = useState(initial);
   const [saving, setSaving] = useState(false);
+
   useEffect(() => {
-    if (isGlobal || !campo) return;
+    if (global || !campo) return;
     const fresh = editais
       .filter((e) => e[campo] === formulario.id)
       .map((e) => e.id);
     setSelectedIds(fresh);
-  }, [editais, campo, formulario.id, isGlobal]);
+  }, [editais, campo, formulario?.id, global]);
+
   const handleChange = async (ids) => {
-    if (isGlobal || !campo) return;
+    if (global || !campo) return;
     setSelectedIds(ids);
     setSaving(true);
 
@@ -68,7 +77,7 @@ const Card = ({
     }
   };
 
-  const options = editais.map((e) => ({
+  const options = editais?.map((e) => ({
     label: `${e.titulo} (${e.ano})`,
     value: e.id,
   }));
@@ -79,14 +88,17 @@ const Card = ({
       <div className={`${styles.header} mr-2`}>
         <div className={`h7 ${styles.destaque}`}>{title}</div>
         <p>{subtitle}</p>
+        {additionalInfo && (
+          <p className={styles.additionalInfo}>{additionalInfo}</p>
+        )}
       </div>
 
       {/* seletor ou badge */}
-      {isGlobal ? (
+      {global ? (
         <span className="p-tag p-tag-rounded bg-primary text-white mb-2">
           Formulário único para todos os editais
         </span>
-      ) : (
+      ) : campo ? (
         <div className="w-100 mb-2">
           <MultiSelect
             style={{ width: "100%" }}
@@ -98,7 +110,7 @@ const Card = ({
             disabled={saving}
           />
         </div>
-      )}
+      ) : null}
 
       {/* ações */}
       <div className={styles.actions}>

@@ -85,6 +85,16 @@ const FormGestorProjetoCreateOrEdit = ({
 
   const toast = useRef(null);
   //DEFINE O SCHEMA DO PLANO DE TRABALHO
+  // 1) dados vindos do backend
+  const campos = formularioEdital?.campos ?? [];
+
+  // 2) gera o schema para os campos dinâmicos
+  const dynamicSchemaBase = createDynamicSchema(campos); // ← sua função
+
+  // 3) se o array estiver vazio, torna-o opcional
+  const dynamicSchema =
+    campos.length === 0 ? dynamicSchemaBase.optional() : dynamicSchemaBase;
+
   const schema = z.object({
     titulo: z.string().min(1, "Campo obrigatório!"),
     areaId: z.number().int().positive("Campo obrigatório!"),
@@ -97,7 +107,7 @@ const FormGestorProjetoCreateOrEdit = ({
         })
       )
       .optional(),
-    camposDinamicos: createDynamicSchema(formularioEdital?.campos || [], false), // Adiciona campos dinâmicos ao schema
+    camposDinamicos: dynamicSchema, // Adiciona campos dinâmicos ao schema
   });
 
   //CONTROLA O FORMULARIO

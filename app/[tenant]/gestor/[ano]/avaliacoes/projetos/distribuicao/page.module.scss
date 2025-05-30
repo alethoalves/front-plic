@@ -1,7 +1,28 @@
 @import "./styles/partials/colors";
 @import "./styles/partials/layout";
 @import "./styles/partials/spacing";
-
+.configuracoes{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  .icon{
+      color: $primary-dark;
+  }
+  ul{
+      display: flex;
+      gap: $gap-2;
+      li{
+        
+          cursor: pointer;
+          transition: ease .3s;
+          &:hover{
+              p{
+                  text-decoration: underline;
+              }
+          }
+      }
+  }
+}
 @keyframes p-progress-spinner-color {
     100%,
     0% {
@@ -121,6 +142,7 @@
     padding: $gap-2;
 
 }
+
 .distribuicao{
     display: flex;
     gap: $gap-2;
@@ -128,11 +150,21 @@
         flex: 1;
        border: 1px solid $gray-25;
        border-radius: $gap-1;
+       ul{
+        display: flex;
+       flex-direction: column;
+       gap: $gap-1;
+       padding: $gap-1;
+       }
         li{
+          background-color:  $gray-25;
+          p,strong, h6{
+            transition: ease .3s;
+        }
             &.selected{
-                background-color: $gray-25;
+                background-color: $primary-normal;
                 p,strong, h6{
-                    color: $primary-darken;
+                    color: $white-light;
                 }
                 .arrowRight{
                     &:hover{
@@ -181,17 +213,17 @@
                 font-weight: 600;
             }
             &:hover, .selected{
-                background-color: $gray-25;
-                p,strong, h6{
-                    color: $primary-darken;
-                }
-                .arrowRight{
-                    &:hover{
-                        color: $white-light;
-                        background-color: $primary-darken;
-                    }
-                    
-                }
+              background-color: $primary-normal;
+              p,strong, h6{
+                  color: $white-light;
+              }
+              .arrowRight{
+                  &:hover{
+                      color: $white-light;
+                      background-color: $primary-darken;
+                  }
+                  
+              }
             }
         }
         

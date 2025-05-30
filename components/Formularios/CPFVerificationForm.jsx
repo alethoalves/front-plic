@@ -81,6 +81,7 @@ const CPFVerificationForm = ({ tenantSlug, onCpfVerified }) => {
           userId: user.id.toString(),
           nome: user.nome,
           cpf: user.cpf,
+          email: user.email,
         });
         setLoading(false);
         return;
@@ -122,6 +123,7 @@ const CPFVerificationForm = ({ tenantSlug, onCpfVerified }) => {
           userId: user.id.toString(),
           nome: user.nome,
           cpf: user.cpf,
+          email: user.email,
         });
         setLoading(false);
         return;

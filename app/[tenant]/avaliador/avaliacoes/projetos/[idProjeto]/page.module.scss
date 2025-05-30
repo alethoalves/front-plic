@@ -13,6 +13,14 @@
         flex-direction: column;
     }
 }
+.navigationButtons{
+    margin-top: $gap-2;
+    display: flex;
+    gap: $gap-2;
+    button{
+        flex: 1;
+    }
+}
 .projeto, .fichaDeAvaliacao{
     width: 50%;
     @include responsive(xs){
@@ -161,5 +169,6 @@
 }
 
 
+  
 
 

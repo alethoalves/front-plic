@@ -19,13 +19,17 @@ import { RiDeleteBinLine, RiSettings5Line } from "@remixicon/react";
 import { ProgressBar } from "primereact/progressbar";
 import Header from "@/components/Header";
 import { classNames } from "primereact/utils";
-import { enviarConvitesAvaliadores } from "@/app/api/client/avaliador";
+import {
+  enviarConvitesAvaliadores,
+  toggleStatusAvaliadorAno,
+} from "@/app/api/client/avaliador";
 import { renderStatusTagWithJustificativa } from "@/lib/tagUtils";
 import { Calendar } from "primereact/calendar";
 import { InputTextarea } from "primereact/inputtextarea";
 import { getTenantBySlug } from "@/app/api/client/tenant";
 import { Editor } from "primereact/editor";
 import { InputMask } from "primereact/inputmask";
+import montarMensagemConviteAvaliador from "@/lib/montarMensagemConviteAvaliador";
 
 const Page = ({ params }) => {
   const [todasAreas, setTodasAreas] = useState([]);
@@ -60,22 +64,46 @@ const Page = ({ params }) => {
   const [contatoEmail, setContatoEmail] = useState("");
   const [contatoFone, setContatoFone] = useState("");
   const [nomeDestinatario, setNomeDestinatario] = useState("");
+  const [loadingRows, setLoadingRows] = useState({});
 
   const dataTableRef = useRef(null);
-  const handleVerificationClick = (rowData) => {
-    const rowId = rowData.id;
-    setVerifiedRows((prev) => {
-      const newState = { ...prev };
-      if (newState[rowId]) {
-        delete newState[rowId]; // Remove verificação se já estiver verificada
-      } else {
-        newState[rowId] = true; // Marca como verificada se não estiver
-      }
-      return newState;
-    });
+  const toggleDisponivel = async (rowData, statusAtual) => {
+    const linha = rowData.id;
+    setLoadingRows((s) => ({ ...s, [linha]: true }));
 
-    // Dispara o console.log com as informações da linha
-    console.log("Dados da linha:", rowData);
+    const novoStatus = statusAtual === "CONFIRMADO" ? "RECUSADO" : "CONFIRMADO";
+
+    // Atualização otimista
+    setAvaliadores((prev) =>
+      prev.map((av) =>
+        av.id === linha
+          ? {
+              ...av,
+              user: {
+                ...av.user,
+                AvaliadorAno: av.user.AvaliadorAno?.map((a) =>
+                  a.ano === Number(params.ano)
+                    ? { ...a, status: novoStatus }
+                    : a
+                ),
+              },
+            }
+          : av
+      )
+    );
+
+    try {
+      await toggleStatusAvaliadorAno({
+        userId: rowData.user.id,
+        ano: Number(params.ano),
+        tenantId: tenant.id,
+      });
+      await atualizarAvaliadores(params.tenant, setAvaliadores, setTodasAreas);
+    } catch (err) {
+      showToast("error", "Erro", "Falha ao atualizar status");
+    } finally {
+      setLoadingRows((s) => ({ ...s, [linha]: false }));
+    }
   };
   // Filtros
   const [filters, setFilters] = useState({
@@ -93,14 +121,6 @@ const Page = ({ params }) => {
       constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
     },
     nivel: {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
-    },
-    projetosAtribuidos: {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
-    },
-    projetosAvaliados: {
       operator: FilterOperator.AND,
       constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
     },
@@ -133,35 +153,11 @@ const Page = ({ params }) => {
     };
     fetchData();
   }, [params.tenant]);
-  const montarMensagem = (inst, gestor, email, fone, dataIni, dataFim) => {
-    const fmt = (d) => (d ? d.toLocaleDateString("pt-BR") : "__/__/____");
-
-    return `
-      <p>
-        Você recebeu um convite para avaliar os projetos de Iniciação Científica
-        da instituição <strong>${inst}</strong>.
-      </p>
-      <p>
-        As avaliações ocorrerão, <strong>de forma online,</strong> entre os dias
-        <strong>${fmt(dataIni)}</strong> e
-        <strong>${fmt(dataFim)}</strong>.
-      </p>
-      <p>Após o período avaliativo, será disponibilizado certificado de avaliação.</p>
-      <p>Caso possa avaliar, clique no botão abaixo e complete seu cadastro.</p>
-      <p>
-        Em caso de dúvida, entre em contato pelo e-mail
-        <a href="mailto:${email}">${email}</a>
-        ou pelo telefone ${fone}.
-      </p>
-      <br/>
-      <p>Atenciosamente,<br/>${gestor}</p>
-    `;
-  };
 
   // Regera o conteúdo sempre que as datas ou o tenant mudarem
   useEffect(() => {
     setEmailContent(
-      montarMensagem(
+      montarMensagemConviteAvaliador(
         instituicaoNome,
         gestorNome,
         contatoEmail,
@@ -201,8 +197,6 @@ const Page = ({ params }) => {
       { header: "Celular", key: "celular", width: 15 },
       { header: "Nível", key: "nivel", width: 20 },
       { header: "Áreas de Atuação", key: "areas", width: 50 },
-      { header: "Projetos atribuídos", key: "projetosAtribuidos", width: 20 },
-      { header: "Projetos avaliados", key: "projetosAvaliados", width: 20 }, // Nova coluna
     ];
 
     // Adicionar dados
@@ -218,8 +212,6 @@ const Page = ({ params }) => {
             ? "Comitê Institucional"
             : "Comitê Externo",
         areas: avaliador.user.userArea.map((ua) => ua.area.area).join(", "),
-        projetosAtribuidos: avaliador.user.InscricaoProjetoAvaliador.length,
-        projetosAvaliados: calcularProjetosAvaliados(avaliador), // Nova coluna
       });
     });
 
@@ -383,23 +375,12 @@ const Page = ({ params }) => {
       throw error;
     }
   };
-  const handleCheckClick = (rowData) => {
-    const rowId = rowData.id;
-    setCheckedRows((prev) => {
-      const newState = { ...prev };
-      if (newState[rowId]) {
-        delete newState[rowId]; // Remove se já estiver marcado
-      } else {
-        newState[rowId] = true; // Marca se não estiver
-      }
-      return newState;
-    });
 
-    console.log("Linha selecionada:", rowData); // Log dos dados da linha
-  };
   const selectedCount = selectedRows.length;
   // modal de convite
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [loadingEnviarConvite, setLoadingEnviarConvite] = useState(false);
+
   const [paraField, setParaField] = useState(""); // texto do campo "Para:"
   const selecionados = selectedRows;
   const abrirModalConvite = () => {
@@ -411,9 +392,6 @@ const Page = ({ params }) => {
     }
     setInviteModalOpen(true);
   };
-  {
-    /* modal para enviar convite */
-  }
 
   return (
     <>
@@ -503,7 +481,7 @@ const Page = ({ params }) => {
         {/* --- botões ----- */}
         <div className="flex justify-content-end mt-4">
           <Button
-            label="Enviar"
+            label={loadingEnviarConvite ? "Enviado..." : "Enviar"}
             icon="pi pi-check"
             onClick={async () => {
               /* ───── validações rápidas ───── */
@@ -593,6 +571,7 @@ const Page = ({ params }) => {
               }
 
               try {
+                setLoadingEnviarConvite(true);
                 const payload = {
                   ano: Number(params.ano),
                   emails: selecionados.length
@@ -610,6 +589,11 @@ const Page = ({ params }) => {
                   params.tenant,
                   payload
                 );
+                await atualizarAvaliadores(
+                  params.tenant,
+                  setAvaliadores,
+                  setTodasAreas
+                );
                 showToast("success", "Convites enviados", resp.message);
               } catch (err) {
                 console.error(err);
@@ -619,7 +603,7 @@ const Page = ({ params }) => {
                   err.response?.data?.message || "Falha no envio"
                 );
               }
-
+              setLoadingEnviarConvite(false);
               /* limpa & fecha */
               setInviteModalOpen(false);
               setEmailContent("");
@@ -638,12 +622,15 @@ const Page = ({ params }) => {
               <RiSettings5Line />
             </div>
             <ul>
-              <li onClick={abrirModalConvite}>
+              <li onClick={abrirModalConvite} className={style.enviar}>
                 <Button icon="pi pi-send">
-                  Enviar convite
-                  {selectedCount > 0 && (
-                    <span className={style.badge}>{selectedCount}</span>
-                  )}
+                  <p style={{ color: "#fff" }}>
+                    Enviar{" "}
+                    {selectedCount > 0 && (
+                      <span className={style.badge}>{selectedCount}</span>
+                    )}{" "}
+                    convite{selectedCount > 1 && "s"}
+                  </p>
                 </Button>
               </li>
             </ul>
@@ -737,26 +724,41 @@ const Page = ({ params }) => {
                 />
                 <Column
                   header="Disponível pra avaliar"
-                  headerClassName="text-center"
-                  body={(rowData) => (
-                    <div
-                      className="flex align-items-center justify-content-center cursor-pointer"
-                      onClick={(e) => {
-                        e.stopPropagation(); // Evita que o clique na linha seja disparado
-                        handleCheckClick(rowData);
-                      }}
-                    >
-                      <i
-                        className={classNames("pi", {
-                          "text-green-500 pi-check-circle":
-                            checkedRows[rowData.id], // Verde quando marcado
-                          "text-red-400 pi-times-circle":
-                            !checkedRows[rowData.id], // Cinza quando não marcado
-                        })}
-                        style={{ fontSize: "1.25rem" }}
-                      />
-                    </div>
-                  )}
+                  body={(rowData) => {
+                    const avaliadorAno = rowData.user.AvaliadorAno;
+
+                    const statusAtual = avaliadorAno[0]?.status ?? "PENDENTE";
+                    const isLoading = loadingRows[rowData.id];
+
+                    return (
+                      <div
+                        className="flex justify-content-center cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleDisponivel(rowData, statusAtual);
+                        }}
+                      >
+                        {isLoading ? (
+                          <i
+                            className="pi pi-spinner pi-spin"
+                            style={{ fontSize: "1.25rem" }}
+                          />
+                        ) : (
+                          <i
+                            className={classNames("pi", {
+                              "pi-check text-green-500":
+                                statusAtual === "CONFIRMADO",
+                              "pi-hourglass text-yellow-500":
+                                statusAtual === "PENDENTE",
+                              "pi-thumbs-down text-red-400":
+                                statusAtual === "RECUSADO",
+                            })}
+                            style={{ fontSize: "1.25rem" }}
+                          />
+                        )}
+                      </div>
+                    );
+                  }}
                   style={{ width: "100px", textAlign: "center" }}
                 />
                 <Column

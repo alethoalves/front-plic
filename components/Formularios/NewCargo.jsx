@@ -153,7 +153,7 @@ const NewCargo = ({
       )}
 
       {/* MultiSelect para áreas (apenas se o cargo for "Avaliador") */}
-      {avaliador && (
+      {avaliador && initialData.user?.userArea && (
         <div className="mb-2">
           <label htmlFor="areas" className="block mb-2">
             Áreas de Atuação:

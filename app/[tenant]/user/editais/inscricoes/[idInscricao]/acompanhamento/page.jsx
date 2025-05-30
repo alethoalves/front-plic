@@ -16,7 +16,7 @@ import {
   RiUser2Line,
 } from "@remixicon/react";
 import styles from "./page.module.scss";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Modal from "@/components/Modal";
 import Button from "@/components/Button";
@@ -37,8 +37,12 @@ import {
   getInscricaoUserById,
   getInscricoesByUser,
   getMinhasInscricoes,
+  reabrirInscricao,
 } from "@/app/api/client/inscricao";
 import Link from "next/link";
+import { Toast } from "primereact/toast";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import { formatDateForDisplay } from "@/lib/formatDateForDisplay";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
@@ -51,6 +55,7 @@ const Page = ({ params }) => {
   const [notFound, setNotFound] = useState(false);
 
   const router = useRouter();
+  const toastRef = useRef(null); // Toast do PrimeReact
 
   useEffect(() => {
     const fetchData = async () => {
@@ -70,9 +75,48 @@ const Page = ({ params }) => {
     };
     fetchData();
   }, [params.tenant, params.inscricaoSelected]);
+  const handleCancelarInscricao = () => {
+    confirmDialog({
+      message:
+        "Cancelar a inscrição fará com que ela volte para o status PENDENTE. Deseja continuar?",
+      header: "Confirmar cancelamento",
+      icon: "pi pi-exclamation-triangle",
+      acceptLabel: "Sim",
+      rejectLabel: "Não",
+      acceptClassName: "p-button-danger",
+      accept: async () => {
+        try {
+          setLoading(true);
+          const { inscricao: updated, message } = await reabrirInscricao(
+            params.tenant,
+            params.idInscricao
+          );
+
+          setInscricao((prev) => ({ ...prev, status: updated.status }));
+          toastRef.current?.show({
+            severity: "success",
+            summary: "Sucesso",
+            detail: message || "Inscrição reaberta com sucesso!",
+          });
+        } catch (err) {
+          toastRef.current?.show({
+            severity: "error",
+            summary: "Erro",
+            detail:
+              err.response?.data?.message ||
+              "Erro ao cancelar / reabrir inscrição.",
+          });
+        } finally {
+          setLoading(false);
+        }
+      },
+    });
+  };
 
   return (
     <>
+      <Toast ref={toastRef} />
+      <ConfirmDialog />
       {notFound && <NoData description="Inscrição não encontrada :/" />}
       {loading && <p>Carregando...</p>}
       {inscricao && !notFound && !loading && (
@@ -109,7 +153,9 @@ const Page = ({ params }) => {
                 <div className={styles.right}>
                   <h6>Inscrição gerada</h6>
                   {inscricao.status === "pendente" ? (
-                    <p>A inscrição deve ser finalizada até DD/MM/AAAA</p>
+                    <p>{`A inscrição deve ser finalizada até ${formatDateForDisplay(
+                      inscricao.edital?.fimInscricao
+                    )}`}</p>
                   ) : (
                     ""
                   )}
@@ -120,7 +166,7 @@ const Page = ({ params }) => {
                         className="button btn-primary mt-2"
                         href={`/${params.tenant}/user/editais/inscricoes/${params.idInscricao}`}
                       >
-                        <p>Finalizar inscrição</p>
+                        <p>Editar e Finalizar inscrição</p>
                       </Link>
                     </div>
                   )}
@@ -141,110 +187,124 @@ const Page = ({ params }) => {
                   <h6>Inscrição enviada</h6>
                   {inscricao.status !== "pendente" && (
                     <>
-                      <div className={`${styles.btn} mt-2`}>
+                      <div className={`${styles.btn} flex gap-1 mt-2`}>
                         <Link
-                          className="button btn-secondary mt-2"
+                          className="button btn-secondary"
                           target="_blank"
                           rel="noopener noreferrer"
                           href={`/${params.tenant}/user/editais/inscricoes/${params.idInscricao}/comprovante`}
                         >
-                          <p>Ver comprovante</p>
+                          <p>Comprovante</p>
                         </Link>
+                        <button
+                          className="button btn-error"
+                          onClick={handleCancelarInscricao}
+                          disabled={loading}
+                        >
+                          <p>
+                            {loading ? "Processando…" : "Cancelar inscrição"}
+                          </p>
+                        </button>
                       </div>
                     </>
                   )}
                 </div>
               </div>
-              <div className={`${styles.status} `}>
-                <div className={styles.left}>
-                  <div className={styles.circle}>
-                    <RiCheckLine />
-                  </div>
-                </div>
-                <div className={styles.right}>
-                  <h6>Inscrição em avaliação</h6>
-                  <p>Aguarde o processo avaliativo</p>
-                </div>
-              </div>
-              <div className={`${styles.status} `}>
-                <div className={styles.left}>
-                  <div className={styles.circle}>
-                    <RiCheckLine />
-                  </div>
-                </div>
-                <div className={styles.right}>
-                  <h6>Inscrição avaliada</h6>
-                  <p>
-                    Confira o resultados dos planos de trabalho e participações
-                    relacionadas a sua inscrição
-                  </p>
-                  <div className={styles.acompanhamento}>
-                    <div className={`${styles.status} `}>
-                      <div className={styles.left}>
-                        <div className={styles.circle}>
-                          <RiCheckLine />
-                        </div>
-                      </div>
-                      <div className={styles.right}>
-                        <h6>Recurso gerado</h6>
-                        <p>O recurso deve ser enviado até 23/03/2024</p>
+              {false && (
+                <>
+                  <div className={`${styles.status} `}>
+                    <div className={styles.left}>
+                      <div className={styles.circle}>
+                        <RiCheckLine />
                       </div>
                     </div>
-                    <div className={`${styles.status} `}>
-                      <div className={styles.left}>
-                        <div className={styles.circle}>
-                          <RiCheckLine />
-                        </div>
-                      </div>
-                      <div className={styles.right}>
-                        <h6>Recurso enviado</h6>
-                        <p>
-                          O recurso foi enviado no dia 24/03/2024 às 14:00:04
-                        </p>
+                    <div className={styles.right}>
+                      <h6>Inscrição em avaliação</h6>
+                      <p>Aguarde o processo avaliativo</p>
+                    </div>
+                  </div>
+                  <div className={`${styles.status} `}>
+                    <div className={styles.left}>
+                      <div className={styles.circle}>
+                        <RiCheckLine />
                       </div>
                     </div>
-                    <div className={`${styles.status} `}>
-                      <div className={styles.left}>
-                        <div className={styles.circle}>
-                          <RiCheckLine />
+                    <div className={styles.right}>
+                      <h6>Inscrição avaliada</h6>
+                      <p>
+                        Confira o resultados dos planos de trabalho e
+                        participações relacionadas a sua inscrição
+                      </p>
+                      <div className={styles.acompanhamento}>
+                        <div className={`${styles.status} `}>
+                          <div className={styles.left}>
+                            <div className={styles.circle}>
+                              <RiCheckLine />
+                            </div>
+                          </div>
+                          <div className={styles.right}>
+                            <h6>Recurso gerado</h6>
+                            <p>O recurso deve ser enviado até 23/03/2024</p>
+                          </div>
                         </div>
-                      </div>
-                      <div className={styles.right}>
-                        <h6>Recurso em análise</h6>
-                        <p>Aguarde o processo avaliativo</p>
-                      </div>
-                    </div>
-                    <div className={`${styles.status} `}>
-                      <div className={styles.left}>
-                        <div className={styles.circle}>
-                          <RiCheckLine />
+                        <div className={`${styles.status} `}>
+                          <div className={styles.left}>
+                            <div className={styles.circle}>
+                              <RiCheckLine />
+                            </div>
+                          </div>
+                          <div className={styles.right}>
+                            <h6>Recurso enviado</h6>
+                            <p>
+                              O recurso foi enviado no dia 24/03/2024 às
+                              14:00:04
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                      <div className={styles.right}>
-                        <h6>Recurso analisado</h6>
-                        <p>
-                          Confira o resultados dos planos de trabalho e
-                          participações relacionadas a sua inscrição
-                        </p>
+                        <div className={`${styles.status} `}>
+                          <div className={styles.left}>
+                            <div className={styles.circle}>
+                              <RiCheckLine />
+                            </div>
+                          </div>
+                          <div className={styles.right}>
+                            <h6>Recurso em análise</h6>
+                            <p>Aguarde o processo avaliativo</p>
+                          </div>
+                        </div>
+                        <div className={`${styles.status} `}>
+                          <div className={styles.left}>
+                            <div className={styles.circle}>
+                              <RiCheckLine />
+                            </div>
+                          </div>
+                          <div className={styles.right}>
+                            <h6>Recurso analisado</h6>
+                            <p>
+                              Confira o resultados dos planos de trabalho e
+                              participações relacionadas a sua inscrição
+                            </p>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
-              <div className={`${styles.status} `}>
-                <div className={styles.left}>
-                  <div className={styles.circle}>
-                    <RiCheckLine />
+                  <div className={`${styles.status} `}>
+                    <div className={styles.left}>
+                      <div className={styles.circle}>
+                        <RiCheckLine />
+                      </div>
+                    </div>
+                    <div className={styles.right}>
+                      <h6>Resultado final</h6>
+                      <p>
+                        Confira o resultados final dos planos de trabalho e
+                        participações relacionadas a sua inscrição
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <div className={styles.right}>
-                  <h6>Resultado final</h6>
-                  <p>
-                    Confira o resultados final dos planos de trabalho e
-                    participações relacionadas a sua inscrição
-                  </p>
-                </div>
-              </div>
+                </>
+              )}
             </div>
           </div>
         </div>

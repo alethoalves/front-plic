@@ -628,32 +628,38 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
                                 </div>
                               ))}
 
-                            <div
-                              className={styles.addItem}
-                              onClick={() => {
-                                setPlanoDeTrabalhoSelected(null);
-                                setSelectedProjetoId(item.projeto.id);
-                                setIsModalOpenPlanoDeTrabalho(true);
-                              }}
-                            >
-                              <div className={styles.icon}>
-                                <RiArticleLine />
+                            {inscricao.planosDeTrabalho.length <
+                              editalInfo.maxPlanos && (
+                              <div
+                                className={styles.addItem}
+                                onClick={() => {
+                                  setPlanoDeTrabalhoSelected(null);
+                                  setSelectedProjetoId(item.projeto.id);
+                                  setIsModalOpenPlanoDeTrabalho(true);
+                                }}
+                              >
+                                <div className={styles.icon}>
+                                  <RiArticleLine />
+                                </div>
+                                <p>Add Plano de Trabalho</p>
                               </div>
-                              <p>Add Plano de Trabalho</p>
-                            </div>
+                            )}
                           </div>
                         );
                       })}
                     </div>
-                    <div
-                      className={styles.addItem}
-                      onClick={() => setIsModalOpenProjeto(true)}
-                    >
-                      <div className={styles.icon}>
-                        <RiFolder5Line />
+                    {inscricao.planosDeTrabalho.length <
+                      editalInfo.maxPlanos && (
+                      <div
+                        className={styles.addItem}
+                        onClick={() => setIsModalOpenProjeto(true)}
+                      >
+                        <div className={styles.icon}>
+                          <RiFolder5Line />
+                        </div>
+                        <p>Add Projeto</p>
                       </div>
-                      <p>Add Projeto</p>
-                    </div>
+                    )}
                   </>
                 )}
                 {/* PLANOS DE TRABALHO */}

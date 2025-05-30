@@ -1,0 +1,44 @@
+@import "./styles/partials/colors";
+@import "./styles/partials/layout";
+@import "./styles/partials/spacing";
+
+.content {
+  margin-top: $gap-3;
+  margin-bottom: $gap-7;
+}
+
+.p-datatable {
+  .p-datatable-thead > tr > th {
+    background-color: $white-light;
+    color: $primary-darken;
+    font-weight: 600;
+  }
+
+  .p-datatable-tbody > tr {
+    &:hover {
+      background-color: $white-normal !important;
+    }
+  }
+}
+
+.p-tag {
+  &.p-tag-danger {
+    background-color: $error-light;
+    color: $error-dark;
+  }
+
+  &.p-tag-success {
+    background-color: $success-light;
+    color: $success-dark;
+  }
+}
+
+.p-button {
+  background-color: $primary-normal;
+  border-color: $primary-normal;
+
+  &:hover {
+    background-color: $primary-dark !important;
+    border-color: $primary-dark !important;
+  }
+}

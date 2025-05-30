@@ -35,6 +35,24 @@ export const submissaoInscricao = async (tenantSlug, inscricaoId) => {
     throw error;
   }
 };
+export const reabrirInscricao = async (tenantSlug, inscricaoId) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+
+    // PUT /private/:tenantSlug/inscricoes/:inscricaoId/reabrir
+    const response = await req.put(
+      `/private/${tenantSlug}/inscricoes/${inscricaoId}/reabrir`,
+      {},          // corpo vazio
+      { headers }  // cabeçalhos com token
+    );
+
+    return response.data; // { status, message, inscricao }
+  } catch (error) {
+    console.error("Erro ao reabrir inscrição:", error);
+    throw error;
+  }
+};
 export const createInscricaoByUser = async (tenantSlug, inscricaoData) => {
   try {
     const headers = getAuthHeadersClient();

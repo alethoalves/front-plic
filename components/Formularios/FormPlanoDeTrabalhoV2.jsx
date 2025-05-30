@@ -46,6 +46,16 @@ const FormPlanoDeTrabalhoV2 = ({
   const [formularioEdital, setFormularioEdital] = useState(null);
 
   //DEFINE O SCHEMA DO PLANO DE TRABALHO
+  // 1) dados vindos do backend
+  const campos = formularioEdital?.campos ?? [];
+
+  // 2) gera o schema para os campos dinâmicos
+  const dynamicSchemaBase = createDynamicSchema(campos); // ← sua função
+
+  // 3) se o array estiver vazio, torna-o opcional
+  const dynamicSchema =
+    campos.length === 0 ? dynamicSchemaBase.optional() : dynamicSchemaBase;
+
   const planoDeTrabalhoSchema = z.object({
     titulo: z.string().min(1, "Campo obrigatório!"),
     areaId: z.number().int().positive("Campo obrigatório!"),
@@ -59,7 +69,7 @@ const FormPlanoDeTrabalhoV2 = ({
         })
       )
       .optional(),
-    camposDinamicos: createDynamicSchema(formularioEdital?.campos || []), // Adiciona campos dinâmicos ao schema
+    camposDinamicos: dynamicSchema, //createDynamicSchema(formularioEdital?.campos || []), // Adiciona campos dinâmicos ao schema
   });
 
   //CONTROLA O FORMULARIO

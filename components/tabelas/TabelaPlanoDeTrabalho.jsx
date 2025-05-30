@@ -333,6 +333,23 @@ const TabelaPlanoDeTrabalho = ({ params }) => {
                   filterField="id"
                 />
                 <Column
+                  field="inscricao.status"
+                  header="Status Inscrição"
+                  sortable
+                  filter
+                  filterElement={(options) =>
+                    statusClassificacaoFilterTemplate(options, [
+                      { label: "Pendente", value: "pendente" },
+                      { label: "Enviada", value: "enviada" },
+                      { label: "Aprovada", value: "aprovada" },
+                    ])
+                  }
+                  showFilterMenu={false}
+                  filterField="inscricao.status"
+                  body={(rowData) => rowData.inscricao.status}
+                  style={{ width: "12rem" }}
+                />
+                <Column
                   field="statusClassificacao"
                   header="Status Classificação do Plano"
                   sortable

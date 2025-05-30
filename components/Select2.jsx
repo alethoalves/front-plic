@@ -53,7 +53,7 @@ const Select2 = ({
         <div
           className={`${styles.selectedOption} ${isOpen ? styles.open : ""}`}
         >
-          {selectedOption.label} {/* Exibe a opção selecionada */}
+          {selectedOption.label}
           <div className={`${styles.arrow} ${isOpen ? styles.open : ""}`} />
         </div>
         {isOpen && !disabled && (

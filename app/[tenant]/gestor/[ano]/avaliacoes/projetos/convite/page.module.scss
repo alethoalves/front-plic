@@ -17,15 +17,11 @@
             cursor: pointer;
             transition: ease .3s;
             
-            &:hover{
-                p{
-                    text-decoration: underline;
-                    
-                }
-            }
+            
         }
     }
 }
+
 .content{
     display: flex;
     flex-direction: column;

@@ -56,8 +56,7 @@ const FormNewFormulario = ({ tenantSlug, initialData, onClose, onSuccess }) => {
     } catch (error) {
       console.error("Error:", error);
       setError(
-        error.response?.data?.error?.message ??
-          "Erro na conexão com o servidor."
+        error.response?.data?.message ?? "Erro na conexão com o servidor."
       );
     } finally {
       setLoading(false);

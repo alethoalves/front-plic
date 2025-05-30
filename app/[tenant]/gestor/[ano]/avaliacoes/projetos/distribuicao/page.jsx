@@ -3,15 +3,21 @@ import React, { useState, useRef, useEffect } from "react";
 import { getInscricaoProjetoByTenant } from "@/app/api/client/projeto";
 import style from "./page.module.scss";
 import { Toast } from "primereact/toast";
-import { atribuicaoDeProjetosPeloGestor } from "@/app/api/client/avaliador";
+import {
+  atribuicaoDeProjetosPeloGestor,
+  getAvaliadoresComProjetosPendentes,
+} from "@/app/api/client/avaliador";
 import { getCargos } from "@/app/api/client/cargo";
 import { Card } from "primereact/card";
-import { RiTimeLine } from "@remixicon/react";
+import { RiSettings5Line, RiTimeLine } from "@remixicon/react";
 import { Checkbox } from "primereact/checkbox";
 import { RiDeleteBinLine } from "@remixicon/react";
 import { GestorDesassociarAvaliadorInscricaoProjeto } from "@/app/api/client/avaliador";
 import NoData from "@/components/NoData";
 import calcularTempoDesdeAtribuicao from "@/lib/calcularTempoDesdeAtribuicao";
+import Modal from "@/components/Modal";
+import FormularioFichaAvaliacao from "@/components/FormularioFichaAvaliacao";
+import NotificarAvaliador from "@/components/NotificarAvaliador";
 const Page = ({ params }) => {
   const [avaliadoresList, setAvaliadoresList] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -25,6 +31,8 @@ const Page = ({ params }) => {
   const [projetosPorAvaliador, setProjetosPorAvaliador] = useState(0);
   const [avaliadorSelecionado, setAvaliadorSelecionado] = useState(null);
   const [removendoVinculacao, setRemovendoVinculacao] = useState(null);
+  const [activeModal, setActiveModal] = useState(null);
+
   // Carrega os avaliadores quando o componente é montado
   useEffect(() => {
     const fetchData = async () => {
@@ -34,6 +42,7 @@ const Page = ({ params }) => {
           setAvaliadores,
           setTodasAreas
         );
+        await getAvaliadoresComProjetosPendentes(params.tenant, params.ano);
         await processarInscricoes(params.tenant, setInscricoesProjetos);
       } catch (error) {
         console.error("Erro ao carregar dados:", error);
@@ -275,13 +284,16 @@ const Page = ({ params }) => {
   ) => {
     const avaliadores = await getCargos(tenant, {
       cargo: "avaliador",
+      ano: params.ano,
     });
 
-    const avaliadoresComColunasVirtuais = avaliadores.map((avaliador) => ({
-      ...avaliador,
-      projetosAvaliados: calcularProjetosAvaliados(avaliador),
-      projetosAtribuidos: avaliador.user.InscricaoProjetoAvaliador.length,
-    }));
+    const avaliadoresComColunasVirtuais = avaliadores
+      .filter((a) => a.user.avaliadorAnoStatus === "CONFIRMADO")
+      .map((avaliador) => ({
+        ...avaliador,
+        projetosAvaliados: calcularProjetosAvaliados(avaliador),
+        projetosAtribuidos: avaliador.user.InscricaoProjetoAvaliador.length,
+      }));
 
     setAvaliadores(avaliadoresComColunasVirtuais || []);
 
@@ -331,7 +343,38 @@ const Page = ({ params }) => {
 
   return (
     <>
+      <Modal
+        isOpen={activeModal !== null}
+        onClose={() => setActiveModal(null)}
+        size="medium"
+      >
+        {(() => {
+          switch (activeModal) {
+            case "ficha":
+              return <FormularioFichaAvaliacao params={params} />;
+            case "notificarAvaliador":
+              return <NotificarAvaliador params={params} />;
+            default:
+              return null;
+          }
+        })()}
+      </Modal>
       <main>
+        <Card className="mb-4 p-2">
+          <div className={style.configuracoes}>
+            <div className={style.icon}>
+              <RiSettings5Line />
+            </div>
+            <ul>
+              <li onClick={() => setActiveModal("ficha")}>
+                <p>Formulários de Avaliação</p>
+              </li>
+              <li onClick={() => setActiveModal("notificarAvaliador")}>
+                <p>Notificar Avaliadores</p>
+              </li>
+            </ul>
+          </div>
+        </Card>
         <Card className={`mb-4 p-2`}>
           <h5 className="mb-2">Distribuição por área</h5>
           {avaliadoresList?.length > 0 && areaSelecionada && (
