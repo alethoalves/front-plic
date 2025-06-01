@@ -13,6 +13,7 @@ import {
   getCotas,
   alocarBolsa,
   desalocarBolsa,
+  updateCota,
 } from "@/app/api/client/bolsa";
 
 import { Card } from "primereact/card";

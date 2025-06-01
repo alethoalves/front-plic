@@ -17,6 +17,7 @@ import {
   RiExchangeLine,
   RiForbid2Line,
   RiGroupLine,
+  RiHistoryLine,
   RiP2pFill,
   RiProhibited2Line,
   RiSwapLine,
@@ -35,7 +36,10 @@ import {
   transferirBolsa,
 } from "@/app/api/client/bolsa";
 import { Tag } from "primereact/tag";
-import { getSeverityByStatus } from "@/lib/tagUtils";
+import {
+  getSeverityByStatus,
+  renderStatusTagWithJustificativa,
+} from "@/lib/tagUtils";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Timeline } from "primereact/timeline";
@@ -44,6 +48,89 @@ import { Calendar } from "primereact/calendar";
 import { LinhaTempo } from "@/lib/linhaDoTempo";
 import { Dropdown } from "primereact/dropdown";
 import { getInscricao, getInscricaoUserById } from "@/app/api/client/inscricao";
+function buildMergedTimeline(item) {
+  const merged = [];
+
+  // Pega apenas o primeiro nome (antes do primeiro espaço)
+  const primeiroNome = item.user.nome.split(" ")[0];
+
+  // Helper para formatar ISO → "DD/MM/YYYY HH:mm:ss"
+  function formatDateTimeBR(dateObj) {
+    return dateObj
+      .toLocaleString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      })
+      .replace(",", "");
+  }
+
+  // 1) Copia o historicoParticipacao (já vindo de mapHistorico)
+  if (Array.isArray(item.historicoParticipacao)) {
+    item.historicoParticipacao.forEach((evt) => {
+      merged.push({
+        isLatest: false, //evt.isLatest,
+        status: `Participação de ${primeiroNome}: ${evt.status}`,
+        date: evt.date,
+        observacao: evt.observacao,
+        rawStatus: evt.rawStatus,
+      });
+    });
+  }
+
+  // 2) Para cada vínculo, adiciona eventos de vínculo + eventos de solicitação
+  if (Array.isArray(item.VinculoSolicitacaoBolsa)) {
+    item.VinculoSolicitacaoBolsa.forEach((vinculo) => {
+      const sol = vinculo.solicitacaoBolsa;
+      const solId = sol?.id;
+
+      // 2.a) Histórico de vínculo
+      if (Array.isArray(vinculo.HistoricoStatusVinculo)) {
+        vinculo.HistoricoStatusVinculo.forEach((evtV) => {
+          const dateFull = formatDateTimeBR(new Date(evtV.inicio));
+          merged.push({
+            isLatest: false,
+            status: `Vínculo de ${primeiroNome} à Solicitação de Bolsa ID-${solId}: ${evtV.status.toLowerCase()}`,
+            date: dateFull,
+            observacao: evtV.observacao || null,
+            rawStatus: evtV.status,
+          });
+        });
+      }
+      /** 
+      // 2.b) Histórico de solicitação
+      if (sol && Array.isArray(sol.HistoricoStatusSolicitacaoBolsa)) {
+        sol.HistoricoStatusSolicitacaoBolsa.forEach((evtS) => {
+          const dateFull = formatDateTimeBR(new Date(evtS.inicio));
+          merged.push({
+            isLatest: false,
+            status: `Solicitação de Bolsa ID-${solId}: ${evtS.status.toLowerCase()}`,
+            date: dateFull,
+            observacao: evtS.observacao || null,
+            rawStatus: evtS.status,
+          });
+        });
+      }*/
+    });
+  }
+
+  // 3) Ordena cronologicamente pelo campo "date" (em "DD/MM/YYYY HH:mm:ss")
+  merged.sort((a, b) => {
+    function toTs(dateTimeStr) {
+      const [dt, tm] = dateTimeStr.split(" ");
+      const [dd, mm, yyyy] = dt.split("/").map(Number);
+      const [hh, mi, ss] = tm.split(":").map(Number);
+      return new Date(yyyy, mm - 1, dd, hh, mi, ss).getTime();
+    }
+    return toTs(b.date) - toTs(a.date);
+  });
+
+  return merged;
+}
 
 const ParticipacaoGestorController = ({
   tenant,
@@ -121,12 +208,18 @@ const ParticipacaoGestorController = ({
     </Modal>
   );
   const fetch = async () => {
-    const item = await getParticipacao(tenant, participacaoId);
-    console.log(item);
-    setItem(item);
-    setHistPart(mapHistorico(item.HistoricoStatusParticipacao));
+    // 1) Busca o registro atualizado da API
+    const itemAPI = await getParticipacao(tenant, participacaoId);
 
-    const vinculos = item.VinculoSolicitacaoBolsa ?? [];
+    // 2) Mapeia o histórico de participação
+    const hp = mapHistorico(itemAPI.HistoricoStatusParticipacao);
+    setHistPart(hp);
+
+    // 3) Guarda esse mapa dentro de itemAPI (para o buildMergedTimeline)
+    itemAPI.historicoParticipacao = hp;
+
+    // 4) Mapeia os históricos de cada vínculo, se ainda quiser manter
+    const vinculos = itemAPI.VinculoSolicitacaoBolsa ?? [];
     setHistVinc(
       Object.fromEntries(
         vinculos.map((v) => [v.id, mapHistorico(v.HistoricoStatusVinculo)])
@@ -140,7 +233,55 @@ const ParticipacaoGestorController = ({
         ])
       )
     );
+
+    // 5) **Recalcula a timeline unificada AQUI**
+    const unified = buildMergedTimeline(itemAPI);
+    setMergeTimelineData(unified);
+
+    // 6) Atualiza o `item` completo e demais estados (edital, tipo etc.)
+    setItem(itemAPI);
+    setEditalInfo(itemAPI.inscricao.edital);
+    setTipoParticipacao(itemAPI.tipo);
+
+    // 7) (se ainda precisar) buscar formulários conforme tipo…
+    if (
+      itemAPI.tipo === "orientador" &&
+      itemAPI.inscricao.edital.formOrientadorId
+    ) {
+      const responseFormOrientador = await getFormulario(
+        tenant,
+        itemAPI.inscricao.edital.formOrientadorId
+      );
+      setCamposFormOrientador(
+        responseFormOrientador.campos.sort((a, b) => a.ordem - b.ordem)
+      );
+    }
+    if (
+      itemAPI.tipo === "coorientador" &&
+      itemAPI.inscricao.edital.formCoorientadorId
+    ) {
+      const responseFormCoorientador = await getFormulario(
+        tenant,
+        itemAPI.inscricao.edital.formCoorientadorId
+      );
+      setCamposFormCoorientador(
+        responseFormCoorientador.campos.sort((a, b) => a.ordem - b.ordem)
+      );
+    }
+    if (itemAPI.tipo === "aluno" && itemAPI.inscricao.edital.formAlunoId) {
+      const responseFormAluno = await getFormulario(
+        tenant,
+        itemAPI.inscricao.edital.formAlunoId
+      );
+      setCamposFormAluno(
+        responseFormAluno.campos.sort((a, b) => a.ordem - b.ordem)
+      );
+    }
+
+    // Por fim, pare de exibir loading
+    setLoading(false);
   };
+
   const [isLoadingConfirmacao, setIsLoadingConfirmacao] = useState(false);
 
   const handleConfirmarAtivarPendente = async () => {
@@ -548,73 +689,15 @@ const ParticipacaoGestorController = ({
   const [historicoParticipacao, setHistPart] = useState([]);
   const [historicoVinculo, setHistVinc] = useState({});
   const [historicoSolicitacao, setHistSol] = useState({});
+  const [mergeTimelineData, setMergeTimelineData] = useState([]);
 
   const toast = useRef(null);
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const item = await getParticipacao(tenant, participacaoId);
-        console.log(item);
-        setItem(item);
-        setHistPart(mapHistorico(item.HistoricoStatusParticipacao));
-
-        const vinculos = item.VinculoSolicitacaoBolsa ?? [];
-        setHistVinc(
-          Object.fromEntries(
-            vinculos.map((v) => [v.id, mapHistorico(v.HistoricoStatusVinculo)])
-          )
-        );
-        setHistSol(
-          Object.fromEntries(
-            vinculos.map((v) => [
-              v.id,
-              mapHistorico(v.solicitacaoBolsa?.HistoricoStatusSolicitacaoBolsa),
-            ])
-          )
-        );
-        setEditalInfo(item.inscricao.edital);
-        setTipoParticipacao(item.tipo);
-        if (
-          item.tipo === "orientador" &&
-          item.inscricao.edital.formOrientadorId
-        ) {
-          const responseFormOrientador = await getFormulario(
-            tenant,
-            item.inscricao.edital.formOrientadorId
-          );
-          setCamposFormOrientador(
-            responseFormOrientador.campos.sort((a, b) => a.ordem - b.ordem)
-          );
-        }
-        if (
-          item.tipo === "coorientador" &&
-          item.inscricao.edital.formCoorientadorId
-        ) {
-          const responseFormCoorientador = await getFormulario(
-            tenant,
-            item.inscricao.edital.formCoorientadorId
-          );
-          setCamposFormCoorientador(
-            responseFormCoorientador.campos.sort((a, b) => a.ordem - b.ordem)
-          );
-        }
-        if (item.tipo === "aluno" && item.inscricao.edital.formAlunoId) {
-          const responseFormAluno = await getFormulario(
-            tenant,
-            item.inscricao.edital.formAlunoId
-          );
-          setCamposFormAluno(
-            responseFormAluno.campos.sort((a, b) => a.ordem - b.ordem)
-          );
-        }
-      } catch (error) {
-        console.error("Erro ao buscar dados:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
+    setLoading(true);
+    fetch().catch((err) => {
+      console.error("Erro ao buscar dados iniciais:", err);
+      setLoading(false);
+    });
   }, [tenant, participacaoId]);
 
   const formatarDataParaBackend = (dataISO) => {
@@ -965,22 +1048,23 @@ const ParticipacaoGestorController = ({
       {loadingAlunos ? (
         <p>Carregando alunos…</p>
       ) : (
-        <Dropdown
-          className="w-full mb-3"
-          placeholder="Selecione o aluno"
-          options={alunosOptions}
-          value={alunoDestinoId}
-          onChange={(e) => setAlunoDestinoId(e.value)}
-        />
+        <>
+          <Dropdown
+            className="w-full mb-3"
+            placeholder="Selecione o aluno"
+            options={alunosOptions}
+            value={alunoDestinoId}
+            onChange={(e) => setAlunoDestinoId(e.value)}
+          />
+          <InputTextarea
+            rows={4}
+            className="w-full"
+            placeholder="Justificativa da transferência"
+            value={justTransfer}
+            onChange={(e) => setJustTransfer(e.target.value)}
+          />
+        </>
       )}
-
-      <InputTextarea
-        rows={4}
-        className="w-full"
-        placeholder="Justificativa da transferência"
-        value={justTransfer}
-        onChange={(e) => setJustTransfer(e.target.value)}
-      />
 
       <div className="flex justify-content-end gap-2 mt-4">
         <Button
@@ -1060,10 +1144,53 @@ const ParticipacaoGestorController = ({
           {/* TELA DE VISUALIZAÇÃO */}
           <div className={styles.content}>
             <div className={styles.mainContent}>
-              <div className="mb-2">
+              <div className={styles.box}>
+                <div className={styles.header}>
+                  <div className={styles.icon}>
+                    <RiGroupLine />
+                  </div>
+                  <h6>Plano de Trabalho</h6>
+                </div>
+                <div className={styles.list}>
+                  <div className={styles.itemList}>
+                    <div className={styles.content1}>
+                      <p>{item.planoDeTrabalho?.titulo}</p>
+                    </div>
+                    <div className={styles.content2} onClick={() => {}}>
+                      <RiArrowRightSLine />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {item.tipo === "aluno" && (
+                <div className={styles.box}>
+                  <div className={styles.header}>
+                    <div className={styles.icon}>
+                      <RiGroupLine />
+                    </div>
+                    <h6>Orientador</h6>
+                  </div>
+                  <div className={styles.list}>
+                    <div className={styles.itemList}>
+                      <div className={styles.content1}>
+                        <p>
+                          {item.inscricao?.participacoes?.find(
+                            (p) => p.tipo === "orientador"
+                          )?.user?.nome || "Nenhum orientador encontrado"}
+                        </p>
+                      </div>
+                      <div className={styles.content2} onClick={() => {}}>
+                        <RiArrowRightSLine />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div className="mt-2">
                 <div className={styles.userCard}>
                   <div className={styles.user}>
                     <h6>{item.user?.nome}</h6>
+
                     <div className={styles.actions}>
                       <div
                         onClick={() => {
@@ -1153,7 +1280,11 @@ const ParticipacaoGestorController = ({
                       className={`flex flex-column  ${styles.checkboxList} `}
                     ></div>
                     {item.VinculoSolicitacaoBolsa.length > 0 &&
-                      item.VinculoSolicitacaoBolsa.map((vinculo) => (
+                      item.VinculoSolicitacaoBolsa.filter(
+                        (vinculo) =>
+                          vinculo.status !== "TRANSFERIDA" &&
+                          vinculo.status !== "RECUSADO"
+                      ).map((vinculo) => (
                         <div
                           key={vinculo.id}
                           className={`${styles.userCard} mt-2`}
@@ -1283,51 +1414,24 @@ const ParticipacaoGestorController = ({
                           </div>
                         </div>
                       ))}
-                  </div>
-                </div>
-              </div>
-              <div className={styles.box}>
-                <div className={styles.header}>
-                  <div className={styles.icon}>
-                    <RiGroupLine />
-                  </div>
-                  <h6>Plano de Trabalho</h6>
-                </div>
-                <div className={styles.list}>
-                  <div className={styles.itemList}>
-                    <div className={styles.content1}>
-                      <p>{item.planoDeTrabalho?.titulo}</p>
-                    </div>
-                    <div className={styles.content2} onClick={() => {}}>
-                      <RiArrowRightSLine />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              {item.tipo === "aluno" && (
-                <div className={styles.box}>
-                  <div className={styles.header}>
-                    <div className={styles.icon}>
-                      <RiGroupLine />
-                    </div>
-                    <h6>Orientador</h6>
-                  </div>
-                  <div className={styles.list}>
-                    <div className={styles.itemList}>
-                      <div className={styles.content1}>
-                        <p>
-                          {item.inscricao?.participacoes?.find(
-                            (p) => p.tipo === "orientador"
-                          )?.user?.nome || "Nenhum orientador encontrado"}
-                        </p>
+                    <div className={`${styles.box} mt-2`}>
+                      <div className={styles.header}>
+                        <div className={styles.icon}>
+                          <RiHistoryLine />{" "}
+                          {/* Adicione este ícone aos seus imports */}
+                        </div>
+                        <h6>Histórico Completo</h6>
                       </div>
-                      <div className={styles.content2} onClick={() => {}}>
-                        <RiArrowRightSLine />
+                      <div className="p-2">
+                        <LinhaTempo
+                          className={styles.linhaTempo}
+                          data={mergeTimelineData}
+                        />
                       </div>
                     </div>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </>

@@ -434,7 +434,10 @@ const Resultado = ({}) => {
       </Dialog>
       <Modal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          getParticipacoes();
+        }}
         itemName="Detalhes"
       >
         {selectedRowData && (
@@ -442,7 +445,10 @@ const Resultado = ({}) => {
             tenant={params.tenant}
             participacaoId={selectedRowData?.id}
             onClose={() => setIsModalOpen(false)}
-            onSuccess={getParticipacoes}
+            onSuccess={
+              () => {}
+              //getParticipacoes
+            }
           />
         )}
       </Modal>
