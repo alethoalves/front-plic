@@ -51,7 +51,8 @@
     .btnSubmit{
         
         display: flex;
-        
+        flex-direction: column;
+        gap: $gap-1;
     }
     
 }

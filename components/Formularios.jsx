@@ -1,6 +1,6 @@
 "use client";
 //HOOKS
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 
 //ESTILO E ÍCONES
@@ -24,7 +24,7 @@ import { deleteFormulario, getFormularios } from "@/app/api/client/formulario";
 import { getEditais, updateEdital } from "@/app/api/client/edital";
 import Formulario from "./Formulario";
 
-const Formularios = ({ params }) => {
+const Formularios = ({ params, atividades = false }) => {
   //ESTADOS
   //de busca,loading ou erro
   const [searchTerm, setSearchTerm] = useState("");
@@ -47,6 +47,7 @@ const Formularios = ({ params }) => {
     setFormularioEmFoco(formulario);
     setShowFormularioModal(true);
   };
+
   //BUSCA DE DADOS AO RENDERIZAR O COMPONENTE
   useEffect(() => {
     const fetchData = async () => {
@@ -108,7 +109,15 @@ const Formularios = ({ params }) => {
       <div className={`${styles.icon} mb-2`}>
         <RiEditLine />
       </div>
-      <h4>{formularioToEdit ? "Editar formulário" : "Novo formulário"}</h4>
+      <h4>
+        {formularioToEdit
+          ? atividades
+            ? "Editar formulário de atividade"
+            : "Editar formulário"
+          : atividades
+          ? "Nova formulário de atividade"
+          : "Novo formulário"}
+      </h4>
       <p>
         {formularioToEdit
           ? "Edite os dados do formulário."
@@ -119,6 +128,7 @@ const Formularios = ({ params }) => {
         initialData={formularioToEdit}
         onClose={closeModalAndResetData}
         onSuccess={handleCreateOrEditSuccess}
+        isAtividades={atividades}
       />
     </Modal>
   );
@@ -134,12 +144,25 @@ const Formularios = ({ params }) => {
     />
   );
 
-  // Função para filtrar os formulários
-  const filteredFormularios = searchTerm
-    ? formularios.filter((formulario) =>
-        formulario.titulo.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : formularios;
+  // Função de filtragem principal
+  const getFilteredFormularios = useCallback(() => {
+    if (atividades) {
+      return formularios.filter((f) => f.tipo === "atividade");
+    } else {
+      return formularios.filter((f) => f.tipo !== "atividade");
+    }
+  }, [formularios, atividades]);
+
+  // Lista final com busca aplicada
+  const filteredFormularios = useMemo(() => {
+    const baseList = getFilteredFormularios();
+
+    return searchTerm
+      ? baseList.filter((formulario) =>
+          formulario.titulo.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      : baseList;
+  }, [searchTerm, getFilteredFormularios]);
   const handleLinkChange = async (tenantSlug, editalId, body) => {
     try {
       await updateEdital(tenantSlug, editalId, body); // 1. grava no backend
@@ -176,8 +199,12 @@ const Formularios = ({ params }) => {
       <main>
         <Header
           className="mb-3"
-          subtitulo="Formulários"
-          descricao="Crie, edite e vincule formulários aos seus editais."
+          subtitulo={atividades ? "Formulários de Atividades" : "Formulários"}
+          descricao={
+            atividades
+              ? "Gerencie os formulários de atividades do sistema"
+              : "Crie, edite e vincule formulários aos seus editais."
+          }
         />
 
         <div className={`${styles.content}`}>
@@ -188,7 +215,7 @@ const Formularios = ({ params }) => {
             <div className={`${styles.icon}`}>
               <RiAddCircleLine />
             </div>
-            <p>Criar novo</p>
+            <p>{atividades ? "Novo formulário" : "Criar novo"}</p>
           </div>
 
           {loading ? (
@@ -225,7 +252,13 @@ const Formularios = ({ params }) => {
           )}
           {!filteredFormularios[0] && (
             <div className={styles.card}>
-              <NoData />
+              <NoData
+                description={
+                  atividades
+                    ? "Nenhum formulário de atividade encontrado"
+                    : "Nenhum formulário encontrado"
+                }
+              />
             </div>
           )}
         </div>

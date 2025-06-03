@@ -35,6 +35,7 @@
     }
 }
 .actions{
+    margin-top: $gap-1;
     display: flex;
     justify-content: space-between;
     @include responsive(xs){

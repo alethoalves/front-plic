@@ -24,17 +24,16 @@ export const createAtividade = async (tenantSlug, editalId, atividadeData) => {
     }
   };
   
-  export const getAtividades = async (tenantSlug, editalId) => {
+  export const getAtividadesByAno = async (tenantSlug, ano) => {
     try {
       const headers = getAuthHeadersClient();
       if (!headers) {
         return false;
       }
       const response = await req.get(
-        `/private/${tenantSlug}/${editalId}/atividades`,
+        `/private/${tenantSlug}/${ano}/getAtividadesByAno`,
         {
           headers,
-          params: { editalId },
         }
       );
       return response.data.atividades;
@@ -43,7 +42,24 @@ export const createAtividade = async (tenantSlug, editalId, atividadeData) => {
       throw error;
     }
   };
-  
+  export const getRegistrosAtividadesByAno = async (tenantSlug, ano) => {
+    try {
+      const headers = getAuthHeadersClient();
+      if (!headers) {
+        return false;
+      }
+      const response = await req.get(
+        `/private/${tenantSlug}/${ano}/getRegistrosAtividadesByAno`,
+        {
+          headers,
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao obter Atividades:", error);
+      throw error;
+    }
+  };
   export const getAtividade = async (tenantSlug, editalId, id) => {
     try {
       const headers = getAuthHeadersClient();

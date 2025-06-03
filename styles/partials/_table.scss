@@ -4,7 +4,9 @@
 .p-dataview-emptymessage{
 padding: 0 $gap-2 $gap-2 $gap-2;
 }
-
+.p-column-title{
+    width: 100%;
+}
 .p-datatable {
     .p-tabmenu{
         padding:0 $gap-2;

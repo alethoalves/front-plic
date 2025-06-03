@@ -19,7 +19,13 @@ import {
   updateFormulario,
 } from "@/app/api/client/formulario";
 
-const FormNewFormulario = ({ tenantSlug, initialData, onClose, onSuccess }) => {
+const FormNewFormulario = ({
+  tenantSlug,
+  initialData,
+  onClose,
+  onSuccess,
+  isAtividades = false,
+}) => {
   //ESTADOS
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -39,8 +45,11 @@ const FormNewFormulario = ({ tenantSlug, initialData, onClose, onSuccess }) => {
       setValue("tipo", initialData.tipo);
     } else {
       reset();
+      if (isAtividades) {
+        setValue("tipo", "atividade");
+      }
     }
-  }, [initialData, setValue, reset]);
+  }, [initialData, setValue, reset, isAtividades]);
 
   const handleFormSubmit = async (data) => {
     setLoading(true);
@@ -62,7 +71,20 @@ const FormNewFormulario = ({ tenantSlug, initialData, onClose, onSuccess }) => {
       setLoading(false);
     }
   };
+  // Opções condicionais para o seletor de tipo
+  const tipoOptions = [
+    { label: "Selecione uma opção", value: "" },
+    { label: "orientador", value: "orientador" },
+    { label: "aluno", value: "aluno" },
+    { label: "projeto", value: "projeto" },
+    { label: "plano de trabalho", value: "planoDeTrabalho" },
+    // Removida opção "atividade" aqui (será tratada condicionalmente)
+  ];
 
+  // Adiciona opção de atividade apenas se NÃO estiver no contexto de atividades
+  if (!isAtividades) {
+    tipoOptions.push({ label: "atividade", value: "atividade" });
+  }
   return (
     <form
       className={`${styles.formulario}`}
@@ -87,23 +109,24 @@ const FormNewFormulario = ({ tenantSlug, initialData, onClose, onSuccess }) => {
           placeholder="Digite aqui o título do formulário"
           disabled={loading}
         />
-        {!initialData && (
-          <Select
-            className="mb-2"
-            control={control}
-            name="tipo"
-            label="Tipo de formulário"
-            options={[
-              { label: "Selecione uma opção", value: "" },
-              { label: "orientador", value: "orientador" },
-              { label: "aluno", value: "aluno" },
-              { label: "projeto", value: "projeto" },
-              { label: "plano de trabalho", value: "planoDeTrabalho" },
-              { label: "atividade", value: "atividade" },
-              { label: "avaliacao", value: "avaliacao" },
-            ]}
-            disabled={loading}
-          />
+        {!initialData &&
+          !isAtividades && ( // Só mostra se não for edição e não for contexto de atividades
+            <Select
+              className="mb-2"
+              control={control}
+              name="tipo"
+              label="Tipo de formulário"
+              options={tipoOptions}
+              disabled={loading}
+            />
+          )}
+
+        {/* Exibe campo fixo para contexto de atividades */}
+        {isAtividades && !initialData && (
+          <div className="mb-2">
+            <label className={styles.label}>Tipo de formulário</label>
+            <div className={styles.fixedValue}>atividade</div>
+          </div>
         )}
       </div>
       <div className={`${styles.btnSubmit}`}>
