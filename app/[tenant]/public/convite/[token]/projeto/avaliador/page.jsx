@@ -5,7 +5,12 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Input from "@/components/Input";
-import { RiAlertLine, RiFlaskLine, RiIdCardLine } from "@remixicon/react";
+import {
+  RiAlertLine,
+  RiAtLine,
+  RiFlaskLine,
+  RiIdCardLine,
+} from "@remixicon/react";
 import Button from "@/components/Button";
 import { getAreas } from "@/app/api/client/area";
 import { conviteAvaliadorSchema } from "@/lib/zodSchemas/conviteAvaliadorSchema";
@@ -71,7 +76,9 @@ const Page = ({ params }) => {
       const aceite = await aceitarConviteAvaliador(
         params.token, // token na URL
         data.cpf, // CPF digitado
-        areasSelecionadas // array com ids das áreas escolhidas
+
+        areasSelecionadas, // array com ids das áreas escolhidas
+        data.email
       );
 
       if (aceite.status === "success") {
@@ -235,6 +242,17 @@ const Page = ({ params }) => {
                             inputType="text" // text, password
                             placeholder="Digite seu CPF"
                             autoFocus
+                            disabled={loading}
+                          />
+                        </div>
+                        <div className={`${styles.formInput} mt-2`}>
+                          <Input
+                            control={control}
+                            name="email"
+                            label="Email"
+                            icon={RiAtLine}
+                            inputType="email" // text, password
+                            placeholder="Digite seu email"
                             disabled={loading}
                           />
                         </div>

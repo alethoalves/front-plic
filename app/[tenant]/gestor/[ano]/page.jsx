@@ -12,6 +12,8 @@ import Eventos from "@/components/dashboards/Eventos";
 import { relatorioInscricoes } from "@/app/api/client/relatorios";
 import { useState } from "react";
 import Editais from "@/components/dashboards/Editais";
+import UnderConstruction from "@/components/UnderConstruction";
+import { Card } from "primereact/card";
 
 const Page = ({ params }) => {
   const [isDownloading, setIsDownloading] = useState(false);
@@ -118,31 +120,42 @@ const Page = ({ params }) => {
   };
 
   return (
-    <main className={styles.main}>
-      <div className={`${styles.dashboard} ${styles.dashboardA}`}>
-        <Editais />
-      </div>
-      <div className={`${styles.dashboard} ${styles.dashboardB}`}>
-        <Participacoes tenantSlug={params.tenant} />
-      </div>
-      {/* Seção de gráficos e dados */}
+    <>
+      <Card className="p-3 w-100">
+        <UnderConstruction />
+      </Card>
       {false && (
-        <>
-          <div className={`${styles.dashboard} ${styles.dashboardA}`}>
-            <Inscricoes tenantSlug={params.tenant} />
-          </div>
-          <div className={`${styles.dashboard} ${styles.dashboardB}`}>
-            <Participacoes tenantSlug={params.tenant} />
-          </div>
-          <div className={`${styles.dashboard} ${styles.dashboardC}`}>
-            <Atividades tenantSlug={params.tenant} />
-          </div>
-          <div className={`${styles.dashboard} ${styles.dashboardD}`}>
-            <Eventos tenantSlug={params.tenant} />
-          </div>
-        </>
+        <main className={styles.main}>
+          {false && (
+            <>
+              <div className={`${styles.dashboard} ${styles.dashboardA}`}>
+                <Editais />
+              </div>
+              <div className={`${styles.dashboard} ${styles.dashboardB}`}>
+                <Participacoes tenantSlug={params.tenant} />
+              </div>
+            </>
+          )}
+          {/* Seção de gráficos e dados */}
+          {false && (
+            <>
+              <div className={`${styles.dashboard} ${styles.dashboardA}`}>
+                <Inscricoes tenantSlug={params.tenant} />
+              </div>
+              <div className={`${styles.dashboard} ${styles.dashboardB}`}>
+                <Participacoes tenantSlug={params.tenant} />
+              </div>
+              <div className={`${styles.dashboard} ${styles.dashboardC}`}>
+                <Atividades tenantSlug={params.tenant} />
+              </div>
+              <div className={`${styles.dashboard} ${styles.dashboardD}`}>
+                <Eventos tenantSlug={params.tenant} />
+              </div>
+            </>
+          )}
+        </main>
       )}
-    </main>
+    </>
   );
 };
 

@@ -210,7 +210,7 @@ const Page = ({ params }) => {
                           {extractFileName(item.value)}
                         </a>
                       ) : (
-                        <p>{item.value}</p>
+                        <p style={{ whiteSpace: "pre-wrap" }}>{item.value}</p>
                       )}
                     </div>
                   </div>
@@ -264,7 +264,7 @@ const Page = ({ params }) => {
                                 handleNotaSelecionada(item.id, valor)
                               }
                             >
-                              <p>{valor}</p>
+                              <p style={{ whiteSpace: "pre-wrap" }}>{valor}</p>
                             </div>
                           ))}
                         </div>

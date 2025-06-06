@@ -102,7 +102,7 @@ const SideNav = ({ slug, anoSelected, menuType }) => {
             path: "/", // Disponível em todas as rotas
           });
           // Redireciona para a página do gestor
-          router.push(`/${slug}/gestor/${edital.ano}`);
+          router.push(`/${slug}/gestor/${edital.ano}/inscricoes`);
         }}
       />
     </Modal>

@@ -213,3 +213,34 @@
     }
 }
 
+.listaEditais {
+    margin-top: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .editaisTitle {
+    width: 100%;
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+  }
+  
+  .editalBadge {
+    background: #f0f0f0;
+    padding: 0.3rem 0.6rem;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    
+    .deleteIcon {
+      cursor: pointer;
+      color: #999;
+      &:hover {
+        color: #ff0000;
+      }
+    }
+  }

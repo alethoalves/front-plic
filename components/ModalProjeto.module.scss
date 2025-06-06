@@ -190,16 +190,20 @@
         border-radius: $gap-1;
         padding: $gap-2;
         position: relative;
-        padding-top: $gap-3;
+        //padding-top: $gap-3;
+        p:not(:first-child){
+            margin-top: $gap-1;
+        }
         .label{
-            position: absolute;
+            //position: absolute;
             border: 1px solid $gray-50;
-            top: -9px;
+            //top: -9px;
             font-size: 12px;
             padding: 2px $gap-2;
             background-color: $white-darken;
-            border-radius: 50px;
+            border-radius: $gap-1;
             color: $primary-darken;
+            margin-bottom: $gap-1;
             
         }
        

@@ -167,7 +167,7 @@ const VerProjeto = ({
                         {extractFileName(item.value)}
                       </a>
                     ) : (
-                      <p>{item.value}</p>
+                      <p style={{ whiteSpace: "pre-wrap" }}>{item.value}</p>
                     )}
                   </div>
                 </div>

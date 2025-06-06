@@ -74,15 +74,15 @@ const FormNewFormulario = ({
   // Opções condicionais para o seletor de tipo
   const tipoOptions = [
     { label: "Selecione uma opção", value: "" },
-    { label: "orientador", value: "orientador" },
-    { label: "aluno", value: "aluno" },
+    //{ label: "orientador", value: "orientador" },
+    //{ label: "aluno", value: "aluno" },
     { label: "projeto", value: "projeto" },
     { label: "plano de trabalho", value: "planoDeTrabalho" },
     // Removida opção "atividade" aqui (será tratada condicionalmente)
   ];
 
   // Adiciona opção de atividade apenas se NÃO estiver no contexto de atividades
-  if (!isAtividades) {
+  if (isAtividades) {
     tipoOptions.push({ label: "atividade", value: "atividade" });
   }
   return (
@@ -100,15 +100,17 @@ const FormNewFormulario = ({
           placeholder="Digite aqui o título do formulário"
           disabled={loading}
         />
-        <Input
-          className="mb-2"
-          control={control}
-          name="descricao"
-          label="Descrição do formulário"
-          inputType="text"
-          placeholder="Digite aqui o título do formulário"
-          disabled={loading}
-        />
+        {false && (
+          <Input
+            className="mb-2"
+            control={control}
+            name="descricao"
+            label="Descrição do formulário"
+            inputType="text"
+            placeholder="Digite aqui o título do formulário"
+            disabled={loading}
+          />
+        )}
         {!initialData &&
           !isAtividades && ( // Só mostra se não for edição e não for contexto de atividades
             <Select

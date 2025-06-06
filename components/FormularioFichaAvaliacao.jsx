@@ -334,7 +334,7 @@ export default function FormularioFichaAvaliacao({ params }) {
           <div key={idx} className={styles.criterioItem}>
             <div className={styles.criterioHeader}>
               <div className={styles.ordemBadge}>
-                <p>{crit.ordem}</p>
+                <p>{idx + 1}</p>
               </div>
               <button
                 className={styles.removeButton}
@@ -433,7 +433,7 @@ export default function FormularioFichaAvaliacao({ params }) {
             type="button"
             disabled={saving} // Desabilita o botão durante o salvamento
           >
-            <p>Cancelar</p>
+            Cancelar
           </Button>
           <Button
             className="btn-primary"
@@ -500,6 +500,7 @@ export default function FormularioFichaAvaliacao({ params }) {
                     formulario={form}
                     campoEdital={campo} // Passa o campo específico para o Card
                     isGlobal={isGlobal}
+                    onView={() => openEdit(form)}
                   />
                 </div>
               );

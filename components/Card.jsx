@@ -47,7 +47,6 @@ const Card = ({
 
   const [selectedIds, setSelectedIds] = useState(initial);
   const [saving, setSaving] = useState(false);
-
   useEffect(() => {
     if (global || !campo) return;
     const fresh = editais
@@ -115,14 +114,16 @@ const Card = ({
       {/* ações */}
       <div className={styles.actions}>
         <div className={`${styles.group1} mr-1`}>
-          <Button
-            icon={RiLogoutBoxRLine}
-            className="btn-primary"
-            type="button"
-            onClick={onView}
-          >
-            Acessar
-          </Button>
+          {formulario?.objeto !== "PROJETO" && (
+            <Button
+              icon={RiLogoutBoxRLine}
+              className="btn-primary"
+              type="button"
+              onClick={onView}
+            >
+              Acessar
+            </Button>
+          )}
         </div>
         <div className={styles.group2}>
           <Button

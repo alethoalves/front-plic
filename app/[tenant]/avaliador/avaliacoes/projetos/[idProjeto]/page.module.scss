@@ -14,7 +14,7 @@
     }
 }
 .navigationButtons{
-    margin-top: $gap-2;
+    margin-top: $gap-1;
     display: flex;
     gap: $gap-2;
     button{
@@ -39,29 +39,12 @@
         border-radius: $gap-1;
     }
 }
-.card{
-    margin-top: $gap-3;
-    border: 1px solid $warning-dark;
-    border-radius: $gap-1;
-    padding: $gap-2;
-    position: relative;
-    padding-top: $gap-3;
-    .label{
-        position: absolute;
-        border: 1px solid $gray-50;
-        top: -9px;
-        font-size: 12px;
-        padding: 2px $gap-2;
-        background-color: $warning-lighten;
-        border-radius: 50px;
-        color: $warning-darken;
-        
-    }
-   
-}
+
 
 .fichaDeAvaliacao{
-    
+    h5{
+        color: $warning-darken;
+    }
     .quesitos{
         margin-top: $gap-2; 
     }
@@ -168,6 +151,30 @@
     }
 }
 
+.card {
+    margin-top: $gap-3;
+    border: 1px solid $warning-dark;
+    border-top-left-radius: $gap-1;
+      border-top-right-radius:$gap-1;
+    .label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: $gap-2 $gap-2;
+      background-color: $warning-dark;
+      border-top-left-radius: 7px;
+      border-top-right-radius: 7px;
+      color: $warning-lighten;
+      cursor: pointer; // já garantimos pointer no React, mas reforçamos aqui
+    }
+    .value {
+      padding: $gap-2;
+      // opcional: adicione uma transição suave
+      transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+      overflow: hidden;
+    }
+  }
+  
 
   
 

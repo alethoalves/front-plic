@@ -74,13 +74,14 @@ export const toggleStatusAvaliadorAno = async (payload) => {
 export const aceitarConviteAvaliador = async (
   token,
   cpf,
-  areasSelecionadas
+  areasSelecionadas,
+  email
 ) => {
   try {
     // rota pública não precisa de cabeçalhos de autenticação
     const { data } = await req.post(
       `/public/aceitar-convite/avaliador/${token}`,
-      { cpf, areasSelecionadas } // body
+      { cpf, areasSelecionadas,email } // body
     );
 
     return data;                // { status: 'success', message, … }
@@ -105,23 +106,6 @@ export const getAvaliadoresComProjetosPendentes = async (tenant, ano) => {
     return response.data;
   } catch (error) {
     console.error("Erro ao buscar avaliadores com projetos pendentes:", error);
-    throw error;
-  }
-};
-export const enviarNotificacaoAvaliador = async (tenantSlug, payload) => {
-  try {
-    const headers = getAuthHeadersClient();
-    if (!headers) throw new Error("Headers de autenticação ausentes");
-
-    const { data } = await req.post(
-      `/private/${tenantSlug}/avaliador/notificar-avaliadores`,
-      payload,
-      { headers }
-    );
-
-    return data; // { status: 'success', message: '...', resultado: [...] }
-  } catch (error) {
-    console.error("Erro ao enviar notificações para avaliadores:", error);
     throw error;
   }
 };

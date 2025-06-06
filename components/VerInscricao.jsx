@@ -167,7 +167,9 @@ const VerInscricao = ({ inscricaoSelected, tenant, setErrors, onClose }) => {
                                         {extractFileName(item.value)}
                                       </a>
                                     ) : (
-                                      <p>{item.value}</p>
+                                      <p style={{ whiteSpace: "pre-wrap" }}>
+                                        {item.value}
+                                      </p>
                                     )}
                                   </div>
                                 </div>
@@ -267,7 +269,13 @@ const VerInscricao = ({ inscricaoSelected, tenant, setErrors, onClose }) => {
                                                 {extractFileName(item.value)}
                                               </a>
                                             ) : (
-                                              <p>{item.value}</p>
+                                              <p
+                                                style={{
+                                                  whiteSpace: "pre-wrap",
+                                                }}
+                                              >
+                                                {item.value}
+                                              </p>
                                             )}
                                           </div>
                                         </div>

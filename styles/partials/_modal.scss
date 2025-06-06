@@ -5,6 +5,9 @@
     padding: 0 16px;
 }
 .p-dialog-footer{
+    display: flex;
+    justify-content: end;
+    gap: $gap-2;
     div{
         button{
             &:not(:last-child){

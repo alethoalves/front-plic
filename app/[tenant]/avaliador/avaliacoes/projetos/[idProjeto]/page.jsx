@@ -26,7 +26,15 @@ const Page = ({ params }) => {
   const [avaliacoesPlano, setAvaliacoesPlano] = useState({});
   const [currentStep, setCurrentStep] = useState(0); // 0 = projeto, 1+ = planos
   const [planosCount, setPlanosCount] = useState(0);
+  const [expandedCards, setExpandedCards] = useState({});
 
+  // Função para alternar (toggle) a expansão de um card
+  const toggleCard = (chave) => {
+    setExpandedCards((prev) => ({
+      ...prev,
+      [chave]: !prev[chave],
+    }));
+  };
   const fetchData = async () => {
     try {
       const data = await getProjetoParaAvaliar(params.tenant, params.idProjeto);
@@ -251,22 +259,42 @@ const Page = ({ params }) => {
   const renderProjetoStep = () => (
     <div className={styles.navContent}>
       <div className={styles.projeto}>
+        {/*
+          === CARD “TÍTULO” ===
+          Chave fixa: "titulo"
+        */}
         <div className={styles.card}>
-          <h6 className={styles.label}>Título</h6>
+          <h6 className={styles.label} style={{ cursor: "pointer" }}>
+            Título
+          </h6>
           <div className={styles.value}>
             <p>{inscricaoProjeto?.projeto?.titulo}</p>
           </div>
         </div>
+
+        {/*
+          === CARD “ÁREA” ===
+          Chave fixa: "area"
+        */}
         <div className={styles.card}>
-          <h6 className={styles.label}>Área</h6>
+          <h6 className={styles.label} style={{ cursor: "pointer" }}>
+            Área
+          </h6>
           <div className={styles.value}>
             <p>{inscricaoProjeto?.projeto?.area.area}</p>
           </div>
         </div>
+
+        {/*
+          === CARDS DE RESPOSTAS DINÂMICAS ===
+          Cada item tem `item.id`; usaremos chave `"resposta-${item.id}"`
+        */}
         <div className={`${styles.conteudo}`}>
           {inscricaoProjeto?.projeto?.Resposta?.sort(
             (a, b) => a.campo.ordem - b.campo.ordem
           ).map((item) => {
+            const chaveResposta = `resposta-${item.id}`;
+
             const extractFileName = (url) => {
               const parts = url.split("/");
               const lastPart = parts[parts.length - 1];
@@ -274,29 +302,48 @@ const Page = ({ params }) => {
             };
 
             return (
-              <div className={`${styles.card}`} key={item.id}>
-                <h6 className={`${styles.label}`}>{item.campo.label}</h6>
-                <div className={`${styles.value}`}>
-                  {["link", "arquivo"].includes(item.campo.tipo) ? (
-                    <a
-                      href={item.value}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={styles.link}
-                    >
-                      {item.campo.tipo === "arquivo" && "📁 "}
-                      {item.campo.tipo === "link" && "🔗 "}
-                      {extractFileName(item.value)}
-                    </a>
-                  ) : (
-                    <p>{item.value}</p>
-                  )}
-                </div>
+              <div className={styles.card} key={item.id}>
+                <h6
+                  className={styles.label}
+                  onClick={() => toggleCard(chaveResposta)}
+                  style={{ cursor: "pointer" }}
+                >
+                  {item.campo.label}{" "}
+                  <span>{expandedCards[chaveResposta] ? "−" : "+"}</span>
+                </h6>
+
+                {/*
+                    Só renderiza .value se expandedCards[chaveResposta] for true
+                  */}
+                {expandedCards[chaveResposta] && (
+                  <div className={styles.value}>
+                    {["link", "arquivo"].includes(item.campo.tipo) ? (
+                      <a
+                        href={item.value}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.link}
+                      >
+                        {item.campo.tipo === "arquivo" && "📁 "}
+                        {item.campo.tipo === "link" && "🔗 "}
+                        {extractFileName(item.value)}
+                      </a>
+                    ) : (
+                      // note o estilo para preservar quebras de linha
+                      <p style={{ whiteSpace: "pre-wrap" }}>{item.value}</p>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
       </div>
+
+      {/*
+        === FICHA DE AVALIAÇÃO DO PROJETO ===
+        (Permanece idêntica à sua lógica original, pois não estamos colapsando esses blocos)
+      */}
       <div className={styles.fichaDeAvaliacao}>
         <h5>Ficha de Avaliação</h5>
 
@@ -337,7 +384,7 @@ const Page = ({ params }) => {
                           }`}
                           onClick={() => handleNotaSelecionada(item.id, valor)}
                         >
-                          <p>{valor}</p>
+                          <p style={{ whiteSpace: "pre-wrap" }}>{valor}</p>
                         </div>
                       ))}
                     </div>
@@ -348,7 +395,7 @@ const Page = ({ params }) => {
 
             <div className={`${styles.item} mt-2`}>
               <div className={styles.label}>
-                <h6>Feedback/Comentário ao aluno (OPCIONAL)</h6>
+                <h6>Feedback/Comentário ao aluno</h6>
               </div>
               <textarea
                 type="text"
@@ -371,9 +418,16 @@ const Page = ({ params }) => {
     const plano = inscricaoProjeto?.projeto?.planosDeTrabalho[currentStep - 1];
     const planoNotas = avaliacoesPlano[plano.id]?.selectedNotas || {};
 
+    // Vamos usar a chave do próprio plano para colapsar todo o bloco de “respostas”
+    const chavePlanoConteudo = `plano-${plano.id}`;
+
     return (
       <div className={styles.navContent} key={plano.id}>
         <div className={styles.projeto}>
+          {/*
+            Aqui deixamos “Título do Plano” e “Área” sempre visíveis ou podemos dar toggle, conforme
+            necessidade. Abaixo mostrarei como manter o conteúdo de respostas do plano colapsado:
+          */}
           <div className={styles.card}>
             <h6 className={styles.label}>Título do Plano</h6>
             <div className={styles.value}>
@@ -387,41 +441,58 @@ const Page = ({ params }) => {
             </div>
           </div>
 
-          <div className={styles.conteudo}>
-            {plano.Resposta?.length > 0 ? (
-              plano.Resposta.sort((a, b) => a.campo.ordem - b.campo.ordem).map(
-                (item) => {
-                  const extractFileName = (url) => {
-                    const parts = url.split("/");
-                    const lastPart = parts[parts.length - 1];
-                    return lastPart.split("_")[1] || lastPart;
-                  };
+          {/*
+            ‼️ VAMOS “TOGGLEAR” o conteúdo de respostas do plano. 
+            Esse bloco só aparece se expandedCards[chavePlanoConteudo] === true.
+          */}
+          <div className={styles.card}>
+            <h6
+              className={styles.label}
+              onClick={() => toggleCard(chavePlanoConteudo)}
+              style={{ cursor: "pointer" }}
+            >
+              Respostas do Plano{" "}
+              <span>{expandedCards[chavePlanoConteudo] ? "−" : "+"}</span>
+            </h6>
 
-                  return (
-                    <div className={styles.card} key={item.id}>
-                      <h6 className={styles.label}>{item.campo.label}</h6>
-                      <div className={styles.value}>
-                        {["link", "arquivo"].includes(item.campo.tipo) ? (
-                          <a
-                            href={item.value}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={styles.link}
-                          >
-                            {item.campo.tipo === "arquivo" && "📁 "}
-                            {item.campo.tipo === "link" && "🔗 "}
-                            {extractFileName(item.value)}
-                          </a>
-                        ) : (
-                          <p>{item.value}</p>
-                        )}
+            {expandedCards[chavePlanoConteudo] && (
+              <div className={styles.value}>
+                {plano.Resposta?.length > 0 ? (
+                  plano.Resposta.sort(
+                    (a, b) => a.campo.ordem - b.campo.ordem
+                  ).map((item) => {
+                    const extractFileName = (url) => {
+                      const parts = url.split("/");
+                      const lastPart = parts[parts.length - 1];
+                      return lastPart.split("_")[1] || lastPart;
+                    };
+
+                    return (
+                      <div className={styles.card} key={item.id}>
+                        <h6 className={styles.label}>{item.campo.label}</h6>
+                        <div className={styles.value}>
+                          {["link", "arquivo"].includes(item.campo.tipo) ? (
+                            <a
+                              href={item.value}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={styles.link}
+                            >
+                              {item.campo.tipo === "arquivo" && "📁 "}
+                              {item.campo.tipo === "link" && "🔗 "}
+                              {extractFileName(item.value)}
+                            </a>
+                          ) : (
+                            <p>{item.value}</p>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  );
-                }
-              )
-            ) : (
-              <p>Nenhuma resposta preenchida.</p>
+                    );
+                  })
+                ) : (
+                  <p>Nenhuma resposta preenchida.</p>
+                )}
+              </div>
             )}
           </div>
         </div>
@@ -508,7 +579,11 @@ const Page = ({ params }) => {
   return (
     <>
       {currentStep === 0 ? renderProjetoStep() : renderPlanoStep()}
-
+      {error.geral && (
+        <div className={`${styles.error} `}>
+          <p>{error.geral}</p>
+        </div>
+      )}
       <div className={styles.navigationButtons}>
         {currentStep > 0 && (
           <Button
@@ -533,7 +608,7 @@ const Page = ({ params }) => {
 
         {currentStep === planosCount && (
           <Button
-            className="button btn-warning"
+            className="button btn-warning mb-2"
             onClick={handleTerminarAvaliacao}
             icon={RiQuillPenLine}
             disabled={loading}
@@ -542,12 +617,6 @@ const Page = ({ params }) => {
           </Button>
         )}
       </div>
-
-      {error.geral && (
-        <div className={`${styles.error} `}>
-          <p>{error.geral}</p>
-        </div>
-      )}
     </>
   );
 };
