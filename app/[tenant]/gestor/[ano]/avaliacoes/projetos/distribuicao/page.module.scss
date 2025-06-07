@@ -162,9 +162,9 @@
             transition: ease .3s;
         }
             &.selected{
-                background-color: $primary-normal;
+                background-color: $white-darken;
                 p,strong, h6{
-                    color: $white-light;
+                    color: $primary-darken;
                 }
                 .arrowRight{
                     &:hover{
@@ -213,9 +213,9 @@
                 font-weight: 600;
             }
             &:hover, .selected{
-              background-color: $primary-normal;
+              background-color: $white-darken;
               p,strong, h6{
-                  color: $white-light;
+                  color: $primary-darken;
               }
               .arrowRight{
                   &:hover{
@@ -250,7 +250,14 @@
     }
 }
 
-
+.filtrosContainer {
+  padding: 0.5rem;
+  background: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
 .deleteIcon {
     cursor: pointer;
     color: #ff4d4f;
@@ -315,4 +322,29 @@
             font-size: 10px;
         }
     }
+}
+.modalActions{
+  margin-top: $gap-2;
+  display: flex;
+  gap: $gap-2;
+}
+.projetoHeader {
+  padding: 0 1rem;
+  
+  h6 {
+    word-break: break-word;
+  }
+}
+
+.associarButton {
+  width: 100%;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.projetosInfo {
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 0.2rem;
 }

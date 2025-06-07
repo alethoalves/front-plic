@@ -6,6 +6,13 @@
     width: 24px;
     color: $primary-normal;
 }
+.custombar1,.custombar2{
+    width: 100%;
+    height: 70vh;
+    @include responsive(xs){
+        height: 100%;
+    }
+}
 .navContent{
     display: flex;
     gap: $gap-2;
@@ -26,9 +33,6 @@
     @include responsive(xs){
         width: 100%;
     }
-    border: 1px dashed $warning-dark;
-    border-radius: 6px;
-    padding: $gap-1;
 }
 .error{
     margin-top: $gap-1;
@@ -43,7 +47,7 @@
 
 .fichaDeAvaliacao{
     h5{
-        color: $warning-darken;
+        color: $primary-dark;
     }
     .quesitos{
         margin-top: $gap-2; 
@@ -65,8 +69,8 @@
         border-radius: $gap-1;
         padding: $gap-2;
         &:focus {
-            border-color: $warning-dark; /* Cor da borda ao selecionar */
-            outline: 1px solid $warning-dark; /* Remove a borda de destaque padrão do navegador */
+            border-color: $primary-dark; /* Cor da borda ao selecionar */
+            outline: 1px solid $primary-dark; /* Remove a borda de destaque padrão do navegador */
         }
     }
     .premio{
@@ -80,12 +84,12 @@
             margin-top: $gap-1;
             cursor: pointer;
             &.selectedPremio{
-                border: 1px solid $warning-dark;
+                border: 1px solid $primary-dark;
                 
                 svg{
-                    color: $warning-lighten;
-                    border-right: 1px solid $warning-dark;
-                    background-color: $warning-dark;
+                    color: $primary-lighten;
+                    border-right: 1px solid $primary-dark;
+                    background-color: $primary-dark;
                 }
             }
             p{
@@ -97,7 +101,7 @@
                 border-top-left-radius: 7px;
                 border-bottom-left-radius: 7px;
                 padding: 6px;
-                color: $warning-dark;
+                color: $primary-dark;
                 transition: ease .3s;
                 border-right: 1px solid $gray-50;
                 
@@ -105,9 +109,9 @@
             transition: ease .3s;
             &:hover{
                 transform: scale(1.02);
-                border: 1px solid $warning-dark;
+                border: 1px solid $primary-dark;
                 svg{
-                    border-right: 1px solid $warning-dark;
+                    border-right: 1px solid $primary-dark;
                 }
             }
         }
@@ -121,7 +125,7 @@
             margin: $gap-1 0;
         }
         .value{
-            border: 1px solid $warning-dark;
+            border: 1px solid $primary-dark;
             width: 50px;
             height: 50px;
             margin-left: 4px;
@@ -138,13 +142,13 @@
             transition: ease .3s;
             cursor: pointer;
             &:hover{
-                background-color: $warning-lighten;
+                background-color: $white-darken;
                 transform: scale(1.05);
             }
             &.selected{
-                background-color: $warning-dark;
+                background-color: $primary-dark;
                 p{
-                    color: $warning-lighten;
+                    color: $white-light;
                 }
             }
         }
@@ -153,18 +157,15 @@
 
 .card {
     margin-top: $gap-3;
-    border: 1px solid $warning-dark;
-    border-top-left-radius: $gap-1;
-      border-top-right-radius:$gap-1;
     .label {
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: $gap-2 $gap-2;
-      background-color: $warning-dark;
+      background-color: $primary-dark;
       border-top-left-radius: 7px;
       border-top-right-radius: 7px;
-      color: $warning-lighten;
+      color: $primary-lighten;
       cursor: pointer; // já garantimos pointer no React, mas reforçamos aqui
     }
     .value {

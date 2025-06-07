@@ -18,6 +18,9 @@ import calcularTempoDesdeAtribuicao from "@/lib/calcularTempoDesdeAtribuicao";
 import Modal from "@/components/Modal";
 import FormularioFichaAvaliacao from "@/components/FormularioFichaAvaliacao";
 import NotificarAvaliador from "@/components/NotificarAvaliador";
+import Button from "@/components/Button";
+import { InputText } from "primereact/inputtext";
+import { Dropdown } from "primereact/dropdown";
 const Page = ({ params }) => {
   const [avaliadoresList, setAvaliadoresList] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -32,7 +35,29 @@ const Page = ({ params }) => {
   const [avaliadorSelecionado, setAvaliadorSelecionado] = useState(null);
   const [removendoVinculacao, setRemovendoVinculacao] = useState(null);
   const [activeModal, setActiveModal] = useState(null);
+  const [projetoSelecionado, setProjetoSelecionado] = useState(null);
+  const [buscaProjeto, setBuscaProjeto] = useState("");
+  const [areaFiltro, setAreaFiltro] = useState(null);
+  const [avaliadoresProjetoSelecionado, setAvaliadoresProjetoSelecionado] =
+    useState([]);
+  const [showModalAssociacao, setShowModalAssociacao] = useState(false);
+  const handleSelecionarAvaliador = (avaliador) => {
+    const isSelected = avaliadoresProjetoSelecionado.some(
+      (a) => a.id === avaliador.id
+    );
 
+    if (!isSelected) {
+      setAvaliadoresProjetoSelecionado([
+        ...avaliadoresProjetoSelecionado,
+        avaliador,
+      ]);
+      setShowModalAssociacao(true);
+    } else {
+      setAvaliadoresProjetoSelecionado(
+        avaliadoresProjetoSelecionado.filter((a) => a.id !== avaliador.id)
+      );
+    }
+  };
   // Carrega os avaliadores quando o componente é montado
   useEffect(() => {
     const fetchData = async () => {
@@ -359,6 +384,109 @@ const Page = ({ params }) => {
           }
         })()}
       </Modal>
+      <Modal
+        isOpen={showModalAssociacao}
+        onClose={() => setShowModalAssociacao(false)}
+        size="small"
+      >
+        <div className={style.modalAssociacao}>
+          <h5 className="mb-2">Confirmar Associação</h5>
+          <p>
+            Deseja associar o avaliador{" "}
+            <strong>
+              {
+                avaliadoresProjetoSelecionado[
+                  avaliadoresProjetoSelecionado.length - 1
+                ]?.user.nome
+              }
+            </strong>{" "}
+            ao projeto:
+          </p>
+          <p className={`${style.projetoNome} mt-2`}>
+            <strong>
+              {projetoSelecionado?.projeto?.titulo || "Projeto sem título"}
+            </strong>
+            ?
+          </p>
+
+          <div className={style.modalActions}>
+            <Button
+              className="button btn-secondary"
+              onClick={() => {
+                // Remove o último avaliador selecionado (que acionou o modal)
+                setAvaliadoresProjetoSelecionado(
+                  avaliadoresProjetoSelecionado.slice(0, -1)
+                );
+                setShowModalAssociacao(false);
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              className="button btn-primary"
+              onClick={async () => {
+                setIsProcessing(true);
+
+                try {
+                  const body = {
+                    inscricaoProjetos: [projetoSelecionado.id],
+                    avaliadores: [
+                      avaliadoresProjetoSelecionado[
+                        avaliadoresProjetoSelecionado.length - 1
+                      ].user.id,
+                    ],
+                  };
+
+                  const response = await atribuicaoDeProjetosPeloGestor(
+                    params.tenant,
+                    body
+                  );
+
+                  if (response) {
+                    showToast(
+                      "success",
+                      "Associação realizada",
+                      `Avaliador associado ao projeto com sucesso!`
+                    );
+
+                    // Atualiza os dados
+                    await processarInscricoes(
+                      params.tenant,
+                      setInscricoesProjetos
+                    );
+                    await atualizarAvaliadores(
+                      params.tenant,
+                      setAvaliadores,
+                      setTodasAreas
+                    );
+
+                    // Limpa seleções
+                    setAvaliadoresProjetoSelecionado([]);
+                    setProjetoSelecionado(null);
+                  }
+                } catch (error) {
+                  // Remove o avaliador em caso de erro
+                  setAvaliadoresProjetoSelecionado(
+                    avaliadoresProjetoSelecionado.slice(0, -1)
+                  );
+
+                  const errorMessage =
+                    error.response?.data?.message ||
+                    error.message ||
+                    "Erro ao associar avaliador ao projeto.";
+                  showToast("error", "Erro", errorMessage);
+                } finally {
+                  setIsProcessing(false);
+                  setShowModalAssociacao(false);
+                }
+              }}
+              disabled={isProcessing}
+            >
+              {isProcessing ? "Processando..." : "Confirmar"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
       <main>
         <Card className="mb-4 p-2">
           <div className={style.configuracoes}>
@@ -373,6 +501,192 @@ const Page = ({ params }) => {
                 <p>Notificar Avaliadores</p>
               </li>
             </ul>
+          </div>
+        </Card>
+        <Card className={`mb-4 p-2`}>
+          <h5 className="mb-2">Distribuição por projeto específico</h5>
+          <div className={`${style.distribuicao}`}>
+            <div className={`${style.distribuicaoCard} ${style.projetos}`}>
+              <div className={style.scrollableContainer}>
+                {/* Adicionando os filtros */}
+                <div className={style.filtrosContainer}>
+                  {/* Input de busca por nome do projeto ou orientador */}
+                  <span
+                    className="p-input-icon-left"
+                    style={{ width: "100%", marginBottom: "1rem" }}
+                  >
+                    <InputText
+                      placeholder="Buscar projeto ou orientador..."
+                      style={{ width: "100%" }}
+                      onChange={(e) => setBuscaProjeto(e.target.value)}
+                    />
+                  </span>
+
+                  {/* Select para filtrar por área */}
+                  <Dropdown
+                    value={areaFiltro}
+                    options={[
+                      { label: "Todas as áreas", value: null },
+                      ...todasAreas.map((area) => ({
+                        label: area.label,
+                        value: area.value,
+                      })),
+                    ]}
+                    optionLabel="label"
+                    optionValue="value"
+                    onChange={(e) => {
+                      setAreaFiltro(e.value); // agora e.value é null, string, etc.
+                      setProjetoSelecionado(null); // continua resetando o projeto selecionado
+                    }}
+                    placeholder="Filtrar por área"
+                    style={{ width: "100%", marginBottom: "1rem" }}
+                  />
+                </div>
+
+                <ul>
+                  {inscricoesProjetos
+                    .filter((projeto) => {
+                      // Filtro por status
+                      const statusMatch =
+                        projeto.statusAvaliacao === "AGUARDANDO_AVALIACAO";
+
+                      // Filtro por busca (projeto ou orientador)
+                      const buscaMatch =
+                        !buscaProjeto ||
+                        projeto.projeto?.titulo
+                          ?.toLowerCase()
+                          .includes(buscaProjeto.toLowerCase()) ||
+                        projeto.inscricao?.proponente?.nome
+                          ?.toLowerCase()
+                          .includes(buscaProjeto.toLowerCase());
+
+                      // Filtro por área
+                      // Por esta versão mais robusta:
+                      const areaMatch =
+                        areaFiltro === null || // Quando seleciona "Todas as áreas"
+                        (areaFiltro === "Sem área definida"
+                          ? !projeto.projeto.area
+                          : projeto.projeto.area?.area === areaFiltro);
+
+                      return statusMatch && buscaMatch && areaMatch;
+                    })
+                    .map((projeto, index) => (
+                      <li
+                        key={index}
+                        onClick={() => {
+                          setAvaliadorSelecionado(null);
+                          setProjetoSelecionado(projeto);
+                          setAvaliadoresProjetoSelecionado([]); // Limpa seleção ao mudar projeto
+                        }}
+                        className={
+                          projetoSelecionado?.id === projeto.id
+                            ? style.selected
+                            : ""
+                        }
+                      >
+                        <div className={style.content}>
+                          <h6>
+                            {projeto.projeto?.titulo || "Projeto sem título"} -
+                            ID {projeto.id}
+                          </h6>
+                          <p>
+                            <strong>Área:</strong>{" "}
+                            {projeto.projeto.area?.area || "Sem área definida"}
+                          </p>
+                          {projeto.inscricao?.proponente?.nome && (
+                            <p>
+                              <strong>Orientador:</strong>{" "}
+                              {projeto.inscricao?.proponente?.nome}
+                            </p>
+                          )}
+                          {projeto.InscricaoProjetoAvaliador?.length > 0 && (
+                            <p>
+                              <strong>Avaliadores atribuídos:</strong>{" "}
+                              {projeto.InscricaoProjetoAvaliador.length}
+                            </p>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                </ul>
+              </div>
+            </div>
+
+            <div className={`${style.distribuicaoCard} ${style.avaliadores}`}>
+              <div className={style.scrollableContainer}>
+                {projetoSelecionado ? (
+                  <>
+                    <div className="flex align-items-center mt-2 pl-2 mb-2">
+                      <p>Selecione avaliadores para este projeto:</p>
+                    </div>
+
+                    <ul>
+                      {avaliadores.length === 0 ? (
+                        <li>
+                          <div className={style.content}>
+                            <NoData description="Nenhum avaliador disponível" />
+                          </div>
+                        </li>
+                      ) : (
+                        avaliadores
+                          .filter(
+                            (avaliador) =>
+                              // Filtra por área do projeto
+                              avaliador.user.userArea.some(
+                                (ua) =>
+                                  ua.area.area ===
+                                  projetoSelecionado.projeto.area?.area
+                              ) &&
+                              // Exclui já associados
+                              !projetoSelecionado.InscricaoProjetoAvaliador?.some(
+                                (ipa) => ipa.avaliadorId === avaliador.user.id
+                              )
+                          )
+                          .map((avaliador, index) => (
+                            <li
+                              key={index}
+                              onClick={() =>
+                                handleSelecionarAvaliador(avaliador)
+                              }
+                              style={{ cursor: "pointer" }}
+                            >
+                              <div className={style.checkbox}></div>
+                              <div className={style.content}>
+                                <h6>{avaliador.user.nome}</h6>
+                                <p>
+                                  <strong>
+                                    {avaliador.user.userArea[0]?.area?.area ||
+                                      "Sem área"}
+                                  </strong>
+                                  {avaliador.user.userArea.length > 1 && (
+                                    <span>
+                                      {" "}
+                                      +{avaliador.user.userArea.length - 1}{" "}
+                                      outras áreas
+                                    </span>
+                                  )}
+                                </p>
+                                <p className={style.projetosInfo}>
+                                  Projetos atribuídos:{" "}
+                                  {avaliador.user.InscricaoProjetoAvaliador.filter(
+                                    (ipa) =>
+                                      ipa.inscricaoProjeto.inscricao.edital
+                                        .tenant.sigla === params.tenant
+                                  )?.length || 0}
+                                </p>
+                              </div>
+                            </li>
+                          ))
+                      )}
+                    </ul>
+                  </>
+                ) : (
+                  <div className={style.content}>
+                    <NoData description="Selecione um projeto para atribuir avaliadores." />
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </Card>
         <Card className={`mb-4 p-2`}>

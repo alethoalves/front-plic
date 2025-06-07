@@ -11,6 +11,10 @@ import {
 } from "@/app/api/client/avaliador";
 import Button from "@/components/Button";
 import { getEdital } from "@/app/api/client/edital";
+import { ScrollPanel } from "primereact/scrollpanel";
+import { Card } from "primereact/card";
+import { Fieldset } from "primereact/fieldset";
+import { Accordion, AccordionTab } from "primereact/accordion";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(true);
@@ -259,84 +263,89 @@ const Page = ({ params }) => {
   const renderProjetoStep = () => (
     <div className={styles.navContent}>
       <div className={styles.projeto}>
-        {/*
-          === CARD “TÍTULO” ===
-          Chave fixa: "titulo"
-        */}
-        <div className={styles.card}>
-          <h6 className={styles.label} style={{ cursor: "pointer" }}>
-            Título
-          </h6>
-          <div className={styles.value}>
-            <p>{inscricaoProjeto?.projeto?.titulo}</p>
-          </div>
-        </div>
-
+        <h5 className="mb-2">Projeto</h5>
+        <h6 className="mb-2">{inscricaoProjeto?.projeto?.titulo}</h6>
+        <p>
+          <strong>Área: </strong>
+          {inscricaoProjeto?.projeto?.area.area}
+        </p>
         {/*
           === CARD “ÁREA” ===
           Chave fixa: "area"
         */}
-        <div className={styles.card}>
-          <h6 className={styles.label} style={{ cursor: "pointer" }}>
-            Área
-          </h6>
-          <div className={styles.value}>
-            <p>{inscricaoProjeto?.projeto?.area.area}</p>
-          </div>
-        </div>
 
         {/*
           === CARDS DE RESPOSTAS DINÂMICAS ===
           Cada item tem `item.id`; usaremos chave `"resposta-${item.id}"`
         */}
-        <div className={`${styles.conteudo}`}>
-          {inscricaoProjeto?.projeto?.Resposta?.sort(
-            (a, b) => a.campo.ordem - b.campo.ordem
-          ).map((item) => {
-            const chaveResposta = `resposta-${item.id}`;
 
-            const extractFileName = (url) => {
-              const parts = url.split("/");
-              const lastPart = parts[parts.length - 1];
-              return lastPart.split("_")[1] || lastPart;
-            };
+        <div className={`${styles.conteudo} mt-2`}>
+          <Accordion multiple activeIndex={[]}>
+            {inscricaoProjeto?.projeto?.Resposta?.sort(
+              (a, b) => a.campo.id - b.campo.id
+            ).map((item, i) => {
+              const extractFileName = (url) => {
+                // Se for FileList ou valor inválido, retorna vazio
+                if (typeof url !== "string" || url === "[object FileList]")
+                  return "";
+                const parts = url.split("/");
+                const lastPart = parts[parts.length - 1];
+                return lastPart.split("_")[1] || lastPart;
+              };
 
-            return (
-              <div className={styles.card} key={item.id}>
-                <h6
-                  className={styles.label}
-                  onClick={() => toggleCard(chaveResposta)}
-                  style={{ cursor: "pointer" }}
+              // Verifica se é um arquivo/link válido
+              const isFileOrLink = ["link", "arquivo"].includes(
+                item.campo.tipo
+              );
+              const hasValidFileOrLink =
+                isFileOrLink &&
+                typeof item.value === "string" &&
+                item.value.trim() !== "" &&
+                item.value !== "[object FileList]" &&
+                item.value.startsWith("http");
+
+              return (
+                <AccordionTab
+                  key={`resposta-${item.id}`}
+                  header={item.campo.label}
+                  headerClassName={styles.accordionHeader}
                 >
-                  {item.campo.label}{" "}
-                  <span>{expandedCards[chaveResposta] ? "−" : "+"}</span>
-                </h6>
-
-                {/*
-                    Só renderiza .value se expandedCards[chaveResposta] for true
-                  */}
-                {expandedCards[chaveResposta] && (
                   <div className={styles.value}>
-                    {["link", "arquivo"].includes(item.campo.tipo) ? (
-                      <a
-                        href={item.value}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={styles.link}
-                      >
-                        {item.campo.tipo === "arquivo" && "📁 "}
-                        {item.campo.tipo === "link" && "🔗 "}
-                        {extractFileName(item.value)}
-                      </a>
+                    {isFileOrLink ? (
+                      hasValidFileOrLink ? (
+                        <a
+                          href={item.value}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={styles.link}
+                        >
+                          {item.campo.tipo === "arquivo" && "📁 "}
+                          {item.campo.tipo === "link" && "🔗 "}
+                          {extractFileName(item.value)}
+                        </a>
+                      ) : (
+                        <p className={styles.emptyValue}>
+                          Nenhum arquivo/link enviado
+                        </p>
+                      )
                     ) : (
-                      // note o estilo para preservar quebras de linha
-                      <p style={{ whiteSpace: "pre-wrap" }}>{item.value}</p>
+                      <p
+                        style={{
+                          whiteSpace: "pre-wrap",
+                          overflowWrap: "break-word",
+                          wordBreak: "break-word",
+                        }}
+                      >
+                        {item.value && item.value !== "[object FileList]"
+                          ? item.value
+                          : "Nenhum conteúdo fornecido"}
+                      </p>
                     )}
                   </div>
-                )}
-              </div>
-            );
-          })}
+                </AccordionTab>
+              );
+            })}
+          </Accordion>
         </div>
       </div>
 
@@ -344,6 +353,7 @@ const Page = ({ params }) => {
         === FICHA DE AVALIAÇÃO DO PROJETO ===
         (Permanece idêntica à sua lógica original, pois não estamos colapsando esses blocos)
       */}
+
       <div className={styles.fichaDeAvaliacao}>
         <h5>Ficha de Avaliação</h5>
 
@@ -418,16 +428,9 @@ const Page = ({ params }) => {
     const plano = inscricaoProjeto?.projeto?.planosDeTrabalho[currentStep - 1];
     const planoNotas = avaliacoesPlano[plano.id]?.selectedNotas || {};
 
-    // Vamos usar a chave do próprio plano para colapsar todo o bloco de “respostas”
-    const chavePlanoConteudo = `plano-${plano.id}`;
-
     return (
       <div className={styles.navContent} key={plano.id}>
         <div className={styles.projeto}>
-          {/*
-            Aqui deixamos “Título do Plano” e “Área” sempre visíveis ou podemos dar toggle, conforme
-            necessidade. Abaixo mostrarei como manter o conteúdo de respostas do plano colapsado:
-          */}
           <div className={styles.card}>
             <h6 className={styles.label}>Título do Plano</h6>
             <div className={styles.value}>
@@ -441,62 +444,78 @@ const Page = ({ params }) => {
             </div>
           </div>
 
-          {/*
-            ‼️ VAMOS “TOGGLEAR” o conteúdo de respostas do plano. 
-            Esse bloco só aparece se expandedCards[chavePlanoConteudo] === true.
-          */}
-          <div className={styles.card}>
-            <h6
-              className={styles.label}
-              onClick={() => toggleCard(chavePlanoConteudo)}
-              style={{ cursor: "pointer" }}
-            >
-              Respostas do Plano{" "}
-              <span>{expandedCards[chavePlanoConteudo] ? "−" : "+"}</span>
-            </h6>
+          {/* Substituindo o toggle por Accordion */}
+          <div className={`${styles.conteudo} mt-2`}>
+            <Accordion multiple activeIndex={[]}>
+              {plano.Resposta?.sort(
+                (a, b) => a.campo.ordem - b.campo.ordem
+              ).map((item) => {
+                const extractFileName = (url) => {
+                  // Se for FileList ou valor inválido, retorna vazio
+                  if (typeof url !== "string" || url === "[object FileList]")
+                    return "";
+                  const parts = url.split("/");
+                  const lastPart = parts[parts.length - 1];
+                  return lastPart.split("_")[1] || lastPart;
+                };
 
-            {expandedCards[chavePlanoConteudo] && (
-              <div className={styles.value}>
-                {plano.Resposta?.length > 0 ? (
-                  plano.Resposta.sort(
-                    (a, b) => a.campo.ordem - b.campo.ordem
-                  ).map((item) => {
-                    const extractFileName = (url) => {
-                      const parts = url.split("/");
-                      const lastPart = parts[parts.length - 1];
-                      return lastPart.split("_")[1] || lastPart;
-                    };
+                // Verifica se é um arquivo/link válido
+                const isFileOrLink = ["link", "arquivo"].includes(
+                  item.campo.tipo
+                );
+                const hasValidFileOrLink =
+                  isFileOrLink &&
+                  typeof item.value === "string" &&
+                  item.value.trim() !== "" &&
+                  item.value !== "[object FileList]" &&
+                  item.value.startsWith("http");
 
-                    return (
-                      <div className={styles.card} key={item.id}>
-                        <h6 className={styles.label}>{item.campo.label}</h6>
-                        <div className={styles.value}>
-                          {["link", "arquivo"].includes(item.campo.tipo) ? (
-                            <a
-                              href={item.value}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className={styles.link}
-                            >
-                              {item.campo.tipo === "arquivo" && "📁 "}
-                              {item.campo.tipo === "link" && "🔗 "}
-                              {extractFileName(item.value)}
-                            </a>
-                          ) : (
-                            <p>{item.value}</p>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <p>Nenhuma resposta preenchida.</p>
-                )}
-              </div>
-            )}
+                return (
+                  <AccordionTab
+                    key={`resposta-plano-${item.id}`}
+                    header={item.campo.label}
+                    headerClassName={styles.accordionHeader}
+                  >
+                    <div className={styles.value}>
+                      {isFileOrLink ? (
+                        hasValidFileOrLink ? (
+                          <a
+                            href={item.value}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={styles.link}
+                          >
+                            {item.campo.tipo === "arquivo" && "📁 "}
+                            {item.campo.tipo === "link" && "🔗 "}
+                            {extractFileName(item.value)}
+                          </a>
+                        ) : (
+                          <p className={styles.emptyValue}>
+                            Nenhum arquivo/link enviado
+                          </p>
+                        )
+                      ) : (
+                        <p
+                          style={{
+                            whiteSpace: "pre-wrap",
+                            overflowWrap: "break-word",
+                            wordBreak: "break-word",
+                          }}
+                        >
+                          {item.value && item.value !== "[object FileList]"
+                            ? item.value
+                            : "Nenhum conteúdo fornecido"}
+                        </p>
+                      )}
+                    </div>
+                  </AccordionTab>
+                );
+              })}
+            </Accordion>
           </div>
         </div>
 
+        {/* Restante do código permanece igual */}
         <div className={styles.fichaDeAvaliacao}>
           <h5>Ficha de Avaliação do Plano</h5>
           {fichaPlano?.CriterioFormularioAvaliacao?.length > 0 ? (
@@ -608,7 +627,7 @@ const Page = ({ params }) => {
 
         {currentStep === planosCount && (
           <Button
-            className="button btn-warning mb-2"
+            className="button btn-primary mb-2"
             onClick={handleTerminarAvaliacao}
             icon={RiQuillPenLine}
             disabled={loading}

@@ -20,6 +20,23 @@ export const enviarConvitesAvaliadores = async (tenantSlug, payload) => {
   }
 };
 
+export const enviarNotificacaoAvaliador = async (tenantSlug, payload) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+
+    const { data } = await req.post(
+      `/private/${tenantSlug}/avaliador/notificar-avaliadores`,
+      payload,
+      { headers }
+    );
+    return data;                           // { status, resumo }
+  } catch (error) {
+    console.error("Erro ao enviar convites:", error);
+    throw error;
+  }
+};
+
 // busca o registro ConviteAvaliadorAno pelo token único
 export const consultarConviteByToken = async (token) => {
   try {
