@@ -20,6 +20,7 @@ import {
 } from "@/app/api/client/avaliador";
 import { sanitize } from "@/lib/sanitize";
 import { useRouter } from "next/navigation";
+import { MultiSelect } from "primereact/multiselect";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
@@ -30,6 +31,7 @@ const Page = ({ params }) => {
   const [conviteRecusado, setConviteRecusado] = useState(false);
   const [conviteAceito, setConviteAceito] = useState(false);
   const [tenant, setTenant] = useState();
+  const [areaOptions, setAreaOptions] = useState([]);
 
   const [errorMessage, setErrorMessage] = useState();
   const router = useRouter();
@@ -40,7 +42,14 @@ const Page = ({ params }) => {
       try {
         const areas = await getAreas();
         setAreas(areas);
-
+        setAreaOptions(
+          areas
+            .sort((a, b) => a.area.localeCompare(b.area))
+            .map((area) => ({
+              label: area.area,
+              value: area.id,
+            }))
+        );
         const convite = await consultarConviteByToken(params.token);
 
         convite.conteudoConvite = sanitize(convite.conteudoConvite);
@@ -196,19 +205,18 @@ const Page = ({ params }) => {
                         <h6 className="mb-3">
                           Agora selecione as ÁREAS de maior interesse
                         </h6>
-                        <div className={styles.areas}>
-                          {areas.map((item) => (
-                            <p
-                              key={item.id}
-                              className={`${styles.area} ${
-                                areasSelecionadas.includes(item.id) &&
-                                styles.selected
-                              }`}
-                              onClick={() => handleAreaClick(item.id)}
-                            >
-                              {item.area}
-                            </p>
-                          ))}
+                        <div className="card w-100  justify-content-center">
+                          <MultiSelect
+                            value={areasSelecionadas}
+                            onChange={(e) => setAreasSelecionadas(e.value)}
+                            options={areaOptions}
+                            optionLabel="label"
+                            filter
+                            placeholder="Selecione as áreas"
+                            maxSelectedLabels={3}
+                            className="w-100 md:w-20rem"
+                            display="chip"
+                          />
                         </div>
                         <Button
                           className="btn-primary mt-2"

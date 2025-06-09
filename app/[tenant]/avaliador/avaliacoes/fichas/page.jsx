@@ -138,13 +138,7 @@ const Page = ({ params }) => {
                                     </strong>
                                   </p>
                                 </div>
-                                <div className={styles.quesito}>
-                                  <p className={styles.label}>
-                                    Observação:
-                                    <br />
-                                    <strong>{plano.observacao}</strong>
-                                  </p>
-                                </div>
+
                                 {plano.RegistroFichaAvaliacao?.map(
                                   (registro) => (
                                     <div
@@ -166,6 +160,13 @@ const Page = ({ params }) => {
                                     </div>
                                   )
                                 )}
+                                <div className={styles.quesito}>
+                                  <p className={styles.label}>
+                                    Observação:
+                                    <br />
+                                    <strong>{plano.observacao}</strong>
+                                  </p>
+                                </div>
                               </div>
                             )}
                           </div>

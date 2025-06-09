@@ -60,6 +60,25 @@ export const createAtividade = async (tenantSlug, editalId, atividadeData) => {
       throw error;
     }
   };
+  export const getRegistroAtividadesByCpf = async (tenantSlug,perfil) => {
+    try {
+      const headers = getAuthHeadersClient();
+      if (!headers) {
+        return false;
+      }
+      const response = await req.get(
+        `/private/${tenantSlug}/user/${perfil}/registroAtividadesByCPF`,
+        {
+          headers,
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao obter Atividades:", error);
+      throw error;
+    }
+  };
+
   export const getAtividade = async (tenantSlug, editalId, id) => {
     try {
       const headers = getAuthHeadersClient();

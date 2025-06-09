@@ -122,14 +122,6 @@ const FormNewFormulario = ({
               disabled={loading}
             />
           )}
-
-        {/* Exibe campo fixo para contexto de atividades */}
-        {isAtividades && !initialData && (
-          <div className="mb-2">
-            <label className={styles.label}>Tipo de formulário</label>
-            <div className={styles.fixedValue}>atividade</div>
-          </div>
-        )}
       </div>
       <div className={`${styles.btnSubmit}`}>
         <Button

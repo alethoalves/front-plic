@@ -1061,7 +1061,7 @@ const Page = ({ params }) => {
                               <p className={style.timeInfo}>Aguardando há:</p>
                               <h6>{tempo.display}</h6>
                             </div>
-                            <div>
+                            <div className={style.headerAvaliadoresPendente}>
                               <h6>
                                 {projetoTitulo} - ID {projetoId}
                               </h6>

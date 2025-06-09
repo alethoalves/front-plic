@@ -253,8 +253,8 @@ const EditalAtividades = ({ params }) => {
             {/* ——— Exibição dos grupos ——— */}
             {!loading &&
               !error &&
-              gruposAtividades.map((grupo) => {
-                const uniqueKey = `${grupo.formularioId}-${grupo.titulo}`;
+              gruposAtividades.map((grupo, index) => {
+                const uniqueKey = index;
                 return (
                   <div key={uniqueKey} className={styles.groupContainer}>
                     <Item

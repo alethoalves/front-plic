@@ -25,6 +25,11 @@ import Campo from "@/components/Campo";
 import { startSubmission } from "@/app/api/client/resposta";
 import FormArea from "@/components/Formularios/FormArea";
 import NoData from "@/components/NoData";
+import { getCookie } from "cookies-next";
+import {
+  getRegistroAtividadesByCpf,
+  getRegistroAtividadesByCpfTenantAluno,
+} from "@/app/api/client/atividade";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
@@ -40,16 +45,18 @@ const Page = ({ params }) => {
   const [tela, setTela] = useState(0);
 
   const router = useRouter();
-
+  const perfil = getCookie("perfilSelecionado");
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await getRegistroAtividadesByCpfEditaisVigentes(
-          params.tenant
+        const response = await getRegistroAtividadesByCpf(
+          params.tenant,
+          perfil
         );
+        console.log(response);
         setRegistrosAtividadesEditaisVigentes(
-          response.sort(
+          response.registrosAtividade.sort(
             (a, b) =>
               new Date(a.atividade.dataInicio) -
               new Date(b.atividade.dataInicio)

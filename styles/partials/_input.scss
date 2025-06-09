@@ -175,3 +175,10 @@ textarea{
 .p-multiselect-chip {
     padding-right: 0;
 }
+.p-multiselect-filter-container{
+    margin-left: $gap-1;
+    svg{
+        width: 22px;
+        top: 22%;
+    }
+}

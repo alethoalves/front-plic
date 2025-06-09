@@ -146,6 +146,9 @@
 .distribuicao{
     display: flex;
     gap: $gap-2;
+    @include responsive(xs){
+      flex-direction: column;
+    }
     .distribuicaoCard{
         flex: 1;
        border: 1px solid $gray-25;
@@ -312,16 +315,28 @@
     
     flex-direction: row;
     flex-wrap: nowrap;
+    
+    @include responsive (xs){
+      flex-direction: column;
+    }
     .time{
         margin-right: $gap-2;
         display: flex;
         flex-direction: column;
-        align-items: center;
+        align-items: left;
         min-width: 100px;
+        svg{
+          width: 22px;
+          display: flex;
+          align-items: left;
+        }
         p{
             font-size: 10px;
         }
     }
+}
+.headerAvaliadoresPendente{
+  margin-top: $gap-2;
 }
 .modalActions{
   margin-top: $gap-2;

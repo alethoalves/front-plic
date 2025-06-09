@@ -15,6 +15,8 @@ import { ScrollPanel } from "primereact/scrollpanel";
 import { Card } from "primereact/card";
 import { Fieldset } from "primereact/fieldset";
 import { Accordion, AccordionTab } from "primereact/accordion";
+import GanttChart from "@/components/GanttChart";
+import { Timeline } from "primereact/timeline";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(true);
@@ -259,7 +261,12 @@ const Page = ({ params }) => {
   const handleBack = () => {
     setCurrentStep((prev) => prev - 1);
   };
-
+  const cronogramaEvents =
+    inscricaoProjeto?.projeto?.CronogramaProjeto.map((item) => ({
+      status: item.atividade,
+      date: `${item.inicio} – ${item.fim}`,
+      icon: "pi pi-calendar",
+    })) || [];
   const renderProjetoStep = () => (
     <div className={styles.navContent}>
       <div className={styles.projeto}>
@@ -269,15 +276,6 @@ const Page = ({ params }) => {
           <strong>Área: </strong>
           {inscricaoProjeto?.projeto?.area.area}
         </p>
-        {/*
-          === CARD “ÁREA” ===
-          Chave fixa: "area"
-        */}
-
-        {/*
-          === CARDS DE RESPOSTAS DINÂMICAS ===
-          Cada item tem `item.id`; usaremos chave `"resposta-${item.id}"`
-        */}
 
         <div className={`${styles.conteudo} mt-2`}>
           <Accordion multiple activeIndex={[]}>
@@ -345,6 +343,19 @@ const Page = ({ params }) => {
                 </AccordionTab>
               );
             })}
+            <AccordionTab
+              header="Cronograma"
+              headerClassName={styles.accordionHeader}
+            >
+              <div className="card">
+                <Timeline
+                  value={cronogramaEvents}
+                  opposite={(item) => <small>{item.date}</small>}
+                  content={(item) => <span>{item.status}</span>}
+                  //align="alternate" /* ou "left"/"right" conforme desejar */
+                />
+              </div>
+            </AccordionTab>
           </Accordion>
         </div>
       </div>
