@@ -228,6 +228,7 @@
   }
   
   .editalBadge {
+    margin-top: $gap-2;
     background: #f0f0f0;
     padding: 0.3rem 0.6rem;
     border-radius: 1rem;
@@ -235,7 +236,7 @@
     align-items: center;
     gap: 0.5rem;
     font-size: 0.9rem;
-    
+    display: inline-block;
     .deleteIcon {
       cursor: pointer;
       color: #999;

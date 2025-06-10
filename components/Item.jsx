@@ -35,7 +35,7 @@ const Item = ({
           {subtitulo && (
             <p className={styles.subtitulo}>
               {labelSubtitulo && <span>{labelSubtitulo}</span>}
-              {`: ${subtitulo}`}
+              {`${subtitulo}`}
             </p>
           )}
 

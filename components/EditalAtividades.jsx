@@ -18,31 +18,7 @@ import { getFormularios } from "@/app/api/client/formulario";
 
 // Formulário de criação/edição (multiselect)
 import FormNewAtividade from "./Formularios/FormNewAtividade";
-
-// utilitário para agrupar por título:
-const agruparPorTitulo = (atividades) => {
-  const mapa = new Map();
-  atividades.forEach((item) => {
-    const chave = item.id;
-    if (!mapa.has(chave)) {
-      mapa.set(chave, {
-        titulo: item.titulo,
-        descricao: item.descricao,
-        dataInicio: item.dataInicio,
-        dataFinal: item.dataFinal,
-        formularioId: item.formularioId,
-        vinculacoes: [],
-      });
-    }
-    const agrupado = mapa.get(chave);
-    agrupado.vinculacoes.push({
-      atividadeId: item.id,
-      editalId: item.edital.id,
-      editalTitulo: item.edital.titulo,
-    });
-  });
-  return Array.from(mapa.values());
-};
+import { formatDateForDisplay } from "@/lib/formatDateForDisplay";
 
 const EditalAtividades = ({ params }) => {
   const [loading, setLoading] = useState(false);
@@ -52,7 +28,7 @@ const EditalAtividades = ({ params }) => {
 
   // Modal criar/editar
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [grupoParaEditar, setGrupoParaEditar] = useState(null);
+  const [atividadeParaEditar, setAtividadeParaEditar] = useState(null);
   const [removerVinculo, setRemoverVinculo] = useState({
     show: false,
     atividadeId: null,
@@ -60,14 +36,12 @@ const EditalAtividades = ({ params }) => {
     tituloAtividade: "",
   });
 
-  // Lista bruta de atividades, antes de agrupar
-  const [atividadesRaw, setAtividadesRaw] = useState([]);
-  // Lista de grupos (após agrupamento)
-  const [gruposAtividades, setGruposAtividades] = useState([]);
+  // Lista de atividades
+  const [atividades, setAtividades] = useState([]);
 
   // Opções para o formulário
-  const [editaisDoAno, setEditaisDoAno] = useState([]); // array de {id, titulo, ano,…}
-  const [formulariosDoAno, setFormulariosDoAno] = useState([]); // array de {id, titulo, tipo,…}
+  const [editaisDoAno, setEditaisDoAno] = useState([]);
+  const [formulariosDoAno, setFormulariosDoAno] = useState([]);
 
   // 1) Fetch inicial de dados (atividades, editais, formulários)
   useEffect(() => {
@@ -79,20 +53,14 @@ const EditalAtividades = ({ params }) => {
           params.tenant,
           params.ano
         );
-        // respAtividades é algo como { status:"success", message:"…", atividades:[ … ] }
-        setAtividadesRaw(respAtividades || []);
+        setAtividades(respAtividades || []);
 
         // 1b) Buscar todos os editais daquele ano
         const respEditais = await getEditais(params.tenant, params.ano);
-        // getEditais já retorna diretamente um array:
-        //   respEditais === [ { id:…, titulo:…, ano:…, … }, … ]
         setEditaisDoAno(Array.isArray(respEditais) ? respEditais : []);
 
         // 1c) Buscar todos os formulários disponíveis
         const respFormularios = await getFormularios(params.tenant);
-        // Supondo que getFormularios também retorne diretamente um array:
-        //   respFormularios === [ { id:…, titulo:…, tipo:…, … }, … ]
-        // Se quiser filtrar por tipo “atividade”:
         const listaDeFormularios = Array.isArray(respFormularios)
           ? respFormularios.filter((f) => f.tipo === "atividade")
           : [];
@@ -107,19 +75,12 @@ const EditalAtividades = ({ params }) => {
     fetchData();
   }, [params.tenant, params.ano]);
 
-  // 2) sempre que “atividadesRaw” mudar, reagrupar por título
-  useEffect(() => {
-    const grupos = agruparPorTitulo(atividadesRaw);
-    console.log(">>> gruposAtividades:", grupos);
-    setGruposAtividades(grupos);
-  }, [atividadesRaw]);
-
-  // 3) Função de “refresh” para recarregar tudo após criar/editar
+  // 2) Função de "refresh" para recarregar tudo após criar/editar
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
       const resp = await getAtividadesByAno(params.tenant, params.ano);
-      setAtividadesRaw(resp || []);
+      setAtividades(resp || []);
     } catch {
       // ignore
     } finally {
@@ -127,7 +88,7 @@ const EditalAtividades = ({ params }) => {
     }
   }, [params.tenant, params.ano]);
 
-  // 4) Remover vínculo (apenas a instância da atividade para aquele edital)
+  // 3) Remover atividade
   const handleConfirmRemoverVinculo = useCallback(async () => {
     setErrorDelete("");
     setIsDeleting(true);
@@ -136,8 +97,8 @@ const EditalAtividades = ({ params }) => {
       await deleteAtividade(params.tenant, editalId, atividadeId);
       await refresh();
     } catch (err) {
-      console.error("Erro ao remover vínculo:", err);
-      setErrorDelete("Não foi possível remover esta vinculação.");
+      console.error("Erro ao remover atividade:", err);
+      setErrorDelete("Não foi possível remover esta atividade.");
     } finally {
       setRemoverVinculo({
         show: false,
@@ -149,19 +110,20 @@ const EditalAtividades = ({ params }) => {
     }
   }, [removerVinculo, params.tenant, refresh]);
 
-  // 5) Abrir modal para nova atividade
+  // 4) Abrir modal para nova atividade
   const openModalNova = () => {
-    setGrupoParaEditar(null);
+    setAtividadeParaEditar(null);
     setIsModalOpen(true);
   };
-  // 6) Abrir modal para editar um grupo já existente
-  const openModalEditar = (grupo) => {
-    console.log(">>> abrir edição para grupo:", grupo);
-    setGrupoParaEditar(grupo);
+
+  // 5) Abrir modal para editar uma atividade existente
+  const openModalEditar = (atividade) => {
+    setAtividadeParaEditar(atividade);
     setIsModalOpen(true);
   };
+
   const closeModal = () => {
-    setGrupoParaEditar(null);
+    setAtividadeParaEditar(null);
     setIsModalOpen(false);
   };
 
@@ -173,31 +135,30 @@ const EditalAtividades = ({ params }) => {
           <div className={`${styles.icon} mb-2`}>
             <RiEditLine />
           </div>
-          <h4>{grupoParaEditar ? "Editar Atividade" : "Nova Atividade"}</h4>
+          <h4>{atividadeParaEditar ? "Editar Atividade" : "Nova Atividade"}</h4>
           <p>
-            {grupoParaEditar
-              ? "Altere os campos e marque/desmarque os editais para esta atividade."
-              : "Preencha os dados e selecione todos os editais que devem receber esta atividade."}
+            {atividadeParaEditar
+              ? "Altere os campos desta atividade."
+              : "Preencha os dados para criar uma nova atividade."}
           </p>
           <FormNewAtividade
             tenantSlug={params.tenant}
             ano={params.ano}
             todosEditais={editaisDoAno}
             formularios={formulariosDoAno}
-            grupoExistente={grupoParaEditar}
+            atividadeExistente={atividadeParaEditar}
             onClose={closeModal}
             onSuccess={refresh}
           />
         </Modal>
       )}
 
-      {/* ——— Modal de confirmação de remoção de vínculo ——— */}
+      {/* ——— Modal de confirmação de remoção ——— */}
       {removerVinculo.show && (
         <Modal
           isOpen={true}
           onClose={() => {
             if (!isDeleting) {
-              // Só permite fechar se não estiver excluindo
               setRemoverVinculo({
                 show: false,
                 atividadeId: null,
@@ -211,7 +172,7 @@ const EditalAtividades = ({ params }) => {
             <RiDeleteBinLine />
           </div>
           <h4>Confirmar Exclusão</h4>
-          <p className="mt-1">{`Remover vinculação da atividade "${removerVinculo.tituloAtividade}" do edital selecionado?`}</p>
+          <p className="mt-1">{`Remover a atividade "${removerVinculo.tituloAtividade}"?`}</p>
           {errorDelete && (
             <div className={`notification notification-error`}>
               <p className="p5">{errorDelete}</p>
@@ -221,11 +182,10 @@ const EditalAtividades = ({ params }) => {
             <Button
               className="btn-error mt-4"
               onClick={handleConfirmRemoverVinculo}
-              disabled={isDeleting} // Desabilita o botão durante o loading
+              disabled={isDeleting}
             >
               {isDeleting ? (
                 <div className={styles.loadingIndicator}>
-                  {/* Ícone de loading (substitua pelo seu componente) */}
                   <span>Excluindo...</span>
                 </div>
               ) : (
@@ -250,49 +210,43 @@ const EditalAtividades = ({ params }) => {
             {loading && <p>Carregando...</p>}
             {error && <p style={{ color: "red" }}>{error}</p>}
 
-            {/* ——— Exibição dos grupos ——— */}
+            {/* ——— Exibição das atividades ——— */}
             {!loading &&
               !error &&
-              gruposAtividades.map((grupo, index) => {
-                const uniqueKey = index;
-                return (
-                  <div key={uniqueKey} className={styles.groupContainer}>
+              atividades
+                .sort((a, b) => a.id - b.id)
+                .map((atividade) => (
+                  <div key={atividade.id} className={styles.activityContainer}>
                     <Item
-                      titulo={grupo.titulo}
-                      subtitulo={`De ${grupo.dataInicio} a ${grupo.dataFinal}`}
-                      descricao={grupo.descricao}
-                      handleEdit={() => openModalEditar(grupo)}
+                      titulo={atividade.titulo}
+                      subtitulo={`De ${formatDateForDisplay(
+                        atividade.dataInicio
+                      )} a ${formatDateForDisplay(atividade.dataFinal)}`}
+                      //descricao={atividade.descricao}
+                      handleEdit={() => openModalEditar(atividade)}
                     >
-                      {/* → Aqui dentro, renderizamos cada “edital” como uma tag */}
-                      <div className={styles.listaEditais}>
-                        {grupo.vinculacoes.map((vinc) => (
-                          <div
-                            key={vinc.atividadeId}
-                            className={styles.editalBadge}
-                          >
-                            <span>{vinc.editalTitulo}</span>
-                            {/* Ícone de lixeira que abre o modal de confirmação */}
-                            <RiDeleteBinLine
-                              className={styles.deleteIcon}
-                              onClick={() =>
-                                setRemoverVinculo({
-                                  show: true,
-                                  atividadeId: vinc.atividadeId,
-                                  editalId: vinc.editalId,
-                                  tituloAtividade: grupo.titulo,
-                                })
-                              }
-                            />
-                          </div>
-                        ))}
+                      <div className={styles.editalBadge}>
+                        <span>{atividade.edital.titulo}</span>
+                        {false && (
+                          <RiDeleteBinLine
+                            className={styles.deleteIcon}
+                            onClick={() =>
+                              setRemoverVinculo({
+                                show: true,
+                                atividadeId: atividade.id,
+                                editalId: atividade.edital.id,
+                                tituloAtividade: atividade.titulo,
+                              })
+                            }
+                          />
+                        )}
                       </div>
                     </Item>
                   </div>
-                );
-              })}
+                ))}
 
             {/* Se não houver nenhuma atividade para este ano */}
-            {!loading && !error && gruposAtividades.length === 0 && (
+            {!loading && !error && atividades.length === 0 && (
               <p>Nenhuma atividade encontrada para este ano.</p>
             )}
           </div>

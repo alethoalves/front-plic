@@ -12,6 +12,7 @@ import { Tag } from "primereact/tag";
 import { Checkbox } from "primereact/checkbox";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
+import { Calendar } from "primereact/calendar";
 import Header from "@/components/Header";
 import {
   enviarNotificacaoAvaliador,
@@ -28,6 +29,8 @@ export default function NotificarAvaliador({ params }) {
   const [selectedAvaliadores, setSelectedAvaliadores] = useState([]);
   const [globalFilter, setGlobalFilter] = useState(null);
   const [loadingEnvio, setLoadingEnvio] = useState(false);
+  const [dataFinalizacao, setDataFinalizacao] = useState(null);
+  const [isTodayOrAfter, setIsTodayOrAfter] = useState(false);
 
   const loadData = useCallback(async () => {
     try {
@@ -49,8 +52,22 @@ export default function NotificarAvaliador({ params }) {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  useEffect(() => {
+    // Verifica se a data selecionada é hoje ou no futuro
+    if (dataFinalizacao) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const selectedDate = new Date(dataFinalizacao);
+      selectedDate.setHours(0, 0, 0, 0);
+      setIsTodayOrAfter(selectedDate >= today);
+    } else {
+      setIsTodayOrAfter(false);
+    }
+  }, [dataFinalizacao]);
+
   const handleEnviarNotificacao = async () => {
-    if (selectedAvaliadores.length === 0) return;
+    if (selectedAvaliadores.length === 0 || !dataFinalizacao) return;
 
     setLoadingEnvio(true);
 
@@ -61,6 +78,7 @@ export default function NotificarAvaliador({ params }) {
           nome: a.nome,
           email: a.email,
         })),
+        data: dataFinalizacao.toISOString().split("T")[0], // Formato YYYY-MM-DD
       };
 
       const response = await enviarNotificacaoAvaliador(params.tenant, payload);
@@ -73,11 +91,12 @@ export default function NotificarAvaliador({ params }) {
       });
 
       setSelectedAvaliadores([]);
+      setDataFinalizacao(null);
     } catch (err) {
       toast.current?.show({
         severity: "error",
         summary: "Erro ao enviar",
-        detail: err.message || "Erro ao enviar notificações",
+        detail: err.response?.data?.message || "Erro ao enviar notificações",
         life: 6000,
       });
     } finally {
@@ -86,8 +105,8 @@ export default function NotificarAvaliador({ params }) {
   };
 
   const header = (
-    <div className="flex flex-wrap justify-content-between align-items-center">
-      <span className="p-input-icon-left">
+    <div className="flex flex-wrap justify-content-between align-items-center gap-2">
+      <span className="p-input-icon-left mb-2">
         <InputText
           type="search"
           onInput={(e) => setGlobalFilter(e.target.value)}
@@ -95,14 +114,31 @@ export default function NotificarAvaliador({ params }) {
         />
       </span>
       {selectedAvaliadores.length > 0 && (
-        <Button
-          label="Enviar notificação"
-          icon="pi pi-send"
-          className="p-button-sm p-button-success"
-          onClick={handleEnviarNotificacao}
-          loading={loadingEnvio}
-          disabled={loadingEnvio}
-        />
+        <div className="flex align-items-center gap-1">
+          <Calendar
+            value={dataFinalizacao}
+            onChange={(e) => setDataFinalizacao(e.value)}
+            dateFormat="dd/mm/yy"
+            placeholder="Data final"
+            showIcon
+            className={!isTodayOrAfter && dataFinalizacao ? "p-invalid" : ""}
+            minDate={new Date()}
+          />
+          <Button
+            label="Enviar notificação"
+            icon="pi pi-send"
+            className="p-button-sm p-button-success"
+            onClick={handleEnviarNotificacao}
+            loading={loadingEnvio}
+            disabled={loadingEnvio || !dataFinalizacao || !isTodayOrAfter}
+            tooltip={
+              !isTodayOrAfter && dataFinalizacao
+                ? "A data deve ser hoje ou no futuro"
+                : undefined
+            }
+            tooltipOptions={{ position: "top" }}
+          />
+        </div>
       )}
     </div>
   );

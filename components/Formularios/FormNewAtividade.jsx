@@ -17,13 +17,14 @@ import Input from "@/components/Input";
 // PrimeReact
 import { MultiSelect } from "primereact/multiselect";
 import { Dropdown } from "primereact/dropdown";
+import { formatDateForDisplay } from "@/lib/formatDateForDisplay";
 
 const FormNewAtividade = ({
   tenantSlug,
   ano,
   todosEditais,
   formularios,
-  grupoExistente,
+  atividadeExistente,
   onClose,
   onSuccess,
 }) => {
@@ -43,7 +44,6 @@ const FormNewAtividade = ({
       titulo: "",
       descricao: "",
       obrigatoria: true,
-      aberta: true,
       dataInicio: "",
       dataFinal: "",
       permitirEntregaForaPrazo: false,
@@ -56,172 +56,62 @@ const FormNewAtividade = ({
 
   // Preenche dados se for edição em lote
   useEffect(() => {
-    if (grupoExistente) {
-      // Converter datas para formato de input (YYYY-MM-DD)
-      const dataInicio = new Date(grupoExistente.dataInicio)
-        .toISOString()
-        .split("T")[0];
-      const dataFinal = new Date(grupoExistente.dataFinal)
-        .toISOString()
-        .split("T")[0];
-
+    if (atividadeExistente) {
       reset({
-        titulo: grupoExistente.titulo,
-        descricao: grupoExistente.descricao,
-        obrigatoria: grupoExistente.obrigatoria,
-        aberta: grupoExistente.aberta,
-        dataInicio,
-        dataFinal,
-        permitirEntregaForaPrazo: grupoExistente.permitirEntregaForaPrazo,
-        formularioId: grupoExistente.formularioId,
-        editaisSelecionados: grupoExistente.vinculacoes.map((v) => v.editalId),
+        titulo: atividadeExistente.titulo,
+        descricao: atividadeExistente.descricao,
+        obrigatoria: atividadeExistente.obrigatoria,
+        dataInicio: formatDateForDisplay(atividadeExistente.dataInicio),
+        dataFinal: formatDateForDisplay(atividadeExistente.dataFinal),
+        permitirEntregaForaPrazo: atividadeExistente.permitirEntregaForaPrazo,
+        formularioId: atividadeExistente.formularioId,
+        editaisSelecionados: [atividadeExistente.edital.id], // Agora é um array com um único edital
       });
     }
-  }, [grupoExistente, reset]);
+  }, [atividadeExistente, reset]);
 
   const onSubmit = async (values) => {
-    console.log("🚀 [FormNewAtividade] onSubmit chamado com values:", values);
-    const editais = values.editaisSelecionados;
-    console.log("🚀 editaisSelecionados extraído:", editais);
-
     setLoading(true);
     setError("");
 
-    const {
-      titulo,
-      descricao,
-      obrigatoria,
-      aberta,
-      dataInicio,
-      dataFinal,
-      permitirEntregaForaPrazo,
-      formularioId: formId,
-      editaisSelecionados,
-    } = values;
-
     try {
-      if (!grupoExistente) {
-        // Criar N atividades, uma para cada edital selecionado
-        if (!Array.isArray(editaisSelecionados)) {
-          console.error(
-            "⚠️ editaisSelecionados NÃO é um array:",
-            editaisSelecionados
-          );
-          throw new Error(
-            "editaisSelecionados deve ser um array mesmo ao criar"
-          );
-        }
-
-        console.log(
-          "🔄 Criando atividades em lote para cada edital:",
-          editaisSelecionados
-        );
-        await Promise.all(
-          editaisSelecionados.map((editalId) => {
-            console.log(
-              "   → Chamando createAtividade para editalId:",
-              editalId
-            );
-            return createAtividade(tenantSlug, editalId, {
-              titulo,
-              descricao,
-              obrigatoria,
-              aberta,
-              dataInicio,
-              dataFinal,
-              permitirEntregaForaPrazo,
-              formularioId: formId,
-            });
-          })
-        );
-      } else {
-        // Edição em lote
-        console.log(
-          "📝 Edição em lote de atividades — grupoExistente:",
-          grupoExistente
-        );
-
-        const idsAtuais = grupoExistente.vinculacoes.map((v) => v.editalId);
-        console.log("   idsAtuais (vínculos existentes):", idsAtuais);
-
-        const mapaAtividexEdital = {};
-        grupoExistente.vinculacoes.forEach((v) => {
-          mapaAtividexEdital[v.editalId] = v.atividadeId;
+      if (!atividadeExistente) {
+        // Criação de uma única atividade
+        const editalId = values.editaisSelecionados[0]; // Pega o primeiro (e único) edital selecionado
+        await createAtividade(tenantSlug, editalId, {
+          titulo: values.titulo,
+          descricao: values.descricao,
+          obrigatoria: values.obrigatoria,
+          dataInicio: values.dataInicio,
+          dataFinal: values.dataFinal,
+          permitirEntregaForaPrazo: values.permitirEntregaForaPrazo,
+          formularioId: values.formularioId,
         });
-        console.log("   mapaAtividexEdital:", mapaAtividexEdital);
-
-        // 1) Interseção → update
-        const intersecao = idsAtuais.filter((id) =>
-          editaisSelecionados.includes(id)
-        );
-        console.log("   intersecao (editais que permanecem):", intersecao);
-        await Promise.all(
-          intersecao.map((editalId) => {
-            const atividadeId = mapaAtividexEdital[editalId];
-            console.log(
-              `      → updateAtividade para atividadeId=${atividadeId}, editalId=${editalId}`
-            );
-            return updateAtividade(tenantSlug, editalId, atividadeId, {
-              titulo,
-              descricao,
-              obrigatoria,
-              aberta,
-              dataInicio,
-              dataFinal,
-              permitirEntregaForaPrazo,
-              formularioId: formId,
-            });
-          })
-        );
-
-        // 2) Removidos → delete
-        const removidos = idsAtuais.filter(
-          (id) => !editaisSelecionados.includes(id)
-        );
-        console.log("   removidos (editais a deletar):", removidos);
-        await Promise.all(
-          removidos.map((editalId) => {
-            const atividadeId = mapaAtividexEdital[editalId];
-            console.log(
-              `      → deleteAtividade para atividadeId=${atividadeId}, editalId=${editalId}`
-            );
-            return deleteAtividade(tenantSlug, editalId, atividadeId);
-          })
-        );
-
-        // 3) Novos → create
-        const novos = editaisSelecionados.filter(
-          (id) => !idsAtuais.includes(id)
-        );
-        console.log("   novos (editais a criar):", novos);
-        await Promise.all(
-          novos.map((editalId) => {
-            console.log(
-              `      → createAtividade para novo editalId=${editalId}`
-            );
-            return createAtividade(tenantSlug, editalId, {
-              titulo,
-              descricao,
-              obrigatoria,
-              aberta,
-              dataInicio,
-              dataFinal,
-              permitirEntregaForaPrazo,
-              formularioId: formId,
-            });
-          })
+      } else {
+        // Edição de uma atividade existente
+        await updateAtividade(
+          tenantSlug,
+          atividadeExistente.edital.id,
+          atividadeExistente.id,
+          {
+            titulo: values.titulo,
+            descricao: values.descricao,
+            obrigatoria: values.obrigatoria,
+            dataInicio: values.dataInicio,
+            dataFinal: values.dataFinal,
+            permitirEntregaForaPrazo: values.permitirEntregaForaPrazo,
+            formularioId: values.formularioId,
+          }
         );
       }
 
-      console.log("✅ onSubmit finalizado com sucesso");
       onSuccess();
       onClose();
     } catch (err) {
-      console.error("❌ Erro ao salvar atividade em lote:", err);
       setError(
         err.response?.data?.message ??
           err.message ??
-          "Ocorreu um erro inesperado ao salvar as atividades."
+          "Ocorreu um erro inesperado ao salvar a atividade."
       );
     } finally {
       setLoading(false);
@@ -252,6 +142,7 @@ const FormNewAtividade = ({
           name="editaisSelecionados"
           render={({ field }) => (
             <MultiSelect
+              disabled={atividadeExistente ? true : false}
               value={field.value}
               options={editalOptions}
               onChange={(e) => field.onChange(e.value || [])} // Garante array
@@ -284,6 +175,7 @@ const FormNewAtividade = ({
               ]}
               className="w-100 mb-2"
               placeholder="Formulário"
+              disabled={atividadeExistente ? true : false}
             />
           )}
         />
@@ -353,25 +245,7 @@ const FormNewAtividade = ({
                 {errors.obrigatoria.message}
               </p>
             )}
-            <label className="block mb-1 font-medium">
-              <h6>Atividade está recebendo repostas?*</h6>
-            </label>
-            <Controller
-              control={control}
-              name="aberta"
-              render={({ field }) => (
-                <Dropdown
-                  {...field}
-                  options={[
-                    { label: "Selecione", value: null },
-                    { label: "Sim", value: true },
-                    { label: "Não", value: false },
-                  ]}
-                  placeholder="Atividade está aberta?"
-                  className="w-full mb-2"
-                />
-              )}
-            />
+
             {errors.aberta && (
               <p className="text-red-600 text-sm mb-2">
                 {errors.aberta.message}
@@ -453,7 +327,7 @@ const FormNewAtividade = ({
           >
             {loading
               ? "Salvando..."
-              : grupoExistente
+              : atividadeExistente
               ? "Salvar alterações"
               : "Criar Atividades"}
           </Button>
