@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import { Dropdown } from "primereact/dropdown";
 import { Toast } from "primereact/toast"; // ★
 import { getEditais, getEdital, updateEdital } from "@/app/api/client/edital";
+import PeriodoVigencia from "./PeriodoVigencia";
 
 const PeriodoInscricao = ({ params }) => {
   /* ---------- estados ---------- */
@@ -100,77 +101,82 @@ const PeriodoInscricao = ({ params }) => {
   }));
 
   return (
-    <div className={styles.content}>
-      {/* Toast global */}
-      <Toast ref={toast} position="top-right" />
+    <>
+      <div className={styles.content}>
+        {/* Toast global */}
+        <Toast ref={toast} position="top-right" />
 
-      <div className={styles.head}>
-        <div className={styles.headIcon}>
-          <RiCalendarEventLine />
-        </div>
+        <div className={styles.head}>
+          <div className={styles.headIcon}>
+            <RiCalendarEventLine />
+          </div>
 
-        <div className={styles.item}>
-          <h5>Período de Inscrições</h5>
-          <p>Selecione um edital e defina início e fim das inscrições.</p>
+          <div className={styles.item}>
+            <h5>Período de Inscrições</h5>
+            <p>Selecione um edital e defina início e fim das inscrições.</p>
 
-          {/* Dropdown de editais */}
-          <label>
-            <span className="mt-3 mr-2">Escolha o edital:</span>
-            <Dropdown
-              value={selectedEdital}
-              options={options}
-              onChange={(e) => setSelectedEdital(e.value)}
-              placeholder="Selecione o edital"
-              className="w-full md:w-20rem"
-            />
-          </label>
+            {/* Dropdown de editais */}
+            <label>
+              <span className="mt-3 mr-2">Escolha o edital:</span>
+              <Dropdown
+                value={selectedEdital}
+                options={options}
+                onChange={(e) => setSelectedEdital(e.value)}
+                placeholder="Selecione o edital"
+                className="w-full md:w-20rem"
+              />
+            </label>
 
-          {selectedEdital && loadingEdital && <p>Carregando edital…</p>}
+            {selectedEdital && loadingEdital && <p>Carregando edital…</p>}
 
-          {selectedEdital && !loadingEdital && (
-            <>
-              {/* data de início */}
-              <div className={styles.labelDate}>
-                <label>
-                  <p>As inscrições começam dia:</p>
-                  <div className={styles.input}>
-                    <div className={styles.icon}>
-                      <RiCalendarCheckFill />
+            {selectedEdital && !loadingEdital && (
+              <>
+                {/* data de início */}
+                <div className={styles.labelDate}>
+                  <label>
+                    <p>As inscrições começam dia:</p>
+                    <div className={styles.input}>
+                      <div className={styles.icon}>
+                        <RiCalendarCheckFill />
+                      </div>
+                      <input
+                        type="date"
+                        value={dates.inicio}
+                        onChange={(e) =>
+                          handleDateChange("inicio", e.target.value)
+                        }
+                        disabled={saving.inicio}
+                      />
                     </div>
-                    <input
-                      type="date"
-                      value={dates.inicio}
-                      onChange={(e) =>
-                        handleDateChange("inicio", e.target.value)
-                      }
-                      disabled={saving.inicio}
-                    />
-                  </div>
-                </label>
-              </div>
+                  </label>
+                </div>
 
-              {/* data de fim */}
-              <div className={styles.labelDate}>
-                <label>
-                  <p>As inscrições terminam dia:</p>
-                  <div className={styles.input}>
-                    <div className={styles.icon}>
-                      <RiCalendarCloseLine />
+                {/* data de fim */}
+                <div className={styles.labelDate}>
+                  <label>
+                    <p>As inscrições terminam dia:</p>
+                    <div className={styles.input}>
+                      <div className={styles.icon}>
+                        <RiCalendarCloseLine />
+                      </div>
+                      <input
+                        type="date"
+                        value={dates.fim}
+                        onChange={(e) =>
+                          handleDateChange("fim", e.target.value)
+                        }
+                        disabled={saving.fim}
+                      />
                     </div>
-                    <input
-                      type="date"
-                      value={dates.fim}
-                      onChange={(e) => handleDateChange("fim", e.target.value)}
-                      disabled={saving.fim}
-                    />
-                  </div>
-                </label>
-              </div>
-            </>
-          )}
+                  </label>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+      <PeriodoVigencia params={params} />
+    </>
   );
 };
 

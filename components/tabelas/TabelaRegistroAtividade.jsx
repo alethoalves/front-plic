@@ -26,6 +26,8 @@ import {
   RiUser2Line,
   RiSearchLine,
   RiGraduationCapLine,
+  RiCheckDoubleLine,
+  RiQuillPenLine,
 } from "@remixicon/react";
 import NoData from "../NoData";
 import { updateRegistroAtividade } from "@/app/api/client/registroAtividade";
@@ -43,6 +45,7 @@ const TabelaRegistroAtividade = ({ params }) => {
   const [isUpdating, setIsUpdating] = useState(false);
   const statusOptions = [
     { label: "Pendente", value: "naoEntregue" },
+    { label: "Orientador", value: "aguardandoAprovacaoOrientador" },
     { label: "Concluída", value: "concluido" },
     { label: "Dispensada", value: "dispensada" },
   ];
@@ -353,6 +356,21 @@ const TabelaRegistroAtividade = ({ params }) => {
           <p>Pendente</p>
         </div>
         <div
+          className={`${styles.action} ${
+            styles.aguardandoAprovacaoOrientador
+          } ${
+            registro.status === "aguardandoAprovacaoOrientador"
+              ? styles.aguardandoAprovacaoOrientadorSelected
+              : ""
+          }`}
+          onClick={() =>
+            updateStatusSingle(registro.id, "aguardandoAprovacaoOrientador")
+          }
+        >
+          <RiQuillPenLine />
+          <p>Orientador</p>
+        </div>
+        <div
           className={`${styles.action} ${styles.concluida} ${
             registro.status === "concluido" ? styles.concluidaSelected : ""
           }`}
@@ -429,6 +447,15 @@ const TabelaRegistroAtividade = ({ params }) => {
                       <p>Pendente</p>
                     </div>
                     <div
+                      className={`${styles.action} ${styles.aguardandoAprovacaoOrientador}`}
+                      onClick={() =>
+                        updateStatusBulk("aguardandoAprovacaoOrientador")
+                      }
+                    >
+                      <RiErrorWarningLine />
+                      <p>Orientador</p>
+                    </div>
+                    <div
                       className={`${styles.action} ${styles.concluida}`}
                       onClick={() => updateStatusBulk("concluido")}
                     >
@@ -471,12 +498,6 @@ const TabelaRegistroAtividade = ({ params }) => {
                   paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                   currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros"
                 >
-                  <Column
-                    selectionMode="multiple"
-                    headerStyle={{ width: "3rem" }}
-                    frozen
-                    className={styles.checkBoxColumn}
-                  />
                   {/* Coluna fixa para o plano */}
                   <Column
                     field="titulo"

@@ -1,0 +1,61 @@
+@import "./styles/partials/colors";
+@import "./styles/partials/layout";
+@import "./styles/partials/spacing";
+
+.clickableStatus{
+    cursor: pointer;
+}
+.notaCorte{
+    margin-left: $gap-2;
+    
+    div{
+        flex-wrap: wrap;
+        flex-direction: column;
+        align-items: start;
+    }
+}
+.content{
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    gap: $gap-2;
+    padding-bottom: $gap-2;
+    @include responsive(s){
+        flex-direction: column;
+    }
+    button{
+        .btn-primary{
+            p{
+                color:$white-light
+            }
+        }
+        
+    }
+}
+
+
+
+
+.icon{
+    width: 24px;
+    color: $primary-normal;
+}
+// Adicione no final do arquivo
+.alunos-orientadores-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    
+    span {
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      
+      &:not(:last-child)::after {
+        //content: ";";
+        margin-left: 0.25rem;
+      }
+    }
+  }
+  

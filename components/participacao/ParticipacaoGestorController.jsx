@@ -324,7 +324,11 @@ const ParticipacaoGestorController = ({
       setStatusAcao("PENDENTE");
       setObservacaoPendencia("");
       setIsModalAtivarPendenteOpen(true);
-    } else if (statusAtual === "PENDENTE" || statusAtual === "APROVADA") {
+    } else if (
+      statusAtual === "PENDENTE" ||
+      statusAtual === "APROVADA" ||
+      statusAtual === "EM_ANALISE"
+    ) {
       // Ativar diretamente sem modal
       setIsLoadingAtivacao(true);
       try {
@@ -435,13 +439,13 @@ const ParticipacaoGestorController = ({
         <h4>Confirmar Inativação</h4>
 
         {/* Mensagens de erro/bloqueio */}
-        {item?.statusParticipacao !== "APROVADA" ||
-          (item?.statusParticipacao !== "PENDENTE" && (
+        {item?.statusParticipacao !== "APROVADA" &&
+          item?.statusParticipacao !== "PENDENTE" && (
             <div className="p-message p-message-error mb-3 mt-3">
               Esta participação não pode ser inativada porque seu status não é
               "APROVADO" ou "PENDENTE"
             </div>
-          ))}
+          )}
 
         {item?.VinculoSolicitacaoBolsa?.some(
           (v) => v.status !== "RECUSADO"
@@ -454,6 +458,7 @@ const ParticipacaoGestorController = ({
 
         {/* Mostrar campos apenas se a participação puder ser inativada */}
         {(item?.statusParticipacao === "APROVADA" ||
+          item?.statusParticipacao === "ATIVA" ||
           item?.statusParticipacao === "PENDENTE") &&
           (!item?.VinculoSolicitacaoBolsa?.length ||
             item?.VinculoSolicitacaoBolsa?.every(
@@ -573,7 +578,7 @@ const ParticipacaoGestorController = ({
       toast.current?.show({
         severity: "success",
         summary: "Sucesso",
-        detail: "Aluno substituído com sucesso!",
+        detail: "Substituição realizada!",
         life: 3000,
       });
       await fetch();
@@ -586,11 +591,11 @@ const ParticipacaoGestorController = ({
 
       setIsModalSubstituicaoAlunoOpen(false);
     } catch (error) {
-      console.error("Erro ao substituir aluno:", error);
+      console.error("Erro ao substituir:", error);
       toast.current?.show({
         severity: "error",
         summary: "Erro",
-        detail: error.message || "Ocorreu um erro ao substituir o aluno",
+        detail: error.message || "Ocorreu um erro ao substituir",
         life: 3000,
       });
     } finally {
@@ -610,7 +615,7 @@ const ParticipacaoGestorController = ({
       }}
     >
       <div className="mb-2">
-        <h4 className="mb-2">Substituir Aluno</h4>
+        <h4 className="mb-2">Substituição</h4>
 
         {!cpfVerificado ? (
           <CPFVerificationForm
@@ -623,7 +628,7 @@ const ParticipacaoGestorController = ({
         ) : (
           <div className="flex flex-column gap-3">
             <div className="field mb-2">
-              <label htmlFor="novoAluno">Novo Aluno</label>
+              <label htmlFor="novoAluno">Novo Participante</label>
               <InputText
                 className="w-100"
                 id="novoAluno"
@@ -1144,24 +1149,26 @@ const ParticipacaoGestorController = ({
           {/* TELA DE VISUALIZAÇÃO */}
           <div className={styles.content}>
             <div className={styles.mainContent}>
-              <div className={styles.box}>
-                <div className={styles.header}>
-                  <div className={styles.icon}>
-                    <RiGroupLine />
-                  </div>
-                  <h6>Plano de Trabalho</h6>
-                </div>
-                <div className={styles.list}>
-                  <div className={styles.itemList}>
-                    <div className={styles.content1}>
-                      <p>{item.planoDeTrabalho?.titulo}</p>
+              {item.tipo === "aluno" && (
+                <div className={styles.box}>
+                  <div className={styles.header}>
+                    <div className={styles.icon}>
+                      <RiGroupLine />
                     </div>
-                    <div className={styles.content2} onClick={() => {}}>
-                      <RiArrowRightSLine />
+                    <h6>Plano de Trabalho</h6>
+                  </div>
+                  <div className={styles.list}>
+                    <div className={styles.itemList}>
+                      <div className={styles.content1}>
+                        <p>{item.planoDeTrabalho?.titulo}</p>
+                      </div>
+                      <div className={styles.content2} onClick={() => {}}>
+                        <RiArrowRightSLine />
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
               {item.tipo === "aluno" && (
                 <div className={styles.box}>
                   <div className={styles.header}>

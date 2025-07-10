@@ -5,6 +5,47 @@ import { getCookie } from 'cookies-next';
 /**************************
  * REGISTRO ATIVIDADE
  **************************/
+export const aprovarAtividade = async (
+  tenantSlug,
+  registroAtividadeId
+) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.get(
+      `/private/${tenantSlug}/aprovar-atividade/${registroAtividadeId}`,
+      { headers }
+    );
+    return response.data.registroAtividade;
+  } catch (error) {
+    console.error("Erro ao atualizar Registro de Atividade:", error);
+    throw error;
+  }
+};
+
+export const submissaoAtividade = async (
+  tenantSlug,
+  payload,
+  registroAtividadeId
+) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.post(
+      `/private/${tenantSlug}/user/submissaoAtividade/${registroAtividadeId}`,
+      payload,
+      { headers }
+    );
+    return response.data.registroAtividade;
+  } catch (error) {
+    console.error("Erro ao criar Registro de Atividade:", error);
+    throw error;
+  }
+};
 
 export const createRegistroAtividade = async (
     tenantSlug,

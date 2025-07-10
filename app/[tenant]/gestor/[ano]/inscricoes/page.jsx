@@ -30,6 +30,9 @@ import { Dialog } from "primereact/dialog";
 import RestricaoInscricao from "@/components/RestricaoInscricao";
 import PermissoesInscricao from "@/components/PermissoesInscricao";
 import Formularios from "@/components/Formularios";
+import Button from "@/components/Button";
+import NovaInscricao from "@/components/NovaInscricao";
+import TabelaInscricao from "@/components/tabelas/TabelaInscricao";
 
 const Page = ({ params }) => {
   // ESTADOS
@@ -39,9 +42,7 @@ const Page = ({ params }) => {
 
   const [editais, setEditais] = useState([]);
   const [itens, setItens] = useState([]);
-  const [selectedItems, setSelectedItems] = useState([]);
   const [chartData, setChartData] = useState({});
-  const [globalFilterValue, setGlobalFilterValue] = useState("");
   const [chartMultiAxisData, setChartMultiAxisData] = useState({});
   const [showPeriodoInscricaoDialog, setShowPeriodoInscricaoDialog] =
     useState(false);
@@ -147,82 +148,6 @@ const Page = ({ params }) => {
       },
     },
   };
-
-  const [filters, setFilters] = useState({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    "inscricao.edital.ano": {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
-    },
-    "inscricao.edital.titulo": {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-    },
-    inscricaoId: {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
-    },
-    "inscricao.status": {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-    },
-    "inscricao.orientadorParticipacoes": {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-    },
-    projetoId: {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
-    },
-    "projeto.InscricaoProjeto.statusAvaliacao": {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-    },
-    "projeto.InscricaoProjeto.projeto.area.area": {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-    },
-    "projeto.titulo": {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-    },
-    "projeto.envolveAnimais": {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
-    },
-    "projeto.envolveHumanos": {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
-    },
-    qtdSolicitacoesBolsa: {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
-    },
-    mediaNotas: {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.BETWEEN }],
-    },
-    avaliadores: {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }],
-    },
-    id: {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
-    },
-    "area.area": {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-    },
-    titulo: {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-    },
-    alunoParticipacoes: {
-      operator: FilterOperator.AND,
-      constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }],
-    },
-  });
 
   // ROTEAMENTO
   const router = useRouter();
@@ -355,27 +280,6 @@ const Page = ({ params }) => {
     processChartData();
   }, [itens, processChartData]);
 
-  const onGlobalFilterChange = (e) => {
-    const value = e.target.value;
-    let _filters = { ...filters };
-    _filters["global"].value = value;
-    setFilters(_filters);
-    setGlobalFilterValue(value);
-  };
-
-  const renderHeader = () => {
-    return (
-      <div className="flex flex-wrap justify-content-between align-items-center">
-        <InputText
-          className="w-100"
-          value={globalFilterValue}
-          onChange={onGlobalFilterChange}
-          placeholder="Pesquisar..."
-        />
-      </div>
-    );
-  };
-
   const closeModalAndResetData = () => {
     setIsModalOpen(false);
   };
@@ -401,8 +305,10 @@ const Page = ({ params }) => {
       >
         {(() => {
           switch (activeModal) {
-            case "inscricoes":
+            case "prazo":
               return <PeriodoInscricao params={params} />;
+            case "inscricao":
+              return <NovaInscricao params={params} />;
             case "restricoes":
               return <RestricaoInscricao params={params} />;
             case "permissoes":
@@ -424,9 +330,10 @@ const Page = ({ params }) => {
               <li onClick={() => setActiveModal("permissoes")}>
                 <p>Permissões</p>
               </li>
-              <li onClick={() => setActiveModal("inscricoes")}>
-                <p>Inscrições</p>
+              <li onClick={() => setActiveModal("prazo")}>
+                <p>Prazos</p>
               </li>
+
               <li onClick={() => setActiveModal("restricoes")}>
                 <p>Restrições</p>
               </li>
@@ -436,6 +343,7 @@ const Page = ({ params }) => {
             </ul>
           </div>
         </Card>
+
         <Card className="mb-4 p-2">
           <h5 className="mb-2">Evolução das Inscrições</h5>
 
@@ -555,7 +463,8 @@ const Page = ({ params }) => {
             </div>
           ) : (
             <>
-              <TabelaPlanoDeTrabalho params={params} />
+              {false && <TabelaPlanoDeTrabalho params={params} />}
+              <TabelaInscricao params={params} />
             </>
           )}
         </Card>

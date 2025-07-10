@@ -7,124 +7,13 @@
     h6{
         margin-bottom: $gap-1;
     }
-    
-    .box{
-        padding: $gap-2;
-        border: 1px solid $gray-50;
-        box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
-        border-radius: $gap-1;
-        &:not(:last-child){
-            margin-bottom: $gap-1;
-        }
-        position: relative;
-        
-        .flags{
-            display: flex;
-            flex-wrap: wrap;
-            .flag{
-                border: 1px solid $gray-50;
-                padding: $gap-1 $gap-2;
-                border-radius: $gap-1;
-                background-color: $gray-100;
-                margin-bottom: $gap-1;
-                &:not(:last-child){
-                    margin-right: $gap-1;
-                }
-                p{
-                    color: $primary-darken;
-                }
-            }
-        }
-        .menuActions{
-            border-top-right-radius: $gap-1;
-            border-bottom-right-radius: $gap-1;
-            cursor: pointer;
-            padding: 4px $gap-2;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-
-            &:hover{
-                background-color: $gray-100;
-                .circle{
-                    background-color: $primary-normal;
-                }
-            }
-            .circle{
-                width: 4px;
-                height: 4px;
-                border-radius: 50%;
-                background-color: $primary-darken;
-                &:not(:last-child){
-                    margin-bottom: 2px;
-                }
-            }
-            
-        }
-        .innerBoxGray{
-            background-color: $gray-50;
-            p{
-                color: $primary-darken;
-                margin-bottom: 0;
-                font-weight: 700;
-                line-height: 120%;
-                align-items: center;
-            }
-        }
-        .innerBoxWhite{
-            border: 1px solid $gray-50;
-            p{
-                color: $primary-darken;
-                margin-bottom: 0;
-                line-height: 120%;
-                align-items: center;
-            }
-        }
-        
-        .innerBox{
-            display: flex;
-            justify-content: space-between;
-            align-items: stretch;
-            border-radius: $gap-1;
-            margin-bottom: $gap-1;
-            p{
-                padding: $gap-2 ;
-            }
-            cursor: pointer;
-        }
-        .statusInativo{
-            cursor:default;
-            background-color: $white-dark;
-            border: 1px solid $white-dark;
-            p{
-                color: $gray-400;
-            }
-        }
-        .participacoes {
-            display: flex;
-            flex-wrap: wrap;
-            border: 1px solid red;
-            span{
-                font-weight: 300;
-            }
-            
-            
-        }
-        
-    }
-   
-
-
-
-
-   
-    
-    
 }
+
 .icon{
     width: 24px;
     color: $primary-normal;
 }
+
 .menu{
     h5{
         margin-bottom: $gap-3;
@@ -133,16 +22,15 @@
         margin-bottom: $gap-2;
     }
 }
+
 .notification{
     h6{
         margin-top: $gap-2;
         padding: $gap-1 $gap-2;
         border-radius: $gap-1;
         display: block;
-
     }
     h6.success{
-
         background-color: $success-light;
     }
     h6.error{
@@ -150,28 +38,26 @@
         background-color: $error-light;
     }
 }
+
 .actionsTable{
     display: flex;
     margin-top: $gap-2;
     margin-bottom: $gap-3;
-    
     button{
-        
         flex: 1;
         border-radius: $gap-1;
         &:not(:last-child) {
            margin-right: $gap-2;
         };
         color: $white-light
-        
-        
-           
-        
-    
+    }
+}
+.respostasSection{
+    h5{
+        font-size: 14px;
     }
 }
 .navContent{
-    
     width: 500px;
     @include responsive(s){
         width: 100%;
@@ -183,30 +69,23 @@
             flex-direction: column;
             padding: $gap-1;
         }
-        
         padding: $gap-2;
         .header{
             h5{
                 font-weight: 300;
-
                 span{
                     padding: 4px $gap-2;
                     border-radius: $gap-1;
                     background-color: $primary-darken;
                     color: $white-light
-                    
                 }
-                
             };
             display: flex;
             flex-direction: column;
             align-items: left;
         }
-        
-        
     }
     
-
 }
 
 .boxButton{
@@ -214,28 +93,24 @@
         margin-bottom: $gap-2;
     }
     border-radius: $gap-1;
-    
     border: 1px solid $gray-50;
     padding: $gap-3;
-    cursor: pointer;
+    //cursor: pointer;
     &:hover{
         box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
     }
     .labelWithIcon{
         display: flex;
         align-items: center;
-        &:not(:last-child){
-            margin-bottom: $gap-2;
-        }
+        
         .label,.description{
             display: flex;
             flex-direction: column;
         }
         .label{
             flex: 1;
-            
+            margin: 0 $gap-2;
             .status{
-                
                 p{
                     font-size: 12px;
                     display: inline;
@@ -253,29 +128,27 @@
                     margin-left: 0;
                 }
             }
-            .warning{
-                
-                p{
-                    background-color: $warning-light;
-                    color:red
-                }
-            }
             .success{
                 p{
-                    background-color: $success-light;
+                    background-color: $success-lighten;
                 }
-                
             }
             .error{
                 p{
-                    color: $white-light;
-                    background-color: $error-light;
+                    color: $error-dark;
+                    background-color: $error-lighten;
+                }
+            }
+            .warning{
+                p{
+                    color: $warning-darken;
+                    background-color: $warning-lighten;
+                    border: 1px solid $warning-dark;
                 }
             }
             p{
                 display: flex;
                 align-items: center;
-                
                 svg{
                     display: none;
                     @include responsive (xs){
@@ -291,124 +164,72 @@
                 margin-top: $gap-1;
                 p{
                     font-weight: 600;
-                    text-transform: uppercase;
+                    
                 }
                 p.destaque{
-                        color: $primary-darken;
-                    }
-                    p.person{
-                        font-weight: 300;
-                        font-size: 12px;
-                    }
+                    color: $primary-darken;
+                }
+                p.person{
+                    font-weight: 300;
+                    font-size: 12px;
+                }
             }
         }
-        
-        
         svg{
             color: $primary-darken;
             width: 20px;
             height: 20px;
-            margin-right: $gap-2;
             @include responsive (xs){
                 display: none;
             }
         }
     }
+    .accordionContent {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+        margin-top: $gap-2;
+        &.expanded {
+            max-height: 1000px; // Adjust this value based on your content
+            transition: max-height 0.5s ease-in;
+        }
+    }
+    
+    
 }
 
-.inscricaoEvento{
+  
+  .accordionContent.expanded .openModalButton {
+    display: block;
+  }
+  
+.toogle{
     display: flex;
     align-items: center;
-    @include responsive(xs){
-        flex-direction: column;
-        align-items: start;
-        justify-content: left;
-    }
-    p{
-        flex: 1;
-    }
-    button{
-        width: 100px;
-        @include responsive(xs){
-            width: 100%;
-            margin-top: $gap-2;
+    justify-content: center;
+    padding: $gap-1;
+    border-radius: 50%;
+    background-color: $white-darken;
+    svg{
+        transition: transform 0.3s ease;
+        width: 22px;
+        &.rotated {
+            transform: rotate(180deg);
         }
     }
 }
-.infoEvento{
-    flex: 1;
+
+.campos {
+    margin-top: $gap-2;
 }
-.itemList{
-    margin-top: $gap-1;
+
+.iconAlert {
+    color: $error-light !important;
+}
+
+.registroHeader {
+    cursor: pointer;
+    justify-content: space-between;
     
-    .headItemList{
-        
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: $gap-2 $gap-3;
-        //box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
-        border: 1px solid $gray-50;
-        cursor: pointer;
-        border-radius: $gap-1;
-
-        @include responsive(xs){
-            flex-direction: column;
-           align-items: flex-start;
-        }
-        .info{
-            flex: 1;
-            @include responsive(xs){
-                display: flex;
-                flex-direction: column;
-            }
-        }
-        .head{
-            display: flex;
-            align-items: center;
-            @include responsive(xs){
-                display: flex;
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            p.titulo{
-                width: 170px;
-                @include responsive(xs){
-                    width: 100%;
-                    margin-bottom: $gap-1;
-                }
-                color:$primary-darken;
-                font-weight: 600;
-                text-transform: uppercase;
-                margin-right: $gap-2;
-            }
-            p.subtitulo{
-                color:$gray-400;
-                display: flex;
-                flex-direction: column;
-                margin-right: $gap-2;
-                span{
-                    font-weight: 700;
-                }
-                @include responsive(xs){
-                    margin-bottom: $gap-1;
-                }
-            }
-            p.descricao{
-                font-weight: 300;
-                margin-top: $gap-1;
-                color: $gray-400;
-            }
-        }
-
-        
-        .actions{
-            @include responsive(xs){
-                width: 100%;
-            }
-        }
-    }
-   
+    
 }
-
-

@@ -51,13 +51,7 @@ a.linkFile{
         color: $error-normal;
     }
 }
-.p-button.p-button-icon-only.p-button-rounded{
-    height: 1.5rem;
-    width: 1.5rem;
-    svg{
-        padding: 6px;
-    }
-}
+
 
 
 .p-button-success,.p-button,.p-button-secondary,.p-button-danger, .p-button-info,.p-button-help, .p-button-warning{
@@ -86,7 +80,7 @@ a.linkFile{
     background-color: $white-light;
     transition: all .3s ease;
     p{
-        color: $black-normal;
+        color: $primary-darken;
     }
     &:hover{
         opacity: 0.8;
@@ -244,5 +238,11 @@ button[type="submit"]:disabled, button:disabled{
     justify-content: center;
     height: 40px;
     width: 40px;
+}
+
+.p-button-rounded{
+    span{
+        margin-right: 0px;
+    }
 }
 

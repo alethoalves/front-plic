@@ -141,7 +141,25 @@ const FormGestorProjetoCreateOrEdit = ({
           console.log(inscricaoProjeto);
           setProjetoDetalhes(inscricaoProjeto.projeto);
           setInscricaoProjeto(inscricaoProjeto);
+          if (inscricaoProjeto.projeto) {
+            setValue("titulo", inscricaoProjeto.projeto.titulo);
+            setValue("areaId", inscricaoProjeto.projeto.areaId);
+
+            // Popula cronograma
+            if (inscricaoProjeto.projeto.CronogramaProjeto) {
+              const mappedCronograma =
+                inscricaoProjeto.projeto.CronogramaProjeto.map((item) => ({
+                  nome: item.atividade,
+                  inicio: item.inicio,
+                  fim: item.fim,
+                }));
+              setCronograma(mappedCronograma);
+            }
+          } else {
+            reset();
+          }
         }
+
         const areas = await getAreas(tenantSlug);
         setAreas(transformedArray(areas));
       } catch (error) {
@@ -153,24 +171,6 @@ const FormGestorProjetoCreateOrEdit = ({
       }
     };
     fetchData();
-    if (projetoDetalhes) {
-      setValue("titulo", projetoDetalhes.titulo);
-      setValue("areaId", projetoDetalhes.areaId);
-
-      // Popula cronograma
-      if (projetoDetalhes.CronogramaProjeto) {
-        const mappedCronograma = projetoDetalhes.CronogramaProjeto.map(
-          (item) => ({
-            nome: item.atividade,
-            inicio: item.inicio,
-            fim: item.fim,
-          })
-        );
-        setCronograma(mappedCronograma);
-      }
-    } else {
-      reset();
-    }
   }, [setValue, reset, tenantSlug]);
 
   //BUSCA OS DADOS DO FORMULARIO DE PLANO DE TRABALHO
@@ -526,27 +526,35 @@ const FormGestorProjetoCreateOrEdit = ({
       <div className={styles.toast}>
         <Toast ref={toast} />
       </div>
-      <div className={`${styles.nav}`}>
-        <div className={`${styles.menu}`}>
-          <div
-            className={`${styles.itemMenu} ${
-              activeTab === "inscricaoProjeto" ? styles.itemMenuSelected : ""
-            }`}
-            onClick={() => handleTabChange("inscricaoProjeto")}
-          >
-            <p>Informações</p>
-          </div>
-          <div
-            className={`${styles.itemMenu} ${
-              activeTab === "conteudo" ? styles.itemMenuSelected : ""
-            }`}
-            onClick={() => handleTabChange("conteudo")}
-          >
-            <p>Conteúdo</p>
+      {loading && (
+        <div className={styles.content}>
+          <p>Carregando...</p>
+        </div>
+      )}
+      {projetoId && !loading && (
+        <div className={`${styles.nav}`}>
+          <div className={`${styles.menu}`}>
+            <div
+              className={`${styles.itemMenu} ${
+                activeTab === "inscricaoProjeto" ? styles.itemMenuSelected : ""
+              }`}
+              onClick={() => handleTabChange("inscricaoProjeto")}
+            >
+              <p>Informações</p>
+            </div>
+            <div
+              className={`${styles.itemMenu} ${
+                activeTab === "conteudo" ? styles.itemMenuSelected : ""
+              }`}
+              onClick={() => handleTabChange("conteudo")}
+            >
+              <p>Conteúdo</p>
+            </div>
           </div>
         </div>
-      </div>
-      {activeTab === "inscricaoProjeto" && (
+      )}
+
+      {activeTab === "inscricaoProjeto" && projetoId && !loading && (
         <div className={styles.content}>
           <div className={styles.mainContent}>
             <div className={styles.box}>
@@ -656,7 +664,7 @@ const FormGestorProjetoCreateOrEdit = ({
           </div>
         </div>
       )}
-      {activeTab === "conteudo" && (
+      {activeTab === "conteudo" && !loading && (
         <form
           className={`${styles.formulario}`}
           onSubmit={handleSubmit(handleFormSubmit)}

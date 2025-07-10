@@ -25,6 +25,7 @@ const ProjetoController = ({
   idProjeto,
   onProjetoVinculado,
   closeModal,
+  inscricao,
 }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -37,7 +38,10 @@ const ProjetoController = ({
   const fetchProjetosDoUsuario = async () => {
     try {
       setLoading(true); // Mostra o estado de carregamento
-      const response = await getProjetosDoUsuario(tenant);
+      const response = await getProjetosDoUsuario(
+        tenant,
+        inscricao.proponenteId
+      );
 
       // Ordena os projetos por ID decrescente
       const projetosOrdenados = response.sort((a, b) => b.id - a.id);

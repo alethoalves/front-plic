@@ -13,6 +13,36 @@
     }
     
 }
+.voltar{
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    margin-bottom: $gap-2;
+    gap: $gap-1;
+    cursor: pointer;
+    svg{
+        border: 2px solid $white-darken;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px;
+        color: $primary-darken;
+        transition: ease .3s;
+    }
+    &:hover{
+        svg{
+            background-color: $primary-dark;
+            border: 2px solid $primary-dark;
+            color: $white-light;
+        }
+        p{
+            color: $primary-dark
+        }
+    }
+}
 .status{
     display: inline-block;
     padding: 0px $gap-2;

@@ -1,51 +1,51 @@
 "use client";
 import {
-  RiAlertLine,
+  RiArrowDownSLine,
   RiCalendarEventFill,
   RiCheckDoubleLine,
   RiDraftLine,
-  RiEditLine,
-  RiFolder2Line,
   RiFoldersLine,
   RiGroupLine,
-  RiMenuLine,
   RiUser2Line,
 } from "@remixicon/react";
 import styles from "./page.module.scss";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Modal from "@/components/Modal";
-import Button from "@/components/Button";
-import {
-  getRegistroAtividadesByCPF,
-  getRegistroAtividadesByCpfEditaisVigentes,
-  updateRegistroAtividade,
-} from "@/app/api/client/registroAtividade";
 import Campo from "@/components/Campo";
-import { startSubmission } from "@/app/api/client/resposta";
-import FormArea from "@/components/Formularios/FormArea";
 import NoData from "@/components/NoData";
 import { getCookie } from "cookies-next";
-import {
-  getRegistroAtividadesByCpf,
-  getRegistroAtividadesByCpfTenantAluno,
-} from "@/app/api/client/atividade";
+import { getRegistroAtividadesByCpf } from "@/app/api/client/atividade";
+import { formatDateForDisplay } from "@/lib/formatDateForDisplay";
+import FormRegistroAtividadeCreateOrEdit from "@/components/Formularios/FormRegistroAtividadeCreateOrEdit";
+import { Toast } from "primereact/toast";
+import { Accordion, AccordionTab } from "primereact/accordion";
+import { aprovarAtividade } from "@/app/api/client/registroAtividade";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [errorToGetCamposForm, setErrorToGetCamposForm] = useState(false);
   const [itemToEdit, setItemToEdit] = useState(null);
   const [camposForm, setCamposForm] = useState([]);
   const [
     registroAtividadesEditaisVigentes,
     setRegistrosAtividadesEditaisVigentes,
   ] = useState(null);
-  const [code, setCode] = useState(null);
-  const [tela, setTela] = useState(0);
+  const [expandedItems, setExpandedItems] = useState({});
+  const [modalLoading, setModalLoading] = useState(false);
+  const [approvingId, setApprovingId] = useState(null);
+  const toast = useRef(null);
+
+  const toggleAccordion = (id) => {
+    setExpandedItems((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
 
   const router = useRouter();
   const perfil = getCookie("perfilSelecionado");
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -54,7 +54,6 @@ const Page = ({ params }) => {
           params.tenant,
           perfil
         );
-        console.log(response);
         setRegistrosAtividadesEditaisVigentes(
           response.registrosAtividade.sort(
             (a, b) =>
@@ -64,6 +63,12 @@ const Page = ({ params }) => {
         );
       } catch (error) {
         console.error("Erro ao buscar dados:", error);
+        toast.current.show({
+          severity: "error",
+          summary: "Erro",
+          detail: "Falha ao carregar atividades",
+          life: 5000,
+        });
       } finally {
         setLoading(false);
       }
@@ -71,238 +76,63 @@ const Page = ({ params }) => {
     fetchData();
   }, [params.tenant, isModalOpen]);
 
-  // Atualização do item e status após criar ou editar
-  const handleCreateOrEditSuccess = useCallback(async () => {
-    try {
-      const response = await getRegistroAtividadesByCpfEditaisVigentes(
-        params.tenant
-      );
+  const handleCreateOrEditSuccess = useCallback((updatedRegistro) => {
+    setRegistrosAtividadesEditaisVigentes((prev) =>
+      prev.map((registro) =>
+        registro.id === updatedRegistro.id
+          ? { ...registro, ...updatedRegistro }
+          : registro
+      )
+    );
+    closeModalAndResetData();
+    toast.current.show({
+      severity: "success",
+      summary: "Sucesso",
+      detail: "Atividade salva com sucesso!",
+      life: 5000,
+    });
+  }, []);
 
-      const itens = response.filter(
-        (item) => item.planoDeTrabalho.inscricao.edital.vigente === true
-      );
-
-      const updatedItem = itens.find((item) => item.id === itemToEdit?.id);
-
-      setItemToEdit(updatedItem); // Atualiza o item
-
-      if (updatedItem) {
-        await checkFormStatus(
-          updatedItem.atividade.formulario.campos,
-          updatedItem.respostas
-        );
-      }
-    } catch (error) {
-      console.error("Erro ao buscar dados:", error);
-    }
-  }, [params.tenant, itemToEdit?.id]);
-
-  // Observa mudanças no itemToEdit e verifica o status do formulário
-  useEffect(() => {
-    if (itemToEdit) {
-      checkFormStatus(
-        itemToEdit.atividade.formulario.campos,
-        itemToEdit.respostas
-      );
-    }
-  }, [itemToEdit]);
+  const handleFormError = useCallback((error) => {
+    toast.current.show({
+      severity: "error",
+      summary: "Erro",
+      detail: error.response?.data?.message || "Erro ao salvar atividade",
+      life: 5000,
+    });
+  }, []);
 
   const closeModalAndResetData = () => {
     setIsModalOpen(false);
     setItemToEdit(null);
     setCamposForm([]);
-    setTela(0);
-  };
-
-  const formatarData = (dataIso) => {
-    const data = new Date(dataIso);
-    const dia = data.getUTCDate().toString().padStart(2, "0");
-    const mes = (data.getUTCMonth() + 1).toString().padStart(2, "0");
-    const ano = data.getUTCFullYear().toString();
-    return `${dia}/${mes}/${ano}`;
   };
 
   const renderModalContent = () => {
     return (
       <Modal isOpen={isModalOpen} onClose={closeModalAndResetData}>
-        {code === 1 && (
-          <>
-            <h5>
-              {`${itemToEdit?.planoDeTrabalho?.area ? "Altere" : "Informe"}`} a
-              área do plano de trabalho
-            </h5>
-            <p>
-              Identificamos que o cadastro do plano de trabalho está sem a
-              indicação da área de conhecimento.
-            </p>
-            <FormArea
-              perfil="aluno"
-              tenantSlug={params.tenant}
-              initialData={itemToEdit?.planoDeTrabalho}
-              idInscricao={itemToEdit?.id}
-              onClose={() => {
-                setIsModalOpen(false);
-                setCode(null);
-              }}
-              onSuccess={async () => {
-                await handleCreateOrEditSuccess();
-                setCode(2);
-              }}
-            />
-          </>
-        )}
-        {code === 2 && !camposForm && (
-          <>
-            <div className={`${styles.icon} ${styles.iconAlert} mb-2`}>
-              <RiAlertLine />
-            </div>
-            <h4>Ops :/ {code}</h4>
-            <div className={`notification notification-error`}>
-              <p className="p5">{errorToGetCamposForm}</p>
-            </div>
-          </>
-        )}
-        {code === 2 && camposForm && (
+        {modalLoading ? (
+          <div className="p-4 text-center">
+            <p>Carregando...</p>
+          </div>
+        ) : (
           <>
             <h4>{itemToEdit?.atividade?.titulo}</h4>
-            <div className={styles.notification}>
-              <h6
-                className={`${
-                  itemToEdit?.status === "naoEntregue"
-                    ? styles.error
-                    : styles.success
-                } mb-2`}
-              >{`${
-                itemToEdit?.status === "naoEntregue"
-                  ? "Atividade não entregue! Preecha os campos e salve-os."
-                  : "Atividade entregue!"
-              }`}</h6>
-            </div>
             <p>
               Preencha cada campo e salve, ao finalizar, feche este modal e
               verifique o status da atividade!
             </p>
             <div className={`${styles.campos} mt-2`}>
-              {camposForm?.map((item, index) => (
-                // Exibe o campo somente se tela for igual ao índice
-                // tela === index &&
-                <Campo
-                  perfil="participante"
-                  readOnly={false}
-                  key={item.id}
-                  schema={camposForm && camposForm[index]}
-                  camposForm={camposForm}
-                  respostas={itemToEdit?.respostas}
-                  tenantSlug={params.tenant}
-                  registroAtividadeId={itemToEdit?.id}
-                  onClose={closeModalAndResetData}
-                  onSuccess={handleCreateOrEditSuccess}
-                  setLoading={setLoading}
-                />
-              ))}
+              <FormRegistroAtividadeCreateOrEdit
+                tenantSlug={params.tenant}
+                initialData={itemToEdit}
+                onClose={closeModalAndResetData}
+                onSuccess={handleCreateOrEditSuccess}
+                onError={handleFormError}
+                idFormularioEdital={itemToEdit?.atividade?.formularioId}
+              />
             </div>
-
-            <div className={styles.notification}>
-              <h6
-                className={`${
-                  itemToEdit?.status === "naoEntregue"
-                    ? styles.error
-                    : styles.success
-                }`}
-              >{`${
-                itemToEdit?.status === "naoEntregue"
-                  ? "Atividade não entregue! Preecha os campos e salve-os."
-                  : "Atividade entregue!"
-              }`}</h6>
-            </div>
-
-            {false && (
-              <div className={styles.actionsTable}>
-                {tela != 0 && (
-                  <button
-                    className="button btn-secondary"
-                    onClick={() => setTela((prev) => Math.max(prev - 1, 0))}
-                    disabled={tela === 0}
-                  >
-                    Anterior
-                  </button>
-                )}
-                {tela != camposForm.length - 1 && (
-                  <button
-                    className="button btn-secondary"
-                    onClick={() =>
-                      setTela((prev) =>
-                        Math.min(prev + 1, camposForm.length - 1)
-                      )
-                    }
-                    disabled={tela === camposForm.length - 1}
-                  >
-                    Próximo
-                  </button>
-                )}
-              </div>
-            )}
-            {itemToEdit?.status === "concluido" && (
-              <Button
-                className={"mt-3 btn-secondary"}
-                type="button"
-                disabled={loading}
-                onClick={() => {
-                  setCode(3);
-                }}
-              >
-                Sair da edição
-              </Button>
-            )}
           </>
-        )}
-
-        {code === 3 && (
-          <div className={styles.menu}>
-            <h5>Resposta:</h5>
-            <div className={`${styles.campos} mt-2 mb-2`}>
-              {camposForm?.map((item, index) => (
-                <Campo
-                  perfil="participante"
-                  readOnly={true}
-                  key={item.id}
-                  schema={camposForm && camposForm[index]}
-                  camposForm={camposForm}
-                  respostas={itemToEdit?.respostas}
-                  tenantSlug={params.tenant}
-                  registroAtividadeId={itemToEdit?.id}
-                  onClose={closeModalAndResetData}
-                  onSuccess={handleCreateOrEditSuccess}
-                  setLoading={setLoading}
-                />
-              ))}
-            </div>
-            <Button
-              className="btn-secondary"
-              icon={RiEditLine}
-              type="button"
-              disabled={loading}
-              onClick={() => {
-                setCode(2);
-              }}
-            >
-              Editar atividade
-            </Button>
-
-            {false && (
-              <Button
-                className="btn-secondary"
-                icon={RiFolder2Line}
-                type="button"
-                disabled={loading}
-                onClick={() => {
-                  setCode(2);
-                }}
-              >
-                Ver Plano de Trabalho
-              </Button>
-            )}
-          </div>
         )}
       </Modal>
     );
@@ -310,72 +140,106 @@ const Page = ({ params }) => {
 
   const openModalAndSetData = async (data) => {
     setItemToEdit(data);
-
-    const response = await startSubmission(data.id);
-    if (response?.response?.status === "concluido") {
-      setCode(3);
-    } else {
-      setCode(response.code);
-    }
-
-    setItemToEdit(data);
-    setCamposForm(
-      data.atividade.formulario.campos.sort((a, b) => a.ordem - b.ordem)
-    );
+    setCamposForm([]);
+    setModalLoading(true);
     setIsModalOpen(true);
+
+    try {
+      // Se houver alguma operação assíncrona aqui, coloque
+    } catch (err) {
+      console.error("Erro:", err);
+      toast.current.show({
+        severity: "error",
+        summary: "Erro",
+        detail: "Falha ao carregar formulário",
+        life: 5000,
+      });
+    } finally {
+      setModalLoading(false);
+    }
   };
 
-  const getFormWithRespostas = async (campos, respostas) => {
+  const handleAprovarAtividade = async (registro) => {
+    setApprovingId(registro.id);
     try {
-      const formWithRespostas = campos.map((campo) => {
-        const resposta = respostas.find((res) => res.campoId === campo.id);
-        return {
-          campoId: campo.id,
-          obrigatorio: campo.obrigatorio,
-          value: resposta ? resposta.value : "",
-        };
+      await aprovarAtividade(params.tenant, registro.id);
+
+      toast.current.show({
+        severity: "success",
+        summary: "Sucesso",
+        detail: "Atividade aprovada com sucesso!",
+        life: 5000,
       });
 
-      const isComplete = formWithRespostas
-        .filter((item) => item.obrigatorio)
-        .every((item) => item.value.trim() !== "");
-
-      return {
-        status: isComplete ? "completo" : "incompleto",
-        data: formWithRespostas,
-      };
-    } catch (error) {
-      console.error("Erro ao buscar campos e respostas:", error);
-      return {
-        status: "incompleto",
-        data: [],
-      };
-    }
-  };
-
-  const checkFormStatus = async (campos, respostas) => {
-    const result = await getFormWithRespostas(campos, respostas);
-    if (result.status === "completo") {
-      handleFormComplete();
-    }
-  };
-
-  const handleFormComplete = useCallback(async () => {
-    try {
-      await updateRegistroAtividade(
+      const updatedResponse = await getRegistroAtividadesByCpf(
         params.tenant,
-        itemToEdit.atividadeId,
-        itemToEdit.id,
-        { status: "concluido" }
+        perfil
+      );
+      setRegistrosAtividadesEditaisVigentes(
+        updatedResponse.registrosAtividade.sort(
+          (a, b) =>
+            new Date(a.atividade.dataInicio) - new Date(b.atividade.dataInicio)
+        )
       );
     } catch (error) {
-      console.error("Erro ao atualizar registro:", error);
+      console.error("Erro ao aprovar atividade:", error);
+      toast.current.show({
+        severity: "error",
+        summary: "Erro",
+        detail: error.response?.data?.message || "Erro ao aprovar atividade",
+        life: 5000,
+      });
+    } finally {
+      setApprovingId(null);
     }
-  }, [params.tenant, itemToEdit?.atividadeId, itemToEdit?.id]);
+  };
+
+  const renderRespostas = (respostas) => {
+    if (!respostas || respostas.length === 0) {
+      return <p>Nenhuma resposta enviada ainda.</p>;
+    }
+
+    return (
+      <Accordion multiple activeIndex={[]}>
+        {respostas.map((resposta, index) => (
+          <AccordionTab
+            key={`resposta-${index}`}
+            header={resposta.campo?.label}
+            headerClassName={styles.accordionHeader}
+          >
+            <div
+              className={styles.respostaContent}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {resposta.campo?.tipo === "arquivo" ||
+              resposta.campo?.tipo === "link" ? (
+                <a
+                  href={resposta.value}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.link}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {resposta.campo.tipo === "arquivo" ? "📁 " : "🔗 "}
+                  {resposta.value.split("/").pop()}
+                </a>
+              ) : (
+                <p style={{ whiteSpace: "pre-wrap" }}>
+                  {resposta.value || "Nenhum conteúdo fornecido"}
+                </p>
+              )}
+            </div>
+          </AccordionTab>
+        ))}
+      </Accordion>
+    );
+  };
 
   return (
     <>
       {renderModalContent()}
+      <Toast ref={toast} position="top-right" />
+
       <div className={styles.navContent}>
         <div className={styles.content}>
           <div className={styles.header}>
@@ -386,134 +250,183 @@ const Page = ({ params }) => {
             </p>
           </div>
           {registroAtividadesEditaisVigentes?.length > 0 ? (
-            <>
-              <div className={styles.mainContent}>
-                <div className={styles.tela1}>
-                  {registroAtividadesEditaisVigentes?.map((registro) => (
+            <div className={styles.mainContent}>
+              <div className={styles.tela1}>
+                {registroAtividadesEditaisVigentes?.map((registro) => (
+                  <div key={registro.id} className={styles.boxButton}>
                     <div
-                      key={registro.id}
-                      className={styles.boxButton}
-                      onClick={async () => {
-                        await openModalAndSetData(registro);
-                      }}
+                      className={`${styles.labelWithIcon} ${styles.registroHeader}`}
+                      onClick={() => toggleAccordion(registro.id)}
                     >
-                      <div className={styles.labelWithIcon}>
-                        <RiCheckDoubleLine />
-                        <div className={styles.label}>
-                          <p>
-                            <RiCheckDoubleLine />
-                            Status da atividade:
+                      <RiDraftLine />
+                      <div className={styles.label}>
+                        <div className={styles.description}>
+                          <p
+                            style={{ textTransform: "uppercase" }}
+                            className={styles.destaque}
+                          >
+                            {registro.atividade.titulo}
                           </p>
-                          <div className={styles.description}>
-                            <div
-                              className={`${styles.status} ${
-                                registro.status === "naoEntregue" &&
-                                styles.error
-                              } ${
-                                registro.status === "concluido" &&
-                                styles.success
-                              }`}
-                            >
+                        </div>
+                        <div className={styles.description}>
+                          <div
+                            className={`${styles.status} ${
+                              registro.status === "naoEntregue" && styles.error
+                            } ${
+                              registro.status === "concluido" && styles.success
+                            }
+                            ${
+                              registro.status ===
+                                "aguardandoAprovacaoOrientador" &&
+                              styles.warning
+                            }`}
+                          >
+                            <p>
+                              {registro.status === "naoEntregue" &&
+                                "Não entregue"}
+                              {registro.status === "concluido" && "Entregue"}
+                              {registro.status ===
+                                "aguardandoAprovacaoOrientador" &&
+                                "Agurdando orientador"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className={styles.toogle}>
+                        <RiArrowDownSLine
+                          className={
+                            expandedItems[registro.id] ? styles.rotated : ""
+                          }
+                        />
+                      </div>
+                    </div>
+                    {expandedItems[registro.id] && (
+                      <div
+                        className={`${styles.accordionContent} ${
+                          expandedItems[registro.id] ? styles.expanded : ""
+                        }`}
+                      >
+                        <div className={`${styles.labelWithIcon} mb-2`}>
+                          <RiCalendarEventFill />
+                          <div className={styles.label}>
+                            <p>
+                              <RiCalendarEventFill />
+                              Período para entrega:
+                            </p>
+                            <div className={styles.description}>
                               <p>
-                                {registro.status === "naoEntregue" &&
-                                  "Não entregue"}
-                                {registro.status === "concluido" && "Entregue"}
+                                {formatDateForDisplay(
+                                  registro.atividade.dataInicio
+                                )}{" "}
+                                a{" "}
+                                {formatDateForDisplay(
+                                  registro.atividade.dataFinal
+                                )}
                               </p>
                             </div>
                           </div>
                         </div>
-                      </div>
-                      <div className={styles.labelWithIcon}>
-                        <RiDraftLine />
-                        <div className={styles.label}>
-                          <p>
-                            <RiDraftLine />
-                            Nome da atividade:
-                          </p>
-                          <div className={styles.description}>
-                            <p className={styles.destaque}>
-                              {registro.atividade.titulo}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className={styles.labelWithIcon}>
-                        <RiCalendarEventFill />
-                        <div className={styles.label}>
-                          <p>
-                            <RiCalendarEventFill />
-                            Período para entrega:
-                          </p>
-                          <div className={styles.description}>
-                            <p>
-                              {formatarData(registro.atividade.dataInicio)} a{" "}
-                              {formatarData(registro.atividade.dataFinal)}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
 
-                      <div className={styles.labelWithIcon}>
-                        <RiFoldersLine />
-                        <div className={styles.label}>
-                          <p>
-                            <RiFoldersLine />
-                            Atividade referente ao plano de trabalho:
-                          </p>
-                          <div className={styles.description}>
-                            <p>{registro.planoDeTrabalho.titulo}</p>
+                        <div className={`${styles.labelWithIcon} mb-2`}>
+                          <RiFoldersLine />
+                          <div className={styles.label}>
+                            <p>
+                              <RiFoldersLine />
+                              Plano de trabalho:
+                            </p>
+                            <div className={styles.description}>
+                              <p>{registro.planoDeTrabalho.titulo}</p>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div className={styles.labelWithIcon}>
-                        <RiUser2Line />
-                        <div className={styles.label}>
-                          <p>
-                            <RiUser2Line />
-                            Orientador(es):
-                          </p>
-                          <div className={styles.description}>
-                            {registro.planoDeTrabalho.inscricao.participacoes
-                              .filter(
-                                (item) =>
-                                  item.tipo === "orientador" ||
-                                  item.tipo === "coorientador"
-                              )
-                              .map((item, index) => (
-                                <p className={styles.person} key={index}>
-                                  {item.user.nome} ({item.status})
-                                </p>
-                              ))}
+                        <div className={`${styles.labelWithIcon} mb-2`}>
+                          <RiUser2Line />
+                          <div className={styles.label}>
+                            <p>
+                              <RiUser2Line />
+                              Orientador(es):
+                            </p>
+                            <div className={styles.description}>
+                              {registro.planoDeTrabalho.inscricao.participacoes
+                                .filter(
+                                  (item) =>
+                                    item.tipo === "orientador" ||
+                                    item.tipo === "coorientador"
+                                )
+                                .map((item, index) => (
+                                  <p className={styles.person} key={index}>
+                                    {item.user.nome} ({item.statusParticipacao})
+                                  </p>
+                                ))}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div className={styles.labelWithIcon}>
-                        <RiGroupLine />
-                        <div className={styles.label}>
-                          <p>
-                            <RiGroupLine />
-                            Aluno(s):
-                          </p>
-                          <div className={styles.description}>
-                            {registro.planoDeTrabalho.participacoes.map(
-                              (item, index) => (
-                                <p className={styles.person} key={index}>
-                                  {item.user.nome} ({item.status})
-                                </p>
-                              )
+                        <div className={`${styles.labelWithIcon} mb-2`}>
+                          <RiGroupLine />
+                          <div className={styles.label}>
+                            <p>
+                              <RiGroupLine />
+                              Aluno(s):
+                            </p>
+                            <div className={styles.description}>
+                              {registro.planoDeTrabalho.participacoes.map(
+                                (item, index) => (
+                                  <p className={styles.person} key={index}>
+                                    {item.user.nome} ({item.statusParticipacao})
+                                  </p>
+                                )
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        {/* Seção de Respostas em Accordion */}
+                        {registro.respostas?.length > 0 && (
+                          <div className={`${styles.respostasSection} mt-3`}>
+                            <h5 className="mb-2">Respostas Enviadas:</h5>
+                            {renderRespostas(registro.respostas)}
+                          </div>
+                        )}
+
+                        <button
+                          className={` mt-2 button btn-primary ${styles.openModalButton}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openModalAndSetData(registro);
+                          }}
+                        >
+                          {registro.respostas?.length > 0 ? (
+                            <p>Editar Atividade</p>
+                          ) : (
+                            <p>Enviar Atividade</p>
+                          )}
+                        </button>
+                        {perfil === "orientador" && (
+                          <button
+                            className={`mt-2 button btn-secondary ${styles.openModalButton}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAprovarAtividade(registro);
+                            }}
+                            disabled={approvingId === registro.id}
+                          >
+                            {approvingId === registro.id ? (
+                              "Aprovando..."
+                            ) : (
+                              <>
+                                <RiCheckDoubleLine size={16} className="mr-1" />
+                                <p>Aprovar atividade</p>
+                              </>
                             )}
-                          </div>
-                        </div>
+                          </button>
+                        )}
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    )}
+                  </div>
+                ))}
               </div>
-            </>
+            </div>
           ) : (
-            <>
-              <NoData description="Não há atividades cadastradas para o seu perfil nesta instituição." />
-            </>
+            <NoData description="Não há atividades cadastradas para o seu perfil nesta instituição." />
           )}
         </div>
       </div>

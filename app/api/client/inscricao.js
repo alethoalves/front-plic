@@ -68,7 +68,21 @@ export const createInscricaoByUser = async (tenantSlug, inscricaoData) => {
     throw error;
   }
 };
-
+export const createInscricaoByGestor = async (tenantSlug, inscricaoData) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+    const response = await req.post(
+      `/private/${tenantSlug}/inscricoesByGestor`,
+      inscricaoData,
+      {headers}
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao criar inscrição:", error);
+    throw error;
+  }
+};
 export const getInscricoes = async (tenantSlug, page = 1, limit = 10, search="") => {
   try {
     const headers = getAuthHeadersClient();
@@ -120,6 +134,20 @@ export const getInscricaoUserById = async (tenantSlug,inscricaoId) => {
       {headers}
     );
     return response.data.inscricao;
+  } catch (error) {
+    console.error("Erro ao obter as inscrições:", error);
+    throw error;
+  }
+};
+
+export const getInscricoesByTenantAndYear = async (tenantSlug,ano) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+    const response = await req.get(`/private/${tenantSlug}/${ano}/getInscricoesByTenantAndYear`, 
+      {headers}
+    );
+    return response.data.inscricoes;
   } catch (error) {
     console.error("Erro ao obter as inscrições:", error);
     throw error;

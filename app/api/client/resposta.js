@@ -6,24 +6,7 @@ import { getCookie } from 'cookies-next';
  * RESPOSTA
  **************************/
 
-export const startSubmission = async (registroAtividadeId, body) => {
-  try {
-    const headers = getAuthHeadersClient();
-    if (!headers) {
-      return false;
-    }
-    const response = await req.post(
-      `/private/startSubmission/${registroAtividadeId}`,
-      body,
-      { headers }
-    );
-    return response.data;
-  } catch (error) {
-    console.log("OLAAAA")
-    console.error("Erro ao criar campo:", error);
-    throw error;
-  }
-};
+
 export const createResposta = async (tenantSlug, campoId, respostaData) => {
     try {
       const headers = getAuthHeadersClient();

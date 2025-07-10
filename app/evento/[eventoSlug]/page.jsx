@@ -2,204 +2,208 @@ import { getEventoBySlug, getSubmissoes } from "@/app/api/serverReq";
 import Image from "next/image";
 import styles from "./page.module.scss";
 import {
-  RiMedalLine,
-  RiPresentationLine,
-  RiSearchLine,
-  RiShieldStarFill,
-  RiStarLine,
+  RiCalendarEventFill,
+  RiHome6Line,
+  RiMapPinLine,
+  RiUserStarLine,
 } from "@remixicon/react";
-import BuscaSubmissoes from "@/components/BuscaSubmissoes";
-import { formatarData, formatarHora } from "@/lib/formatarDatas";
+import { Card } from "primereact/card";
+
 const Page = async ({ params }) => {
-  const evento = await getEventoBySlug(params.eventoSlug);
-  const submissoes = await getSubmissoes(evento.id);
+  //const submissoes = await getSubmissoes(evento.id);
+
   return (
     <main className={styles.main}>
-      <div className={styles.content}>
-        <div className={styles.eventos}>
-          <div className={styles.evento}>
-            <div className={styles.banner}>
-              <Image
-                priority
-                fill
-                src={`/image/${evento.pathBanner}`}
-                alt="logo"
-                sizes="300 500 700"
-              />
+      <div className={styles.banner}>
+        <Image
+          src={`/image/${params.eventoSlug}/bgImg.png`}
+          alt="Background"
+          fill
+          quality={100}
+          className={styles.bgImage}
+        />
+        <div className={styles.bannerOverlay}>
+          <Image
+            src={`/image/${params.eventoSlug}/pathBanner.png`}
+            alt="Evento Banner"
+            width={1200}
+            height={400}
+            priority // Adicionado para otimização de LCP
+            className={styles.overlayImage}
+          />
+          <section className={`${styles.contentMain}`}>
+            <div className={styles.card}>
+              <div className={styles.cardContent}>
+                <div className={styles.cardActions}>
+                  <div className={`${styles.cardAction} ${styles.cta}`}>
+                    <p>REALIZAR SUBMISSÃO</p>
+                  </div>
+                  <div className={`${styles.cardAction} ${styles.secondary}`}>
+                    <p>REALIZAR INSCRIÇÃO</p>
+                  </div>
+                </div>
+                <div>
+                  <h5>
+                    23º Congresso de Iniciação Científica da Universidade de
+                    Brasília e 13º Congresso de Iniciação Cinetífica do Distrito
+                    Federal
+                  </h5>
+                  <div className={`${styles.cardItem} mt-2 mb-1`}>
+                    <RiCalendarEventFill />
+                    <p>
+                      de <strong>14/06/2025</strong> a{" "}
+                      <strong>16/06/2025</strong>
+                    </p>
+                  </div>
+                  <div className={styles.cardItem}>
+                    <RiMapPinLine />
+                    <p>
+                      Centro Comunitários Athos Bulcão, Campus Darcy Ribeiro,
+                      Asa Norte, Brasília DF
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className={styles.cards}>
-              <div className={styles.card}>
-                <div className={styles.head}>
-                  <div className={styles.left}>
-                    <div className={styles.icon}>
-                      <RiSearchLine />
-                    </div>
-                    <div className={styles.title}>
-                      <h5>Busque por nome de aluno ou orientador</h5>
-                    </div>
-                  </div>
-                </div>
-                <div className={styles.cardContent}>
-                  <BuscaSubmissoes idEvento={evento.id} />
-                </div>
-              </div>
-              <div className={styles.card}>
-                <div className={styles.head}>
-                  <div className={styles.left}>
-                    <div className={styles.icon}>
-                      <RiPresentationLine />
-                    </div>
-                    <div className={styles.title}>
-                      <h5>Apresentações</h5>
-                    </div>
-                  </div>
-                </div>
-                <div className={styles.cardContent}>
-                  <p className="mb-2">
-                    O checkin será feito no dia da apresentação conforme
-                    orientações passadas pela equipe do evento. Trabalhos com
-                    checkin pendentes não serão avaliados.
-                  </p>
-                  <p className="mb-2">
-                    TRABALHOS SEM NÚMERO DE PÔSTER - alunos cujos trabalhos não
-                    tenham número de pôster, deverão informar esta situação no
-                    dia do evento. Essa situação não impedirá a apresentação,
-                    apenas indica ao aluno que será necessário esperar até que
-                    um pôster fique disponível.
-                  </p>
-                  <div className={styles.squares}>
-                    {submissoes.length > 0 &&
-                      submissoes.map((item, index) => (
-                        <div key={item.id} className={styles.square}>
-                          <div className={styles.squareContent}>
-                            <div className={styles.info}>
-                              <p
-                                className={`${styles.status} ${
-                                  item.status === "DISTRIBUIDA"
-                                    ? styles.error
-                                    : item.status === "AGUARDANDO_AVALIACAO"
-                                    ? styles.warning
-                                    : item.status === "AVALIADA"
-                                    ? styles.success
-                                    : item.status === "AUSENTE"
-                                    ? styles.inativada
-                                    : styles.success
-                                }`}
-                              >
-                                {item.status === "DISTRIBUIDA"
-                                  ? "checkin pendente"
-                                  : item.status === "AGUARDANDO_AVALIACAO"
-                                  ? "aguardando avaliação"
-                                  : item.status === "AVALIADA"
-                                  ? "avaliação concluída"
-                                  : item.status === "AUSENTE"
-                                  ? "ausente"
-                                  : item.status}
-                              </p>
-                              <p className={styles.area}>
-                                {item.planoDeTrabalho?.area?.area
-                                  ? item.planoDeTrabalho?.area?.area
-                                  : "sem área"}{" "}
-                                -{" "}
-                                {item.planoDeTrabalho?.inscricao?.edital?.tenant?.sigla.toUpperCase()}
-                                -{" "}
-                                {item.planoDeTrabalho?.inscricao?.edital?.titulo.toUpperCase()}
-                              </p>
-                            </div>
-                            <div className={styles.submissaoData}>
-                              <h6>{item.planoDeTrabalho?.titulo}</h6>
-                              <p className={styles.participacoes}>
-                                <strong>Orientadores: </strong>
-                                {item.planoDeTrabalho?.inscricao.participacoes
-                                  .filter(
-                                    (item) =>
-                                      item.tipo === "orientador" ||
-                                      item.tipo === "coorientador"
-                                  )
-                                  .map(
-                                    (item, i) =>
-                                      `${i > 0 ? ", " : ""}${item.user.nome} (${
-                                        item.status
-                                      })`
-                                  )}
-                              </p>
-                              <p className={styles.participacoes}>
-                                <strong>Alunos: </strong>
-                                {item.planoDeTrabalho?.participacoes.map(
-                                  (item, i) =>
-                                    `${i > 0 ? ", " : ""}${item.user.nome} (${
-                                      item.status
-                                    })`
-                                )}
-                              </p>
-                            </div>
-                          </div>
-                          <div className={styles.informacoes}>
-                            <div className={styles.squareHeader}>
-                              <p>Dia</p>
-                              <p>
-                                <strong>
-                                  {formatarData(item.subsessao.inicio)}
-                                </strong>
-                              </p>
-                              <p>{item.subsessao.sessaoApresentacao.titulo}</p>
-                            </div>
-                            <div className={styles.squareHeader}>
-                              <p>Horário</p>
-                              <p>
-                                <strong>
-                                  {formatarHora(item.subsessao.inicio)}
-                                </strong>
-                              </p>
-                            </div>
-                            {item.square.map((squareItem) => (
-                              <div
-                                key={squareItem.id}
-                                className={styles.squareHeader}
-                              >
-                                <p>Pôster nº</p>
-                                <h6>{squareItem.numero}</h6>
-                              </div>
-                            ))}
-                            {item.square.length == 0 && (
-                              <div className={styles.squareHeader}>
-                                <p>Pôster nº</p>
-                                <h6>-</h6>
-                              </div>
-                            )}
-                          </div>
-                          {(item.indicacaoPremio || item.mencaoHonrosa) && (
-                            <div className={styles.premios}>
-                              {item.premio && (
-                                <div className={`${styles.squareHeader} `}>
-                                  <RiShieldStarFill />
-                                  <p>Premiado</p>
-                                </div>
-                              )}
-                              {item.indicacaoPremio && (
-                                <div className={`${styles.squareHeader} `}>
-                                  <RiMedalLine />
-                                  <p>Indicado ao Prêmio</p>
-                                </div>
-                              )}
+          </section>
+        </div>
+        <div className={styles.login}>
+          <p>Login</p>
+        </div>
+      </div>
+      <div className={styles.nav}>
+        <div className={styles.home}>
+          <RiHome6Line />
+        </div>
+        <ul>
+          <li>
+            <p>Inscrição</p>
+          </li>
+          <li>
+            <p>Submissão</p>
+          </li>
+          <li>
+            <p>Programação</p>
+          </li>
+          <li>
+            <p>Convidados e Palestrantes</p>
+          </li>
 
-                              {item.mencaoHonrosa && (
-                                <div className={`${styles.squareHeader} `}>
-                                  <RiStarLine />
-                                  <p>Menção Honrosa</p>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              </div>
+          <li>
+            <p>Anais</p>
+          </li>
+          <li>
+            <p>Certificados</p>
+          </li>
+        </ul>
+      </div>
+
+      <section className={`${styles.content}`}>
+        <h6 className={styles.sectionTitle}>Últimas Edições:</h6>
+        <div className={styles.edicoes}>
+          <div className={styles.edicao}>
+            <h6>2024</h6>
+            <p>23º Congresso de Iniciação Científica da UnB e 14º do DF</p>
+          </div>
+          <div className={styles.edicao}>
+            <h6>2023</h6>
+            <p>22º Congresso de Iniciação Científica da UnB e 13º do DF</p>
+          </div>
+        </div>
+        <h6 className={`${styles.sectionTitle} mt-2`}>Trabalhos Premiados:</h6>
+        <div className={styles.premiados}>
+          <div className={styles.premiado}>
+            <div className={styles.tags}>
+              <p className={styles.tag}>Artes e Humanidades</p>
+              <p className={styles.tag}>PIBIC EM</p>
+            </div>
+            <div className={styles.descricao}>
+              <h5 className="mb-1">
+                Diversidade de espécies arbóreas usadas na arborização do
+                Colégio Militar de Brasília
+              </h5>
+              <p>
+                <strong>Aluno:</strong> Aletho Alves de Sá Oliveira
+              </p>
+              <p>
+                <strong>Orientador:</strong> Lúcia Helena Poncio
+              </p>
+            </div>
+          </div>
+          <div className={styles.premiado}>
+            <div className={styles.tags}>
+              <p className={styles.tag}>Artes e Humanidades</p>
+              <p className={styles.tag}>PIBIC EM</p>
+            </div>
+            <div className={styles.descricao}>
+              <h5 className="mb-1">
+                Diversidade de espécies arbóreas usadas na arborização do
+                Colégio Militar de Brasília
+              </h5>
+              <p>
+                <strong>Aluno:</strong> Aletho Alves de Sá Oliveira
+              </p>
+              <p>
+                <strong>Orientador:</strong> Lúcia Helena Poncio
+              </p>
+            </div>
+          </div>
+          <div className={styles.premiado}>
+            <div className={styles.tags}>
+              <p className={styles.tag}>Artes e Humanidades</p>
+              <p className={styles.tag}>PIBIC EM</p>
+            </div>
+            <div className={styles.descricao}>
+              <h5 className="mb-1">
+                Diversidade de espécies arbóreas usadas na arborização do
+                Colégio Militar de Brasília
+              </h5>
+              <p>
+                <strong>Aluno:</strong> Aletho Alves de Sá Oliveira
+              </p>
+              <p>
+                <strong>Orientador:</strong> Lúcia Helena Poncio
+              </p>
+            </div>
+          </div>
+          <div className={styles.premiado}>
+            <div className={styles.tags}>
+              <p className={styles.tag}>Artes e Humanidades</p>
+              <p className={styles.tag}>PIBIC EM</p>
+            </div>
+            <div className={styles.descricao}>
+              <h5 className="mb-1">
+                Diversidade de espécies arbóreas usadas na arborização do
+                Colégio Militar de Brasília
+              </h5>
+              <p>
+                <strong>Aluno:</strong> Aletho Alves de Sá Oliveira
+              </p>
+              <p>
+                <strong>Orientador:</strong> Lúcia Helena Poncio
+              </p>
+            </div>
+          </div>
+          <div className={styles.premiado}>
+            <div className={styles.tags}>
+              <p className={styles.tag}>Artes e Humanidades</p>
+              <p className={styles.tag}>PIBIC EM</p>
+            </div>
+            <div className={styles.descricao}>
+              <h5 className="mb-1">
+                Diversidade de espécies arbóreas usadas na arborização do
+                Colégio Militar de Brasília
+              </h5>
+              <p>
+                <strong>Aluno:</strong> Aletho Alves de Sá Oliveira
+              </p>
+              <p>
+                <strong>Orientador:</strong> Lúcia Helena Poncio
+              </p>
             </div>
           </div>
         </div>
-      </div>
+      </section>
     </main>
   );
 };

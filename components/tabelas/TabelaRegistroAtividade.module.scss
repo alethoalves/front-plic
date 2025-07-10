@@ -50,6 +50,23 @@
                 color: $error-dark;
             }
     }
+    .aguardandoAprovacaoOrientador{
+        &:hover{
+            background-color: $warning-lighten;
+            color: $warning-darken;
+            p{
+                color: $warning-darken;
+            }
+        }
+    }
+    .aguardandoAprovacaoOrientadorSelected{
+        background-color: $warning-lighten;
+            color: $warning-darken;
+            p{
+                color: $warning-darken;
+            }
+    }
+
     .concluida{
         &:hover{
             background-color: $success-lighten;

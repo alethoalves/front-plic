@@ -1,0 +1,402 @@
+@import "../../../styles/partials/colors";
+@import "../../../styles/partials/layout";
+@import "../../../styles/partials/spacing";
+.main{
+    background-color: $white-normal;
+    height: 100vh;
+    display: flex;
+    
+    .content{
+        max-width: 1500px;
+        margin: 0 auto;
+        padding: $gap-2;
+        @include responsive(s){
+            padding:0;
+        }
+    }
+    .header {
+        
+        
+        .logo{
+            position: relative;
+            height: 80px;
+
+            img{
+                object-fit: contain;
+                object-position: center center;
+            }
+        }
+    }
+    
+    .eventos{
+        overflow: hidden;
+        display: flex;
+        flex-wrap: wrap;
+        width: 990px;
+        @include responsive(s){
+            width: 100vw;
+        }
+        .evento{
+            overflow-y: scroll;
+            width: 990px;
+            @include responsive(s){
+                width: 100vw;
+            }
+            border: 1px solid $gray-50;
+            border-radius: $gap-1;
+            @include responsive(s){
+                border-radius: 0;
+            }
+            
+            .banner{
+                position: relative;
+                height: 250px;
+                @include responsive(xs){
+                    height: 180px;
+                }
+                img{
+                    border-top-left-radius: $gap-1;
+                    border-top-right-radius: $gap-1;
+                    @include responsive(s){
+                        border-top-left-radius: 0;
+                        border-top-right-radius: 0;
+                    }
+                    object-fit: contain;
+                    object-position: center center;
+                    background-color: #EDF2F2;
+                }
+            }
+            .cards{
+                padding: $gap-2;
+                background-color: $white-light;
+                border-bottom-left-radius: $gap-1;
+                border-bottom-right-radius: $gap-1;
+                height: calc(100vh - 250px - 32px);
+                @include responsive(s){
+                    height: calc(100vh - 250px);
+                }
+                @include responsive(xs){
+                    height: calc(100vh - 180px);
+                }
+                .card{
+                    .cardContent{
+                        padding: $gap-2;
+                    }
+                    margin-right: 0; /* Remova o margin-right já que o grid-gap gerencia o espaçamento */
+                    border: 1px solid $gray-50;
+                    box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+                    border-radius: $gap-1;
+                      overflow: hidden;
+                      
+                      width: 100%;
+                      margin-bottom: $gap-2;
+                    
+                      .head {
+                        background-color: $white-light;
+                        border-top-left-radius: $gap-1;
+                        border-top-right-radius: $gap-1;
+                        display: flex;
+                        justify-content: space-between;
+                        .left{
+                            display: flex;
+                            align-items: center;
+                            
+                            .icon {
+                                
+                                padding: $gap-2;
+                                background-color: $white-light;
+                                color: $primary-darken;
+                                border-top-left-radius: $gap-1;
+                                @include responsive(xs){
+                                    display: none;
+                                }
+                              }
+                        
+                              .title {
+                                
+                                
+                                @include responsive(xs){
+                                    padding: $gap-2 0;
+                                    margin-left: $gap-2;
+                                }
+                                //margin-left: $gap-2;
+                                h5 {
+                                    color: $primary-darken;
+                                    font-weight: 300;
+                                    white-space: nowrap; 
+                                    overflow: hidden;           
+                                    text-overflow: ellipsis; 
+                                    width: 100%;
+                                    @include responsive(xs){
+                                        font-size: 14px;
+                                    }
+                                }
+                                
+                              }
+                        }
+                        .actions{
+                            display: flex;
+                            align-items: center;
+                            .btn.selected{
+                                color: $primary-darken;
+                                //background-color: $gray-darken;
+                            }
+                            .btn{
+                                width: 60px;
+                                @include responsive(xs){
+                                    width: 40px;
+                                }
+                                height: 100%;
+                                color: $gray-100;
+                                display: flex;
+                                align-items: center;
+                                transition: ease .3s;
+                                cursor: pointer;
+                                &:hover{
+                                    color: $primary-light;
+                                    //background-color: $primary-darken;
+                                }
+                            }
+                        }
+                    
+                      }
+                    
+                      .squares{
+                        .square{
+                            
+                            .infoSquare{
+                                display: flex;
+                                margin-left: 4px;
+                                @include responsive(s){
+                                    margin-left: 0px;
+                                    margin-top: 4px;
+                                    
+                                }
+                            }
+                            border: 1px solid $gray-50;
+                            border-radius: $gap-1;
+                            padding: 3px;
+                            display: flex;
+                            @include responsive (s){
+                                flex-direction: column;
+                            }
+                            margin-bottom: $gap-1;
+                            .squareHeader, .squareContent, .squareContentEmpty{
+                                background-color: $white-darken;
+                                padding: $gap-1;
+                                border-radius: 6px;
+                            }
+                            .informacoes{
+                                display: flex;
+                                flex-wrap: wrap;
+                                margin-left: 4px;
+                                @include responsive(s){
+                                    margin-top: 4px;
+                                    margin-left: 0px;
+                                }
+                                .squareHeader:not(:last-child){
+                                    flex: 1;
+                                }
+                                .squareHeader:not(:last-child){
+                                    margin-right: 4px;
+                                }
+                                p{
+                                    text-wrap: nowrap;
+                                }
+                            }
+                            .premios{
+                                margin-left: 4px;
+                                display: flex;
+                                p{
+                                    text-wrap: wrap;
+                                }
+                                :not(:last-child){
+                                    margin-right: 4px;
+                                }
+                                .squareHeader{
+                                    flex: 1;
+                                    background-color: $warning-lighten;
+                                    color: $warning-darken;
+                                }
+                                @include responsive(s){
+                                    
+                                        margin-left: 0;
+                                        margin-top: 4px;
+                                    
+                                }
+                            }
+                            .squareHeader{
+                                
+                                @include responsive (s){
+                                    margin-right: 0px;
+                                }
+                                
+                                display: flex;
+                                flex-direction: column;
+                                justify-content: center;
+                                text-align: center;
+                                
+                                h6{
+                                    font-size: 22px;
+                                }
+                            }
+                            .squareContentEmpty{
+                                flex: 1;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                background-color: transparent;
+                                border: 1px solid $white-darken;
+                                transition: ease .3s;
+                                p{
+                                    text-align: center;
+                                    transition: ease .3s;
+                                    cursor: pointer;
+                                }
+                    
+                                
+                            }
+                            .squareContent{
+                                flex: 1;
+                                cursor: pointer;
+                                transition: ease .3s;
+                                border: 1px solid transparent;
+                                &:hover{
+                                    border: 1px solid $primary-light;
+                                }
+                                .info{
+                                    display: flex;
+                                    margin-bottom: 6px;
+                                    .status{
+                                        background-color: $primary-light;
+                                        padding: 2px 8px;
+                                        border-radius: 4px;
+                                        color: $white-normal;
+                                        font-size: 10px;
+                                        margin-right: 6px;
+                                        &.error{
+                                            background-color: $error-lighten;
+                                            color: $error-dark;
+                                        }
+                                        &.warning{
+                                            background-color: $warning-light;
+                                            color: $error-dark;
+                                        }
+                                        &.success{
+                                            background-color: $success-light;
+                                            color: $primary-darken;
+                                        }
+                                        &.inativada{
+                                            background-color: $white-light;
+                                            color: $primary-darken;
+                                        }
+                                    }
+                                    .area{
+                                        border: 1px solid $primary-light;
+                                        padding: 2px 8px;
+                                        border-radius: 4px;
+                                        color: $primary-light;
+                                        font-size: 10px;
+                                    }
+                                }
+                                .submissaoData{
+                                    .participacoes{
+                                        font-size: 12px;
+                                    }
+                                }
+                            }
+                            &.squareWarning{
+                                .squareHeader, .squareContent, .squareContentEmpty{
+                                    background-color: $warning-lighten;
+                                    
+                                }
+                    
+                                .squareContent{
+                                    margin-right: 4px;
+                                    @include responsive(s){
+                                        margin-right: 0px;
+                                        margin-bottom: 4px;
+                                    }
+                                    cursor:auto;
+                                    &:hover{
+                                        border: 1px solid transparent;
+                                    }
+                                    .area{
+                                        border: 1px solid $warning-darken;
+                                        
+                                        color: $warning-darken;
+                                    }
+                                }
+                                .actions{
+                    
+                                    display: flex;
+                                    @include responsive(xs){
+                                        flex-direction: column;
+                                    }
+                                    .item1{
+                                        display: flex;
+                                        @include responsive(xs){
+                                            .action{
+                                                flex: 1;
+                                                &:last-child{
+                                                    margin-right: 0;
+                                                }
+                                            }
+                                            
+                                        }
+                                    }
+                                    
+                                    .action{
+                                        cursor: pointer;
+                                        border: 1px solid transparent;
+                                        transition: ease .3s;
+                                        color:$warning-darken;
+                                        p{color:$warning-darken}
+                                        &:hover{
+                                            border: 1px solid $warning-dark;
+                                            transform: scale(1.02)
+                                        };
+                                        @include responsive(s){
+                                            margin-bottom: 0;
+                                            margin-right: 4px;
+                                            
+                                        }
+                                        &.actionPrimary{
+                                            background-color: $warning-dark;
+                                            color: $warning-lighten;
+                                            flex: 1;
+                                            margin-right: 0;
+                                            @include responsive(xs){
+                                                margin-top: 4px;
+                                            }
+                                            &:hover{
+                                                transform: scale(1.005);
+                                            }
+                                            p{
+                                                color: $warning-lighten;
+                                            }
+                                        }
+                                        &.actionError{
+                                            color: $error-dark;
+                                            &:hover{
+                                                border: 1px solid $error-dark;
+                                               
+                                            };
+                                            p{
+                                                color: $error-dark;
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                            }
+                        }
+                    }
+                    }
+            }
+        }
+    }
+    
+}
+
+

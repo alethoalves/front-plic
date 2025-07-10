@@ -3,6 +3,7 @@ import Button from "@/components/Button";
 import {
   RiAddCircleLine,
   RiAddLine,
+  RiArrowLeftSLine,
   RiArrowRightSLine,
   RiCheckDoubleLine,
   RiDraftLine,
@@ -37,12 +38,13 @@ import FormProjetoCreateOrEdit from "./Formularios/FormProjetoCreateOrEdit";
 import FormGestorProjetoCreateOrEdit from "./Formularios/FormGestorProjetoCreateOrEdit";
 import { Tag } from "primereact/tag";
 import { formatStatusText, getSeverityByStatus } from "@/lib/tagUtils";
+import Inscricao from "./Inscricao";
 
 const PlanoDeTrabalho = ({ params, idInscricao, idPlano }) => {
   const [loading, setLoading] = useState(false);
   const [itens, setItens] = useState(null);
   const [plano, setPlano] = useState(null);
-
+  const [activeModal, setActiveModal] = useState(null);
   const [isModalParticipacaoOpen, setIsModalParticipacaoOpen] = useState(false);
   const [participacaoSelected, setParticipacaoSelected] = useState();
   const [verifiedData, setVerifiedData] = useState(null);
@@ -292,133 +294,116 @@ const PlanoDeTrabalho = ({ params, idInscricao, idPlano }) => {
     </Modal>
   );
   return (
-    <div className={styles.inscricao}>
-      {renderModalParticipacao()}
-      {renderModalProjeto()}
-      <div className={styles.toast}>
-        <Toast ref={toast} />
-      </div>
+    <>
+      <Modal
+        isOpen={activeModal !== null}
+        onClose={() => setActiveModal(null)}
+        size="large"
+      >
+        <Inscricao params={params} inscricaoId={plano?.inscricaoId} />
+      </Modal>
+      <div className={styles.inscricao}>
+        {renderModalParticipacao()}
+        {renderModalProjeto()}
+        <div className={styles.toast}>
+          <Toast ref={toast} />
+        </div>
 
-      {loading && <p className="mt-2">Carregando...</p>}
-      {!loading && itens && (
-        <div className={styles.content}>
-          <div className={styles.mainContent}>
-            <div className={styles.box}>
-              <div className={styles.header}>
-                <div className={styles.icon}>
-                  <RiFileList3Line />
-                </div>
-                <h6>Plano de Trabalho</h6>
+        {loading && <p className="mt-2">Carregando...</p>}
+        {!loading && itens && (
+          <div className={styles.content}>
+            <div className={styles.mainContent}>
+              <div
+                className={styles.voltar}
+                onClick={() => {
+                  closeModalAndResetData();
+                  setActiveModal(true);
+                }}
+              >
+                <RiArrowLeftSLine />
+                <p>Ver Inscrição</p>
               </div>
-              <div className="pl-2 pr-2 pb-2">
-                <Tag
-                  rounded
-                  className="mb-1"
-                  severity={getSeverityByStatus(plano?.statusClassificacao)}
-                  value={formatStatusText(plano?.statusClassificacao)}
-                ></Tag>
-                <p>
-                  <strong>Título: </strong>
-                  {plano?.titulo}
-                </p>
-              </div>
-            </div>
-            <div className={styles.box}>
-              <div className={styles.header}>
-                <div className={styles.icon}>
-                  <RiGroupLine />
+              <div>
+                <div className={styles.header}>
+                  <div className={styles.icon}>
+                    <RiFileList3Line />
+                  </div>
+                  <h6>Plano de Trabalho</h6>
                 </div>
-                <h6>Orientadores</h6>
-                <div
-                  onClick={() => {
-                    setParticipacaoSelected(null);
-                    setTipoParticipacao("orientador");
-                    setVerifiedData(null);
-                    setIsModalParticipacaoOpen(true);
-                  }}
-                  className={`ml-1 ${styles.icon} ${styles.iconClick}`}
-                >
-                  <RiAddCircleLine />
+                <div className="pl-2 pr-2 pb-2">
+                  <Tag
+                    rounded
+                    className="mb-1"
+                    severity={getSeverityByStatus(plano?.statusClassificacao)}
+                    value={formatStatusText(plano?.statusClassificacao)}
+                  ></Tag>
+                  <p>
+                    <strong>Título: </strong>
+                    {plano?.titulo}
+                    {plano?.inscricaoId}
+                  </p>
                 </div>
               </div>
-              {plano?.inscricao?.participacoes &&
-                plano?.inscricao?.participacoes.length > 0 && (
+              {false && (
+                <div className={styles.box}>
+                  <div className={styles.header}>
+                    <div className={styles.icon}>
+                      <RiGroupLine />
+                    </div>
+                    <h6>Orientadores</h6>
+                    <div
+                      onClick={() => {
+                        setParticipacaoSelected(null);
+                        setTipoParticipacao("orientador");
+                        setVerifiedData(null);
+                        setIsModalParticipacaoOpen(true);
+                      }}
+                      className={`ml-1 ${styles.icon} ${styles.iconClick}`}
+                    >
+                      <RiAddCircleLine />
+                    </div>
+                  </div>
+                  {plano?.inscricao?.participacoes &&
+                    plano?.inscricao?.participacoes.length > 0 && (
+                      <DataView
+                        value={plano?.inscricao?.participacoes}
+                        listTemplate={listTemplateParticipante}
+                        layout="list" // Define o layout como lista
+                      />
+                    )}
+                </div>
+              )}
+              <div className={styles.box}>
+                <div className={styles.header}>
+                  <div className={styles.icon}>
+                    <RiGraduationCapLine />
+                  </div>
+                  <h6>Alunos</h6>
+                </div>
+                {plano?.participacoes && plano?.participacoes?.length > 0 && (
                   <DataView
-                    value={plano?.inscricao?.participacoes}
+                    value={plano?.participacoes}
                     listTemplate={listTemplateParticipante}
                     layout="list" // Define o layout como lista
                   />
                 )}
-            </div>
-            <div className={styles.box}>
-              <div className={styles.header}>
-                <div className={styles.icon}>
-                  <RiGraduationCapLine />
-                </div>
-                <h6>Alunos</h6>
               </div>
-              {plano?.participacoes && plano?.participacoes?.length > 0 && (
-                <DataView
-                  value={plano?.participacoes}
-                  listTemplate={listTemplateParticipante}
-                  layout="list" // Define o layout como lista
-                />
+
+              {false && (
+                <div className={styles.box}>
+                  <div className={styles.header}>
+                    <div className={styles.icon}>
+                      <RiDraftLine />
+                    </div>
+                    <h6>Atividades</h6>
+                  </div>
+                </div>
               )}
-            </div>
-            <div className={styles.box}>
-              <div className={styles.header}>
-                <div className={styles.icon}>
-                  <RiFoldersLine />
-                </div>
-                <h6>Projetos</h6>
-                <div
-                  onClick={() => {
-                    setProjetoSelected(null);
-                    setIsModalProjetoOpen(true);
-                  }}
-                  className={`ml-1 ${styles.icon} ${styles.iconClick}`}
-                >
-                  <RiAddCircleLine />
-                </div>
-              </div>
-              {itens?.InscricaoProjeto && itens.InscricaoProjeto.length > 0 && (
-                <DataView
-                  value={itens.InscricaoProjeto}
-                  listTemplate={listTemplateProjeto}
-                  layout="list" // Define o layout como lista
-                />
-              )}
-            </div>
-            <div className={styles.box}>
-              <div className={styles.header}>
-                <div className={styles.icon}>
-                  <RiFileList3Line />
-                </div>
-                <h6>Planos de Trabalho</h6>
-                <div className={`ml-1 ${styles.icon}`}>
-                  <RiAddCircleLine />
-                </div>
-              </div>
-              {itens?.planosDeTrabalho && itens.planosDeTrabalho.length > 0 && (
-                <DataView
-                  value={itens.planosDeTrabalho}
-                  listTemplate={listTemplatePlanosDeTrabalho}
-                  layout="list" // Define o layout como lista
-                />
-              )}
-            </div>
-            <div className={styles.box}>
-              <div className={styles.header}>
-                <div className={styles.icon}>
-                  <RiDraftLine />
-                </div>
-                <h6>Atividades</h6>
-              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   );
 };
 
