@@ -1,0 +1,12 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+.data, .hora{
+    display: flex;
+    gap: $gap-1;
+}
+.dataHora{
+    display: flex;
+    gap: $gap-1;
+}

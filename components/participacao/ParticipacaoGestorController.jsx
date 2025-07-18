@@ -31,24 +31,21 @@ import {
   ativarVinculo,
   cancelarVinculo,
   devolverBolsa,
-  toggleStatusSolicitacaoBolsa,
   tornarPendenteVinculo,
   transferirBolsa,
 } from "@/app/api/client/bolsa";
-import { Tag } from "primereact/tag";
-import {
-  getSeverityByStatus,
-  renderStatusTagWithJustificativa,
-} from "@/lib/tagUtils";
+
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
-import { Timeline } from "primereact/timeline";
 import { mapHistorico } from "@/lib/mapHistorico";
 import { Calendar } from "primereact/calendar";
-import { LinhaTempo } from "@/lib/linhaDoTempo";
 import { Dropdown } from "primereact/dropdown";
-import { getInscricao, getInscricaoUserById } from "@/app/api/client/inscricao";
+import { getInscricao } from "@/app/api/client/inscricao";
+import { LinhaTempo } from "../LinhaDoTempo";
+import { updateDataHistorico } from "@/app/api/client/historico";
 function buildMergedTimeline(item) {
+  console.log("ALETHO");
+  console.log(item);
   const merged = [];
 
   // Pega apenas o primeiro nome (antes do primeiro espaço)
@@ -73,6 +70,7 @@ function buildMergedTimeline(item) {
   if (Array.isArray(item.historicoParticipacao)) {
     item.historicoParticipacao.forEach((evt) => {
       merged.push({
+        id: evt.id,
         isLatest: false, //evt.isLatest,
         status: `Participação de ${primeiroNome}: ${evt.status}`,
         date: evt.date,
@@ -93,6 +91,7 @@ function buildMergedTimeline(item) {
         vinculo.HistoricoStatusVinculo.forEach((evtV) => {
           const dateFull = formatDateTimeBR(new Date(evtV.inicio));
           merged.push({
+            id: evtV.id,
             isLatest: false,
             status: `Vínculo de ${primeiroNome} à Solicitação de Bolsa ID-${solId}: ${evtV.status.toLowerCase()}`,
             date: dateFull,
@@ -1131,7 +1130,50 @@ const ParticipacaoGestorController = ({
       </div>
     </Modal>
   );
+  const handleUpdateTimelineEvent = async (updatedEvent) => {
+    try {
+      // Extrai os dados necessários do evento atualizado
+      const { id, date, tabelaHistorico } = updatedEvent;
 
+      // Parse da data no formato "dd/mm/yyyy hh:mm:ss" para os componentes individuais
+      const [datePart, timePart] = date.split(" ");
+      const [dd, mm, yyyy] = datePart.split("/");
+      const [hh, min] = timePart.split(":");
+
+      // Depois faz a chamada à API
+      await updateDataHistorico(
+        tenant,
+        parseInt(dd),
+        parseInt(mm),
+        parseInt(yyyy),
+        parseInt(hh),
+        parseInt(min),
+        tabelaHistorico,
+        id
+      );
+
+      // Atualiza novamente para garantir sincronia (opcional)
+      await fetch(); // Isso vai recarregar todos os dados do backend
+
+      toast.current?.show({
+        severity: "success",
+        summary: "Sucesso",
+        detail: "Evento atualizado com sucesso",
+        life: 3000,
+      });
+    } catch (error) {
+      console.error("Erro ao atualizar evento:", error);
+      // Reverte a mudança local em caso de erro
+      await fetch(); // Recarrega os dados originais
+
+      toast.current?.show({
+        severity: "error",
+        summary: "Erro",
+        detail: "Falha ao atualizar evento",
+        life: 3000,
+      });
+    }
+  };
   return (
     <>
       <Toast ref={toast} />
@@ -1280,7 +1322,11 @@ const ParticipacaoGestorController = ({
                   </div>
                   <div className={styles.contentCard}>
                     <div className={styles.historico}>
-                      <LinhaTempo data={historicoParticipacao} />
+                      <LinhaTempo
+                        data={historicoParticipacao}
+                        onUpdate={handleUpdateTimelineEvent}
+                        tabelaHistorico="participacao"
+                      />
                     </div>
 
                     <div
@@ -1290,7 +1336,8 @@ const ParticipacaoGestorController = ({
                       item.VinculoSolicitacaoBolsa.filter(
                         (vinculo) =>
                           vinculo.status !== "TRANSFERIDA" &&
-                          vinculo.status !== "RECUSADO"
+                          vinculo.status !== "RECUSADO" //||
+                        //true //faz mostrar o historico da vinculacao da balsa mesmo se o aluno nao tiver mais bolsa
                       ).map((vinculo) => (
                         <div
                           key={vinculo.id}
@@ -1353,7 +1400,11 @@ const ParticipacaoGestorController = ({
                             <h6>Status da vinculação entre aluno e Bolsa: </h6>
 
                             <div className={styles.historico}>
-                              <LinhaTempo data={historicoVinculo[vinculo.id]} />
+                              <LinhaTempo
+                                data={historicoVinculo[vinculo.id]}
+                                onUpdate={handleUpdateTimelineEvent}
+                                tabelaHistorico="vinculo"
+                              />
                             </div>
                             <div
                               key={vinculo.id}
@@ -1414,6 +1465,8 @@ const ParticipacaoGestorController = ({
                                 <div className={styles.historico}>
                                   <LinhaTempo
                                     data={historicoSolicitacao[vinculo.id]}
+                                    onUpdate={handleUpdateTimelineEvent}
+                                    tabelaHistorico="solicitacaoBolsa"
                                   />
                                 </div>
                               </div>

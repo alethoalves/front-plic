@@ -429,43 +429,41 @@ const Page = ({ params }) => {
       {renderModalEventoContent()}
 
       <div className={styles.navContent}>
-        {eventos[0] && (
-          <div className={styles.content}>
+        <div className={styles.content}>
+          <div className={styles.header}>
             <div className={styles.header}>
-              <div className={styles.header}>
-                <h4>Inscreva seu(s) projeto(s) em eventos científicos:</h4>
-                <p className="mt-1">
-                  Apresente seu(s) projeto(s) nos eventos abaixo para divulgar
-                  os resultados da sua pesquisa!
-                </p>
-              </div>
-            </div>
-            <div className={styles.mainContent}>
-              <div className={styles.tela1}>
-                {eventos
-                  ?.filter(
-                    (item) =>
-                      Array.isArray(item.evento.sessao) &&
-                      item.evento.sessao.length > 0
-                  )
-                  .map((item) => (
-                    <div
-                      key={`tenant_${item.tenantId}_evento${item.eventoId}`}
-                      className={`${styles.evento} ${styles.boxButton}`}
-                      onClick={() => {
-                        setEventoSelecionado(item);
-
-                        setIsModalEventoOpen(true);
-                      }}
-                    >
-                      <h6>{item.evento.nomeEvento}</h6>
-                      <p>{`Edição de ${item.evento.edicaoEvento}`}</p>
-                    </div>
-                  ))}
-              </div>
+              <h4>Inscreva seu(s) projeto(s) em eventos científicos:</h4>
+              <p className="mt-1">
+                Apresente seu(s) projeto(s) nos eventos abaixo para divulgar os
+                resultados da sua pesquisa!
+              </p>
             </div>
           </div>
-        )}
+          <div className={styles.mainContent}>
+            <div className={styles.tela1}>
+              {eventos
+                ?.filter(
+                  (item) =>
+                    Array.isArray(item.evento.sessao) &&
+                    item.evento.sessao.length > 0
+                )
+                .map((item) => (
+                  <div
+                    key={`tenant_${item.tenantId}_evento${item.eventoId}`}
+                    className={`${styles.evento} ${styles.boxButton}`}
+                    onClick={() => {
+                      setEventoSelecionado(item);
+
+                      setIsModalEventoOpen(true);
+                    }}
+                  >
+                    <h6>{item.evento.nomeEvento}</h6>
+                    <p>{`Edição de ${item.evento.edicaoEvento}`}</p>
+                  </div>
+                ))}
+            </div>
+          </div>
+        </div>
       </div>
     </>
   );

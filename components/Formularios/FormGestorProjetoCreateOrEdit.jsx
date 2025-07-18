@@ -26,6 +26,7 @@ import Button from "@/components/Button";
 import Input from "@/components/Input";
 import SearchableSelect from "../SearchableSelect";
 import Atividades from "../Atividades";
+import { Button as PrimeButton } from "primereact/button";
 
 //FUNÇÕES
 import {
@@ -46,6 +47,7 @@ import {
   getProjetoById,
   isProjetoLinkedToInscricao,
   linkProjetoToInscricao,
+  unlinkProjetoFromInscricao,
   updateInscricaoProjeto,
   updateProjetoById,
 } from "@/app/api/client/projeto";
@@ -82,8 +84,10 @@ const FormGestorProjetoCreateOrEdit = ({
   const [verifiedData, setVerifiedData] = useState(null);
   const [isModalOpenNovoAvaliador, setIsModalOpenNovoAvaliador] =
     useState(false);
-
+  const [displayUnlinkDialog, setDisplayUnlinkDialog] = useState(false);
   const toast = useRef(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   //DEFINE O SCHEMA DO PLANO DE TRABALHO
   // 1) dados vindos do backend
   const campos = formularioEdital?.campos ?? [];
@@ -520,6 +524,56 @@ const FormGestorProjetoCreateOrEdit = ({
       )}
     </Modal>
   );
+  const handleUnlinkProjeto = async () => {
+    setDisplayUnlinkDialog(false);
+    //setLoading(true);
+
+    try {
+      await unlinkProjetoFromInscricao(tenantSlug, idInscricao, projetoId);
+
+      toast.current?.show({
+        severity: "success",
+        summary: "Sucesso",
+        detail: "Projeto desvinculado com sucesso!",
+        life: 3000,
+      });
+
+      if (onSuccess) await onSuccess();
+      if (onClose) onClose();
+    } catch (error) {
+      console.error("Erro ao desvincular projeto:", error);
+      toast.current?.show({
+        severity: "error",
+        summary: "Erro",
+        detail: error.response?.data?.message || "Erro ao desvincular projeto",
+        life: 3000,
+      });
+    } finally {
+      //setLoading(false);
+    }
+  };
+  const hideUnlinkDialog = () => {
+    setDisplayUnlinkDialog(false);
+  };
+
+  const deleteDialogFooter = (
+    <div>
+      <PrimeButton
+        label="Cancelar"
+        icon="pi pi-times"
+        className="p-button-text"
+        onClick={hideUnlinkDialog}
+        disabled={isDeleting}
+      />
+      <PrimeButton
+        label="Excluir"
+        icon="pi pi-check"
+        className="p-button-danger"
+        onClick={handleUnlinkProjeto}
+        loading={isDeleting}
+      />
+    </div>
+  );
   return (
     <>
       {renderModalContentNovoAvaliador()}
@@ -617,6 +671,13 @@ const FormGestorProjetoCreateOrEdit = ({
                     optionValue="value"
                   />
                 </div>
+                <Button
+                  className="btn-error mt-2"
+                  onClick={() => setDisplayUnlinkDialog(true)}
+                  disabled={loading}
+                >
+                  Desvincular Projeto
+                </Button>
               </div>
             </div>
             <div className={styles.box}>
@@ -723,6 +784,25 @@ const FormGestorProjetoCreateOrEdit = ({
           </div>
         </form>
       )}
+      <Dialog
+        visible={displayUnlinkDialog}
+        style={{ width: "450px" }}
+        header="Confirmar Desvinculação"
+        modal
+        footer={deleteDialogFooter}
+        onHide={hideUnlinkDialog}
+      >
+        <div className="confirmation-content">
+          <i
+            className="pi pi-exclamation-triangle mr-3"
+            style={{ fontSize: "2rem" }}
+          />
+          <span>
+            Tem certeza que deseja desvincular este projeto da inscrição? Esta
+            ação não pode ser desfeita.
+          </span>
+        </div>
+      </Dialog>
     </>
   );
 };

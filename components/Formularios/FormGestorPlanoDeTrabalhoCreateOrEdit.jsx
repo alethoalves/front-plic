@@ -9,16 +9,19 @@ import { z } from "zod";
 //ESTILOS E ÍCONES
 import styles from "@/components/Formularios/Form.module.scss";
 import { RiSave2Line } from "@remixicon/react";
+import { RiDeleteBinLine } from "@remixicon/react";
 
 //COMPONENTES
 import Button from "@/components/Button";
 import Input from "@/components/Input";
 import SearchableSelect from "../SearchableSelect";
 import Atividades from "../Atividades";
-
+import { Dialog } from "primereact/dialog";
+import { Button as PrimeButton } from "primereact/button";
 //FUNÇÕES
 import {
   createPlanoDeTrabalho,
+  deletePlanoDeTrabalho,
   updatePlanoDeTrabalho,
 } from "@/app/api/client/planoDeTrabalho";
 import { getAreas } from "@/app/api/client/area";
@@ -45,6 +48,64 @@ const FormGestorPlanoDeTrabalhoCreateOrEdit = ({
   const [cronograma, setCronograma] = useState([]);
   const [formularioEdital, setFormularioEdital] = useState(null);
   const [errorDelete, setErrorDelete] = useState();
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [displayDeleteDialog, setDisplayDeleteDialog] = useState(false);
+
+  // Função para mostrar o dialog de confirmação
+  const confirmDelete = () => {
+    setDisplayDeleteDialog(true);
+  };
+
+  // Função para esconder o dialog
+  const hideDeleteDialog = () => {
+    setDisplayDeleteDialog(false);
+  };
+
+  // Função para deletar o plano de trabalho
+  const handleDelete = async () => {
+    if (!initialData?.id) return;
+
+    setIsDeleting(true);
+    setError("");
+
+    try {
+      await deletePlanoDeTrabalho(tenantSlug, idInscricao, initialData.id);
+
+      if (onSuccess) {
+        onSuccess({ action: "delete" });
+      }
+
+      if (onClose) {
+        onClose();
+      }
+    } catch (error) {
+      console.error("Erro ao deletar plano de trabalho:", error);
+      setError(error.message || "Erro ao deletar o plano de trabalho.");
+    } finally {
+      setIsDeleting(false);
+      setDisplayDeleteDialog(false);
+    }
+  };
+
+  // Footer do Dialog
+  const deleteDialogFooter = (
+    <>
+      <PrimeButton
+        label="Cancelar"
+        icon="pi pi-times"
+        className="p-button-text"
+        onClick={hideDeleteDialog}
+        disabled={isDeleting}
+      />
+      <PrimeButton
+        label="Excluir"
+        icon="pi pi-check"
+        className="p-button-danger"
+        onClick={handleDelete}
+        loading={isDeleting}
+      />
+    </>
+  );
 
   //DEFINE O SCHEMA DO PLANO DE TRABALHO
   // 1) dados vindos do backend
@@ -217,87 +278,120 @@ const FormGestorPlanoDeTrabalhoCreateOrEdit = ({
   };
 
   return (
-    <form
-      className={`${styles.formulario}`}
-      onSubmit={handleSubmit(handleFormSubmit)}
-    >
-      {false && (
-        <div className={`${styles.nav}`}>
-          <div className={`${styles.menu}`}>
-            <div
-              className={`${styles.itemMenu} ${
-                activeTab === "conteudo" ? styles.itemMenuSelected : ""
-              }`}
-              onClick={() => handleTabChange("conteudo")}
-            >
-              <p>Conteúdo</p>
+    <>
+      <form
+        className={`${styles.formulario}`}
+        onSubmit={handleSubmit(handleFormSubmit)}
+      >
+        {false && (
+          <div className={`${styles.nav}`}>
+            <div className={`${styles.menu}`}>
+              <div
+                className={`${styles.itemMenu} ${
+                  activeTab === "conteudo" ? styles.itemMenuSelected : ""
+                }`}
+                onClick={() => handleTabChange("conteudo")}
+              >
+                <p>Conteúdo</p>
+              </div>
+              <div
+                className={`${styles.itemMenu} ${
+                  activeTab === "cronograma" ? styles.itemMenuSelected : ""
+                }`}
+                onClick={() => handleTabChange("cronograma")}
+              >
+                <p>Cronograma</p>
+              </div>
             </div>
-            <div
-              className={`${styles.itemMenu} ${
-                activeTab === "cronograma" ? styles.itemMenuSelected : ""
-              }`}
-              onClick={() => handleTabChange("cronograma")}
-            >
-              <p>Cronograma</p>
-            </div>
-          </div>
-        </div>
-      )}
-      {activeTab === "conteudo" && (
-        <div className={`${styles.conteudo}`}>
-          <div className={`${styles.input}`}>
-            <Input
-              control={control}
-              name="titulo"
-              label="Título do Plano de Trabalhooooo"
-              inputType="text"
-              placeholder="Digite aqui o título do planoDeTrabalho"
-              disabled={loading}
-            />
-          </div>
-          <div className={`${styles.input}`}>
-            <SearchableSelect
-              control={control}
-              name="areaId"
-              label="Área de Conhecimento do Plano de Trabalho"
-              options={areas || []} // Garante que o options seja um array
-              disabled={loading}
-            />
-          </div>
-          <div className={`${styles.camposDinamicos}`}>
-            {renderDynamicFields(
-              formularioEdital,
-              control,
-              loading,
-              register,
-              errors,
-              watch
-            )}
-          </div>
-        </div>
-      )}
-      {activeTab === "conteudo" && (
-        <div className={styles.divCronograma}>
-          <h6 className="mb-2">Cronograma de Atividades</h6>
-          <Atividades cronograma={cronograma} setCronograma={setCronograma} />
-        </div>
-      )}
-      <div className={`${styles.btnSubmit} mt-2`}>
-        <Button
-          icon={RiSave2Line}
-          className="btn-primary"
-          type="submit"
-          disabled={loading}
-        >
-          {loading ? "Carregando..." : "Salvar"}
-        </Button>
-        {error && (
-          <div className={`notification notification-error`}>
-            <p className="p5">{error}</p>
           </div>
         )}
-      </div>
-    </form>
+        {activeTab === "conteudo" && (
+          <div className={`${styles.conteudo}`}>
+            <div className={`${styles.input}`}>
+              <Input
+                control={control}
+                name="titulo"
+                label="Título do Plano de Trabalho"
+                inputType="text"
+                placeholder="Digite aqui o título do planoDeTrabalho"
+                disabled={loading}
+              />
+            </div>
+            <div className={`${styles.input}`}>
+              <SearchableSelect
+                control={control}
+                name="areaId"
+                label="Área de Conhecimento do Plano de Trabalho"
+                options={areas || []} // Garante que o options seja um array
+                disabled={loading}
+              />
+            </div>
+            <div className={`${styles.camposDinamicos}`}>
+              {renderDynamicFields(
+                formularioEdital,
+                control,
+                loading,
+                register,
+                errors,
+                watch
+              )}
+            </div>
+          </div>
+        )}
+        {activeTab === "conteudo" && (
+          <div className={styles.divCronograma}>
+            <h6 className="mb-2">Cronograma de Atividades</h6>
+            <Atividades cronograma={cronograma} setCronograma={setCronograma} />
+          </div>
+        )}
+        <div className={`${styles.btnSubmit} mt-2`}>
+          <Button
+            icon={RiSave2Line}
+            className="btn-primary"
+            type="submit"
+            disabled={loading}
+          >
+            {loading ? "Carregando..." : "Salvar"}
+          </Button>
+          {initialData?.id && (
+            <Button
+              icon={RiDeleteBinLine}
+              className="btn-error mr-2"
+              type="button"
+              disabled={loading || isDeleting}
+              onClick={confirmDelete}
+            >
+              Excluir
+            </Button>
+          )}
+          {error && (
+            <div className={`notification notification-error`}>
+              <p className="p5">{error}</p>
+            </div>
+          )}
+        </div>
+      </form>
+      {/* Dialog de confirmação de exclusão */}
+      <Dialog
+        visible={displayDeleteDialog}
+        style={{ width: "450px" }}
+        header="Confirmar Exclusão"
+        modal
+        footer={deleteDialogFooter}
+        onHide={hideDeleteDialog}
+      >
+        <div className="confirmation-content">
+          <i
+            className="pi pi-exclamation-triangle mr-3"
+            style={{ fontSize: "2rem" }}
+          />
+          <span>
+            Tem certeza que deseja excluir este plano de trabalho? Esta ação não
+            pode ser desfeita.
+          </span>
+        </div>
+      </Dialog>
+    </>
   );
 };
 

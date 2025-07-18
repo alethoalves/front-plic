@@ -4,7 +4,7 @@ import { getCookie, setCookie } from "cookies-next";
 import { cookies } from "next/headers";
 import { getTenant } from "./app/api/server/getTenant";
 import { pingAdminEvento, pingAluno, pingAvaliador, pingAvaliadorTenant, pingGestor, pingOrientador, pingRoot, pingUser } from "./app/api/server/pings";
-import { getEditais, getEventoBySlug } from "./app/api/serverReq";
+import { getEditais, getEventoBySlug, getEventoRootBySlug } from "./app/api/serverReq";
 
 export const middleware = async (request) => {
   // Recebe um request, extrai a URL e identifica o tenant a partir do caminho.
@@ -143,10 +143,47 @@ export const middleware = async (request) => {
         return NextResponseWithEvento;
     }
     console.log(pathname)
-    
+    if (url.pathname.startsWith(`/evento/${slugEvento}/publicacoes`)) {
+      console.log(`/evento/${slugEvento}`)
+      const eventoExists = await getEventoRootBySlug(slugEvento);
+      if (!eventoExists) {
+        return NextResponse.redirect('/eventos');
+      }
+      const NextResponseWithEvento = NextResponse.next();
+      NextResponseWithEvento.headers.set(
+        "x-tenant-primary-color",
+        eventoExists.primaryColor || ""
+      );
+      NextResponseWithEvento.headers.set(
+        "x-tenant-path-logo",
+        eventoExists.pathLogo || ""
+      );
+      
+      
+        return NextResponseWithEvento;
+    }
+    if (url.pathname.startsWith(`/evento/${slugEvento}/edicao`)) {
+      console.log(`/evento/${slugEvento}/edicao/`)
+      const eventoExists = await getEventoRootBySlug(slugEvento);
+      if (!eventoExists) {
+        return NextResponse.redirect('/eventos');
+      }
+      const NextResponseWithEvento = NextResponse.next();
+      NextResponseWithEvento.headers.set(
+        "x-tenant-primary-color",
+        eventoExists.primaryColor || ""
+      );
+      NextResponseWithEvento.headers.set(
+        "x-tenant-path-logo",
+        eventoExists.pathLogo || ""
+      );
+      
+      
+        return NextResponseWithEvento;
+    }
     if (url.pathname.startsWith(`/evento/${slugEvento}`)) {
       console.log(`/evento/${slugEvento}`)
-      const eventoExists = await getEventoBySlug(slugEvento);
+      const eventoExists = await getEventoRootBySlug(slugEvento);
       if (!eventoExists) {
         return NextResponse.redirect('/eventos');
       }

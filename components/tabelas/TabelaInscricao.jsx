@@ -235,7 +235,8 @@ const TabelaInscricao = ({ params }) => {
       toast.current.show({
         severity: "error",
         summary: "Erro",
-        detail: "Falha ao deletar inscrição",
+        detail:
+          "Falha ao deletar inscrição. Verifique se há projetos e planos de trabalho associadosà inscrição.",
         life: 3000,
       });
     }

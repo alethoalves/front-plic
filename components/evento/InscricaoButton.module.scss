@@ -1,0 +1,49 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+.dialogEvento{
+    border: 1px solid red;
+    
+    .p-dialog-header{
+        background: none;
+    }
+}
+.action{
+    //background-color: color-mix(in srgb, $warning-dark 40%, transparent);
+    padding: $gap-2 $gap-1;
+    border-radius: $gap-1;
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1px solid color-mix(in srgb, $white-dark 40%, transparent);;
+    color:  $white-dark;
+    align-items: center;
+    display: flex;
+    cursor: pointer;
+    transition: ease .3s;
+    &:hover{
+      transform: scale(1.03);
+    }
+   @include responsive(xs){
+    &:hover{
+      transform: scale(1.01);
+    }
+   }
+    svg{
+      width: 30px;
+      margin-right: $gap-1;
+    }
+    h6{
+      color:$white-dark ;
+      text-align: center;
+      @include responsive(xs){
+        font-size: 14px;
+      }
+    }
+  }
+  .primary{
+    background-color: color-mix(in srgb, $warning-dark 80%, transparent);
+    color:  $white-dark;
+    h6{
+      color: $white-dark;
+    }
+  }

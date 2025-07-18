@@ -435,10 +435,10 @@ export const updateCota = async (tenantSlug, id, cotaData) => {
     if (!headers) {
       return false;
     }
-
+    const {titulo,quantidadeBolsas,ano,instituicaoPagadora,status} = cotaData
     const response = await req.put(
       `/private/${tenantSlug}/cotas/${id}`,
-      cotaData,
+      {titulo,quantidadeBolsas,ano,instituicaoPagadora,status},
       { headers }
     );
     

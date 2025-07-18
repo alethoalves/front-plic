@@ -52,25 +52,6 @@ const Page = async ({ params }) => {
       </header>
       <main className={styles.main}>
         <article>
-          <section className={`${styles.content} ${styles.descriptionSection}`}>
-            {evento?.EventoPage?.map((page) => (
-              <div key={page.id} className={styles.sectionContent}>
-                <div className={styles.descriptionContent}>
-                  <h5 className={`${styles.sectionTitle} ml-0  mb-2`}>
-                    {page.titulo}
-                  </h5>
-                  {page.conteudo
-                    .split("\n")
-                    .filter((paragraph) => paragraph.trim() !== "") // Remove linhas vazias
-                    .map((paragraph, index) => (
-                      <p key={index} className={styles.paragraph}>
-                        {paragraph}
-                      </p>
-                    ))}
-                </div>
-              </div>
-            ))}
-          </section>
           <aside>
             <div className={styles.actions}>
               {false && <InscricaoButton eventoSlug={params.eventoSlug} />}
@@ -104,6 +85,25 @@ const Page = async ({ params }) => {
               </div>
             </div>
           </aside>
+          <section className={`${styles.content} ${styles.descriptionSection}`}>
+            {evento?.EventoPage?.map((page) => (
+              <div key={page.id} className={styles.sectionContent}>
+                <div className={styles.descriptionContent}>
+                  <h5 className={`${styles.sectionTitle} ml-0  mb-2`}>
+                    {page.titulo}
+                  </h5>
+                  {page.conteudo
+                    .split("\n")
+                    .filter((paragraph) => paragraph.trim() !== "") // Remove linhas vazias
+                    .map((paragraph, index) => (
+                      <p key={index} className={styles.paragraph}>
+                        {paragraph}
+                      </p>
+                    ))}
+                </div>
+              </div>
+            ))}
+          </section>
         </article>
       </main>
     </>

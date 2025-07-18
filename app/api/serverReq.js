@@ -71,7 +71,7 @@ export const getEditais = async (tenantSlug) => {
 export const getEventoBySlug = async (slug) => {
   try {
     
-    const response = await req.get(`/evenplic/eventoSlug/${slug}`);
+    const response = await req.get(`/evenplic/eventoSlug/${slug}/edicao`);
     
     return response.data.evento;
   } catch (error) {
@@ -79,6 +79,29 @@ export const getEventoBySlug = async (slug) => {
     throw error;
   }
 };
+export const getEventoProgramacao = async (eventoId) => {
+  try {
+    
+    const response = await req.get(`/evenplic/programacao/${eventoId}`);
+    
+    return response.data.programacao;
+  } catch (error) {
+    console.error("Erro ao chamar a API:", error);
+    throw error;
+  }
+};
+export const getEventoRootBySlug = async (slug) => {
+  try {
+    
+    const response = await req.get(`/evenplic/eventoRootSlug/${slug}`);
+    
+    return response.data.eventoRoot;
+  } catch (error) {
+    console.error("Erro ao chamar a API:", error);
+    throw error;
+  }
+};
+
 export const config = {
   runtime: 'nodejs', // Desativa o Edge Runtime e usa Node.js
 };
