@@ -131,6 +131,7 @@ const Resultado = ({}) => {
               participacao.id,
               null
             );
+
             return { success: true, id: participacao.id };
           } catch (error) {
             console.error(
