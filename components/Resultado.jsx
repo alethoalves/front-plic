@@ -181,6 +181,94 @@ const Resultado = ({}) => {
       setLoadingAtivacao(false);
     }
   };
+  const [loadingAtivacaoVinculo, setLoadingAtivacaoVinculo] = useState(false);
+  // Função para ativar os vínculos das participações selecionadas
+  const handleAtivarVinculos = async () => {
+    if (selectedParticipacoes.length === 0) {
+      showToast(
+        "warn",
+        "Aviso",
+        "Selecione pelo menos uma participação para ativar o vínculo"
+      );
+      return;
+    }
+
+    try {
+      setLoadingAtivacaoVinculo(true);
+
+      // Filtra participações que têm vínculo
+      const participacoesComVinculo = selectedParticipacoes.filter(
+        (p) => p.VinculoSolicitacaoBolsa?.length > 0
+      );
+
+      if (participacoesComVinculo.length === 0) {
+        showToast(
+          "warn",
+          "Aviso",
+          "Nenhuma das participações selecionadas possui vínculo para ativar"
+        );
+        return;
+      }
+
+      // Executa todas as requisições em paralelo
+      const results = await Promise.all(
+        participacoesComVinculo.map(async (participacao) => {
+          try {
+            const vinculoId = participacao.VinculoSolicitacaoBolsa[0]?.id;
+            if (!vinculoId) {
+              return {
+                success: false,
+                id: participacao.id,
+                error: "ID do vínculo não encontrado",
+              };
+            }
+
+            const resultado = await ativarVinculo(tenant, vinculoId);
+            return { success: true, id: participacao.id };
+          } catch (error) {
+            console.error(
+              `Erro ao ativar vínculo da participação ${participacao.id}:`,
+              error
+            );
+            return { success: false, id: participacao.id, error };
+          }
+        })
+      );
+
+      // Verifica os resultados
+      const successCount = results.filter((r) => r.success).length;
+      const errorCount = results.filter((r) => !r.success).length;
+
+      if (errorCount === 0) {
+        showToast(
+          "success",
+          "Sucesso",
+          `${successCount} vínculos ativados com sucesso!`
+        );
+      } else if (successCount === 0) {
+        showToast("error", "Erro", "Falha ao ativar os vínculos selecionados");
+      } else {
+        showToast(
+          "warn",
+          "Parcial",
+          `${successCount} vínculos ativados, ${errorCount} falhas`
+        );
+      }
+
+      // Atualiza os dados
+      await getParticipacoes();
+      setSelectedParticipacoes([]);
+    } catch (error) {
+      console.error("Erro ao ativar vínculos:", error);
+      showToast(
+        "error",
+        "Erro",
+        "Ocorreu um erro ao tentar ativar os vínculos"
+      );
+    } finally {
+      setLoadingAtivacaoVinculo(false);
+    }
+  };
 
   const getParticipacoes = async () => {
     const response = await getParticipacoesByTenant(tenant, "aluno", ano);
@@ -296,13 +384,24 @@ const Resultado = ({}) => {
           className="p-button-outlined p-button-secondary"
         />
         {selectedParticipacoes.length > 0 && (
-          <Button
-            icon="pi pi-check-circle"
-            label="Ativar"
-            onClick={handleAtivarParticipacoes}
-            loading={loadingAtivacao}
-            className="p-button-success"
-          />
+          <>
+            <Button
+              icon="pi pi-check-circle"
+              label="Ativar"
+              onClick={handleAtivarParticipacoes}
+              loading={loadingAtivacao}
+              className="p-button-success"
+            />
+            <Button
+              icon="pi pi-link"
+              label="Ativar Vínculo"
+              onClick={handleAtivarVinculos}
+              loading={loadingAtivacaoVinculo}
+              className="p-button-help"
+              tooltip="Ativar vínculo de bolsa das participações selecionadas"
+              tooltipOptions={{ position: "bottom" }}
+            />
+          </>
         )}
         <IconField iconPosition="left" className="ml-2">
           <InputText
