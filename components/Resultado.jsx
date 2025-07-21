@@ -1,7 +1,10 @@
 "use client";
 import { useParams } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import { getParticipacoesByTenant } from "@/app/api/client/participacao";
+import {
+  ativarOuPendenteParticipacao,
+  getParticipacoesByTenant,
+} from "@/app/api/client/participacao";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Toast } from "primereact/toast";
@@ -94,7 +97,8 @@ const Resultado = ({}) => {
   // Estados para filtros
   const [globalFilterValue, setGlobalFilterValue] = useState("");
   const [filters, setFilters] = useState(getInitialFilters());
-
+  const [selectedParticipacoes, setSelectedParticipacoes] = useState([]);
+  const [loadingAtivacao, setLoadingAtivacao] = useState(false);
   // Estados para modal de justificativas
   const [showJustificativas, setShowJustificativas] = useState(false);
   const [justificativasAtuais, setJustificativasAtuais] = useState("");
@@ -102,6 +106,81 @@ const Resultado = ({}) => {
   // ==============================================
   // EFEITOS
   // ==============================================
+  const onSelectionChange = (e) => {
+    setSelectedParticipacoes(e.value);
+  };
+  const handleAtivarParticipacoes = async () => {
+    if (selectedParticipacoes.length === 0) {
+      showToast(
+        "warn",
+        "Aviso",
+        "Selecione pelo menos uma participação para ativar"
+      );
+      return;
+    }
+
+    try {
+      setLoadingAtivacao(true);
+
+      // Executa todas as requisições em paralelo
+      const results = await Promise.all(
+        selectedParticipacoes.map(async (participacao) => {
+          try {
+            const resultado = await ativarOuPendenteParticipacao(
+              tenant,
+              participacao.id,
+              null
+            );
+            return { success: true, id: participacao.id };
+          } catch (error) {
+            console.error(
+              `Erro ao ativar participação ${participacao.id}:`,
+              error
+            );
+            return { success: false, id: participacao.id, error };
+          }
+        })
+      );
+
+      // Verifica os resultados
+      const successCount = results.filter((r) => r.success).length;
+      const errorCount = results.filter((r) => !r.success).length;
+
+      if (errorCount === 0) {
+        showToast(
+          "success",
+          "Sucesso",
+          `${successCount} participações ativadas com sucesso!`
+        );
+      } else if (successCount === 0) {
+        showToast(
+          "error",
+          "Erro",
+          "Falha ao ativar as participações selecionadas"
+        );
+      } else {
+        showToast(
+          "warn",
+          "Parcial",
+          `${successCount} participações ativadas, ${errorCount} falhas`
+        );
+      }
+
+      // Atualiza os dados
+      await getParticipacoes();
+      setSelectedParticipacoes([]);
+    } catch (error) {
+      console.error("Erro ao ativar participações:", error);
+      showToast(
+        "error",
+        "Erro",
+        "Ocorreu um erro ao tentar ativar as participações"
+      );
+    } finally {
+      setLoadingAtivacao(false);
+    }
+  };
+
   const getParticipacoes = async () => {
     const response = await getParticipacoesByTenant(tenant, "aluno", ano);
     // Processa os dados recebidos
@@ -215,6 +294,15 @@ const Resultado = ({}) => {
           onClick={clearFilters}
           className="p-button-outlined p-button-secondary"
         />
+        {selectedParticipacoes.length > 0 && (
+          <Button
+            icon="pi pi-check-circle"
+            label="Ativar"
+            onClick={handleAtivarParticipacoes}
+            loading={loadingAtivacao}
+            className="p-button-success"
+          />
+        )}
         <IconField iconPosition="left" className="ml-2">
           <InputText
             value={globalFilterValue}
@@ -270,7 +358,11 @@ const Resultado = ({}) => {
             rowClassName={styles.clickableRow}
             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
             currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros"
+            selection={selectedParticipacoes}
+            onSelectionChange={onSelectionChange}
+            dataKey="id"
           >
+            <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
             <Column
               field="inscricao.edital.titulo"
               header="Edital"
