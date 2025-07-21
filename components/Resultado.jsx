@@ -25,6 +25,7 @@ import {
   statusClassificacaoFilterTemplate,
 } from "@/lib/tableTemplates";
 import { renderStatusTagWithJustificativa } from "@/lib/tagUtils";
+import { ativarVinculo } from "@/app/api/client/bolsa";
 const getInitialFilters = () => ({
   global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   "inscricao.edital.titulo": {
