@@ -298,7 +298,7 @@ export const devolverBolsa = async (tenantSlug, solicitacaoBolsaId, observacao) 
     throw error;
   }
 };
-export const transferirBolsa = async (tenantSlug, vinculoOrigemId, participacaoDestinoId, observacao) => {
+export const transferirBolsa = async (tenantSlug, vinculoOrigemId, participacaoDestinoId, observacao, dataTransferencia) => {
   try {
     const headers = getAuthHeadersClient();
     if (!headers) {
@@ -307,7 +307,7 @@ export const transferirBolsa = async (tenantSlug, vinculoOrigemId, participacaoD
 
     const response = await req.put(
       `/private/${tenantSlug}/transferir-bolsa`,
-      { vinculoOrigemId, participacaoDestinoId, observacao },
+      { vinculoOrigemId, participacaoDestinoId, observacao, dataTransferencia },
       { headers }
     );
     

@@ -156,7 +156,9 @@ export const LinhaTempo = ({ data, onUpdate, tabelaHistorico }) => {
             content={(item) => (
               <div className="flex flex-column">
                 <div className="flex align-items-center gap-2">
-                  <small className="text-color-secondary">{item.date}</small>
+                  <small className="text-color-secondary">
+                    (ID {item.id}) {item.date}
+                  </small>
                   {tabelaHistorico && (
                     <Button
                       icon="pi pi-pencil"
@@ -171,7 +173,7 @@ export const LinhaTempo = ({ data, onUpdate, tabelaHistorico }) => {
                   )}
                 </div>
                 {item.observacao && (
-                  <small className="mt-1">
+                  <small>
                     <strong>{item.observacao}</strong>
                   </small>
                 )}

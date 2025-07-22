@@ -68,6 +68,8 @@ function buildMergedTimeline(item) {
 
   // 1) Copia o historicoParticipacao (já vindo de mapHistorico)
   if (Array.isArray(item.historicoParticipacao)) {
+    console.log("ALETHO222");
+    console.log(item.historicoParticipacao);
     item.historicoParticipacao.forEach((evt) => {
       merged.push({
         id: evt.id,
@@ -147,6 +149,8 @@ const ParticipacaoGestorController = ({
     useState(false);
   const [isModalCancelamentoOpen, setIsModalCancelamentoOpen] = useState(false);
   const [dataInativacao, setDataInativacao] = useState("");
+  const [dataTransferencia, setDataTransferencia] = useState("");
+
   const [isLoadingAtivacao, setIsLoadingAtivacao] = useState(false);
   const [isLoadingToggle, setIsLoadingToggle] = useState(false);
   const [isModalAtivarPendenteOpen, setIsModalAtivarPendenteOpen] =
@@ -399,9 +403,7 @@ const ParticipacaoGestorController = ({
 
     try {
       // Formata a data para o formato DD/MM/YYYY esperado pelo backend
-      const formattedDate = new Date(dataInativacao).toLocaleDateString(
-        "pt-BR"
-      );
+      const formattedDate = dataInativacao;
 
       await inativarParticipacao(tenant, participacaoId, {
         fim: formattedDate, // Corrigido: usando o nome do parâmetro esperado pela API
@@ -439,7 +441,8 @@ const ParticipacaoGestorController = ({
 
         {/* Mensagens de erro/bloqueio */}
         {item?.statusParticipacao !== "APROVADA" &&
-          item?.statusParticipacao !== "PENDENTE" && (
+          item?.statusParticipacao !== "PENDENTE" &&
+          item?.statusParticipacao !== "ATIVA" && (
             <div className="p-message p-message-error mb-3 mt-3">
               Esta participação não pode ser inativada porque seu status não é
               "APROVADO" ou "PENDENTE"
@@ -447,7 +450,7 @@ const ParticipacaoGestorController = ({
           )}
 
         {item?.VinculoSolicitacaoBolsa?.some(
-          (v) => v.status !== "RECUSADO"
+          (v) => v.status !== "RECUSADO" && item?.statusParticipacao !== "ATIVA"
         ) && (
           <div className="p-message p-message-warn mb-3 mt-3">
             Existem vínculos de bolsa ativos associados a esta participação. É
@@ -458,48 +461,44 @@ const ParticipacaoGestorController = ({
         {/* Mostrar campos apenas se a participação puder ser inativada */}
         {(item?.statusParticipacao === "APROVADA" ||
           item?.statusParticipacao === "ATIVA" ||
-          item?.statusParticipacao === "PENDENTE") &&
-          (!item?.VinculoSolicitacaoBolsa?.length ||
-            item?.VinculoSolicitacaoBolsa?.every(
-              (v) => v.status === "RECUSADO"
-            )) && (
-            <>
-              <p>Informe os dados para inativação:</p>
+          item?.statusParticipacao === "PENDENTE") && (
+          <>
+            <p>Informe os dados para inativação:</p>
 
-              {/* Campo de data apenas se houver data de início */}
-              {item?.inicio && (
-                <div className="field mt-3">
-                  <label htmlFor="dataInativacao">Data de inativação</label>
-                  <input
-                    id="dataInativacao"
-                    type="date"
-                    className="p-inputtext p-component w-full"
-                    value={dataInativacao}
-                    onChange={(e) => setDataInativacao(e.target.value)}
-                    min={
-                      new Date(item.inicio.split("/").reverse().join("-"))
-                        .toISOString()
-                        .split("T")[0]
-                    }
-                  />
-                </div>
-              )}
-
-              {/* Campo de justificativa sempre visível quando pode inativar */}
+            {/* Campo de data apenas se houver data de início */}
+            {item?.inicio && (
               <div className="field mt-3">
-                <label htmlFor="justificativa">Justificativa *</label>
-                <textarea
-                  id="justificativa"
+                <label htmlFor="dataInativacao">Data de inativação</label>
+                <input
+                  id="dataInativacao"
+                  type="date"
                   className="p-inputtext p-component w-full"
-                  value={justificativaInativacao}
-                  onChange={(e) => setJustificativaInativacao(e.target.value)}
-                  rows={3}
-                  placeholder="Informe o motivo da inativação..."
-                  required
+                  value={dataInativacao}
+                  onChange={(e) => setDataInativacao(e.target.value)}
+                  min={
+                    new Date(item.inicio.split("/").reverse().join("-"))
+                      .toISOString()
+                      .split("T")[0]
+                  }
                 />
               </div>
-            </>
-          )}
+            )}
+
+            {/* Campo de justificativa sempre visível quando pode inativar */}
+            <div className="field mt-3">
+              <label htmlFor="justificativa">Justificativa *</label>
+              <textarea
+                id="justificativa"
+                className="p-inputtext p-component w-full"
+                value={justificativaInativacao}
+                onChange={(e) => setJustificativaInativacao(e.target.value)}
+                rows={3}
+                placeholder="Informe o motivo da inativação..."
+                required
+              />
+            </div>
+          </>
+        )}
 
         <div className="flex justify-content-end gap-1 mt-4">
           <Button
@@ -517,6 +516,7 @@ const ParticipacaoGestorController = ({
               // 1. Status não for APROVADA
               (item?.statusParticipacao !== "APROVADA" &&
                 item?.statusParticipacao !== "PENDENTE" &&
+                item?.statusParticipacao !== "ATIVA" &&
                 // 2. Há vínculos não recusados
                 item?.VinculoSolicitacaoBolsa?.length > 0 &&
                 item?.VinculoSolicitacaoBolsa?.some(
@@ -1045,6 +1045,7 @@ const ParticipacaoGestorController = ({
         setAlunoDestinoId(null);
         setJustTransfer("");
         setVinculoOrigemSelecionado(null);
+        setDataTransferencia(null);
       }}
     >
       <h4 className="mb-3">Transferir bolsa para outro aluno</h4>
@@ -1067,6 +1068,16 @@ const ParticipacaoGestorController = ({
             value={justTransfer}
             onChange={(e) => setJustTransfer(e.target.value)}
           />
+          <div className="field mt-3">
+            <label htmlFor="dataInativacao">Data da Transferência</label>
+            <input
+              id="dataTransferencia"
+              type="date"
+              className="p-inputtext p-component w-full"
+              value={dataTransferencia}
+              onChange={(e) => setDataTransferencia(e.target.value)}
+            />
+          </div>
         </>
       )}
 
@@ -1103,7 +1114,8 @@ const ParticipacaoGestorController = ({
                 tenant,
                 vinculoOrigemSelecionado, // use o solicitacaoBolsaId atual
                 alunoDestinoId,
-                justTransfer.trim()
+                justTransfer.trim(),
+                dataTransferencia
               );
               await fetch();
               toast.current?.show({
@@ -1421,6 +1433,7 @@ const ParticipacaoGestorController = ({
                                     onClick={async () => {
                                       setVinculoOrigemSelecionado(vinculo.id); // ➜ NOVO estado
                                       await loadAlunosInscricao();
+                                      setDataTransferencia(null);
                                       setModalTransferOpen(true);
                                     }}
                                   >
