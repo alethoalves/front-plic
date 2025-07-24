@@ -580,6 +580,7 @@ const FormGestorProjetoCreateOrEdit = ({
       <div className={styles.toast}>
         <Toast ref={toast} />
       </div>
+
       {loading && (
         <div className={styles.content}>
           <p>Carregando...</p>
@@ -607,7 +608,6 @@ const FormGestorProjetoCreateOrEdit = ({
           </div>
         </div>
       )}
-
       {activeTab === "inscricaoProjeto" && projetoId && !loading && (
         <div className={styles.content}>
           <div className={styles.mainContent}>
@@ -725,65 +725,69 @@ const FormGestorProjetoCreateOrEdit = ({
           </div>
         </div>
       )}
-      {activeTab === "conteudo" && !loading && (
-        <form
-          className={`${styles.formulario}`}
-          onSubmit={handleSubmit(handleFormSubmit)}
-        >
-          <div className={`${styles.conteudo}`}>
-            <div className={`${styles.input}`}>
-              <Input
-                control={control}
-                name="titulo"
-                label="Título do Projeto"
-                inputType="text"
-                placeholder="Digite aqui o título do Projeto"
-                disabled={loading}
+      {activeTab === "conteudo" ||
+        (!projetoId && (
+          <form
+            className={`${styles.formulario}`}
+            onSubmit={handleSubmit(handleFormSubmit)}
+          >
+            <div className={`${styles.conteudo}`}>
+              <div className={`${styles.input}`}>
+                <Input
+                  control={control}
+                  name="titulo"
+                  label="Título do Projeto"
+                  inputType="text"
+                  placeholder="Digite aqui o título do Projeto"
+                  disabled={loading}
+                />
+              </div>
+              <div className={`${styles.input}`}>
+                <SearchableSelect
+                  control={control}
+                  name="areaId"
+                  label="Área de Conhecimento do Projeto"
+                  options={areas || []} // Garante que o options seja um array
+                  disabled={loading}
+                />
+              </div>
+              <div className={`${styles.camposDinamicos}`}>
+                {renderDynamicFields(
+                  formularioEdital,
+                  control,
+                  loading,
+                  register,
+                  errors,
+                  watch
+                )}
+              </div>
+            </div>
+
+            <div className={styles.divCronograma}>
+              <h6 className="mb-2">Cronograma de Atividades</h6>
+              <Atividades
+                cronograma={cronograma}
+                setCronograma={setCronograma}
               />
             </div>
-            <div className={`${styles.input}`}>
-              <SearchableSelect
-                control={control}
-                name="areaId"
-                label="Área de Conhecimento do Projeto"
-                options={areas || []} // Garante que o options seja um array
+
+            <div className={`${styles.btnSubmit} mt-2`}>
+              <Button
+                icon={RiSave2Line}
+                className="btn-primary"
+                type="submit"
                 disabled={loading}
-              />
-            </div>
-            <div className={`${styles.camposDinamicos}`}>
-              {renderDynamicFields(
-                formularioEdital,
-                control,
-                loading,
-                register,
-                errors,
-                watch
+              >
+                {loading ? "Carregando..." : "Salvar"}
+              </Button>
+              {error && (
+                <div className={`notification notification-error`}>
+                  <p className="p5">{error}</p>
+                </div>
               )}
             </div>
-          </div>
-
-          <div className={styles.divCronograma}>
-            <h6 className="mb-2">Cronograma de Atividades</h6>
-            <Atividades cronograma={cronograma} setCronograma={setCronograma} />
-          </div>
-
-          <div className={`${styles.btnSubmit} mt-2`}>
-            <Button
-              icon={RiSave2Line}
-              className="btn-primary"
-              type="submit"
-              disabled={loading}
-            >
-              {loading ? "Carregando..." : "Salvar"}
-            </Button>
-            {error && (
-              <div className={`notification notification-error`}>
-                <p className="p5">{error}</p>
-              </div>
-            )}
-          </div>
-        </form>
-      )}
+          </form>
+        ))}
       <Dialog
         visible={displayUnlinkDialog}
         style={{ width: "450px" }}

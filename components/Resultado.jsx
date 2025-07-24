@@ -516,8 +516,8 @@ const Resultado = ({}) => {
               filterField="planoDeTrabalho.statusClassificacao"
               body={(rowData) =>
                 renderStatusTagWithJustificativa(
-                  rowData.planoDeTrabalho.statusClassificacao,
-                  rowData.planoDeTrabalho.justificativa,
+                  rowData.planoDeTrabalho?.statusClassificacao,
+                  rowData.planoDeTrabalho?.justificativa,
                   {
                     onShowJustificativa: showJustificativaDialog,
                   }

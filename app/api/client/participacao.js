@@ -384,7 +384,8 @@ export const substituirAlunoParticipacao = async (
 export const ativarOuPendenteParticipacao = async (
   tenantSlug,
   participacaoId,
-  observacao = null
+  observacao = null,
+  date
 ) => {
   try {
     const headers = getAuthHeadersClient();
@@ -396,7 +397,7 @@ export const ativarOuPendenteParticipacao = async (
     const body = observacao ? { observacao } : {};
 
     const response = await req.put(
-      `/private/${tenantSlug}/ativar-pendente/participacao/${participacaoId}`,
+      `/private/${tenantSlug}/ativar-pendente/participacao/${participacaoId}/${date}`,
       body,
       { headers }
     );

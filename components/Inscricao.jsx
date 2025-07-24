@@ -255,6 +255,7 @@ const Inscricao = ({ params, inscricaoId }) => {
                   onClick={() => {
                     setParticipacaoSelected(null);
                     setTipoParticipacao("aluno");
+                    setPlanoSelected(plano.id);
                     setVerifiedData(null);
                     setIsModalParticipacaoOpen(true);
                   }}
@@ -296,7 +297,9 @@ const Inscricao = ({ params, inscricaoId }) => {
             <ParticipacaoForm
               tenantSlug={params.tenant}
               inscricaoId={`${inscricaoId}`}
-              initialData={verifiedData || {}}
+              initialData={
+                { ...verifiedData, planoDeTrabalhoId: planoSelected } || {}
+              }
               onClose={() => setIsModalParticipacaoOpen(false)}
               onSuccess={() => {
                 handleCreateOrEditSuccess();
