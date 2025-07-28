@@ -21,6 +21,7 @@ import FormRegistroAtividadeCreateOrEdit from "@/components/Formularios/FormRegi
 import { Toast } from "primereact/toast";
 import { Accordion, AccordionTab } from "primereact/accordion";
 import { aprovarAtividade } from "@/app/api/client/registroAtividade";
+import Button from "@/components/Button";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
@@ -54,13 +55,12 @@ const Page = ({ params }) => {
           params.tenant,
           perfil
         );
-        setRegistrosAtividadesEditaisVigentes(
-          response.registrosAtividade.sort(
-            (a, b) =>
-              new Date(a.atividade.dataInicio) -
-              new Date(b.atividade.dataInicio)
-          )
+        const registrosOrdenados = response.registrosAtividade.sort(
+          (a, b) =>
+            new Date(a.atividade.dataInicio) - new Date(b.atividade.dataInicio)
         );
+        const grupos = groupByPlanoDeTrabalho(registrosOrdenados);
+        setRegistrosAtividadesEditaisVigentes(grupos);
       } catch (error) {
         console.error("Erro ao buscar dados:", error);
         toast.current.show({
@@ -75,7 +75,22 @@ const Page = ({ params }) => {
     };
     fetchData();
   }, [params.tenant, isModalOpen]);
+  const groupByPlanoDeTrabalho = (registros) => {
+    const grupos = {};
 
+    registros.forEach((registro) => {
+      const planoId = registro.planoDeTrabalho.id;
+      if (!grupos[planoId]) {
+        grupos[planoId] = {
+          ...registro.planoDeTrabalho,
+          atividades: [],
+        };
+      }
+      grupos[planoId].atividades.push(registro);
+    });
+
+    return Object.values(grupos);
+  };
   const handleCreateOrEditSuccess = useCallback((updatedRegistro) => {
     setRegistrosAtividadesEditaisVigentes((prev) =>
       prev.map((registro) =>
@@ -234,7 +249,14 @@ const Page = ({ params }) => {
       </Accordion>
     );
   };
+  const isWithinEditPeriod = (dataFinal) => {
+    const dataFinalObj = new Date(dataFinal);
+    const hoje = new Date();
+    const tresDiasDepois = new Date(dataFinalObj);
+    tresDiasDepois.setDate(dataFinalObj.getDate() + 3); // Adiciona 3 dias ao prazo final
 
+    return hoje <= tresDiasDepois;
+  };
   return (
     <>
       {renderModalContent()}
@@ -252,93 +274,32 @@ const Page = ({ params }) => {
           {registroAtividadesEditaisVigentes?.length > 0 ? (
             <div className={styles.mainContent}>
               <div className={styles.tela1}>
-                {registroAtividadesEditaisVigentes?.map((registro) => (
-                  <div key={registro.id} className={styles.boxButton}>
+                {registroAtividadesEditaisVigentes.map((plano) => (
+                  <div key={plano.id} className={styles.boxButton}>
                     <div
                       className={`${styles.labelWithIcon} ${styles.registroHeader}`}
-                      onClick={() => toggleAccordion(registro.id)}
+                      onClick={() => toggleAccordion(plano.id)}
                     >
-                      <RiDraftLine />
+                      <RiFoldersLine />
                       <div className={styles.label}>
                         <div className={styles.description}>
-                          <p
-                            style={{ textTransform: "uppercase" }}
-                            className={styles.destaque}
-                          >
-                            {registro.atividade.titulo}
-                          </p>
-                        </div>
-                        <div className={styles.description}>
-                          <div
-                            className={`${styles.status} ${
-                              registro.status === "naoEntregue" && styles.error
-                            } ${
-                              registro.status === "concluido" && styles.success
-                            }
-                            ${
-                              registro.status ===
-                                "aguardandoAprovacaoOrientador" &&
-                              styles.warning
-                            }`}
-                          >
-                            <p>
-                              {registro.status === "naoEntregue" &&
-                                "Não entregue"}
-                              {registro.status === "concluido" && "Entregue"}
-                              {registro.status ===
-                                "aguardandoAprovacaoOrientador" &&
-                                "Agurdando orientador"}
-                            </p>
-                          </div>
+                          <h6 className={styles.destaque}>
+                            {plano.titulo} ({plano.inscricao.edital.titulo})
+                          </h6>
                         </div>
                       </div>
                       <div className={styles.toogle}>
                         <RiArrowDownSLine
                           className={
-                            expandedItems[registro.id] ? styles.rotated : ""
+                            expandedItems[plano.id] ? styles.rotated : ""
                           }
                         />
                       </div>
                     </div>
-                    {expandedItems[registro.id] && (
-                      <div
-                        className={`${styles.accordionContent} ${
-                          expandedItems[registro.id] ? styles.expanded : ""
-                        }`}
-                      >
-                        <div className={`${styles.labelWithIcon} mb-2`}>
-                          <RiCalendarEventFill />
-                          <div className={styles.label}>
-                            <p>
-                              <RiCalendarEventFill />
-                              Período para entrega:
-                            </p>
-                            <div className={styles.description}>
-                              <p>
-                                {formatDateForDisplay(
-                                  registro.atividade.dataInicio
-                                )}{" "}
-                                a{" "}
-                                {formatDateForDisplay(
-                                  registro.atividade.dataFinal
-                                )}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
 
-                        <div className={`${styles.labelWithIcon} mb-2`}>
-                          <RiFoldersLine />
-                          <div className={styles.label}>
-                            <p>
-                              <RiFoldersLine />
-                              Plano de trabalho:
-                            </p>
-                            <div className={styles.description}>
-                              <p>{registro.planoDeTrabalho.titulo}</p>
-                            </div>
-                          </div>
-                        </div>
+                    {expandedItems[plano.id] && (
+                      <div className={styles.accordionContent}>
+                        {/* Informações do Plano */}
                         <div className={`${styles.labelWithIcon} mb-2`}>
                           <RiUser2Line />
                           <div className={styles.label}>
@@ -347,7 +308,7 @@ const Page = ({ params }) => {
                               Orientador(es):
                             </p>
                             <div className={styles.description}>
-                              {registro.planoDeTrabalho.inscricao.participacoes
+                              {plano.inscricao.participacoes
                                 .filter(
                                   (item) =>
                                     item.tipo === "orientador" ||
@@ -361,6 +322,7 @@ const Page = ({ params }) => {
                             </div>
                           </div>
                         </div>
+
                         <div className={`${styles.labelWithIcon} mb-2`}>
                           <RiGroupLine />
                           <div className={styles.label}>
@@ -369,56 +331,115 @@ const Page = ({ params }) => {
                               Aluno(s):
                             </p>
                             <div className={styles.description}>
-                              {registro.planoDeTrabalho.participacoes.map(
-                                (item, index) => (
-                                  <p className={styles.person} key={index}>
-                                    {item.user.nome} ({item.statusParticipacao})
-                                  </p>
-                                )
-                              )}
+                              {plano.participacoes.map((item, index) => (
+                                <p className={styles.person} key={index}>
+                                  {item.user.nome} ({item.statusParticipacao})
+                                </p>
+                              ))}
                             </div>
                           </div>
                         </div>
-                        {/* Seção de Respostas em Accordion */}
-                        {registro.respostas?.length > 0 && (
-                          <div className={`${styles.respostasSection} mt-3`}>
-                            <h5 className="mb-2">Respostas Enviadas:</h5>
-                            {renderRespostas(registro.respostas)}
-                          </div>
-                        )}
 
-                        <button
-                          className={` mt-2 button btn-primary ${styles.openModalButton}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openModalAndSetData(registro);
-                          }}
-                        >
-                          {registro.respostas?.length > 0 ? (
-                            <p>Editar Atividade</p>
-                          ) : (
-                            <p>Enviar Atividade</p>
-                          )}
-                        </button>
-                        {perfil === "orientador" && (
-                          <button
-                            className={`mt-2 button btn-secondary ${styles.openModalButton}`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleAprovarAtividade(registro);
-                            }}
-                            disabled={approvingId === registro.id}
+                        {/* Atividades do Plano */}
+                        <h5 className="mt-3 mb-2">Atividades:</h5>
+                        {plano.atividades.map((atividade) => (
+                          <div
+                            key={atividade.id}
+                            className={`${styles.atividadeItem} mb-3`}
                           >
-                            {approvingId === registro.id ? (
-                              "Aprovando..."
-                            ) : (
-                              <>
-                                <RiCheckDoubleLine size={16} className="mr-1" />
-                                <p>Aprovar atividade</p>
-                              </>
+                            <div className={styles.atividadeHeader}>
+                              <RiDraftLine />
+                              <div className={styles.atividadeInfo}>
+                                <div className={`${styles.status} `}>
+                                  <div className={styles.label}>
+                                    <div
+                                      className={`${styles.status} ${
+                                        atividade.status === "naoEntregue" &&
+                                        styles.error
+                                      } ${
+                                        atividade.status === "concluido" &&
+                                        styles.success
+                                      } ${
+                                        atividade.status ===
+                                          "aguardandoAprovacaoOrientador" &&
+                                        styles.warning
+                                      }`}
+                                    >
+                                      <p>
+                                        {atividade.status === "naoEntregue" &&
+                                          "Não entregue"}
+                                        {atividade.status === "concluido" &&
+                                          "Entregue"}
+                                        {atividade.status ===
+                                          "aguardandoAprovacaoOrientador" &&
+                                          "Aguardando orientador"}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                                <h6 className={`${styles.destaque} mt-2`}>
+                                  {atividade.atividade.titulo}
+                                </h6>
+                                <p className={styles.atividadePeriodo}>
+                                  Período:{" "}
+                                  {formatDateForDisplay(
+                                    atividade.atividade.dataInicio
+                                  )}{" "}
+                                  a{" "}
+                                  {formatDateForDisplay(
+                                    atividade.atividade.dataFinal
+                                  )}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Respostas (se houver) */}
+                            {atividade.respostas?.length > 0 && (
+                              <div
+                                className={`${styles.respostasSection} mt-2`}
+                              >
+                                {renderRespostas(atividade.respostas)}
+                              </div>
                             )}
-                          </button>
-                        )}
+                            {isWithinEditPeriod(
+                              atividade.atividade.dataFinal
+                            ) && (
+                              <Button
+                                className={`mt-2 button btn-secondary ${styles.openModalButton}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openModalAndSetData(atividade);
+                                }}
+                              >
+                                {atividade.respostas?.length > 0
+                                  ? "Editar Atividade"
+                                  : "Enviar Atividade"}
+                              </Button>
+                            )}
+                            {perfil === "orientador" && (
+                              <button
+                                className={`mt-2 button btn-secondary ${styles.openModalButton}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAprovarAtividade(atividade);
+                                }}
+                                disabled={approvingId === atividade.id}
+                              >
+                                {approvingId === atividade.id ? (
+                                  "Aprovando..."
+                                ) : (
+                                  <>
+                                    <RiCheckDoubleLine
+                                      size={16}
+                                      className="mr-1"
+                                    />
+                                    <p>Aprovar atividade</p>
+                                  </>
+                                )}
+                              </button>
+                            )}
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>

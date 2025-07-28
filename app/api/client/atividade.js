@@ -67,7 +67,7 @@ export const createAtividade = async (tenantSlug, editalId, atividadeData) => {
         return false;
       }
       const response = await req.get(
-        `/private/${tenantSlug}/user/${perfil}/registroAtividadesByCPF`,
+        `/private/${tenantSlug}/user/registroAtividadesByCPF/${perfil}`,
         {
           headers,
         }

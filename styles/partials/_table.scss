@@ -137,3 +137,20 @@ overflow-x: auto; // Mantém o scroll apenas dentro dessa di
 .p-tag {
     padding: 4px $gap-1;
 }
+.formatacao-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    
+    span {
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      
+      &:not(:last-child)::after {
+        //content: ";";
+        margin-left: 0.25rem;
+      }
+    }
+  }

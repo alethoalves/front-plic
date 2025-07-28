@@ -121,40 +121,44 @@ const Page = ({ params }) => {
 
   return (
     <>
-      <Card className="p-3 w-100">
-        <UnderConstruction />
-      </Card>
       {false && (
-        <main className={styles.main}>
-          {false && (
-            <>
-              <div className={`${styles.dashboard} ${styles.dashboardA}`}>
-                <Editais />
-              </div>
-              <div className={`${styles.dashboard} ${styles.dashboardB}`}>
-                <Participacoes tenantSlug={params.tenant} />
-              </div>
-            </>
-          )}
-          {/* Seção de gráficos e dados */}
-          {false && (
-            <>
+        <Card className="p-3 w-100">
+          <UnderConstruction />
+        </Card>
+      )}
+      <main className={styles.main}>
+        {false && (
+          <>
+            <div className={`${styles.dashboard} ${styles.dashboardA}`}>
+              <Editais />
+            </div>
+            <div className={`${styles.dashboard} ${styles.dashboardB}`}>
+              <Participacoes tenantSlug={params.tenant} />
+            </div>
+          </>
+        )}
+        {/* Seção de gráficos e dados */}
+        {true && (
+          <>
+            {false && (
               <div className={`${styles.dashboard} ${styles.dashboardA}`}>
                 <Inscricoes tenantSlug={params.tenant} />
               </div>
+            )}
+            {false && (
               <div className={`${styles.dashboard} ${styles.dashboardB}`}>
                 <Participacoes tenantSlug={params.tenant} />
               </div>
-              <div className={`${styles.dashboard} ${styles.dashboardC}`}>
-                <Atividades tenantSlug={params.tenant} />
-              </div>
-              <div className={`${styles.dashboard} ${styles.dashboardD}`}>
-                <Eventos tenantSlug={params.tenant} />
-              </div>
-            </>
-          )}
-        </main>
-      )}
+            )}
+            <div className={`${styles.dashboard} ${styles.dashboardC}`}>
+              <Atividades tenantSlug={params.tenant} />
+            </div>
+            <div className={`${styles.dashboard} ${styles.dashboardD}`}>
+              <Eventos tenantSlug={params.tenant} />
+            </div>
+          </>
+        )}
+      </main>
     </>
   );
 };

@@ -91,7 +91,7 @@ const Page = ({ params }) => {
               </div>
             </div>
           </Link>
-          <Link href={`/${params.tenant}/aluno/eventos`}>
+          <Link href={`/${params.tenant}/user/eventos`}>
             <div className={styles.infoBox}>
               {registroAtividadesNaoInscritos > 0 && (
                 <div className={styles.notification}>

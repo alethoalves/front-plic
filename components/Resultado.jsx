@@ -52,6 +52,14 @@ const getInitialFilters = () => ({
     value: [null, null],
     matchMode: "intervalo",
   },
+  statusVinculo: {
+    value: null,
+    matchMode: FilterMatchMode.IN,
+  },
+  fontePagadora: {
+    value: null,
+    matchMode: FilterMatchMode.IN,
+  },
 });
 // ==============================================
 // FILTROS PERSONALIZADOS
@@ -84,6 +92,7 @@ const Resultado = ({}) => {
   const [selectedRowData, setSelectedRowData] = useState(null); // Novo estado
 
   // Estados para dados e carregamento
+  const [exporting, setExporting] = useState(false);
   const [participacoes, setParticipacoes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editaisOptions, setEditaisOptions] = useState([]);
@@ -104,6 +113,132 @@ const Resultado = ({}) => {
   const [showJustificativas, setShowJustificativas] = useState(false);
   const [justificativasAtuais, setJustificativasAtuais] = useState("");
 
+  const exportToExcel = async () => {
+    try {
+      setExporting(true);
+
+      const ExcelJS = require("exceljs");
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet("Participações");
+
+      // Definindo as colunas
+      worksheet.columns = [
+        { header: "Edital", key: "edital", width: 30 },
+        { header: "Plano de Trabalho", key: "planoTrabalho", width: 30 },
+        { header: "Orientador", key: "orientador", width: 25 },
+        { header: "Aluno", key: "aluno", width: 25 },
+        { header: "Status Plano", key: "statusPlano", width: 20 },
+        { header: "Status Aluno", key: "statusAluno", width: 20 },
+        { header: "Status Vinculação", key: "statusVinculacao", width: 20 },
+        { header: "Fonte Pagadora", key: "fontePagadora", width: 20 },
+        {
+          header: "Nota Total",
+          key: "notaTotal",
+          width: 15,
+          style: { numFmt: "0.0000" },
+        },
+      ];
+
+      // Adicionando os dados
+      const dataToExport = participacoes.map((part) => ({
+        edital: part.inscricao?.edital?.titulo || "",
+        planoTrabalho: part.planoDeTrabalho?.titulo || "",
+        orientador: part.orientadores || "N/A",
+        aluno: part.user?.nome || "",
+        statusPlano: part.planoDeTrabalho?.statusClassificacao || "",
+        statusAluno: part.statusParticipacao || "",
+        statusVinculacao:
+          part.VinculoSolicitacaoBolsa?.[0]?.status || "Voluntária",
+        fontePagadora:
+          part.VinculoSolicitacaoBolsa?.[0]?.solicitacaoBolsa?.bolsa?.cota
+            ?.instituicaoPagadora || "Voluntária",
+        notaTotal: part.notaTotal || null,
+      }));
+
+      worksheet.addRows(dataToExport);
+
+      // Adicionando a tabela (Excel Table)
+      worksheet.addTable({
+        name: "ParticipacoesTable",
+        ref: "A1", // Canto superior esquerdo da tabela
+        headerRow: true,
+        totalsRow: false,
+        style: {
+          theme: "TableStyleMedium2", // Estilo pré-definido do Excel
+          showRowStripes: true, // Listras nas linhas
+        },
+        columns: [
+          { name: "Edital", filterButton: true },
+          { name: "Plano de Trabalho", filterButton: true },
+          { name: "Orientador", filterButton: true },
+          { name: "Aluno", filterButton: true },
+          { name: "Status Plano", filterButton: true },
+          { name: "Status Aluno", filterButton: true },
+          { name: "Status Vinculação", filterButton: true },
+          { name: "Fonte Pagadora", filterButton: true },
+          { name: "Nota Total", filterButton: true },
+        ],
+        rows: dataToExport.map((item) => [
+          item.edital,
+          item.planoTrabalho,
+          item.orientador,
+          item.aluno,
+          item.statusPlano,
+          item.statusAluno,
+          item.statusVinculacao,
+          item.fontePagadora,
+          item.notaTotal,
+        ]),
+      });
+
+      // Formatação do cabeçalho
+      worksheet.getRow(1).eachCell((cell) => {
+        cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "FF4472C4" }, // Azul do Excel
+        };
+        cell.border = {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          bottom: { style: "thin" },
+          right: { style: "thin" },
+        };
+      });
+
+      // Gerando o arquivo
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `participacoes_${
+        new Date().toISOString().split("T")[0]
+      }.xlsx`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+
+      showToast("success", "Sucesso", "Arquivo Excel gerado com sucesso!");
+    } catch (error) {
+      console.error("Erro ao exportar para Excel:", error);
+      showToast("error", "Erro", "Falha ao exportar para Excel");
+    } finally {
+      setExporting(false);
+    }
+  };
+  const paginatorLeft = (
+    <Button
+      type="button"
+      icon={exporting ? "pi pi-spinner pi-spin" : "pi pi-download"}
+      text
+      onClick={exportToExcel}
+      disabled={exporting}
+      tooltip="Exportar para Excel"
+      tooltipOptions={{ position: "bottom" }}
+    />
+  );
   // ==============================================
   // EFEITOS
   // ==============================================
@@ -270,6 +405,7 @@ const Resultado = ({}) => {
       setLoadingAtivacaoVinculo(false);
     }
   };
+  const [fontesPagadorasOptions, setFontesPagadorasOptions] = useState([]);
 
   const getParticipacoes = async () => {
     const response = await getParticipacoesByTenant(tenant, "aluno", ano);
@@ -284,6 +420,9 @@ const Resultado = ({}) => {
             (plano.notaProjeto || 0)
           ).toFixed(4)
         : null;
+
+      const vinculo = p.VinculoSolicitacaoBolsa?.[0];
+
       return {
         ...p,
         notaTotal: notaTotal ? parseFloat(notaTotal) : null,
@@ -292,8 +431,14 @@ const Resultado = ({}) => {
             ?.map((part) => part.user?.nome)
             .filter(Boolean)
             .join(", ") || "N/A",
+        // Colunas virtuais para filtros
+        statusVinculo: vinculo?.status || "Voluntária",
+        fontePagadora:
+          vinculo?.solicitacaoBolsa?.bolsa?.cota?.instituicaoPagadora ||
+          "Voluntária",
       };
     });
+
     /**
      * Prepara as opções para os filtros do DataTable
      */
@@ -311,17 +456,46 @@ const Resultado = ({}) => {
 
       setSolicitacaoStatusOptions(statusOptions.solicitacao);
 
-      setVinculoStatusOptions(statusOptions.vinculo);
-
-      // Resultado Final
-      const resultadosUnicos = [
+      // Opções para status de vínculo
+      const vinculoStatusUnicos = [
         ...new Set(
-          data
-            .map((p) => p.resultadoFinal?.label)
-            .filter((label) => label !== undefined && label !== null)
+          data.flatMap((p) =>
+            p.VinculoSolicitacaoBolsa?.length > 0
+              ? [p.VinculoSolicitacaoBolsa[0]?.status]
+              : ["Voluntária"]
+          )
         ),
-      ];
+      ].filter(Boolean);
+
+      setVinculoStatusOptions(
+        vinculoStatusUnicos.map((status) => ({
+          label: status,
+          value: status,
+        }))
+      );
+
+      // Opções para fonte pagadora
+      const fontesPagadorasUnicas = [
+        ...new Set(
+          data.flatMap((p) =>
+            p.VinculoSolicitacaoBolsa?.length > 0
+              ? [
+                  p.VinculoSolicitacaoBolsa[0]?.solicitacaoBolsa?.bolsa?.cota
+                    ?.instituicaoPagadora,
+                ]
+              : ["Voluntária"]
+          )
+        ),
+      ].filter(Boolean);
+
+      setFontesPagadorasOptions(
+        fontesPagadorasUnicas.map((fonte) => ({
+          label: fonte,
+          value: fonte,
+        }))
+      );
     };
+
     setParticipacoes(comColunasVirtuais);
     console.log(comColunasVirtuais);
     // Prepara opções para filtros
@@ -384,7 +558,7 @@ const Resultado = ({}) => {
           onClick={clearFilters}
           className="p-button-outlined p-button-secondary"
         />
-        {selectedParticipacoes.length > 0 && (
+        {false && selectedParticipacoes.length > 0 && (
           <>
             <Button
               icon="pi pi-check-circle"
@@ -459,6 +633,7 @@ const Resultado = ({}) => {
             rowClassName={styles.clickableRow}
             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
             currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros"
+            paginatorLeft={paginatorLeft}
             selection={selectedParticipacoes}
             onSelectionChange={onSelectionChange}
             dataKey="id"
@@ -493,13 +668,26 @@ const Resultado = ({}) => {
               filter
               sortable
               filterPlaceholder="Buscar por nome"
+              style={{ width: "280px", maxWidth: "280px" }}
+              bodyStyle={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
             />
+
             <Column
               field="user.nome"
               header="Aluno"
               filter
               filterPlaceholder="Buscar por nome"
               sortable
+              style={{ width: "280px", maxWidth: "280px" }}
+              bodyStyle={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
             />
             <Column
               field="planoDeTrabalho.statusClassificacao"
@@ -550,7 +738,7 @@ const Resultado = ({}) => {
               style={{ width: "12rem" }}
             />
             <Column
-              field="status"
+              field="statusVinculo"
               header="Status vinculação de bolsa"
               sortable
               filter
@@ -558,41 +746,38 @@ const Resultado = ({}) => {
                 statusClassificacaoFilterTemplate(options, vinculoStatusOptions)
               }
               showFilterMenu={false}
-              filterField="status"
-              body={(rowData) =>
-                rowData.VinculoSolicitacaoBolsa.length > 0
+              body={(rowData) => {
+                const vinculo = rowData.VinculoSolicitacaoBolsa?.[0];
+                return vinculo
                   ? renderStatusTagWithJustificativa(
-                      rowData.VinculoSolicitacaoBolsa[
-                        rowData.VinculoSolicitacaoBolsa.length - 1
-                      ]?.status,
-                      rowData.VinculoSolicitacaoBolsa[
-                        rowData.VinculoSolicitacaoBolsa.length - 1
-                      ]?.motivoRecusa,
-                      {
-                        onShowJustificativa: showJustificativaDialog,
-                      }
+                      vinculo.status,
+                      vinculo.motivoRecusa,
+                      { onShowJustificativa: showJustificativaDialog }
                     )
-                  : "Voluntária"
-              }
+                  : "Voluntária";
+              }}
               style={{ width: "12rem" }}
             />
+
             <Column
-              field="status"
+              field="fontePagadora"
               header="Fonte pagadora"
               sortable
               filter
               filterElement={(options) =>
-                statusClassificacaoFilterTemplate(options, vinculoStatusOptions)
+                statusClassificacaoFilterTemplate(
+                  options,
+                  fontesPagadorasOptions
+                )
               }
               showFilterMenu={false}
-              filterField="status"
-              body={(rowData) =>
-                rowData.VinculoSolicitacaoBolsa.length > 0
-                  ? rowData.VinculoSolicitacaoBolsa[
-                      rowData.VinculoSolicitacaoBolsa.length - 1
-                    ]?.solicitacaoBolsa?.bolsa?.cota?.instituicaoPagadora
-                  : "Voluntária"
-              }
+              body={(rowData) => {
+                const vinculo = rowData.VinculoSolicitacaoBolsa?.[0];
+                return (
+                  vinculo?.solicitacaoBolsa?.bolsa?.cota?.instituicaoPagadora ||
+                  "Voluntária"
+                );
+              }}
               style={{ width: "12rem" }}
             />
             <Column

@@ -17,6 +17,7 @@ import {
   getRegistroAtividadesByCpfEditaisVigentes,
 } from "@/app/api/client/registroAtividade";
 import { getEventosByTenant } from "@/app/api/client/eventos";
+import { getCookie } from "cookies-next";
 
 const Page = ({ params }) => {
   // Estados para gerenciamento do componente
@@ -26,6 +27,7 @@ const Page = ({ params }) => {
     useState(0);
   // ROTEAMENTO
   const router = useRouter();
+  const perfil = getCookie("perfilSelecionado");
   //EFETUAR BUSCAS DE DADOS AO RENDERIZAR O COMPONENTE
   useEffect(() => {
     const fetchData = async () => {
@@ -38,7 +40,10 @@ const Page = ({ params }) => {
         setAtividadesNaoEntregues(atividadesNaoEntregues);
         //
         const registroAtividades =
-          await getRegistroAtividadesByCpfEditaisVigentes(params.tenant);
+          await getRegistroAtividadesByCpfEditaisVigentes(
+            params.tenant,
+            perfil
+          );
         const eventos = await getEventosByTenant(params.tenant);
         setRegistroAtividadesNaoInscritos(
           contarTotalPlanosNaoInscritos(registroAtividades, eventos)

@@ -109,14 +109,14 @@ export const createRegistroAtividade = async (
     }
   };
 
-  export const getRegistroAtividadesByCpfEditaisVigentes = async (tenantSlug) => {
+  export const getRegistroAtividadesByCpfEditaisVigentes = async (tenantSlug, perfil) => {
     try {
       const headers = getAuthHeadersClient();
       if (!headers) {
         return false;
       }
       const response = await req.get(
-        `/private/${tenantSlug}/user/registroAtividadesByCPF`,
+        `/private/${tenantSlug}/user/registroAtividadesByCPF/${perfil}`,
         {
           headers,
           

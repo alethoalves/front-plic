@@ -282,10 +282,11 @@ const ParticipacaoGestorController = ({
         detail: "Participação inativada com sucesso",
         life: 3000,
       });
+      await fetch();
       if (onSuccess) {
         await onSuccess();
       }
-      modalOpen(false);
+      setModalOpen(false);
     } catch (error) {
       console.error("Erro ao inativar participação:", error);
       toast.current?.show({
@@ -416,6 +417,7 @@ const ParticipacaoGestorController = ({
 
       // Limpa o estado da data após sucesso (opcional)
       setDateValue(null);
+      setModalOpen(false);
     } catch (err) {
       console.error("Erro ao ativar vínculo:", err);
       toast.current?.show({
@@ -431,7 +433,7 @@ const ParticipacaoGestorController = ({
       setSaving(false);
     }
   };
-  const handleTornarPendente = async () => {
+  const handleTornarPendente = async (vinculoId) => {
     if (!justificativa.trim()) {
       toast.current?.show({
         severity: "error",
@@ -441,13 +443,22 @@ const ParticipacaoGestorController = ({
       });
       return;
     }
-
-    setLoadingPendenciaId(modalPendenciaVinculoId);
+    if (!dateValue) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Erro",
+        detail: "A data é obrigatória para ativar o vínculo",
+        life: 3000,
+      });
+      return; // Interrompe a execução se não tiver dateValue
+    }
+    setSaving(true);
     try {
       await tornarPendenteVinculo(
         tenant,
-        modalPendenciaVinculoId,
-        justPendencia.trim()
+        vinculoId,
+        justificativa.trim(),
+        dateValue
       );
       await fetch();
       toast.current?.show({
@@ -457,8 +468,8 @@ const ParticipacaoGestorController = ({
         life: 3000,
       });
       if (onSuccess) await onSuccess();
-      setModalPendenciaVinculoId(null);
-      setJustPendencia("");
+      setDateValue(null);
+      setModalOpen(false);
     } catch (err) {
       console.error("Erro:", err);
       toast.current?.show({
@@ -471,7 +482,7 @@ const ParticipacaoGestorController = ({
         life: 4000,
       });
     } finally {
-      setLoadingPendenciaId(null);
+      setSaving(false);
     }
   };
 
@@ -516,7 +527,7 @@ const ParticipacaoGestorController = ({
   };
 
   const handleDevolverBolsa = async () => {
-    if (!justDevolucao.trim()) {
+    if (!justificativa.trim()) {
       toast.current?.show({
         severity: "error",
         summary: "Erro",
@@ -525,10 +536,24 @@ const ParticipacaoGestorController = ({
       });
       return;
     }
+    if (!dateValue) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Erro",
+        detail: "Por favor, selecione uma data",
+        life: 3000,
+      });
+      return;
+    }
 
-    setLoadingDevolucaoId(modalDevolucaoId);
+    setSaving(true);
     try {
-      await devolverBolsa(tenant, modalDevolucaoId, justDevolucao.trim());
+      await devolverBolsa(
+        tenant,
+        solicitacaoBolsaId,
+        justificativa.trim(),
+        dateValue
+      );
       await fetch();
       toast.current?.show({
         severity: "success",
@@ -537,8 +562,8 @@ const ParticipacaoGestorController = ({
         life: 3000,
       });
       onSuccess && (await onSuccess());
-      setModalDevolucaoId(null);
-      setJustDevolucao("");
+      setSolicitacaoBolsaId(null);
+      setModalOpen(false);
     } catch (err) {
       console.error(err);
       toast.current?.show({
@@ -549,7 +574,7 @@ const ParticipacaoGestorController = ({
         life: 4000,
       });
     } finally {
-      setLoadingDevolucaoId(null);
+      setSaving(false);
     }
   };
 
@@ -708,57 +733,13 @@ const ParticipacaoGestorController = ({
     </Modal>
   );
 
-  const renderModalDevolucao = () => (
-    <Modal
-      isOpen={!!modalDevolucaoId}
-      onClose={() => {
-        setModalDevolucaoId(null);
-        setJustDevolucao("");
-      }}
-    >
-      <h4 className="mb-3">Justificativa da Devolução</h4>
-
-      <InputTextarea
-        rows={4}
-        className="w-full"
-        value={justDevolucao}
-        onChange={(e) => setJustDevolucao(e.target.value)}
-        placeholder="Explique o motivo da devolução da bolsa…"
-      />
-
-      <div className="flex justify-content-end gap-2 mt-4">
-        <Button
-          label="Cancelar"
-          severity="secondary"
-          outlined
-          onClick={() => {
-            setModalDevolucaoId(null);
-            setJustDevolucao("");
-          }}
-        />
-        <Button
-          label={
-            loadingDevolucaoId ? (
-              <>
-                <i className="pi pi-spinner pi-spin mr-2" /> Processando…
-              </>
-            ) : (
-              "Confirmar devolução"
-            )
-          }
-          disabled={loadingDevolucaoId}
-          onClick={handleDevolverBolsa}
-        />
-      </div>
-    </Modal>
-  );
-
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [justificativa, setJustificativa] = useState();
   const [dateValue, setDateValue] = useState();
   const [option, setOption] = useState();
   const [vinculoId, setVinculoId] = useState();
+  const [solicitacaoBolsaId, setSolicitacaoBolsaId] = useState();
   const opcoes = {
     transferencia: {
       titulo: "Transferir bolsa para outro aluno",
@@ -774,10 +755,22 @@ const ParticipacaoGestorController = ({
       showTextarea: true,
       showDateInput: true,
     },
+    devolucao: {
+      titulo: "Devolver bolsa",
+      onSave: handleDevolverBolsa,
+      showTextarea: true,
+      showDateInput: true,
+    },
     ativarVinculo: {
       titulo: "Ativar vínculo entre aluno e a solicitação de bolsa",
       onSave: () => handleAtivarVinculo(vinculoId),
       showDateInput: true,
+    },
+    pendenteVinculo: {
+      titulo: "Tornar pendente o vínculo entre aluno e a solicitação de bolsa",
+      onSave: () => handleTornarPendente(vinculoId),
+      showDateInput: true,
+      showTextarea: true,
     },
     substituicao: {
       titulo: "Substituição de aluno",
@@ -865,7 +858,6 @@ const ParticipacaoGestorController = ({
       {renderModalOpcoes()}
       {renderModalPendenciaVinculo()}
       {renderModalCancelVinculo()}
-      {renderModalDevolucao()}
 
       {loading && <p>Carregando...</p>}
       {item && !loading && (
@@ -886,9 +878,11 @@ const ParticipacaoGestorController = ({
                       <div className={styles.content1}>
                         <p>{item.planoDeTrabalho?.titulo}</p>
                       </div>
-                      <div className={styles.content2} onClick={() => {}}>
-                        <RiArrowRightSLine />
-                      </div>
+                      {false && (
+                        <div className={styles.content2} onClick={() => {}}>
+                          <RiArrowRightSLine />
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -910,9 +904,11 @@ const ParticipacaoGestorController = ({
                           )?.user?.nome || "Nenhum orientador encontrado"}
                         </p>
                       </div>
-                      <div className={styles.content2} onClick={() => {}}>
-                        <RiArrowRightSLine />
-                      </div>
+                      {false && (
+                        <div className={styles.content2} onClick={() => {}}>
+                          <RiArrowRightSLine />
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1055,8 +1051,8 @@ const ParticipacaoGestorController = ({
                               </div>
                               <div
                                 onClick={() => {
-                                  setModalPendenciaVinculoId(vinculo.id);
-                                  setJustPendencia("");
+                                  setVinculoId(vinculo.id);
+                                  handleOpenModal("pendenteVinculo");
                                 }}
                                 className={`${styles.action} ${styles.normal}`}
                                 disabled={loadingPendenciaId === vinculo.id}
@@ -1072,7 +1068,6 @@ const ParticipacaoGestorController = ({
                                 onClick={() => {
                                   setVinculoId(vinculo.id);
                                   handleOpenModal("ativarVinculo");
-                                  //handleAtivarVinculo(vinculo.id)
                                 }}
                                 className={`${styles.action} ${styles.normal}`}
                                 disabled={loadingVinculoId === vinculo.id}
@@ -1122,10 +1117,10 @@ const ParticipacaoGestorController = ({
                                   <div
                                     className={`${styles.action} ${styles.error}`}
                                     onClick={() => {
-                                      setModalDevolucaoId(
+                                      handleOpenModal("devolucao");
+                                      setSolicitacaoBolsaId(
                                         vinculo.solicitacaoBolsa?.id
                                       );
-                                      setJustDevolucao("");
                                     }}
                                     disabled={
                                       loadingDevolucaoId ===

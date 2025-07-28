@@ -239,7 +239,7 @@ const Page = ({ params }) => {
               ))}
               <Button
                 className="btn-secondary mt-3"
-                linkTo={`/${params.tenant}/aluno/eventos`}
+                linkTo={`/${params.tenant}/user/eventos`}
                 disabled={loading}
               >
                 VER OUTROS EVENTOS
@@ -251,7 +251,7 @@ const Page = ({ params }) => {
             <NoData description="Você não está inscrito em eventos. Inscreva-se!" />
             <Button
               className="btn-primary mt-3"
-              linkTo={`/${params.tenant}/aluno/eventos`}
+              linkTo={`/${params.tenant}/user/eventos`}
               disabled={loading}
             >
               VER EVENTOS DISPONÍVEIS

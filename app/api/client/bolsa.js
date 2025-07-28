@@ -227,7 +227,7 @@ export const ativarVinculo = async (tenantSlug, vinculoId) => {
     throw error;
   }
 };
-export const tornarPendenteVinculo = async (tenantSlug, vinculoId, observacao) => {
+export const tornarPendenteVinculo = async (tenantSlug, vinculoId, observacao, date) => {
   try {
     const headers = getAuthHeadersClient();
     if (!headers) {
@@ -236,7 +236,7 @@ export const tornarPendenteVinculo = async (tenantSlug, vinculoId, observacao) =
 
     const response = await req.put(
       `/private/${tenantSlug}/tornar-pendente-vinculo`,
-      { vinculoId, observacao },
+      { vinculoId, observacao, date },
       { headers }
     );
     
@@ -274,16 +274,16 @@ export const cancelarVinculo = async (tenantSlug, vinculoId, observacao) => {
   }
 };
 
-export const devolverBolsa = async (tenantSlug, solicitacaoBolsaId, observacao) => {
+export const devolverBolsa = async (tenantSlug, solicitacaoBolsaId, observacao, date) => {
   try {
     const headers = getAuthHeadersClient();
     if (!headers) {
       return false;
     }
 
-    const response = await await req.put(
+    const response =  await req.put(
       `/private/${tenantSlug}/devolver-bolsa`,
-      { solicitacaoBolsaId, observacao },
+      { solicitacaoBolsaId, observacao,date },
       { headers }
   
     );

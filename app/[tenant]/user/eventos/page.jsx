@@ -27,6 +27,7 @@ import {
 import SearchableSelect from "@/components/SearchableSelect";
 import SearchableSelect2 from "@/components/SearchableSelect2";
 import { getAreas } from "@/app/api/client/area";
+import { getCookie } from "cookies-next";
 
 const Page = ({ params }) => {
   // Estados para gerenciamento do componente
@@ -53,16 +54,18 @@ const Page = ({ params }) => {
 
   // ROTEAMENTO
   const router = useRouter();
+  const perfil = getCookie("perfilSelecionado");
   //EFETUAR BUSCAS DE DADOS AO RENDERIZAR O COMPONENTE
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
         const response = await getRegistroAtividadesByCpfEditaisVigentes(
-          params.tenant
+          params.tenant,
+          perfil
         );
         const eventos = await getEventosByTenant(params.tenant);
-
+        console.log(eventos);
         setEventos(eventos);
         setPlanosDeTrabalho(transformData(response));
 
@@ -157,7 +160,8 @@ const Page = ({ params }) => {
     setLoading(true);
     try {
       const response = await getRegistroAtividadesByCpfEditaisVigentes(
-        params.tenant
+        params.tenant,
+        perfil
       );
       setPlanosDeTrabalho(transformData(response));
       setRegistrosAtividadesEditaisVigentes(
@@ -344,7 +348,7 @@ const Page = ({ params }) => {
               <NoData description="Creio que não haja mais projetos a serem inscritos. Visualize suas inscrições!" />
               <Button
                 className="btn-green mt-3"
-                linkTo={`/${params.tenant}/aluno/meuseventos`}
+                linkTo={`/${params.tenant}/user/meuseventos`}
                 disabled={loading}
               >
                 VER MINHAS INSCRIÇÕES
@@ -411,7 +415,7 @@ const Page = ({ params }) => {
                 </div>
                 <Button
                   className="btn-green"
-                  linkTo={`/${params.tenant}/aluno/meuseventos`}
+                  linkTo={`/${params.tenant}/user/meuseventos`}
                   disabled={loading}
                 >
                   VER MINHAS INSCRIÇÕES
@@ -445,7 +449,8 @@ const Page = ({ params }) => {
                 ?.filter(
                   (item) =>
                     Array.isArray(item.evento.sessao) &&
-                    item.evento.sessao.length > 0
+                    item.evento.sessao.length > 0 &&
+                    item.evento.permitirSubmissoes
                 )
                 .map((item) => (
                   <div
@@ -461,6 +466,14 @@ const Page = ({ params }) => {
                     <p>{`Edição de ${item.evento.edicaoEvento}`}</p>
                   </div>
                 ))}
+              {eventos?.filter(
+                (item) =>
+                  Array.isArray(item.evento.sessao) &&
+                  item.evento.sessao.length > 0 &&
+                  item.evento.permitirSubmissoes
+              ).length === 0 && (
+                <NoData description="Não há eventos disponíveis" />
+              )}
             </div>
           </div>
         </div>

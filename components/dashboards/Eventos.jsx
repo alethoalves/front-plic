@@ -50,7 +50,10 @@ const Inscricoes = ({ tenantSlug }) => {
     setLoading(true);
     try {
       const data = await getEventosDashboard(tenantSlug);
-      setEventos(data);
+      const eventosOrdenados = data.sort(
+        (a, b) => b.data.evento.id - a.data.evento.id
+      );
+      setEventos(eventosOrdenados);
     } catch (error) {
       setError(
         error.response?.data?.message ?? "Erro na conexão com o servidor."
