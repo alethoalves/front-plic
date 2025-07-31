@@ -61,6 +61,7 @@ const Page = ({ params }) => {
         );
         const grupos = groupByPlanoDeTrabalho(registrosOrdenados);
         setRegistrosAtividadesEditaisVigentes(grupos);
+        console.log(grupos);
       } catch (error) {
         console.error("Erro ao buscar dados:", error);
         toast.current.show({
@@ -422,28 +423,29 @@ const Page = ({ params }) => {
                                     : "Enviar Atividade"}
                                 </Button>
                               )}
-                              {perfil === "orientador" && (
-                                <button
-                                  className={`mt-2 button btn-secondary ${styles.openModalButton}`}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleAprovarAtividade(atividade);
-                                  }}
-                                  disabled={approvingId === atividade.id}
-                                >
-                                  {approvingId === atividade.id ? (
-                                    "Aprovando..."
-                                  ) : (
-                                    <>
-                                      <RiCheckDoubleLine
-                                        size={16}
-                                        className="mr-1"
-                                      />
-                                      <p>Aprovar atividade</p>
-                                    </>
-                                  )}
-                                </button>
-                              )}
+                              {perfil === "orientador" &&
+                                atividade.exigirValidacaoOrientador && (
+                                  <button
+                                    className={`mt-2 button btn-secondary ${styles.openModalButton}`}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleAprovarAtividade(atividade);
+                                    }}
+                                    disabled={approvingId === atividade.id}
+                                  >
+                                    {approvingId === atividade.id ? (
+                                      "Aprovando..."
+                                    ) : (
+                                      <>
+                                        <RiCheckDoubleLine
+                                          size={16}
+                                          className="mr-1"
+                                        />
+                                        <p>Aprovar atividade</p>
+                                      </>
+                                    )}
+                                  </button>
+                                )}
                             </div>
                           ))}
                         </div>
