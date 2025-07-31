@@ -27,23 +27,37 @@ export const aprovarAtividade = async (
 
 export const submissaoAtividade = async (
   tenantSlug,
-  payload,
+  formData,  // Agora recebe FormData em vez de payload
   registroAtividadeId
 ) => {
   try {
     const headers = getAuthHeadersClient();
+    
     if (!headers) {
       return false;
     }
+
+    // Combina os headers de autenticação com o content-type multipart/form-data
+    const requestHeaders = {
+      ...headers,
+      'Content-Type': 'multipart/form-data'
+    };
+
     const response = await req.post(
       `/private/${tenantSlug}/user/submissaoAtividade/${registroAtividadeId}`,
-      payload,
-      { headers }
+      formData,
+      { headers: requestHeaders }
     );
+
     return response.data.registroAtividade;
   } catch (error) {
     console.error("Erro ao criar Registro de Atividade:", error);
-    throw error;
+    
+    // Melhora o tratamento de erro para fornecer mais informações
+    const errorMessage = error.response?.data?.message || 
+                        error.message || 
+                        "Erro desconhecido ao enviar o formulário";
+    throw new Error(errorMessage);
   }
 };
 

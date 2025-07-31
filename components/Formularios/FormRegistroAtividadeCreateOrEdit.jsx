@@ -104,6 +104,7 @@ const FormRegistroAtividadeCreateOrEdit = ({
     }
   }, [tenantSlug, idFormularioEdital]);
   useEffect(() => {
+    setLoading(true);
     if (initialData && formularioEdital) {
       // Cria um objeto para os valores dos campos dinâmicos
       const dynamicValues = { camposDinamicos: {} };
@@ -121,6 +122,7 @@ const FormRegistroAtividadeCreateOrEdit = ({
       };
 
       reset(formValues);
+      setLoading(false);
     }
   }, [initialData, formularioEdital, reset]);
 
@@ -129,17 +131,53 @@ const FormRegistroAtividadeCreateOrEdit = ({
     setLoading(true);
     setError("");
     try {
-      const payload = { ...data };
-      console.log(payload);
-      let registroAtividade;
-      registroAtividade = await submissaoAtividade(
+      const formData = new FormData();
+
+      // Adiciona campos não-dinâmicos primeiro
+      if (initialData?.id) {
+        formData.append("id", initialData.id);
+      }
+
+      // Processa campos dinâmicos
+      if (data.camposDinamicos) {
+        Object.entries(data.camposDinamicos).forEach(([key, value]) => {
+          // Caso 1: É um File object (upload único)
+          if (value instanceof File) {
+            formData.append(`camposDinamicos.${key}`, value);
+          }
+          // Caso 2: É um FileList (input multiple)
+          else if (value instanceof FileList) {
+            Array.from(value).forEach((file, index) => {
+              formData.append(`camposDinamicos.${key}`, file);
+            });
+          }
+          // Caso 3: É um array de arquivos (outro formato possível)
+          else if (Array.isArray(value) && value[0] instanceof File) {
+            value.forEach((file) => {
+              formData.append(`camposDinamicos.${key}`, file);
+            });
+          }
+          // Caso 4: Valor normal (texto, número, etc.)
+          else {
+            formData.append(`camposDinamicos.${key}`, value);
+          }
+        });
+      }
+
+      // Debug detalhado do FormData
+      console.log("Conteúdo do FormData a ser enviado:");
+      for (let [key, val] of formData.entries()) {
+        console.log(key, val instanceof File ? `[File: ${val.name}]` : val);
+      }
+
+      const registroAtividade = await submissaoAtividade(
         tenantSlug,
-        payload,
-        initialData.id
+        formData,
+        initialData?.id
       );
 
-      if (!registroAtividade || !registroAtividade.id) {
-        throw new Error("Erro ao salvar o plano de trabalho.");
+      if (!registroAtividade?.id) {
+        throw new Error("Erro ao salvar o registro de atividade.");
       }
 
       if (onSuccess) {
@@ -152,11 +190,12 @@ const FormRegistroAtividadeCreateOrEdit = ({
         onSuccess(registroAtividade);
       }
     } catch (error) {
-      console.error(
-        "Erro ao enviar o formulário:",
-        error.response.data.message
-      );
-      setError(error.response.data.message || "Erro ao enviar o formulário.");
+      const errorMsg =
+        error.response?.data?.message ||
+        error.message ||
+        "Erro ao enviar o formulário.";
+      console.error("Erro no envio:", errorMsg, error);
+      setError(errorMsg);
 
       if (onError) {
         onError(error);
@@ -165,7 +204,6 @@ const FormRegistroAtividadeCreateOrEdit = ({
       setLoading(false);
     }
   };
-
   return (
     <form
       className={`${styles.formulario}`}

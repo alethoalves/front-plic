@@ -121,12 +121,13 @@ const Resultado = ({}) => {
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet("Participações");
 
-      // Definindo as colunas
+      // Definindo as colunas (adicionando a coluna CPF)
       worksheet.columns = [
         { header: "Edital", key: "edital", width: 30 },
         { header: "Plano de Trabalho", key: "planoTrabalho", width: 30 },
         { header: "Orientador", key: "orientador", width: 25 },
         { header: "Aluno", key: "aluno", width: 25 },
+        { header: "CPF Aluno", key: "cpfAluno", width: 15 }, // Nova coluna
         { header: "Status Plano", key: "statusPlano", width: 20 },
         { header: "Status Aluno", key: "statusAluno", width: 20 },
         { header: "Status Vinculação", key: "statusVinculacao", width: 20 },
@@ -139,12 +140,13 @@ const Resultado = ({}) => {
         },
       ];
 
-      // Adicionando os dados
+      // Adicionando os dados (incluindo o CPF)
       const dataToExport = participacoes.map((part) => ({
         edital: part.inscricao?.edital?.titulo || "",
         planoTrabalho: part.planoDeTrabalho?.titulo || "",
         orientador: part.orientadores || "N/A",
         aluno: part.user?.nome || "",
+        cpfAluno: part.user?.cpf || "", // Adicionando o CPF aqui
         statusPlano: part.planoDeTrabalho?.statusClassificacao || "",
         statusAluno: part.statusParticipacao || "",
         statusVinculacao:
@@ -157,21 +159,22 @@ const Resultado = ({}) => {
 
       worksheet.addRows(dataToExport);
 
-      // Adicionando a tabela (Excel Table)
+      // Adicionando a tabela (Excel Table) - atualizando para incluir a nova coluna
       worksheet.addTable({
         name: "ParticipacoesTable",
         ref: "A1", // Canto superior esquerdo da tabela
         headerRow: true,
         totalsRow: false,
         style: {
-          theme: "TableStyleMedium2", // Estilo pré-definido do Excel
-          showRowStripes: true, // Listras nas linhas
+          theme: "TableStyleMedium2",
+          showRowStripes: true,
         },
         columns: [
           { name: "Edital", filterButton: true },
           { name: "Plano de Trabalho", filterButton: true },
           { name: "Orientador", filterButton: true },
           { name: "Aluno", filterButton: true },
+          { name: "CPF Aluno", filterButton: true }, // Nova coluna na tabela
           { name: "Status Plano", filterButton: true },
           { name: "Status Aluno", filterButton: true },
           { name: "Status Vinculação", filterButton: true },
@@ -183,6 +186,7 @@ const Resultado = ({}) => {
           item.planoTrabalho,
           item.orientador,
           item.aluno,
+          item.cpfAluno, // Incluindo o CPF nos dados
           item.statusPlano,
           item.statusAluno,
           item.statusVinculacao,
@@ -191,13 +195,13 @@ const Resultado = ({}) => {
         ]),
       });
 
-      // Formatação do cabeçalho
+      // Formatação do cabeçalho (mantido igual)
       worksheet.getRow(1).eachCell((cell) => {
         cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
         cell.fill = {
           type: "pattern",
           pattern: "solid",
-          fgColor: { argb: "FF4472C4" }, // Azul do Excel
+          fgColor: { argb: "FF4472C4" },
         };
         cell.border = {
           top: { style: "thin" },
@@ -207,7 +211,7 @@ const Resultado = ({}) => {
         };
       });
 
-      // Gerando o arquivo
+      // Gerando o arquivo (mantido igual)
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

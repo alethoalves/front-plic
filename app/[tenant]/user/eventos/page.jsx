@@ -443,39 +443,45 @@ const Page = ({ params }) => {
               </p>
             </div>
           </div>
-          <div className={styles.mainContent}>
-            <div className={styles.tela1}>
-              {eventos
-                ?.filter(
+          {loading ? (
+            <div className="p-4 text-center">
+              <p>Carregando eventos...</p>
+            </div>
+          ) : (
+            <div className={styles.mainContent}>
+              <div className={styles.tela1}>
+                {eventos?.filter(
                   (item) =>
                     Array.isArray(item.evento.sessao) &&
                     item.evento.sessao.length > 0 &&
                     item.evento.permitirSubmissoes
-                )
-                .map((item) => (
-                  <div
-                    key={`tenant_${item.tenantId}_evento${item.eventoId}`}
-                    className={`${styles.evento} ${styles.boxButton}`}
-                    onClick={() => {
-                      setEventoSelecionado(item);
-
-                      setIsModalEventoOpen(true);
-                    }}
-                  >
-                    <h6>{item.evento.nomeEvento}</h6>
-                    <p>{`Edição de ${item.evento.edicaoEvento}`}</p>
-                  </div>
-                ))}
-              {eventos?.filter(
-                (item) =>
-                  Array.isArray(item.evento.sessao) &&
-                  item.evento.sessao.length > 0 &&
-                  item.evento.permitirSubmissoes
-              ).length === 0 && (
-                <NoData description="Não há eventos disponíveis" />
-              )}
+                ).length > 0 ? (
+                  eventos
+                    .filter(
+                      (item) =>
+                        Array.isArray(item.evento.sessao) &&
+                        item.evento.sessao.length > 0 &&
+                        item.evento.permitirSubmissoes
+                    )
+                    .map((item) => (
+                      <div
+                        key={`tenant_${item.tenantId}_evento${item.eventoId}`}
+                        className={`${styles.evento} ${styles.boxButton}`}
+                        onClick={() => {
+                          setEventoSelecionado(item);
+                          setIsModalEventoOpen(true);
+                        }}
+                      >
+                        <h6>{item.evento.nomeEvento}</h6>
+                        <p>{`Edição de ${item.evento.edicaoEvento}`}</p>
+                      </div>
+                    ))
+                ) : (
+                  <NoData description="Não há eventos com inscrições abertas. Tente mais tarde." />
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </>

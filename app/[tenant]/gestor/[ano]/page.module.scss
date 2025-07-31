@@ -3,7 +3,7 @@
 @import "/styles/partials/spacing";
 
 .main {
-    display: grid;
+    //display: grid;
     grid-template-columns: repeat(12, 1fr); /* 12 colunas */
     grid-gap: $gap-2; /* Espaçamento entre os elementos da grid */
     grid-auto-rows: minmax(100px, auto); /* Define a altura automática das linhas */

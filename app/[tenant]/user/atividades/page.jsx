@@ -271,179 +271,186 @@ const Page = ({ params }) => {
               de iniciação científica.
             </p>
           </div>
-          {registroAtividadesEditaisVigentes?.length > 0 ? (
+          {loading ? (
+            <div className="p-4 text-center">
+              <p>Carregando...</p>
+            </div>
+          ) : registroAtividadesEditaisVigentes?.length > 0 ? (
             <div className={styles.mainContent}>
-              <div className={styles.tela1}>
-                {registroAtividadesEditaisVigentes.map((plano) => (
-                  <div key={plano.id} className={styles.boxButton}>
-                    <div
-                      className={`${styles.labelWithIcon} ${styles.registroHeader}`}
-                      onClick={() => toggleAccordion(plano.id)}
-                    >
-                      <RiFoldersLine />
-                      <div className={styles.label}>
-                        <div className={styles.description}>
-                          <h6 className={styles.destaque}>
-                            {plano.titulo} ({plano.inscricao.edital.titulo})
-                          </h6>
+              <div className={styles.mainContent}>
+                <div className={styles.tela1}>
+                  {registroAtividadesEditaisVigentes.map((plano) => (
+                    <div key={plano.id} className={styles.boxButton}>
+                      <div
+                        className={`${styles.labelWithIcon} ${styles.registroHeader}`}
+                        onClick={() => toggleAccordion(plano.id)}
+                      >
+                        <RiFoldersLine />
+                        <div className={styles.label}>
+                          <div className={styles.description}>
+                            <h6 className={styles.destaque}>
+                              {plano.titulo} ({plano.inscricao.edital.titulo})
+                            </h6>
+                          </div>
+                        </div>
+                        <div className={styles.toogle}>
+                          <RiArrowDownSLine
+                            className={
+                              expandedItems[plano.id] ? styles.rotated : ""
+                            }
+                          />
                         </div>
                       </div>
-                      <div className={styles.toogle}>
-                        <RiArrowDownSLine
-                          className={
-                            expandedItems[plano.id] ? styles.rotated : ""
-                          }
-                        />
-                      </div>
-                    </div>
 
-                    {expandedItems[plano.id] && (
-                      <div className={styles.accordionContent}>
-                        {/* Informações do Plano */}
-                        <div className={`${styles.labelWithIcon} mb-2`}>
-                          <RiUser2Line />
-                          <div className={styles.label}>
-                            <p>
-                              <RiUser2Line />
-                              Orientador(es):
-                            </p>
-                            <div className={styles.description}>
-                              {plano.inscricao.participacoes
-                                .filter(
-                                  (item) =>
-                                    item.tipo === "orientador" ||
-                                    item.tipo === "coorientador"
-                                )
-                                .map((item, index) => (
+                      {expandedItems[plano.id] && (
+                        <div className={styles.accordionContent}>
+                          {/* Informações do Plano */}
+                          <div className={`${styles.labelWithIcon} mb-2`}>
+                            <RiUser2Line />
+                            <div className={styles.label}>
+                              <p>
+                                <RiUser2Line />
+                                Orientador(es):
+                              </p>
+                              <div className={styles.description}>
+                                {plano.inscricao.participacoes
+                                  .filter(
+                                    (item) =>
+                                      item.tipo === "orientador" ||
+                                      item.tipo === "coorientador"
+                                  )
+                                  .map((item, index) => (
+                                    <p className={styles.person} key={index}>
+                                      {item.user.nome} (
+                                      {item.statusParticipacao})
+                                    </p>
+                                  ))}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className={`${styles.labelWithIcon} mb-2`}>
+                            <RiGroupLine />
+                            <div className={styles.label}>
+                              <p>
+                                <RiGroupLine />
+                                Aluno(s):
+                              </p>
+                              <div className={styles.description}>
+                                {plano.participacoes.map((item, index) => (
                                   <p className={styles.person} key={index}>
                                     {item.user.nome} ({item.statusParticipacao})
                                   </p>
                                 ))}
+                              </div>
                             </div>
                           </div>
-                        </div>
 
-                        <div className={`${styles.labelWithIcon} mb-2`}>
-                          <RiGroupLine />
-                          <div className={styles.label}>
-                            <p>
-                              <RiGroupLine />
-                              Aluno(s):
-                            </p>
-                            <div className={styles.description}>
-                              {plano.participacoes.map((item, index) => (
-                                <p className={styles.person} key={index}>
-                                  {item.user.nome} ({item.statusParticipacao})
-                                </p>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Atividades do Plano */}
-                        <h5 className="mt-3 mb-2">Atividades:</h5>
-                        {plano.atividades.map((atividade) => (
-                          <div
-                            key={atividade.id}
-                            className={`${styles.atividadeItem} mb-3`}
-                          >
-                            <div className={styles.atividadeHeader}>
-                              <RiDraftLine />
-                              <div className={styles.atividadeInfo}>
-                                <div className={`${styles.status} `}>
-                                  <div className={styles.label}>
-                                    <div
-                                      className={`${styles.status} ${
-                                        atividade.status === "naoEntregue" &&
-                                        styles.error
-                                      } ${
-                                        atividade.status === "concluido" &&
-                                        styles.success
-                                      } ${
-                                        atividade.status ===
-                                          "aguardandoAprovacaoOrientador" &&
-                                        styles.warning
-                                      }`}
-                                    >
-                                      <p>
-                                        {atividade.status === "naoEntregue" &&
-                                          "Não entregue"}
-                                        {atividade.status === "concluido" &&
-                                          "Entregue"}
-                                        {atividade.status ===
-                                          "aguardandoAprovacaoOrientador" &&
-                                          "Aguardando orientador"}
-                                      </p>
+                          {/* Atividades do Plano */}
+                          <h5 className="mt-3 mb-2">Atividades:</h5>
+                          {plano.atividades.map((atividade) => (
+                            <div
+                              key={atividade.id}
+                              className={`${styles.atividadeItem} mb-3`}
+                            >
+                              <div className={styles.atividadeHeader}>
+                                <RiDraftLine />
+                                <div className={styles.atividadeInfo}>
+                                  <div className={`${styles.status} `}>
+                                    <div className={styles.label}>
+                                      <div
+                                        className={`${styles.status} ${
+                                          atividade.status === "naoEntregue" &&
+                                          styles.error
+                                        } ${
+                                          atividade.status === "concluido" &&
+                                          styles.success
+                                        } ${
+                                          atividade.status ===
+                                            "aguardandoAprovacaoOrientador" &&
+                                          styles.warning
+                                        }`}
+                                      >
+                                        <p>
+                                          {atividade.status === "naoEntregue" &&
+                                            "Não entregue"}
+                                          {atividade.status === "concluido" &&
+                                            "Entregue"}
+                                          {atividade.status ===
+                                            "aguardandoAprovacaoOrientador" &&
+                                            "Aguardando orientador"}
+                                        </p>
+                                      </div>
                                     </div>
                                   </div>
+                                  <h6 className={`${styles.destaque} mt-2`}>
+                                    {atividade.atividade.titulo}
+                                  </h6>
+                                  <p className={styles.atividadePeriodo}>
+                                    Período:{" "}
+                                    {formatDateForDisplay(
+                                      atividade.atividade.dataInicio
+                                    )}{" "}
+                                    a{" "}
+                                    {formatDateForDisplay(
+                                      atividade.atividade.dataFinal
+                                    )}
+                                  </p>
                                 </div>
-                                <h6 className={`${styles.destaque} mt-2`}>
-                                  {atividade.atividade.titulo}
-                                </h6>
-                                <p className={styles.atividadePeriodo}>
-                                  Período:{" "}
-                                  {formatDateForDisplay(
-                                    atividade.atividade.dataInicio
-                                  )}{" "}
-                                  a{" "}
-                                  {formatDateForDisplay(
-                                    atividade.atividade.dataFinal
-                                  )}
-                                </p>
                               </div>
-                            </div>
 
-                            {/* Respostas (se houver) */}
-                            {atividade.respostas?.length > 0 && (
-                              <div
-                                className={`${styles.respostasSection} mt-2`}
-                              >
-                                {renderRespostas(atividade.respostas)}
-                              </div>
-                            )}
-                            {isWithinEditPeriod(
-                              atividade.atividade.dataFinal
-                            ) && (
-                              <Button
-                                className={`mt-2 button btn-secondary ${styles.openModalButton}`}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  openModalAndSetData(atividade);
-                                }}
-                              >
-                                {atividade.respostas?.length > 0
-                                  ? "Editar Atividade"
-                                  : "Enviar Atividade"}
-                              </Button>
-                            )}
-                            {perfil === "orientador" && (
-                              <button
-                                className={`mt-2 button btn-secondary ${styles.openModalButton}`}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleAprovarAtividade(atividade);
-                                }}
-                                disabled={approvingId === atividade.id}
-                              >
-                                {approvingId === atividade.id ? (
-                                  "Aprovando..."
-                                ) : (
-                                  <>
-                                    <RiCheckDoubleLine
-                                      size={16}
-                                      className="mr-1"
-                                    />
-                                    <p>Aprovar atividade</p>
-                                  </>
-                                )}
-                              </button>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                              {/* Respostas (se houver) */}
+                              {atividade.respostas?.length > 0 && (
+                                <div
+                                  className={`${styles.respostasSection} mt-2`}
+                                >
+                                  {renderRespostas(atividade.respostas)}
+                                </div>
+                              )}
+                              {isWithinEditPeriod(
+                                atividade.atividade.dataFinal
+                              ) && (
+                                <Button
+                                  className={`mt-2 button btn-secondary ${styles.openModalButton}`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openModalAndSetData(atividade);
+                                  }}
+                                >
+                                  {atividade.respostas?.length > 0
+                                    ? "Editar Atividade"
+                                    : "Enviar Atividade"}
+                                </Button>
+                              )}
+                              {perfil === "orientador" && (
+                                <button
+                                  className={`mt-2 button btn-secondary ${styles.openModalButton}`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAprovarAtividade(atividade);
+                                  }}
+                                  disabled={approvingId === atividade.id}
+                                >
+                                  {approvingId === atividade.id ? (
+                                    "Aprovando..."
+                                  ) : (
+                                    <>
+                                      <RiCheckDoubleLine
+                                        size={16}
+                                        className="mr-1"
+                                      />
+                                      <p>Aprovar atividade</p>
+                                    </>
+                                  )}
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           ) : (

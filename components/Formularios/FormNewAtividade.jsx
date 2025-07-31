@@ -76,8 +76,22 @@ const FormNewAtividade = ({
 
     try {
       if (!atividadeExistente) {
-        // Criação de uma única atividade
-        const editalId = values.editaisSelecionados[0]; // Pega o primeiro (e único) edital selecionado
+        // Criação para cada edital selecionado
+        //const editalId = values.editaisSelecionados[0]; // Pega o primeiro (e único) edital selecionado
+        await Promise.all(
+          values.editaisSelecionados.map((editalId) =>
+            createAtividade(tenantSlug, editalId, {
+              titulo: values.titulo,
+              descricao: values.descricao,
+              obrigatoria: values.obrigatoria,
+              dataInicio: values.dataInicio,
+              dataFinal: values.dataFinal,
+              permitirEntregaForaPrazo: values.permitirEntregaForaPrazo,
+              formularioId: values.formularioId,
+            })
+          )
+        );
+        /** 
         await createAtividade(tenantSlug, editalId, {
           titulo: values.titulo,
           descricao: values.descricao,
@@ -86,7 +100,7 @@ const FormNewAtividade = ({
           dataFinal: values.dataFinal,
           permitirEntregaForaPrazo: values.permitirEntregaForaPrazo,
           formularioId: values.formularioId,
-        });
+        });*/
       } else {
         // Edição de uma atividade existente
         await updateAtividade(

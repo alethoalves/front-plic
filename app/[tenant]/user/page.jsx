@@ -113,7 +113,7 @@ const Page = ({ params }) => {
           </Link>
           <Link href={`/${params.tenant}/user/eventos`}>
             <div className={styles.infoBox}>
-              {registroAtividadesNaoInscritos > 0 && (
+              {false && registroAtividadesNaoInscritos > 0 && (
                 <div className={styles.notification}>
                   <p>{registroAtividadesNaoInscritos}</p>
                 </div>
