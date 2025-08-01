@@ -257,6 +257,14 @@
     
     
 }
+.editar{
+    text-decoration: underline;
+    font-weight: 300;
+    cursor: pointer;
+    &:hover{
+        color: $error-dark;
+    }
+}
 .label{
     flex: 1;
     

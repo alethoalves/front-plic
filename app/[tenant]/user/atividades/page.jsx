@@ -4,6 +4,8 @@ import {
   RiCalendarEventFill,
   RiCheckDoubleLine,
   RiDraftLine,
+  RiEditLine,
+  RiFlaskLine,
   RiFoldersLine,
   RiGroupLine,
   RiUser2Line,
@@ -22,6 +24,11 @@ import { Toast } from "primereact/toast";
 import { Accordion, AccordionTab } from "primereact/accordion";
 import { aprovarAtividade } from "@/app/api/client/registroAtividade";
 import Button from "@/components/Button";
+import { getAreas } from "@/app/api/client/area";
+import { transformedArray } from "@/lib/transformedArray";
+import { Dropdown } from "primereact/dropdown";
+import SearchableSelect2 from "@/components/SearchableSelect2";
+import { updatePlanoDeTrabalho } from "@/app/api/client/planoDeTrabalho";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
@@ -46,7 +53,9 @@ const Page = ({ params }) => {
 
   const router = useRouter();
   const perfil = getCookie("perfilSelecionado");
-
+  const [areas, setAreas] = useState("");
+  const [selectedArea, setSelectedArea] = useState(null);
+  const [filteredAreas, setFilteredAreas] = useState([]);
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -55,6 +64,11 @@ const Page = ({ params }) => {
           params.tenant,
           perfil
         );
+        console.log(response);
+        const getAreasResponse = await getAreas(params.tenant);
+        setAreas(transformedArray(getAreasResponse));
+        setFilteredAreas(transformedArray(getAreasResponse));
+
         const registrosOrdenados = response.registrosAtividade.sort(
           (a, b) =>
             new Date(a.atividade.dataInicio) - new Date(b.atividade.dataInicio)
@@ -76,6 +90,62 @@ const Page = ({ params }) => {
     };
     fetchData();
   }, [params.tenant, isModalOpen]);
+
+  const [updatingPlano, setUpdatingPlano] = useState(null); // Adicione este estado no início do componente
+
+  const onAreaChange = async (e, inscricaoId, planoId, projetoId, titulo) => {
+    setUpdatingPlano(planoId); // Define qual plano está sendo atualizado
+    try {
+      const planoResponse = await updatePlanoDeTrabalho(
+        params.tenant,
+        inscricaoId,
+        planoId,
+
+        {
+          areaId: e,
+          projetoId,
+          titulo,
+        }
+      );
+
+      // Atualiza o estado local sem precisar recarregar tudo
+      setRegistrosAtividadesEditaisVigentes((prev) =>
+        prev.map((plano) =>
+          plano.id === planoId
+            ? {
+                ...plano,
+                area: {
+                  id: planoResponse?.area.id,
+                  area: planoResponse?.area.area,
+                },
+              }
+            : plano
+        )
+      );
+      // Fecha o dropdown após a atualização bem-sucedida
+      setOpenAreaDropdowns((prev) => ({
+        ...prev,
+        [planoId]: false,
+      }));
+      toast.current.show({
+        severity: "success",
+        summary: "Sucesso",
+        detail: "Área atualizada com sucesso!",
+        life: 5000,
+      });
+    } catch (error) {
+      console.error("Erro ao atualizar área:", error);
+      toast.current.show({
+        severity: "error",
+        summary: "Erro",
+        detail: error.response?.data?.message || "Erro ao atualizar área",
+        life: 5000,
+      });
+    } finally {
+      setUpdatingPlano(null); // Remove o estado de carregamento
+    }
+  };
+
   const groupByPlanoDeTrabalho = (registros) => {
     const grupos = {};
 
@@ -258,6 +328,14 @@ const Page = ({ params }) => {
 
     return hoje <= tresDiasDepois;
   };
+  const [openAreaDropdowns, setOpenAreaDropdowns] = useState({});
+
+  const toggleAreaDropdown = (planoId) => {
+    setOpenAreaDropdowns((prev) => ({
+      ...prev,
+      [planoId]: !prev[planoId],
+    }));
+  };
   return (
     <>
       {renderModalContent()}
@@ -343,6 +421,58 @@ const Page = ({ params }) => {
                                     {item.user.nome} ({item.statusParticipacao})
                                   </p>
                                 ))}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className={`${styles.labelWithIcon} mb-2`}>
+                            <RiGroupLine />
+                            <div className={styles.label}>
+                              <p>
+                                <RiFlaskLine />
+                                Área de conhecimento:
+                              </p>
+                              <div className={styles.description}>
+                                <div className={styles.labelEditavel}>
+                                  <p>
+                                    {updatingPlano === plano.id ? (
+                                      "Carregando..."
+                                    ) : (
+                                      <>
+                                        {plano.area?.area ||
+                                          "Nenhuma área definida"}
+                                        {" - "}
+                                        <span
+                                          className={styles.editar}
+                                          onClick={() =>
+                                            toggleAreaDropdown(plano.id)
+                                          }
+                                        >
+                                          {openAreaDropdowns[plano.id]
+                                            ? "Fechar"
+                                            : "Editar"}
+                                        </span>
+                                      </>
+                                    )}
+                                  </p>
+                                </div>
+
+                                {openAreaDropdowns[plano.id] &&
+                                  !updatingPlano && (
+                                    <SearchableSelect2
+                                      options={areas}
+                                      onChange={(e) =>
+                                        onAreaChange(
+                                          e,
+                                          plano.inscricaoId,
+                                          plano.id,
+                                          plano.projetoId,
+                                          plano.titulo
+                                        )
+                                      }
+                                      extendedOpt={true}
+                                    />
+                                  )}
                               </div>
                             </div>
                           </div>
