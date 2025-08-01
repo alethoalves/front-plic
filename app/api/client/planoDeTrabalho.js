@@ -95,6 +95,17 @@ export const createPlanoDeTrabalho = async (
       throw error;
     }
   };
+  export const updateAreaPlanoDeTrabalho = async (tenantSlug,idPlano, idArea) => {
+    try {
+      const headers = getAuthHeadersClient();
+      if (!headers) return false;
+      const response = await req.put(`/private/${tenantSlug}/user/atualizar-area-planosDeTrabalho/${idPlano}`, {areaId:idArea}, {headers});
+      return response.data.planoDeTrabalho;
+    } catch (error) {
+      console.error('Erro ao atualizar edital:', error);
+      throw error;
+    }
+  };
   export const getPlanoDeTrabalhos = async (tenantSlug, inscricaoId) => {
     try {
       const headers = getAuthHeadersClient();

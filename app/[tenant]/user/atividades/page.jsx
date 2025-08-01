@@ -28,7 +28,10 @@ import { getAreas } from "@/app/api/client/area";
 import { transformedArray } from "@/lib/transformedArray";
 import { Dropdown } from "primereact/dropdown";
 import SearchableSelect2 from "@/components/SearchableSelect2";
-import { updatePlanoDeTrabalho } from "@/app/api/client/planoDeTrabalho";
+import {
+  updateAreaPlanoDeTrabalho,
+  updatePlanoDeTrabalho,
+} from "@/app/api/client/planoDeTrabalho";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
@@ -93,19 +96,13 @@ const Page = ({ params }) => {
 
   const [updatingPlano, setUpdatingPlano] = useState(null); // Adicione este estado no início do componente
 
-  const onAreaChange = async (e, inscricaoId, planoId, projetoId, titulo) => {
+  const onAreaChange = async (e, planoId) => {
     setUpdatingPlano(planoId); // Define qual plano está sendo atualizado
     try {
-      const planoResponse = await updatePlanoDeTrabalho(
+      const planoResponse = await updateAreaPlanoDeTrabalho(
         params.tenant,
-        inscricaoId,
         planoId,
-
-        {
-          areaId: e,
-          projetoId,
-          titulo,
-        }
+        e
       );
 
       // Atualiza o estado local sem precisar recarregar tudo
@@ -462,13 +459,7 @@ const Page = ({ params }) => {
                                     <SearchableSelect2
                                       options={areas}
                                       onChange={(e) =>
-                                        onAreaChange(
-                                          e,
-                                          plano.inscricaoId,
-                                          plano.id,
-                                          plano.projetoId,
-                                          plano.titulo
-                                        )
+                                        onAreaChange(e, plano.id)
                                       }
                                       extendedOpt={true}
                                     />
