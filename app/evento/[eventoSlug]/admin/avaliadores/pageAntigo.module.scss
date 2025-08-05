@@ -1,0 +1,275 @@
+
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+.content{
+    //margin-top: $gap-3;
+    margin-bottom: $gap-2;
+    max-width: 990px;
+   
+    border: 1px solid $gray-50;
+    box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+    border-radius: $gap-1;
+    @include responsive(s){
+        flex-direction: column;
+    }
+    
+}
+.header{
+    padding:  $gap-2;
+    border-bottom: 1px solid $gray-50;
+    h5{
+        color: $gray-600;
+        font-size: 18px;
+    }
+}
+.dashboard{
+margin-bottom: $gap-2;
+display: flex;
+flex-wrap: wrap;
+
+}
+.subsessao{
+    .click{
+    cursor: pointer;
+    transition: ease .3s;
+    &:hover{
+        transform: scale(1.08);
+    }
+    }
+
+    @include responsive(xs){
+        flex: 1;
+    }
+    flex: 1;
+    width:fit-content;
+    padding: $gap-2;
+    border: 1px solid $gray-50;
+    
+    border-radius: $gap-1;
+    margin: $gap-1 0;
+    &:first-child{
+        margin-left: 0;
+    }
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    //justify-content:space-between ;
+    @include responsive (xs){
+        display: flex;
+        flex-direction: column;
+        align-items:flex-start;
+        
+    }
+    .description{
+        
+            margin: $gap-2;
+        
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        @include responsive(xs){
+            flex-direction:row;
+            margin-bottom: $gap-1;
+        }
+        .infoBoxDescription{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            @include responsive(xs){
+                align-items: flex-start;
+            }
+            p{
+                margin-bottom: 0;
+            }
+            h6{
+                white-space: nowrap;
+                @include responsive(xs){
+                   font-size: 12px;
+                }
+            }
+        }
+        .icon{
+            @include responsive(xs){
+                margin-right: $gap-2;
+                width: 18px;
+            }
+            
+        }
+        p{
+            font-size: 12px;
+        }
+    }
+}
+.totais{
+    padding: $gap-2;
+    display: flex;
+    flex-wrap: wrap;
+    @include responsive(s){
+        display: flex;
+    }
+    @include responsive(xs){
+        display: flex;
+        
+    }
+    .total{
+        &.selected{
+            background-color: $white-darken;
+        }
+        cursor: pointer;
+        border-radius: $gap-1;
+        display: inline-flex;
+        transition: ease .3s;
+        &:hover{
+            box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+            transform: scale(1.06);
+        }
+        
+       margin-right: $gap-1;
+        margin-bottom: $gap-1;
+        @include responsive(xs){
+            display: flex;
+            &:not(:last-child){
+                margin-bottom: $gap-1;
+            }
+        }
+        align-items: center;
+        border: 1px solid $gray-50;
+        border-radius: $gap-1;
+        box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+        &:not(:last-child){
+            margin-right: $gap-1;
+            
+        }
+        p{
+            padding: $gap-1;
+            @include responsive(s){
+                padding: $gap-1;
+                font-size: 14px;
+            }
+            background-color: $white-darken;
+            color: $primary-darken;
+            border-top-left-radius: 6.5px;
+            border-bottom-left-radius: 6.5px;
+            font-size: 18px;
+        }
+        h6{
+            padding: 0 $gap-2;
+            @include responsive(s){
+                padding: 0 $gap-2;
+                font-size: 12px;
+            };
+            text-transform: uppercase;
+        }
+        
+    }
+    .total.error{
+        p{
+            background-color: $error-light;
+        }
+    }
+    .total.success{
+        p{
+            background-color: $success-normal;
+        }
+    }
+    
+}
+.squares{
+    .square{
+        border: 1px solid $gray-50;
+        border-radius: $gap-1;
+        padding: 3px;
+        margin-bottom: 6px;
+        @include responsive (s){
+            flex-direction: column;
+        }
+        
+        .squareHeader, .squareContent, .squareContentEmpty{
+            background-color: $white-darken;
+            padding: $gap-1;
+            border-radius: 6px;
+        }
+        
+        .squareHeader{
+           
+            @include responsive (s){
+                margin-right: 0px;
+                
+            }
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: center;
+            h6{
+                font-size: 22px;
+            }
+        }
+        .squareContentEmpty{
+            flex: 1;
+            margin-left: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: transparent;
+            border: 1px solid $white-darken;
+            transition: ease .3s;
+            cursor: pointer;
+            p{
+                text-align: center;
+                transition: ease .3s;
+                cursor: pointer;
+            }
+
+            &:hover{
+                background-color: $white-darken;
+                p{
+                    text-decoration: underline;
+                }
+            }
+        }
+        .squareContent{
+            flex: 1;
+            
+            cursor: pointer;
+            transition: ease .3s;
+            border: 1px solid transparent;
+            &:not(:last-child){
+                margin-bottom: 4px;
+            }
+            
+            &:hover{
+                border: 1px solid $primary-light;
+            }
+            .info{
+                display: flex;
+                margin-bottom: 6px;
+                flex-wrap: wrap;
+                
+                .area{
+                    
+                    border: 1px solid $primary-light;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    color: $primary-light;
+                    font-size: 10px;
+                    margin: 2px;
+                }
+            }
+            .submissaoData{
+                .participacoes{
+                    font-size: 12px;
+                }
+            }
+        }
+        
+    }
+}
+.icon{
+    width: 24px;
+    color: $primary-normal;
+}
+
+
+
+

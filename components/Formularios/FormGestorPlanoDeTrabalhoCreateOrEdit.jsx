@@ -120,7 +120,12 @@ const FormGestorPlanoDeTrabalhoCreateOrEdit = ({
 
   const planoDeTrabalhoSchema = z.object({
     titulo: z.string().min(1, "Campo obrigatório!"),
-    areaId: z.number().int().positive("Campo obrigatório!"),
+    areaId: z
+      .union([
+        z.number().int().positive("Campo obrigatório!"),
+        z.string().min(1, "Campo obrigatório!"),
+      ])
+      .transform((val) => Number(val)),
     projetoId: z.number().int().positive("Projeto inválido!"),
     cronograma: z
       .array(
@@ -133,7 +138,6 @@ const FormGestorPlanoDeTrabalhoCreateOrEdit = ({
       .optional(),
     camposDinamicos: dynamicSchema, // Adiciona campos dinâmicos ao schema
   });
-
   //CONTROLA O FORMULARIO
   const {
     register,
@@ -147,7 +151,7 @@ const FormGestorPlanoDeTrabalhoCreateOrEdit = ({
     resolver: zodResolver(planoDeTrabalhoSchema),
     defaultValues: {
       titulo: "",
-      areaId: 0,
+      areaId: null,
       projetoId: idProjeto,
       camposDinamicos: {},
     },
@@ -172,7 +176,6 @@ const FormGestorPlanoDeTrabalhoCreateOrEdit = ({
     if (initialData) {
       setValue("titulo", initialData.titulo);
       setValue("areaId", initialData.areaId);
-
       // Popula cronograma
       if (initialData.CronogramaPlanoDeTrabalho) {
         const mappedCronograma = initialData.CronogramaPlanoDeTrabalho.map(
@@ -232,12 +235,19 @@ const FormGestorPlanoDeTrabalhoCreateOrEdit = ({
   const handleTabChange = (tab) => {
     setActiveTab(tab);
   };
-
+  useEffect(() => {
+    const subscription = watch((value) => {
+      console.log("Valores do formulário:", value);
+    });
+    return () => subscription.unsubscribe();
+  }, [watch]);
   // Submete o formulário
   const handleFormSubmit = async (data) => {
+    console.log("Dados antes do envio:", data);
+
     setLoading(true);
     setError("");
-    console.log("TESTE");
+
     try {
       const payload = { ...data, cronograma };
       let planoDeTrabalho;
@@ -338,7 +348,7 @@ const FormGestorPlanoDeTrabalhoCreateOrEdit = ({
             </div>
           </div>
         )}
-        {activeTab === "conteudo" && (
+        {false && activeTab === "conteudo" && (
           <div className={styles.divCronograma}>
             <h6 className="mb-2">Cronograma de Atividades</h6>
             <Atividades cronograma={cronograma} setCronograma={setCronograma} />

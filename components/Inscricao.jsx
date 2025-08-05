@@ -224,7 +224,7 @@ const Inscricao = ({ params, inscricaoId }) => {
               className={styles.itemList}
               onClick={() => {
                 setPlanoSelected(plano);
-                setProjetoSelected({ id: plano.projetoId });
+                setProjetoSelected({ id: plano.inscricaoProjeto.projeto.id });
                 setIsModalPlanoOpen(true);
               }}
             >

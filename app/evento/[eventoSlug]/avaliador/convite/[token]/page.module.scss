@@ -1,6 +1,11 @@
 @import "/styles/partials/colors";
 @import "/styles/partials/layout";
 @import "/styles/partials/spacing";
+.box{
+    svg{
+        height: 100px;
+    }
+}
 .successMsg{
     width: 100%;
     box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.15);

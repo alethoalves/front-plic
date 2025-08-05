@@ -173,7 +173,7 @@ const Inscricoes = ({ tenantSlug }) => {
                       style={{ width: `${atividade.porcentagemConcluido}%` }}
                     >
                       <div className={styles.porcentagem}>
-                        <p>{`${atividade.porcentagemConcluido}% entregues - faltam ${atividade.totalNaoEntregue}`}</p>
+                        <p>{`${atividade.porcentagemConcluido}% ${atividade.totalConcluido} entregues - faltam ${atividade.totalNaoEntregue}`}</p>
                       </div>
                     </div>
                     <div

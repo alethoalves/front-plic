@@ -11,16 +11,14 @@ const SearchableSelect = (props) => {
       props.options[0]
   );
   const selectRef = useRef(null);
-
   // Memoize the options to prevent recalculation on every render
   const options = useMemo(() => {
     return Array.isArray(props.options) ? props.options : [];
   }, [props.options]);
 
   useEffect(() => {
-    const initialOption = options.find(
-      (option) => option.value === field.value
-    );
+    const initialOption =
+      options.find((option) => option.value === field.value) || null;
     if (initialOption) {
       setSelectedOption(initialOption);
     }

@@ -23,6 +23,7 @@ import {
   consultarConviteByToken,
   recusarConvite,
 } from "@/app/api/client/conviteEvento";
+import NoData from "@/components/NoData";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
@@ -148,20 +149,27 @@ const Page = ({ params }) => {
   return (
     <main className={styles.main}>
       <div className={styles.content}>
-        <div
-          className={styles.banner}
-          style={{
-            backgroundColor: evento?.bgColor ? evento.bgColor : "#FFF",
-          }}
-        >
-          <Image
-            priority
-            fill
-            src={`/image/${evento.pathBanner}`}
-            alt="logo"
-            sizes="300 500 700"
-          />
-        </div>
+        {evento && (
+          <div
+            className={styles.banner}
+            style={{
+              backgroundColor: evento?.bgColor ? evento.bgColor : "#FFF",
+            }}
+          >
+            <Image
+              priority
+              fill
+              src={`/image/${evento?.pathBanner}`}
+              alt="logo"
+              sizes="300 500 700"
+            />
+          </div>
+        )}
+        {!evento && (
+          <div className={`${styles.box} }`}>
+            <NoData description="Link inválido" />
+          </div>
+        )}
         {convite && (
           <div className={`${styles.box} }`}>
             <div className={`${styles.header}`}>

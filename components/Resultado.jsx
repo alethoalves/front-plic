@@ -269,7 +269,8 @@ const Resultado = ({}) => {
             const resultado = await ativarOuPendenteParticipacao(
               tenant,
               participacao.id,
-              null
+              null,
+              "2024-08-01"
             );
 
             return { success: true, id: participacao.id };
