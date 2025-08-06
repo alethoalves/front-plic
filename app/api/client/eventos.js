@@ -37,9 +37,9 @@ export const getEventosByTenant = async (tenantSlug) => {
   };
 export const getEventoBySlug = async (slug) => {
   try {
-    
+    console.log(slug)
     const response = await req.get(
-      `/evenplic/eventoSlug/${slug}}`,
+      `/evenplic/eventoSlug/${slug}/edicao`,
       
     );
     return response.data.evento;

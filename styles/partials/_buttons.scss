@@ -171,6 +171,31 @@ a.linkFile{
         color: $warning-darken;
     }
 }
+.btn-yellow{
+    background-color: #F7B318;
+    border: 1px solid transparent;
+    color: #FFF;
+    flex: 1;
+    margin-right: 0;
+    @include responsive(xs){
+        margin-top: 4px;
+    }
+    transition: ease .3s;
+    &:hover{
+        transform: scale(1.005);
+        border: 1px solid $warning-dark;
+
+    }
+    .btn-icon{
+        color: $warning-darken
+        
+    }
+    color: $warning-lighten;
+    p{
+        color: #fff;
+        font-weight: 700;
+    }
+}
 .btn-link{
     background-color: transparent;
     border: 1px solid transparent;

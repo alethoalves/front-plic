@@ -35,6 +35,18 @@ export const consultarConviteByToken = async (token) => {
       throw error;
     }
   };
+export const getEventoByTokenConvite = async (token) => {
+  try {
+    
+    const response = await req.get(
+      `/evenplic/evento/convite-link/${token}`
+    );
+    return response.data.evento;
+  } catch (error) {
+    console.error("Erro ao criar campo:", error);
+    throw error;
+  }
+};
 
   export const recusarConvite = async (token) => {
     try {
