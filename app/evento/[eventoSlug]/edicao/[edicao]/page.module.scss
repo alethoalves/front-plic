@@ -112,6 +112,10 @@
    ====================== */
 .content {
   flex: 1;
+  margin-right: $gap-2;
+  @include responsive(xs){
+    margin-right:0;
+  }
   &.descriptionSection {
     display: flex;
     flex-direction: column;

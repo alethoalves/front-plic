@@ -15,6 +15,10 @@ import { getEventoRootBySlug } from "@/app/api/serverReq";
 import { Fragment } from "react";
 import { InscricaoButton } from "@/components/evento/InscricaoButton";
 import { Accordion, AccordionTab } from "primereact/accordion";
+import {
+  LoginAvaliadorEvento,
+  LoginEvento,
+} from "@/components/evento/LoginAvaliadorEvento";
 
 const Page = async ({ params }) => {
   let evento;
@@ -27,9 +31,6 @@ const Page = async ({ params }) => {
   return (
     <>
       <header>
-        <div className={styles.login}>
-          <p>Login</p>
-        </div>
         <div className={styles.banner}>
           <Image
             src={`/image/${params.eventoSlug}/bgImg.png`}
@@ -73,7 +74,6 @@ const Page = async ({ params }) => {
           </section>
           <aside>
             <div className={styles.actions}>
-              {false && <InscricaoButton eventoSlug={params.eventoSlug} />}
               <div className={styles.action}>
                 <RiAwardFill />
                 <h6>Certificados</h6>

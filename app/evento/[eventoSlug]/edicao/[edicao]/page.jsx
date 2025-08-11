@@ -59,9 +59,11 @@ const Page = async ({ params }) => {
   return (
     <>
       <header>
-        <div className={styles.login}>
-          <p>Login</p>
-        </div>
+        {false && (
+          <div className={styles.login}>
+            <p>Avaliador</p>
+          </div>
+        )}
         <div className={styles.banner}>
           <Image
             src={`/image/${params.eventoSlug}/bgImg.png`}
@@ -88,7 +90,7 @@ const Page = async ({ params }) => {
           <aside>
             <div className={styles.actions}>
               <div className={styles.desktop}>
-                <InscricaoButton eventoSlug={params.eventoSlug} />
+                <InscricaoButton params={params} />
               </div>
               <div className={styles.action}>
                 <RiArticleLine />
@@ -101,7 +103,7 @@ const Page = async ({ params }) => {
             </div>
 
             <div className={`${styles.edicoesContent}`}>
-              <h6 className={styles.sectionTitle}>iiiiiiiÚltimas Edições</h6>
+              <h6 className={styles.sectionTitle}>Últimas Edições</h6>
               <div className={styles.edicoes}>
                 {eventoRoot?.eventos
                   .sort((a, b) => b.id - a.id)
@@ -123,7 +125,7 @@ const Page = async ({ params }) => {
           <section className={`${styles.content} ${styles.descriptionSection}`}>
             <div className={`${styles.mobile}`}>
               <div className={`${styles.sectionContent}`}>
-                <InscricaoButton eventoSlug={params.eventoSlug} />
+                <InscricaoButton params={params} />
               </div>
             </div>
 

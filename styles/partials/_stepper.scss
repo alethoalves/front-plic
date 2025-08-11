@@ -1,0 +1,20 @@
+.p-stepper-title{
+    margin-left: $gap-1;
+}
+
+.p-stepper-number{
+    font-size: 10px;
+    display: flex;
+}
+
+.p-stepper-content{
+    margin: $gap-2;
+    
+}
+.p-stepper {
+    gap: $gap-1;
+}
+.p-stepper-header {
+    pointer-events: none;
+    cursor: default;
+  }

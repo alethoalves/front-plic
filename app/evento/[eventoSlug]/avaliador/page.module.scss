@@ -1,0 +1,15 @@
+@import "../../styles/partials/colors";
+@import "../../styles/partials/layout";
+@import "../../styles/partials/spacing";
+.container{
+    width: 100vw;
+    overflow-x: hidden;
+    display:grid;
+    place-items: center;
+    height: 100vh;
+    padding: $gap-2 0;
+    
+    justify-content:space-around;
+    background-color: $white-light;
+}
+

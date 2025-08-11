@@ -37,6 +37,27 @@ export const signin = async (data) => {
   }
 };
 
+export const signinAvaliadorEvento = async (data) => {
+  try {
+    const response = await req.post("/auth/evento/avaliador/signin", data);
+    const { token, codAvaliador } = response.data; // Adicione codAvaliador aqui
+    
+    if (token) {
+      setCookie("authTokenAvaliador", token, {
+        maxAge: 24 * 60 * 60,
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "Strict",
+      });
+    }
+ 
+    return response.data; // Isso já inclui todas as propriedades da resposta
+  } catch (error) {
+    console.error("Error:", error);
+    throw error;
+  }
+};
+
 export const signup = async (data, reqParams) => {
   try {
     const response = await req.post("/auth/signup", data, {
@@ -63,7 +84,9 @@ export const signup = async (data, reqParams) => {
 
 export const logout = () => {
   deleteCookie("authToken");
-    deleteCookie("userProfiles");
-    deleteCookie("perfilSelecionado");
+  deleteCookie("authTokenAvaliador");
+  deleteCookie("userProfiles");
+  deleteCookie("perfilSelecionado");
+  deleteCookie("anoSelected");
 };
 

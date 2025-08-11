@@ -9,12 +9,18 @@ import itensMenuAvaliador from "@/lib/menuItensAvaliador";
 import itensMenuRoot from "@/lib/menuItensRoot";
 import itensMenuUser from "@/lib/menuItensUser";
 import itensMenuAvaliadorTenant from "@/lib/menuItensAvaliadorTenant";
+import itensMenuAvaliadorEvento from "@/lib/menuItensAvaliadorEvento";
 
 import styles from "./SideNav.module.scss";
 import { RiQuestionAnswerLine } from "@remixicon/react";
 import { useState } from "react";
 
-const SideNav = ({ pathLogo, menuType = "gestor", existeEdital = true }) => {
+const SideNav = ({
+  pathLogo,
+  pathLogoExtended,
+  menuType = "gestor",
+  existeEdital = true,
+}) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const toggleSidebar = () => {
@@ -42,6 +48,9 @@ const SideNav = ({ pathLogo, menuType = "gestor", existeEdital = true }) => {
   if (menuType === "avaliador") {
     menuData = itensMenuAvaliador;
   }
+  if (menuType === "avaliadorEvento") {
+    menuData = itensMenuAvaliadorEvento;
+  }
   if (menuType === "root") {
     menuData = itensMenuRoot;
   }
@@ -58,7 +67,9 @@ const SideNav = ({ pathLogo, menuType = "gestor", existeEdital = true }) => {
             <Image
               priority
               sizes="300 500 700"
-              src={`/image/${pathLogo}`}
+              src={`${
+                pathLogoExtended ? pathLogoExtended : `/image/${pathLogo}`
+              }`}
               fill={true}
               alt="Logomarca da PLIC - Plataforma de Iniciação Científica"
             />

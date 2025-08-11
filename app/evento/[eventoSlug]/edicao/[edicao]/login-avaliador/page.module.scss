@@ -1,0 +1,115 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+.banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: 0;
+  
+  .bgImage {
+    object-fit: cover;
+  }
+}
+.mainDiv{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+.main {
+  position: relative;
+  max-width: 380px;
+  width: 100%;
+  margin: 0 auto;
+  z-index: 2;
+  
+
+}
+
+.bannerOverlay {
+  
+  width: 100%;
+  height: 140px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 $gap-2;
+  .overlayImage {
+    max-width: 100%;
+    object-fit: contain;
+  }
+
+}
+
+.content {
+  
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  padding: 24px;
+  margin: $gap-3 $gap-2 $gap-2 $gap-2;
+
+  .title {
+    font-size: 22px;
+    margin-bottom: 22px;
+    text-align: center;
+  }
+}
+
+.customButton {
+  width: 100%;
+  padding: 12px;
+  background: $primary-darken;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 16px;
+  transition: ease 0.2s;
+
+  &:hover {
+    background: $primary-dark;
+  }
+
+  &:disabled {
+    background: $primary-darken;
+    cursor: not-allowed;
+  }
+}
+
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid $primary-darken;
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.btnBack {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: $primary-darken;
+  cursor: pointer;
+  margin-top: 16px;
+  p{
+    color: $primary-darken;
+  }
+svg{
+  width: 21px;
+}
+  &:hover {
+    text-decoration: underline;
+  }
+}

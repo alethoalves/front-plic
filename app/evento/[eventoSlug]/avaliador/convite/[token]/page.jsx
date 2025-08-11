@@ -522,7 +522,7 @@ const Page = ({ params }) => {
                                   </div>
                                 </div>
 
-                                {convite.convite?.user?.ConviteAvaliadorEvento.map(
+                                {convite?.convite?.user?.ConviteAvaliadorEvento?.map(
                                   (con) => {
                                     // Ordena os convites de subsessão pela data de início
                                     const conviteSubsessaoOrdenado =

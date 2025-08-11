@@ -11,10 +11,13 @@ export const middleware = async (request) => {
   const url = new URL(request.url);
   const tenantMatch = url.pathname.match(/^\/([^\/]*)/);
   const tenant = tenantMatch ? tenantMatch[1] : null;
+
   const slugEventoMatch = url.pathname.match(/\/evento\/([^\/]+)/);
   const slugEvento = slugEventoMatch ? slugEventoMatch[1] : null;
-  
-  console.log(slugEvento)
+
+  const slugEdicaoMatch = url.pathname.match(/\/evento\/([^\/]+)\/edicao\/([^\/]+)/);
+  const slugEdicao = slugEdicaoMatch ? slugEdicaoMatch[2] : null;
+
   const urlToSignin = new URL(request.url);
   urlToSignin.pathname = `/${tenant}`;
   const urlToEventos = new URL(request.url);
@@ -28,6 +31,13 @@ export const middleware = async (request) => {
 
   const urlToAvaliador = new URL(request.url);
   urlToAvaliador.pathname = `/avaliador/home`;
+
+  const urlToAvaliadorEvento = new URL(request.url);
+  urlToAvaliadorEvento.pathname = `/evento/${slugEvento}/edicao/${slugEdicao}/avaliador`;
+
+  const urlToRootAvaliadorEvento = new URL(request.url);
+  urlToRootAvaliadorEvento.pathname = `/evento/${slugEvento}/edicao/${slugEdicao}/login-avaliador`;
+
   const urlToRootAvaliador = new URL(request.url);
   urlToRootAvaliador.pathname = `/avaliador`;
 
@@ -56,16 +66,22 @@ export const middleware = async (request) => {
   
   const urlToConfiguracoes = new URL(request.url);
   urlToConfiguracoes.pathname = `/${tenant}/configuracoes/gestor/editais`;
+  
   const urlToAvaliadorTenant = new URL(request.url);
   urlToAvaliadorTenant.pathname = `/${tenant}/avaliador`;
+  
   const urlToOrientador = new URL(request.url);
   urlToOrientador.pathname = `/${tenant}/orientador`;
+  
   const urlToAluno = new URL(request.url);
   urlToAluno.pathname = `/${tenant}/aluno`;
+  
   const urlToUser = new URL(request.url);
   urlToUser.pathname = `/${tenant}/user`;
+  
   const { pathname } = request.nextUrl;
   const token = getCookie("authToken", { cookies });
+  const tokenAvaliador = getCookie("authTokenAvaliador", { cookies });
   const perfilSelecionado = getCookie("perfilSelecionado", { cookies });
   console.log('ENTROU NO MIDDLEWARE')
 
@@ -117,6 +133,33 @@ export const middleware = async (request) => {
  /******************
      * MIDDLEWARE PARA AS ROTAS INTERNAS DO ADMIN DE EVENTO (/eventos/[eventoSlug]/admin)
      * ****************/
+   
+    // Middleware apenas para as rotas avaliador `/evento/slugEvento/edicao/slugEdicao/avaliador`
+    if (url.pathname.startsWith(`/evento/${slugEvento}/edicao/${slugEdicao}/avaliador`)) {
+      console.log("AQUI ALETHO")
+      console.log(url.pathname)
+      const pongAvaliador = await pingAvaliador(tokenAvaliador);
+      console.log(pongAvaliador)
+      // Não tem token válido OU não tem permissão de acesso -> redireciona
+      if (!pongAvaliador) return NextResponse.redirect(urlToRootAvaliadorEvento);
+      const eventoEdicaoExists = await getEventoBySlug(slugEdicao);
+      if (!eventoEdicaoExists) {
+        return NextResponse.redirect(urlToRootAvaliadorEvento);
+      }
+      const NextResponseWithEvento = NextResponse.next();
+      NextResponseWithEvento.headers.set(
+        "x-tenant-primary-color",
+        eventoEdicaoExists.primaryColor || ""
+      );
+      NextResponseWithEvento.headers.set(
+        "x-tenant-path-logo",
+        eventoEdicaoExists.pathLogo || ""
+      );
+      
+      
+        return NextResponseWithEvento;
+    }
+
     // Middleware apenas para as rotas admin `/eventos/[eventoSlug]/admin`
     if (url.pathname.startsWith(`/evento/${slugEvento}/admin`)) {
       console.log(`/evento/${slugEvento}/admin`)
@@ -210,6 +253,7 @@ export const middleware = async (request) => {
     }
     let pongAvaliador;
     pongAvaliador = await pingAvaliador(token);
+    
     let pongAvaliadorTenant;
     pongAvaliadorTenant = await pingAvaliadorTenant(token,tenant);
      /******************
@@ -232,7 +276,7 @@ export const middleware = async (request) => {
       if (!pongAvaliador) return NextResponse.redirect(urlToRootAvaliador);
       return NextResponse.next()
     }
-
+    
     let pongRoot;
     pongRoot = await pingRoot(token);
      /******************

@@ -10,7 +10,7 @@ import { getCookie, setCookie } from "cookies-next";
 
 const Menu = ({ onClick, itensMenu, existeEdital, gestor = false }) => {
   const pathname = usePathname();
-  const { tenant, eventoSlug } = useParams();
+  const { tenant, eventoSlug, edicao } = useParams();
   const [ano, setAno] = useState(null);
 
   useEffect(() => {
@@ -48,7 +48,8 @@ const Menu = ({ onClick, itensMenu, existeEdital, gestor = false }) => {
     const Icon = item.icon;
     const resolvedPath = item.path
       ?.replace("[tenant]", tenant || eventoSlug)
-      ?.replace("[ano]", ano);
+      ?.replace("[ano]", ano)
+      ?.replace("[edicao]", edicao);
 
     // Verificação específica para a rota "Home"
     const isActive =

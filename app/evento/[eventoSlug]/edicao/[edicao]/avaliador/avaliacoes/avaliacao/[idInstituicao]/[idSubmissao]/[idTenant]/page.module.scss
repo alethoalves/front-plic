@@ -1,0 +1,387 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+
+.error{
+    border: 1px solid $error-light;
+    padding: $gap-2 $gap-3;
+    @include responsive(s){
+        padding: $gap-1 $gap-2; 
+    }
+    border-radius: $gap-1;
+    background-color: $error-lighten;
+    p{
+        color: $error-dark;
+    }
+    margin-top: $gap-1;
+    position: sticky;
+    top: 80px;
+    backdrop-filter: blur(10px); /* Aplique o desfoque */
+  -webkit-backdrop-filter: blur(10px); /* Para suporte ao Safari */
+}
+.waiting{
+    border: 1px solid $success-normal;
+    padding: $gap-2 $gap-3;
+    @include responsive(s){
+        padding: $gap-1 $gap-2; 
+    }
+    border-radius: $gap-1;
+    background-color: $success-lighten;
+   
+        color: $gray-600;
+    
+    margin-top: $gap-1;
+    
+}
+.modal{
+    h4{
+        line-height: 100%;
+        margin-bottom: $gap-2;
+    }
+    p{
+        margin-bottom: $gap-2;
+    }
+}
+.logo{
+    width: auto;
+    flex: 1;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: $gap-1;
+    position: relative;
+    img{
+        object-fit: contain;
+        object-position: left center;
+    }
+}
+.voltar{
+    border: 1px solid $gray-50;
+    border-radius: $gap-1;
+    padding: $gap-1 $gap-2;
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: $gap-2;
+    color: $gray-400;
+    cursor: pointer;
+    transition: ease .3s;
+    &:hover{
+        border: 1px solid $primary-darken;
+        transform: scale(1.03);
+        color: $primary-darken;
+        p{
+            color: $primary-darken;
+        }
+    }
+    p{
+        margin-left: $gap-1;
+        color: $gray-400;
+        transition: ease .3s;
+        
+       
+    }
+}
+.navContent{
+    max-width: 900px;
+    
+}
+.fichaDeAvaliacao{
+    margin: $gap-2 0;
+    .quesitos{
+        margin-top: $gap-2; 
+    }
+    .item{
+        margin-top: $gap-1;
+    }
+    .label{
+        h6{
+            line-height: 100%;
+        }
+        margin-bottom: $gap-1;
+    }
+    textarea{
+        resize: none;
+        width: 100%;
+        height: 300px;
+        border: 1px solid $gray-50;
+        border-radius: $gap-1;
+        padding: $gap-2;
+        &:focus {
+            border-color: $warning-dark; /* Cor da borda ao selecionar */
+            outline: 1px solid $warning-dark; /* Remove a borda de destaque padrão do navegador */
+        }
+    }
+    .premio{
+        .value{
+            border: 1px solid $gray-50;
+            border-radius: $gap-1;
+
+            display: flex;
+            align-items: center;
+            margin-bottom: $gap-1;
+            margin-top: $gap-1;
+            cursor: pointer;
+            &.selectedPremio{
+                border: 1px solid $warning-dark;
+                
+                svg{
+                    color: $warning-lighten;
+                    border-right: 1px solid $warning-dark;
+                    background-color: $warning-dark;
+                }
+            }
+            p{
+                margin-left: $gap-1;
+            }
+            svg{
+                width: 40px;
+                height: 100%;
+                border-top-left-radius: 7px;
+                border-bottom-left-radius: 7px;
+                padding: 6px;
+                color: $warning-dark;
+                transition: ease .3s;
+                border-right: 1px solid $gray-50;
+                
+            }
+            transition: ease .3s;
+            &:hover{
+                transform: scale(1.02);
+                border: 1px solid $warning-dark;
+                svg{
+                    border-right: 1px solid $warning-dark;
+                }
+            }
+        }
+    }
+    .values{
+        
+        display: inline-flex;
+        flex-wrap: wrap;
+        margin: $gap-1 0 $gap-2 0;
+        @include responsive(xs){
+            margin: $gap-1 0;
+        }
+        .value{
+            border: 1px solid $warning-dark;
+            width: 50px;
+            height: 50px;
+            margin-left: 4px;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: $gap-1;
+            @include responsive(xs){
+                width: 40px;
+                height: 40px;
+                
+            }
+            transition: ease .3s;
+            cursor: pointer;
+            &:hover{
+                background-color: $warning-lighten;
+                transform: scale(1.05);
+            }
+            &.selected{
+                background-color: $warning-dark;
+                p{
+                    color: $warning-lighten;
+                }
+            }
+        }
+    }
+}
+.squares{
+    .square{
+        border: 1px solid $gray-50;
+        border-radius: $gap-1;
+        padding: 3px;
+        display: flex;
+        @include responsive (s){
+            flex-direction: column;
+        }
+        margin-bottom: $gap-1;
+        .squareHeader, .squareContent, .squareContentEmpty{
+            background-color: $white-dark;
+            padding: $gap-1;
+            border-radius: 6px;
+        }
+        .squareHeader{
+            margin-right: 3px;
+            @include responsive (s){
+                margin-right: 0px;
+                margin-bottom: 3px;
+            }
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: center;
+            h6{
+                font-size: 22px;
+            }
+        }
+        .squareContentEmpty{
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: transparent;
+            border: 1px solid $white-darken;
+            transition: ease .3s;
+            cursor: pointer;
+            p{
+                text-align: center;
+                transition: ease .3s;
+                cursor: pointer;
+            }
+
+            &:hover{
+                background-color: $white-darken;
+                p{
+                    text-decoration: underline;
+                }
+            }
+        }
+        .squareContent{
+            flex: 1;
+            cursor: pointer;
+            transition: ease .3s;
+            border: 1px solid transparent;
+            &:hover{
+                border: 1px solid $primary-light;
+            }
+            .info{
+                display: flex;
+                margin-bottom: 6px;
+                .status{
+                    background-color: $primary-light;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    color: $white-normal;
+                    font-size: 10px;
+                    margin-right: 6px;
+                    &.error{
+                        background-color: $error-lighten;
+                        color: $error-dark;
+                    }
+                    &.warning{
+                        background-color: $warning-light;
+                        color: $error-dark;
+                    }
+                    &.success{
+                        background-color: $success-light;
+                        color: $primary-darken;
+                    }
+                }
+                .area{
+                    border: 1px solid $primary-light;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    color: $primary-light;
+                    font-size: 10px;
+                }
+            }
+            .submissaoData{
+                .participacoes{
+                    font-size: 12px;
+                }
+            }
+        }
+        &.squareWarning{
+            .squareHeader, .squareContent, .squareContentEmpty{
+                background-color: $warning-lighten;
+                
+            }
+
+            .squareContent{
+                margin-right: 4px;
+                @include responsive(s){
+                    margin-right: 0px;
+                    margin-bottom: 4px;
+                }
+                cursor:auto;
+                &:hover{
+                    border: 1px solid transparent;
+                }
+                .area{
+                    border: 1px solid $warning-darken;
+                    
+                    color: $warning-darken;
+                }
+            }
+            .actions{
+
+                display: flex;
+                @include responsive(xs){
+                    flex-direction: column;
+                }
+                .item1{
+                    display: flex;
+                    @include responsive(xs){
+                        .action{
+                            flex: 1;
+                            &:last-child{
+                                margin-right: 0;
+                            }
+                        }
+                        
+                    }
+                }
+                
+                .action{
+                    cursor: pointer;
+                    border: 1px solid transparent;
+                    transition: ease .3s;
+                    color:$warning-darken;
+                    p{color:$warning-darken}
+                    &:hover{
+                        border: 1px solid $warning-dark;
+                        transform: scale(1.02)
+                    };
+                    @include responsive(s){
+                        margin-bottom: 0;
+                        margin-right: 4px;
+                        
+                    }
+                    &.actionPrimary{
+                        background-color: $warning-dark;
+                        color: $warning-lighten;
+                        flex: 1;
+                        margin-right: 0;
+                        @include responsive(xs){
+                            margin-top: 4px;
+                        }
+                        &:hover{
+                            transform: scale(1.005);
+                        }
+                        p{
+                            color: $warning-lighten;
+                        }
+                    }
+                    &.actionError{
+                        color: $error-dark;
+                        &:hover{
+                            border: 1px solid $error-dark;
+                           
+                        };
+                        p{
+                            color: $error-dark;
+                        }
+                    }
+                }
+            }
+            
+        }
+    }
+}
+.icon{
+    width: 24px;
+    color: $primary-normal;
+}
+
+
+
+

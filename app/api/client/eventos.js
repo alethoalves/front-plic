@@ -1,10 +1,49 @@
 import { getAuthHeadersClient } from "@/lib/headers.js";
 import { req } from "../axios.js";
 import { getCookie } from 'cookies-next';
+/**************************
+ * FLUXO DE INSCRICAO/SUBMISSAO 
+ **************************/
+export const getTenantsByEventoSlug = async (slug) => {
+  try {
+    
+    const response = await req.get(
+      `/evenplic/${slug}/getTenantsByEventoSlug`,
+    );
+    return response.data.tenants;
+  } catch (error) {
+    console.error("Erro ao chamar a API:", error);
+    throw error;
+  }
+};
+export const getPlanosOuProjetos = async (cpf,slugEvento, slugTenant) => {
+  try {
+    
+    const response = await req.get(
+      `/evenplic/getTenantsByEventoSlug/${cpf}/${slugEvento}/${slugTenant}`,
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao chamar a API:", error);
+    throw error;
+  }
+};
+
 
 /**************************
  * Eventos
  **************************/
+export const getEventoProgramacao = async (eventoId) => {
+  try {
+    
+    const response = await req.get(`/evenplic/programacao/${eventoId}`);
+    
+    return response.data.programacao;
+  } catch (error) {
+    console.error("Erro ao chamar a API:", error);
+    throw error;
+  }
+};
 export const getEventoRootBySlug = async (slug) => {
   try {
     

@@ -62,7 +62,8 @@
         border-bottom: 2px solid $primary-dark;
         border-radius: 1px;
         transform: rotate(45deg);
-        margin-right: $gap-1;    
+        margin-right: $gap-1;  
+        margin-left: $gap-2;  
     }
     .arrow.open{
         transform: scaleY(-1) rotate(45deg);
