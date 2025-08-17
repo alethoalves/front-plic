@@ -22,6 +22,7 @@ import BuscadorBack from "../BuscadorBack";
 // FUNÇÕES
 import Link from "next/link";
 import { registroAtividadesDashboard } from "@/app/api/client/registroAtividade";
+import { getCookie, getCookies } from "cookies-next";
 
 const Inscricoes = ({ tenantSlug }) => {
   // ESTADOS
@@ -33,7 +34,9 @@ const Inscricoes = ({ tenantSlug }) => {
   const [listAnos, setListAnos] = useState([]);
   const [listEditais, setListEditais] = useState([]);
   const [listAtividades, setListAtividades] = useState([]);
-  const [editalAno, setEditalAno] = useState("");
+  const [editalAno, setEditalAno] = useState(() => {
+    return getCookie("anoSelected") || "";
+  });
   const [editalTitulo, setEditalTitulo] = useState("");
   const [idFormularioAtividade, setIdFormularioAtividade] = useState("");
   const [searchValue, setSearchValue] = useState("");

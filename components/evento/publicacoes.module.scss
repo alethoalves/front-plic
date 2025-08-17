@@ -1,0 +1,526 @@
+// Importações de partials
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+/* ======================
+   LAYOUT PRINCIPAL
+   ====================== */
+.main {
+  display: flex;
+  min-height: 100vh;
+  margin: 0 auto;
+  margin-top: 450px;
+  margin-bottom: $gap-2;
+  position: relative;
+  z-index: 2;
+  @include responsive(xs) {
+    margin-top: 220px;
+    flex-direction: column;
+    
+  }
+  max-width: 980px;
+  article {
+    width: 100%;
+    display: flex;
+    @include responsive(xs) {
+      flex-direction: column-reverse;
+    }
+
+  }
+  aside {
+    margin-right: $gap-2;
+    margin-left: $gap-2;
+    min-width: 280px;
+    margin-bottom: $gap-2;
+    max-width: 270px;
+    @include responsive(xs) {
+      margin: $gap-1;
+      min-width: 100px;
+      max-width: 100%;
+    }
+  }
+}
+
+/* ======================
+   COMPONENTE BANNER
+   ====================== */
+.banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  z-index: 0;
+  
+  .bgImage {
+    object-fit: cover;
+  }
+  
+  .bannerOverlay {
+    position: absolute;
+    top: $gap-2;
+    left: 0;
+    width: 100%;
+    height: 450px;
+    
+    @include responsive(xs) {
+      height: 200px;
+    }
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: $gap-2;
+    
+    .overlayImage {
+      max-width: 900px;
+      object-fit: contain;
+      margin-bottom: $gap-2;
+    }
+  }
+  
+ 
+}
+.login {
+  max-width: 980px;
+  position: fixed;
+  top:0;
+  right: 0;
+  
+  z-index: 1;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: $gap-2;
+  margin-right: $gap-2;
+  p {
+    display: inline;
+    background-color: rgba(255,255,255, 0.00001);
+    border: 1px solid $white-darken;
+    color: $white-darken;
+    padding: $gap-1 $gap-2;
+    box-shadow: 0px 0px 5px rgba(5, 17, 34, 0.08);
+    border-radius: $gap-1;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+}
+
+/* ======================
+   SEÇÕES DE CONTEÚDO
+   ====================== */
+.content {
+  flex: 1;
+  margin-right: $gap-2;
+  @include responsive(xs){
+    margin-right:0;
+  }
+  &.descriptionSection {
+    display: flex;
+    flex-direction: column;
+    gap: $gap-2;
+    @include responsive(xs){
+      gap: $gap-1;
+    }
+    color: $white-darken;
+    .sectionContent {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0 0 0 $gap-2;
+      @include responsive (xs){
+        margin: 0 $gap-1;
+      }
+    }
+    
+    .descriptionContent {
+      //max-width: 850px;
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      background-color: color-mix(in srgb, $white-dark 25%, transparent);
+      padding: $gap-3;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      @include responsive(xs){
+        padding: $gap-2;
+      }
+      p, h4 {
+        color: $primary-darken;
+      }
+      ul{
+        display: flex;
+        flex-direction: column;
+        gap: $gap-2;
+        margin-bottom: $gap-2;
+        li{
+          border-bottom: 1px solid rgba($color: #ffffff, $alpha: 0.5);
+          padding-bottom: $gap-2;
+        }
+      }
+      
+      .paragraph {
+        margin-bottom: $gap-2;
+        line-height: 1.6;
+        
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+}
+
+.sectionTitle {
+  color: $primary-darken;
+}
+
+/* ======================
+   EDIÇÕES ANTERIORES
+   ====================== */
+.edicoesContent{
+  background-color: color-mix(in srgb, $white-dark 25%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  .sectionTitle{
+    padding: $gap-2;
+    margin: 0;
+    color: $primary-dark;
+  }
+  .edicao{
+    border-top: 1px solid rgba(255, 255, 255, 0.16);
+    transition: ease .3s;
+    
+    &:hover{
+      background-color: color-mix(in srgb, $white-dark 25%, transparent);
+      
+    }
+    
+    h6{
+      color: $primary-darken;
+      padding: $gap-2;
+      transition: ease .3s;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      span{
+        font-size: 10px;
+        padding: 2px 8px;
+        border-radius: 8px;
+        background-color: color-mix(in srgb, $white-dark 25%, transparent);
+        color: $white-dark;
+      }
+      &:hover{
+        color: $primary-darken;
+      }
+    }
+  }
+
+}
+.actions{
+  margin-bottom: $gap-2;
+  display: flex;
+  gap: $gap-2;
+  @include responsive(xs){
+    gap: $gap-1;
+    margin-bottom: $gap-1;
+  }
+  flex-direction: column;
+  .action{
+    //background-color: color-mix(in srgb, $warning-dark 40%, transparent);
+    padding: $gap-2 $gap-1;
+    border-radius: $gap-1;
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1px solid color-mix(in srgb, $white-dark 40%, transparent);;
+    color:  $white-dark;
+    align-items: center;
+    display: flex;
+    cursor: pointer;
+    transition: ease .3s;
+    &:hover{
+      transform: scale(1.03);
+    }
+    @include responsive(xs){
+      &:hover{
+        transform: scale(1.01);
+      }
+    }
+    svg{
+      width: 30px;
+      margin-right: $gap-1;
+    }
+    h6{
+      color:$white-dark ;
+      text-align: center;
+      @include responsive(xs){
+        font-size: 14px;
+      }
+    }
+  }
+  .primary{
+    background-color: color-mix(in srgb, $warning-dark 80%, transparent);
+    color:  $white-dark;
+    h6{
+      color: $white-dark;
+    }
+  }
+}
+
+.card{
+   .cardContent{
+       margin: 0 0;
+   }
+   .cardItem{
+       
+       display: flex;
+       align-items: center;
+       gap: $gap-1;
+       svg{
+           color: $primary-darken;
+           width: 30px;
+           height: 30px;
+           @include responsive(s){
+            width: 22px;
+           height: 22px;
+           }
+       }
+       p{
+        flex: 1;
+       }
+       strong{
+        color: $primary-darken;
+       }
+   }
+ }
+ .atividades{
+  display: flex;
+  flex-direction: column;
+  gap: $gap-2;
+  .atividade{
+    display: flex;
+    gap: $gap-1;
+    .hora{
+      p{
+        padding: 4px $gap-1;
+        border-radius: 4px;
+        background-color: $primary-darken;
+        color: $white-light;
+      }
+    }
+    .descricao{
+      line-height: 100%;
+    }
+    .local{
+      display: flex;
+      align-items: center;
+      margin-top: $gap-1;
+      gap: $gap-1;
+      svg{
+        width: 18px;
+        color: $primary-darken;
+        
+      }
+      p{
+        flex: 1;
+        font-size: 10px;
+        line-height: 11px;
+      }
+    }
+  }
+ }
+ .accordionWrapper {
+  :global {
+    .p-accordion {
+      .p-accordion-header {
+        .p-accordion-header-link {
+          border: none;
+          background-color: color-mix(in srgb, $white-dark 25%, transparent);
+          
+          // Adicione outros estilos conforme necessário
+          &:hover {
+            background-color: color-mix(in srgb, $white-dark 65%, transparent);
+          }
+        }
+      }
+      
+      .p-accordion-content {
+        border:none;
+        background-color: color-mix(in srgb, $white-dark 65%, transparent);
+      }
+    }
+  }
+}
+.mobile{
+  display: none;
+@include responsive(xs){
+  display: block;
+}
+}
+.desktop{
+  display: block;
+@include responsive(xs){
+  display: none;
+}
+}
+
+/* ======================
+   ESTILOS DOS FILTROS
+   ====================== */
+   .filtroSection {
+    padding: $gap-1 $gap-2;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+  
+  .filtroTitle {
+    color: $primary-dark;
+    margin-bottom: $gap-1;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  
+  .filtroContent {
+    
+    padding-right: $gap-1;
+  }
+  
+  .grandeAreaItem {
+    margin-bottom: $gap-1;
+  }
+  
+  .grandeAreaHeader {
+    display: flex;
+    align-items: center;
+    gap: $gap-1;
+    padding: $gap-1 0;
+    cursor: pointer;
+    font-weight: 500;
+    color:$primary-dark;
+  
+    &:hover {
+      color: $primary-darken;
+    }
+  }
+  
+  .areasList {
+    margin-left: $gap-3;
+  }
+  
+  .areaItem, .subsessaoItem {
+    display: flex;
+    align-items: center;
+    gap: $gap-1;
+    padding: $gap-1 0;
+    color: $primary-dark;
+  
+    label {
+      cursor: pointer;
+      font-size: 13px;
+    }
+  }
+  
+  .filtroActions {
+    padding: $gap-2;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .filterButton {
+    width: 100%;
+    background-color: $primary-darken;
+    border: none;
+  
+    &:hover {
+      background-color: $primary-dark;
+    }
+  }
+
+  /* Estilos para as sessões e subsessões */
+.sessaoItem {
+  margin-bottom: $gap-1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: $gap-1;
+
+  &:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+}
+
+.sessaoHeader {
+  display: flex;
+  align-items: center;
+  gap: $gap-1;
+  padding: $gap-1 0;
+  cursor: pointer;
+  font-weight: 500;
+  color: $primary-dark;
+
+  &:hover {
+    color: $primary-dark;
+  }
+}
+
+.subsessoesList {
+  margin-left: $gap-3;
+  padding-top: $gap-1;
+}
+
+.subsessaoItem {
+  display: flex;
+  align-items: center;
+  gap: $gap-1;
+  padding: $gap-1 0;
+  color: $primary-dark;
+
+  label {
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+  }
+}
+.action{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 1px solid $primary-darken;
+  padding: 6px $gap-2;
+  border-radius: $gap-1;
+  margin-top: $gap-2;
+  color: $primary-darken;
+  transition: ease .3s;
+  
+  svg{
+    height: 16px;
+    flex: 1;
+  }
+  cursor: pointer;
+  &:hover{
+    transform: scale(1.03);
+  }
+}
+.tags{
+  margin-bottom: $gap-2;
+ 
+  display: flex;
+  gap: $gap-1;
+  p{
+    display: inline;
+    border: 1px solid $primary-darken;
+    border-radius: $gap-2;
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+}

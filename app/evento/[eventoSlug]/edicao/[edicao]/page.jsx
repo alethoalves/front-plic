@@ -92,14 +92,22 @@ const Page = async ({ params }) => {
               <div className={styles.desktop}>
                 <InscricaoButton params={params} />
               </div>
-              <div className={styles.action}>
-                <RiArticleLine />
-                <h6>Publicações</h6>
-              </div>
-              <div className={styles.action}>
-                <RiAwardFill />
-                <h6>Certificados</h6>
-              </div>
+              <Link
+                href={`/evento/${params.eventoSlug}/edicao/${params.edicao}/publicacoes`}
+                className={styles.edicaoLink}
+              >
+                <div className={styles.action}>
+                  <RiArticleLine />
+                  <h6>Publicações</h6>
+                </div>
+              </Link>
+
+              {false && (
+                <div className={styles.action}>
+                  <RiAwardFill />
+                  <h6>Certificados</h6>
+                </div>
+              )}
             </div>
 
             <div className={`${styles.edicoesContent}`}>
