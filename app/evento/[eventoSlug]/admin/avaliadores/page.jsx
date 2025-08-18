@@ -174,7 +174,7 @@ const Page = ({ params }) => {
                       ? avaliador.user?.email
                       : avaliador.user?.ConviteAvaliadorEvento[
                           avaliador.user.ConviteAvaliadorEvento.length - 1
-                        ].email}
+                        ].email || ""}
                   </strong>
                 </p>
                 <p className={styles.participacoes}>

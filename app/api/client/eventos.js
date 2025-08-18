@@ -280,3 +280,22 @@ export const getEventosDashboard = async (tenantSlug) => {
     throw error;
   }
 };
+
+export const getEventoDashboard = async (eventoSlug) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+
+    // Monta a URL da requisição, incluindo as query params dinâmicas
+    const response = await req.get(
+      `/evenplic/evento/${eventoSlug}/dashboard`,
+      { headers }
+    );
+
+    // Retorna os dados de inscrições da resposta da API
+    return response.data.evento;
+  } catch (error) {
+    console.error("Erro ao buscar dashboard de inscrições:", error);
+    throw error;
+  }
+};

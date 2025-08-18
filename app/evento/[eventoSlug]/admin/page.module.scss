@@ -3,3 +3,274 @@
 @import "/styles/partials/spacing";
 
 
+.main {display: grid;
+    grid-template-columns: repeat(12, 1fr); /* 12 colunas */
+    grid-gap: $gap-2; /* Espaçamento entre os elementos da grid */
+    grid-auto-rows: minmax(100px, auto); /* Define a altura automática das linhas */
+
+    @include responsive(s) {
+      display: block; /* Para telas menores, exibe os elementos em blocos */
+    }}
+.dashboard {
+ 
+margin-right: 0; /* Remova o margin-right já que o grid-gap gerencia o espaçamento */
+border: 1px solid $gray-50;
+box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+border-radius: $gap-1;
+  overflow: hidden;
+  
+  width: 100%;
+  margin-bottom: $gap-2;
+
+  .head {
+    background-color: $white-light;
+    border-top-left-radius: $gap-1;
+    border-top-right-radius: $gap-1;
+    display: flex;
+    justify-content: space-between;
+    .left{
+        display: flex;
+        align-items: center;
+        
+        .icon {
+            
+            padding: $gap-2;
+            background-color: $white-light;
+            color: $primary-darken;
+            border-top-left-radius: $gap-1;
+            @include responsive(xs){
+                display: none;
+            }
+          }
+    
+          .title {
+            
+            padding: $gap-2;
+            @include responsive(xs){
+                padding: $gap-2 0;
+                margin-left: $gap-2;
+            }
+            //margin-left: $gap-2;
+            h5 {
+                color: $primary-darken;
+                font-weight: 300;
+               
+                width: 100%;
+                @include responsive(xs){
+                    font-size: 14px;
+                }
+            }
+            
+          }
+    }
+    .actions{
+        display: flex;
+        align-items: center;
+        margin-right: $gap-2;
+        .btn.selected{
+            color: $primary-darken;
+            //background-color: $gray-darken;
+        }
+        .btn{
+            width: 40px;
+            @include responsive(xs){
+                width: 40px;
+            }
+            
+            svg{
+                height: 30px;
+            }
+            color: $gray-100;
+            display: flex;
+            align-items: center;
+            transition: ease .3s;
+            cursor: pointer;
+            &:hover{
+                color: $primary-light;
+                //background-color: $primary-darken;
+            }
+        }
+    }
+
+  }
+
+  .filters {
+    padding: $gap-2;
+    display: flex;
+    flex-wrap: wrap;
+    @include responsive(xs){
+        display: block;
+    }
+    .filter{
+        flex: 1;
+        
+        &:not(:last-child){
+            margin-right: $gap-2;
+            @include responsive(xs){
+                margin-right: 0;
+            }
+        }
+        
+        @include responsive(xs){
+            margin-right: 0;
+            margin-top: $gap-1;
+        }
+    }
+    
+  }
+
+  .content {
+        
+    h5{
+        padding: $gap-2;
+        font-size: 20px;
+        @include responsive(xs){
+            font-size: 16px;
+        }
+    }
+    .sessoes{
+        
+        
+        .sessao{
+            margin-bottom: $gap-2;
+        }
+        margin: 0 $gap-2 $gap-2 $gap-2;
+        h6{
+            
+            padding: $gap-1 $gap-2;
+            background-color: $gray-50;
+            border: 1px solid $gray-50;
+            border-top-left-radius: $gap-1;
+            border-top-right-radius: $gap-1;
+            @include responsive(xs){
+                font-size: 14px;
+            }
+        }
+        .subsessoes{
+            .subsessao{
+                border: 1px solid $gray-50;
+                border-top: none;
+                padding: $gap-2;
+                .description{
+                    &:not(:last-child){
+                        margin-bottom: $gap-2;
+                    }
+                    display: flex;
+                    align-items: center;
+                    .icon{
+                        margin-right: $gap-1;
+                        
+                        svg{
+                            color: $success-normal;
+                        }
+                    }
+                    .infoBoxDescription{
+                        flex: 1;
+                    }
+                }
+            }
+        }
+    }
+    .totais{
+        padding: $gap-2;
+        display: flex;
+        flex-wrap: wrap;
+        @include responsive(s){
+            display: flex;
+        }
+        @include responsive(xs){
+            display: flex;
+            
+        }
+        .total{
+            border-radius: $gap-1;
+            display: inline-flex;
+            cursor: pointer;
+            transition: ease .3s;
+            &:hover{
+                transform: scale(1.05);
+            }
+            
+            
+           margin-right: $gap-1;
+            margin-bottom: $gap-1;
+            @include responsive(xs){
+                display: flex;
+                &:not(:last-child){
+                    margin-bottom: $gap-1;
+                }
+            }
+            align-items: center;
+            border: 1px solid $gray-50;
+            border-radius: $gap-1;
+            box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+            &:not(:last-child){
+                margin-right: $gap-1;
+                
+            }
+            p{
+                padding: $gap-1;
+                @include responsive(s){
+                    padding: $gap-1;
+                    font-size: 14px;
+                }
+                background-color: $white-darken;
+                color: $primary-darken;
+                border-top-left-radius: 6.5px;
+                border-bottom-left-radius: 6.5px;
+                font-size: 18px;
+            }
+            h6{
+                padding: 0 $gap-2;
+                @include responsive(s){
+                    padding: 0 $gap-2;
+                    font-size: 12px;
+                };
+                text-transform: uppercase;
+            }
+            
+        }
+        .total.error{
+            p{
+                background-color: $error-light;
+            }
+        }
+        .total.blue{
+            p{
+                background-color: $primary-dark;
+                color: $white-light;
+            }
+        }
+        .total.success{
+            p{
+                background-color: $success-normal;
+            }
+        }
+        
+    }
+    .show{
+        margin: 0 $gap-2;
+    }
+    .barContainer {
+        width: 100%;
+        overflow-x: auto; /* Habilita o scroll horizontal */
+        padding: 10px; /* Opcional: ajuste de padding ao redor do gráfico */
+        height: 400px;
+        @include responsive(xs){
+            height: 200px;
+        }
+        /* Estilização do canvas diretamente */
+        canvas {
+          min-width: 150px; /* Largura mínima do canvas */
+          width: 100%; /* A largura do canvas deve preencher o container */
+          height: auto; /* Para manter a proporção */
+        }
+      }
+  }
+}
+
+
+.icon{
+    width: 24px;
+    color: $primary-normal;
+}
