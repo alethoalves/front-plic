@@ -501,7 +501,7 @@ export const InscricaoButton = ({ params }) => {
                     <div className="p-error">{error}</div>
                   ) : planos?.length === 0 ? (
                     <div>
-                      {`Ops! Entre em contato com a secretaria de Iniciação Cienteifica da sua instituição de ensino, pois o CPF informado não está vinculado a um projeto de IC da instituição ${
+                      {`Ops! Entre em contato com a secretaria de Iniciação Científica da sua instituição de ensino, pois o CPF informado não está vinculado a um projeto de IC da instituição ${
                         selectedTenant?.nome
                       } (${selectedTenant?.slug.toUpperCase()})`}{" "}
                     </div>

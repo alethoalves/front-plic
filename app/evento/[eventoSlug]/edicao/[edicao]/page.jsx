@@ -21,6 +21,7 @@ import { InscricaoButton } from "@/components/evento/InscricaoButton";
 import { Accordion, AccordionTab } from "primereact/accordion";
 import { formatDateForDisplay } from "@/lib/formatDateForDisplay";
 import NoData from "@/components/NoData";
+import { MinhasInscricoes } from "@/components/evento/MinhasInscricoes";
 // Função para formatar AAAA-MM-DD para DD/MM/AAAA
 const formatDate = (dateString) => {
   const [year, month, day] = dateString.split("-");
@@ -92,6 +93,9 @@ const Page = async ({ params }) => {
               <div className={styles.desktop}>
                 <InscricaoButton params={params} />
               </div>
+              <div className={styles.desktop}>
+                <MinhasInscricoes params={params} />
+              </div>
               <Link
                 href={`/evento/${params.eventoSlug}/edicao/${params.edicao}/publicacoes`}
                 className={styles.edicaoLink}
@@ -132,8 +136,11 @@ const Page = async ({ params }) => {
           </aside>
           <section className={`${styles.content} ${styles.descriptionSection}`}>
             <div className={`${styles.mobile}`}>
-              <div className={`${styles.sectionContent}`}>
+              <div className={`${styles.sectionContent} mb-1`}>
                 <InscricaoButton params={params} />
+              </div>
+              <div className={`${styles.sectionContent}`}>
+                <MinhasInscricoes params={params} />
               </div>
             </div>
 
