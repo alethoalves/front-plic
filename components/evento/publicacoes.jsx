@@ -83,7 +83,7 @@ export const Publicacoes = ({ eventoRoot, evento, programacao, params }) => {
       if (searchTerm) {
         const termo = searchTerm.toLowerCase();
         resultados = resultados.filter((publicacao) => {
-          const tituloMatch = publicacao.Resumo.titulo
+          const tituloMatch = publicacao.Resumo?.titulo
             .toLowerCase()
             .includes(termo);
           const participantesMatch = publicacao.Resumo.participacoes.some(
@@ -97,7 +97,7 @@ export const Publicacoes = ({ eventoRoot, evento, programacao, params }) => {
       // Filtro por áreas selecionadas
       if (selectedAreas.length > 0) {
         resultados = resultados.filter((publicacao) =>
-          selectedAreas.includes(publicacao.Resumo.area.id)
+          selectedAreas.includes(publicacao.Resumo?.area?.id)
         );
       }
 
@@ -318,7 +318,7 @@ export const Publicacoes = ({ eventoRoot, evento, programacao, params }) => {
                       <h6
                         className={`preserve-line-breaks ${styles.sectionTitle} ml-0 mb-2`}
                       >
-                        {publicacao.Resumo.titulo}
+                        {publicacao.Resumo?.titulo}
                       </h6>
                       <div className={styles.card}>
                         <div className={styles.cardContent}>

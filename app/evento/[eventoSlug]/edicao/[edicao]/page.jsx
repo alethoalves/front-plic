@@ -90,9 +90,11 @@ const Page = async ({ params }) => {
         <article>
           <aside>
             <div className={styles.actions}>
-              <div className={styles.desktop}>
-                <InscricaoButton params={params} />
-              </div>
+              {evento.permitirSubmissoes && (
+                <div className={styles.desktop}>
+                  <InscricaoButton params={params} />
+                </div>
+              )}
               <div className={styles.desktop}>
                 <MinhasInscricoes params={params} />
               </div>

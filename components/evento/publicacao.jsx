@@ -10,6 +10,7 @@ import { RiGroupLine } from "@remixicon/react";
 import { formatDateForDisplay } from "@/lib/formatDateForDisplay";
 import { formatarHora } from "@/lib/formatarDatas";
 import { Fragment } from "react";
+import { transformarQuebrasEmParagrafos } from "@/lib/formatarParagrafo";
 
 export const Publicacao = ({ params }) => {
   const [loading, setLoading] = useState(true);
@@ -33,17 +34,6 @@ export const Publicacao = ({ params }) => {
     carregarDados();
   }, [params]);
 
-  // Função para transformar quebras de linha em parágrafos
-  const transformarQuebrasEmParagrafos = (texto) => {
-    if (!texto) return null;
-
-    return texto.split("\n").map((paragrafo, index) => (
-      <p key={index} className="mb-3">
-        {paragrafo}
-      </p>
-    ));
-  };
-
   if (loading || loadingPublicacao) {
     return <div>Carregando...</div>;
   }
@@ -53,9 +43,7 @@ export const Publicacao = ({ params }) => {
   }
 
   // Parse do conteúdo do resumo que está em formato JSON string
-  const conteudoResumo = publicacao.Resumo
-    ? JSON.parse(publicacao.Resumo.conteudo)
-    : [];
+  const conteudoResumo = publicacao.Resumo ? publicacao.Resumo?.conteudo : [];
 
   return (
     <main className={styles.main}>

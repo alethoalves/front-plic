@@ -15,9 +15,29 @@ import { getCookie } from 'cookies-next';
         
         { headers }
       );
-      return response.data.avaliadores;
+      return response.data;
     } catch (error) {
       console.error("Erro ao atualizar campo:", error);
+      throw error;
+    }
+  };
+
+  export const editarAvaliadorEvento = async (
+    id,
+    eventoSlug,
+    payload
+  ) => {
+    try {
+      const headers = getAuthHeadersClient();
+      if (!headers) return false;
+      const response = await req.put(
+        `/evenplic/${eventoSlug}/editarAvaliadorEvento/${id}`,
+        payload,
+        {headers}
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao atualizar:", error);
       throw error;
     }
   };

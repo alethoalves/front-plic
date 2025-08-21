@@ -29,6 +29,7 @@ import {
 import Modal from "@/components/Modal";
 import Button from "@/components/Button";
 import NoData from "@/components/NoData";
+import { transformarQuebrasEmParagrafos } from "@/lib/formatarParagrafo";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
@@ -205,38 +206,20 @@ const Page = ({ params }) => {
         <div className={`${styles.icon} mb-2`}>
           <RiFileList3Line />
         </div>
-        <h4>{submissao?.planoDeTrabalho?.titulo}</h4>
+        <h4>{submissao?.Resumo?.titulo}</h4>
 
-        {submissao?.planoDeTrabalho?.registroAtividades &&
-          submissao?.planoDeTrabalho?.registroAtividades.length > 0 &&
-          (submissao?.planoDeTrabalho?.registroAtividades[0].respostas
-            ?.length === 0 ? (
-            <p>Resumo não enviado</p> // Verifica se respostas é um array vazio
-          ) : (
-            submissao?.planoDeTrabalho?.registroAtividades[0].respostas?.map(
-              (item, i) => {
-                if (item.campo.label !== "Colaboradores") {
-                  return (
-                    <div key={i}>
-                      <h6>{item.campo.label}</h6>
-                      <p>{item.value}</p>
-                    </div>
-                  );
-                }
-              }
-            )
-          ))}
+        {submissao?.Resumo?.conteudo && (
+          <div key={index} className="mb-1">
+            <div className="text-justify">
+              {transformarQuebrasEmParagrafos(submissao?.Resumo?.conteudo)}
+            </div>
+          </div>
+        )}
       </Modal>
     );
   };
   const formatarResumo = (resumoArray) => {
-    return resumoArray
-      .map((item) => {
-        const label = item.campo.label; // Exemplo: "Introdução", "Metodologia"
-        const texto = item.value; // O conteúdo da seção
-        return `${label}\n${texto}\n`; // Formata com uma quebra de linha após o título e o conteúdo
-      })
-      .join("\n"); // Junta todas as partes com uma quebra de linha entre elas
+    return transformarQuebrasEmParagrafos(resumoArray);
   };
   // Função para gerar feedback com IA e atualizar o textarea
   const handleGerarFeedback = async () => {
@@ -245,10 +228,8 @@ const Page = ({ params }) => {
     try {
       const { comentarioFeedback, ...eventoSemComentario } = evento;
       const feedback = await gerarFeedback(
-        submissao?.planoDeTrabalho?.titulo,
-        formatarResumo(
-          submissao?.planoDeTrabalho?.registroAtividades[0].respostas
-        ),
+        submissao?.Resumo?.titulo,
+        formatarResumo(submissao?.Resumo?.conteudo),
         eventoSemComentario,
         params.idInstituicao
       );
@@ -337,14 +318,13 @@ const Page = ({ params }) => {
                 <div className={styles.squareContent}>
                   <div className={styles.info}>
                     <p className={styles.area}>
-                      {submissao?.planoDeTrabalho?.area?.area || "sem área"} -{" "}
-                      {submissao?.planoDeTrabalho?.inscricao?.edital?.tenant?.sigla.toUpperCase()}{" "}
-                      -{" "}
-                      {submissao?.planoDeTrabalho?.inscricao?.edital?.titulo.toUpperCase()}
+                      {submissao?.Resumo?.area?.area || "sem área"} -{" "}
+                      {submissao?.tenant?.sigla.toUpperCase()} -{" "}
+                      {submissao?.categoria.toUpperCase()}
                     </p>
                   </div>
                   <div className={styles.submissaoData}>
-                    <h6>{submissao?.planoDeTrabalho?.titulo}</h6>
+                    <h6>{submissao?.Resumo?.titulo}</h6>
                   </div>
                   {error[submissao.id] && (
                     <div className={styles.error}>
@@ -359,8 +339,7 @@ const Page = ({ params }) => {
                       className={`${styles.squareHeader} ${styles.action} ${styles.actionError}`}
                       onClick={() =>
                         handleDesvincularAvaliador(
-                          submissao.planoDeTrabalho?.inscricao?.edital
-                            ?.eventoId,
+                          submissao.evento.id,
                           submissao.id
                         )
                       }

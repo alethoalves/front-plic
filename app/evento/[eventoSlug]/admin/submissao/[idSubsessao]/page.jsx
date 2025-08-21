@@ -113,7 +113,7 @@ const Page = ({ params }) => {
     setSearchValue(value); // Atualiza o valor de busca
 
     const filteredItems = subsessao.Submissao.filter((item) =>
-      item.planoDeTrabalho?.inscricao?.participacoes.some(
+      item.Resumo.participacoes.some(
         (participacao) =>
           participacao.user.nome &&
           participacao.user.nome.toLowerCase().includes(value.toLowerCase())
@@ -249,24 +249,22 @@ const Page = ({ params }) => {
                       : item.status}
                   </p>
                   <p className={styles.area}>
-                    {item.planoDeTrabalho?.area?.area
-                      ? item.planoDeTrabalho?.area?.area
+                    {item.Resumo?.area?.area
+                      ? item.Resumo?.area?.area
                       : "sem área"}
-                    -{" "}
-                    {item.planoDeTrabalho?.inscricao?.edital?.tenant?.sigla.toUpperCase()}
-                    -{" "}
-                    {item.planoDeTrabalho?.inscricao?.edital?.titulo.toUpperCase()}
+                    - {item.tenant?.sigla.toUpperCase()}-{" "}
+                    {item.categoria?.toUpperCase()}
                   </p>
                 </div>
                 <div className={styles.submissaoData}>
-                  <h6>{item.planoDeTrabalho.titulo}</h6>
+                  <h6>{item.Resumo.titulo}</h6>
                   <p className={styles.participacoes}>
                     <strong>Orientadores: </strong>
-                    {item.planoDeTrabalho?.inscricao.participacoes
+                    {item.Resumo?.participacoes
                       .filter(
                         (item) =>
-                          item.tipo === "orientador" ||
-                          item.tipo === "coorientador"
+                          item.cargo === "ORIENTADOR" ||
+                          item.cargo === "COORIENTADOR"
                       )
                       .map(
                         (item, i) =>
@@ -277,9 +275,8 @@ const Page = ({ params }) => {
                   </p>
                   <p className={styles.participacoes}>
                     <strong>Alunos: </strong>
-                    {item.planoDeTrabalho?.participacoes.map(
-                      (item, i) =>
-                        `${i > 0 ? ", " : ""}${item.user.nome} (${item.status})`
+                    {item.Resumo?.participacoes.map(
+                      (item, i) => `${i > 0 ? ", " : ""}${item.user.nome} `
                     )}
                   </p>
                 </div>
@@ -498,38 +495,37 @@ const Page = ({ params }) => {
                       : item?.status}
                   </p>
                   <p className={styles.area}>
-                    {item.planoDeTrabalho?.area?.area
-                      ? item.planoDeTrabalho?.area?.area
+                    {item.Resumo?.area?.area
+                      ? item.Resumo?.area?.area
                       : "sem área"}{" "}
-                    -{" "}
-                    {item.planoDeTrabalho?.inscricao?.edital?.tenant?.sigla.toUpperCase()}
-                    -{" "}
-                    {item.planoDeTrabalho?.inscricao?.edital?.titulo.toUpperCase()}
+                    - {item.tenant?.sigla.toUpperCase()}-{" "}
+                    {item.categoria?.toUpperCase()}
                   </p>
                 </div>
                 <div className={styles.submissaoData}>
-                  <h6>{item.planoDeTrabalho?.titulo}</h6>
+                  <h6>{item.Resumo?.titulo}</h6>
                   <p className={styles.participacoes}>
                     <strong>Orientadores: </strong>
-                    {item.planoDeTrabalho?.inscricao.participacoes
+                    {item.Resumo?.participacoes
                       .filter(
                         (item) =>
-                          item.tipo === "orientador" ||
-                          item.tipo === "coorientador"
+                          item.cargo === "ORIENTADOR" ||
+                          item.cargo === "COORIENTADOR"
                       )
                       .map(
-                        (item, i) =>
-                          `${i > 0 ? ", " : ""}${item.user.nome} (${
-                            item.status
-                          })`
+                        (item, i) => `${i > 0 ? ", " : ""}${item.user.nome} `
                       )}
                   </p>
                   <p className={styles.participacoes}>
                     <strong>Alunos: </strong>
-                    {item.planoDeTrabalho?.participacoes.map(
-                      (item, i) =>
-                        `${i > 0 ? ", " : ""}${item.user.nome} (${item.status})`
-                    )}
+                    {item.Resumo?.participacoes
+                      .filter(
+                        (item) =>
+                          item.cargo === "AUTOR" || item.cargo === "COAUTOR"
+                      )
+                      .map(
+                        (item, i) => `${i > 0 ? ", " : ""}${item.user.nome} `
+                      )}
                   </p>
                 </div>
               </div>

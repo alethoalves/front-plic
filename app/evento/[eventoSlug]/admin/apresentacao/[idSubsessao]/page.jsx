@@ -250,37 +250,31 @@ const Page = ({ params }) => {
                       : item.status}
                   </p>
                   <p className={styles.area}>
-                    {item.planoDeTrabalho?.area?.area
-                      ? item.planoDeTrabalho?.area?.area
+                    {item.Resumo?.area?.area
+                      ? item.Resumo?.area?.area
                       : "sem área"}
-                    -{" "}
-                    {item.planoDeTrabalho?.inscricao?.edital?.tenant?.sigla.toUpperCase()}
-                    -{" "}
-                    {item.planoDeTrabalho?.inscricao?.edital?.titulo.toUpperCase()}
+                    - {item.tenant?.sigla.toUpperCase()}-{" "}
+                    {item.categoria.toUpperCase()}
                   </p>
                 </div>
                 <div className={styles.submissaoData}>
-                  <h6>{item.planoDeTrabalho.titulo}</h6>
+                  <h6>{item.Resumo.titulo}</h6>
                   <p className={styles.participacoes}>
                     <strong>Orientadores: </strong>
-                    {item.planoDeTrabalho?.inscricao.participacoes
+                    {item.Resumo?.participacoes
                       .filter(
                         (item) =>
-                          item.tipo === "orientador" ||
-                          item.tipo === "coorientador"
+                          item.tipo === "ORIENTADOR" ||
+                          item.tipo === "COORIENTADOR"
                       )
                       .map(
-                        (item, i) =>
-                          `${i > 0 ? ", " : ""}${item.user.nome} (${
-                            item.status
-                          })`
+                        (item, i) => `${i > 0 ? ", " : ""}${item.user.nome} `
                       )}
                   </p>
                   <p className={styles.participacoes}>
                     <strong>Alunos: </strong>
-                    {item.planoDeTrabalho?.participacoes.map(
-                      (item, i) =>
-                        `${i > 0 ? ", " : ""}${item.user.nome} (${item.status})`
+                    {item.Resumo?.participacoes.map(
+                      (item, i) => `${i > 0 ? ", " : ""}${item.user.nome}`
                     )}
                   </p>
                 </div>
@@ -501,20 +495,18 @@ const Page = ({ params }) => {
                         : item.submissao?.status}
                     </p>
                     <p className={styles.area}>
-                      {item.submissao?.planoDeTrabalho?.area?.area
-                        ? item.submissao?.planoDeTrabalho?.area?.area
+                      {item.submissao?.Resumo?.area?.area
+                        ? item.submissao?.Resumo?.area?.area
                         : "sem área"}{" "}
-                      -{" "}
-                      {item.submissao?.planoDeTrabalho?.inscricao?.edital?.tenant?.sigla.toUpperCase()}
-                      -{" "}
-                      {item.submissao?.planoDeTrabalho?.inscricao?.edital?.titulo.toUpperCase()}
+                      - {item.submissao?.tenant?.sigla.toUpperCase()}-{" "}
+                      {item.submissao?.categoria.toUpperCase()}
                     </p>
                   </div>
                   <div className={styles.submissaoData}>
-                    <h6>{item.submissao?.planoDeTrabalho?.titulo}</h6>
+                    <h6>{item.submissao?.Resumo?.titulo}</h6>
                     <p className={styles.participacoes}>
                       <strong>Orientadores: </strong>
-                      {item.submissao?.planoDeTrabalho?.inscricao.participacoes
+                      {item.submissao?.Resumo?.participacoes
                         .filter(
                           (item) =>
                             item.tipo === "orientador" ||
@@ -529,7 +521,7 @@ const Page = ({ params }) => {
                     </p>
                     <p className={styles.participacoes}>
                       <strong>Alunos: </strong>
-                      {item.submissao?.planoDeTrabalho?.participacoes.map(
+                      {item.submissao?.Resumo?.participacoes.map(
                         (item, i) =>
                           `${i > 0 ? ", " : ""}${item.user.nome} (${
                             item.status

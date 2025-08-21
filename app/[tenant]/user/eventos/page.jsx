@@ -28,6 +28,7 @@ import SearchableSelect from "@/components/SearchableSelect";
 import SearchableSelect2 from "@/components/SearchableSelect2";
 import { getAreas } from "@/app/api/client/area";
 import { getCookie } from "cookies-next";
+import Link from "next/link";
 
 const Page = ({ params }) => {
   // Estados para gerenciamento do componente
@@ -436,10 +437,9 @@ const Page = ({ params }) => {
         <div className={styles.content}>
           <div className={styles.header}>
             <div className={styles.header}>
-              <h4>Inscreva seu(s) projeto(s) em eventos científicos:</h4>
+              <h4>Eventos científicos:</h4>
               <p className="mt-1">
-                Apresente seu(s) projeto(s) nos eventos abaixo para divulgar os
-                resultados da sua pesquisa!
+                Eventos científicos organizados pela sua instituição.
               </p>
             </div>
           </div>
@@ -449,32 +449,33 @@ const Page = ({ params }) => {
             </div>
           ) : (
             <div className={styles.mainContent}>
-              <div className={styles.tela1}>
+              <div className={`${styles.tela1} gap-2`}>
                 {eventos?.filter(
                   (item) =>
                     Array.isArray(item.evento.sessao) &&
-                    item.evento.sessao.length > 0 &&
-                    item.evento.permitirSubmissoes
+                    item.evento.sessao.length > 0
                 ).length > 0 ? (
                   eventos
                     .filter(
                       (item) =>
                         Array.isArray(item.evento.sessao) &&
-                        item.evento.sessao.length > 0 &&
-                        item.evento.permitirSubmissoes
+                        item.evento.sessao.length > 0
+                    )
+                    .sort(
+                      (a, b) => b.evento.edicaoEvento - a.evento.edicaoEvento
                     )
                     .map((item) => (
-                      <div
+                      <Link
                         key={`tenant_${item.tenantId}_evento${item.eventoId}`}
-                        className={`${styles.evento} ${styles.boxButton}`}
-                        onClick={() => {
-                          setEventoSelecionado(item);
-                          setIsModalEventoOpen(true);
-                        }}
+                        href={`/evento/${item.evento.eventoRoot.slug}/edicao/${item.evento.slug}`}
                       >
-                        <h6>{item.evento.nomeEvento}</h6>
-                        <p>{`Edição de ${item.evento.edicaoEvento}`}</p>
-                      </div>
+                        <div
+                          className={`${styles.evento} mb-1 ${styles.boxButton}`}
+                        >
+                          <h6>{item.evento.nomeEvento}</h6>
+                          <p>{`Edição de ${item.evento.edicaoEvento}`}</p>
+                        </div>
+                      </Link>
                     ))
                 ) : (
                   <NoData description="Não há eventos com inscrições abertas. Tente mais tarde." />

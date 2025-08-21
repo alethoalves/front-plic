@@ -46,6 +46,7 @@ export const InscricaoButton = ({ params }) => {
   const [participantesData, setParticipantesData] = useState([]);
   const [apresentacaoData, setApresentacaoData] = useState(null);
   const [loadingSubmissoes, setLoadingSubmissoes] = useState(false);
+  const [submissoesLoaded, setSubmissoesLoaded] = useState(false);
   const [type, setType] = useState(false);
 
   const stepperRef = useRef(null);
@@ -449,6 +450,7 @@ export const InscricaoButton = ({ params }) => {
                           ) : (
                             <RenderSubmissoesCard
                               params={params}
+                              setLoadingSubmissoes={setLoadingSubmissoes}
                               cpf={cpfValue}
                               eventoSlug={params.edicao}
                               onBack={() => setActiveStep(7)} // Volta para confirmação
@@ -471,7 +473,7 @@ export const InscricaoButton = ({ params }) => {
                           type="button"
                         />
                         <Button
-                          label={loading ? "Buscando..." : "Próximo"}
+                          label={loading ? "Buscando..." : "Nova Inscrição"}
                           icon={loading ? null : "pi pi-arrow-right"}
                           iconPos="right"
                           type="submit"

@@ -21,6 +21,7 @@ import {
 } from "@remixicon/react";
 import Modal from "@/components/Modal";
 import { getEventoBySlug } from "@/app/api/client/eventos";
+import { transformarQuebrasEmParagrafos } from "@/lib/formatarParagrafo";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
@@ -95,8 +96,7 @@ const Page = ({ params }) => {
     } else {
       // Filtra localmente para submissões das áreas selecionadas
       const filtered = submissoes.submissoesData.filter((item) => {
-        const areaNome =
-          item.planoDeTrabalho?.area?.area || "Área não definida";
+        const areaNome = item.Resumo?.area?.area || "Área não definida";
         return updatedSelectedAreas.includes(areaNome);
       });
       console.log(filtered);
@@ -225,27 +225,15 @@ const Page = ({ params }) => {
         <div className={`${styles.icon} mb-2`}>
           <RiFileList3Line />
         </div>
-        <h4>{resumo?.planoDeTrabalho?.titulo}</h4>
+        <h4>{resumo?.Resumo?.titulo}</h4>
 
-        {resumo?.planoDeTrabalho?.registroAtividades &&
-          resumo?.planoDeTrabalho?.registroAtividades.length > 0 &&
-          (resumo?.planoDeTrabalho?.registroAtividades[0].respostas?.length ===
-          0 ? (
-            <p>Resumo não enviado</p> // Verifica se respostas é um array vazio
-          ) : (
-            resumo?.planoDeTrabalho?.registroAtividades[0].respostas?.map(
-              (item, i) => {
-                if (item.campo.label !== "Colaboradores") {
-                  return (
-                    <div key={i}>
-                      <h6>{item.campo.label}</h6>
-                      <p>{item.value}</p>
-                    </div>
-                  );
-                }
-              }
-            )
-          ))}
+        {resumo.Resumo.conteudo.map((secao, index) => (
+          <div key={index} className="mb-1">
+            <div className="text-justify">
+              {transformarQuebrasEmParagrafos(secao.conteudo)}
+            </div>
+          </div>
+        ))}
       </Modal>
     );
   };
@@ -287,14 +275,13 @@ const Page = ({ params }) => {
                     <div className={styles.squareContent}>
                       <div className={styles.info}>
                         <p className={styles.area}>
-                          {item?.planoDeTrabalho?.area?.area || "sem área"} -{" "}
-                          {item?.planoDeTrabalho?.inscricao?.edital?.tenant?.sigla.toUpperCase()}{" "}
-                          -{" "}
-                          {item?.planoDeTrabalho?.inscricao?.edital?.titulo.toUpperCase()}
+                          {item?.Resumo?.area?.area || "sem área"} -{" "}
+                          {item?.tenant?.sigla.toUpperCase()} -{" "}
+                          {item?.categoria.toUpperCase()}
                         </p>
                       </div>
                       <div className={styles.submissaoData}>
-                        <h6>{item?.planoDeTrabalho?.titulo}</h6>
+                        <h6>{item?.Resumo?.titulo}</h6>
                       </div>
                       {error[item.id] && (
                         <div className={styles.error}>
@@ -308,10 +295,7 @@ const Page = ({ params }) => {
                         <div
                           className={`${styles.squareHeader} ${styles.action} ${styles.actionError}`}
                           onClick={() =>
-                            handleDesvincularAvaliador(
-                              item.planoDeTrabalho?.inscricao?.edital?.eventoId,
-                              item.id
-                            )
+                            handleDesvincularAvaliador(item.evento.id, item.id)
                           }
                         >
                           <RiDeleteBinLine />
@@ -325,12 +309,7 @@ const Page = ({ params }) => {
                         <div
                           className={`${styles.squareHeader} ${styles.action}`}
                           onClick={() =>
-                            handleLerResumo(
-                              eventoId,
-                              item.id,
-                              item.planoDeTrabalho?.inscricao?.edital?.tenant
-                                ?.id
-                            )
+                            handleLerResumo(eventoId, item.id, item.tenant?.id)
                           }
                         >
                           <RiFileList3Line />
@@ -345,7 +324,7 @@ const Page = ({ params }) => {
                         className={`${styles.squareHeader}  ${styles.action} ${styles.actionPrimary}`}
                         onClick={() =>
                           router.push(
-                            `/evento/${params.eventoSlug}/edicao/${params.edicao}/avaliador/avaliacoes/avaliacao/${eventoId}/${item.id}/${item.planoDeTrabalho?.inscricao?.edital?.tenant?.id}`
+                            `/evento/${params.eventoSlug}/edicao/${params.edicao}/avaliador/avaliacoes/avaliacao/${eventoId}/${item.id}/${item.tenant?.id}`
                           )
                         }
                       >
@@ -387,12 +366,7 @@ const Page = ({ params }) => {
                 <div
                   key={index}
                   className={styles.square}
-                  onClick={() =>
-                    handleClickOnSquare(
-                      item.planoDeTrabalho?.inscricao?.edital?.eventoId,
-                      item.id
-                    )
-                  } // Chama a função ao clicar na submissão
+                  onClick={() => handleClickOnSquare(item.evento.id, item.id)} // Chama a função ao clicar na submissão
                 >
                   {item.square.map((squareItem) => (
                     <div key={squareItem.id} className={styles.squareHeader}>
@@ -404,14 +378,13 @@ const Page = ({ params }) => {
                   <div className={styles.squareContent}>
                     <div className={styles.info}>
                       <p className={styles.area}>
-                        {item?.planoDeTrabalho?.area?.area || "sem área"} -{" "}
-                        {item?.planoDeTrabalho?.inscricao?.edital?.tenant?.sigla.toUpperCase()}{" "}
-                        -{" "}
-                        {item?.planoDeTrabalho?.inscricao?.edital?.titulo.toUpperCase()}
+                        {item?.Resumo?.area?.area || "sem área"} -{" "}
+                        {item?.tenant?.sigla.toUpperCase()} -{" "}
+                        {item?.categoria?.toUpperCase()}
                       </p>
                     </div>
                     <div className={styles.submissaoData}>
-                      <h6>{item?.planoDeTrabalho?.titulo}</h6>
+                      <h6>{item?.Resumo?.titulo}</h6>
                       {loadingSubmissao[item.id] && (
                         <p className={styles.waiting}>
                           Aguarde... Fazendo a vinculação do projeto

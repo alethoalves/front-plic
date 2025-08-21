@@ -97,12 +97,22 @@ overflow-x: auto; // Mantém o scroll apenas dentro dessa di
     padding: $gap-1;
 }
 .p-dropdown-items{
+    //max-width: 90vw;
     li{
         padding: $gap-1;
     }
 }
 
-
+.p-dropdown-items .p-dropdown-item {
+    white-space: normal !important;  /* permite quebra */
+    word-wrap: break-word;           /* compatibilidade */
+    overflow-wrap: anywhere;         /* quebra mesmo em palavras grandes */
+  }
+ .p-dropdown-filter-container{
+    svg{
+        display: none;
+    }
+ }
 .p-column-filter-operator, .p-column-filter-constraint{
     padding: $gap-1 $gap-1 0 $gap-1 ;
 }

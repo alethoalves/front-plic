@@ -122,35 +122,43 @@ const Page = ({ params }) => {
                 <RiCalendarEventFill />
               </div>
               <div className={styles.infoBoxContent}>
-                <h6>Inscreva-se!</h6>
-                <p>Apresente sua pesquisa em eventos cienítificos!</p>
-              </div>
-            </div>
-          </Link>
-          <Link href={`/${params.tenant}/user/meuseventos`}>
-            <div className={styles.infoBox}>
-              <div className={styles.icon}>
-                <RiCouponLine />
-              </div>
-              <div className={styles.infoBoxContent}>
-                <h6>Minhas inscrições</h6>
+                <h6>Eventos</h6>
                 <p>
-                  Visualize e gerencie suas inscrições em eventos científicos!
+                  Veja os eventos científicos organizados pela sua insituição.
                 </p>
               </div>
             </div>
           </Link>
-          <Link href={`/${params.tenant}/user/certificados`}>
-            <div className={styles.infoBox}>
-              <div className={styles.icon}>
-                <RiAwardFill />
-              </div>
-              <div className={styles.infoBoxContent}>
-                <h6>Meus certificados</h6>
-                <p>Baixe seus certificados!</p>
-              </div>
-            </div>
-          </Link>
+          {false && (
+            <>
+              {" "}
+              <Link href={`/${params.tenant}/user/meuseventos`}>
+                <div className={styles.infoBox}>
+                  <div className={styles.icon}>
+                    <RiCouponLine />
+                  </div>
+                  <div className={styles.infoBoxContent}>
+                    <h6>Minhas inscrições</h6>
+                    <p>
+                      Visualize e gerencie suas inscrições em eventos
+                      científicos!
+                    </p>
+                  </div>
+                </div>
+              </Link>
+              <Link href={`/${params.tenant}/user/certificados`}>
+                <div className={styles.infoBox}>
+                  <div className={styles.icon}>
+                    <RiAwardFill />
+                  </div>
+                  <div className={styles.infoBoxContent}>
+                    <h6>Meus certificados</h6>
+                    <p>Baixe seus certificados!</p>
+                  </div>
+                </div>
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </>

@@ -3,6 +3,8 @@
 import styles from "./page.module.scss";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Document, Paragraph, TextRun, HeadingLevel, Packer } from "docx";
+
 import Link from "next/link";
 import {
   RiArrowLeftCircleFill,
@@ -206,6 +208,7 @@ const Page = ({ params }) => {
   };
 
   // Função para gerar Word com informações do evento
+
   const gerarWordEvento = async () => {
     setIsDownloading(true);
     try {
@@ -215,191 +218,241 @@ const Page = ({ params }) => {
         selectedTenant?.tenant
       );
 
-      let htmlContent = `
-        <html>
-        <head>
-          <meta charset="UTF-8">
-          <title>Anais do Evento - ${evento.evento.nomeEvento}</title>
-          <style>
-            body { 
-              font-family: Arial, sans-serif; 
-              line-height: 1.6;
-            }
-            h1 { 
-              font-size: 18pt; 
-              text-align: center;
-              margin-bottom: 20px;
-            }
-            h2 { 
-              font-size: 16pt; 
-              margin-top: 30px;
-              border-bottom: 1px solid #ddd;
-              padding-bottom: 5px;
-            }
-            h3 {
-              font-size: 14pt;
-              margin-top: 25px;
-              color: #444;
-            }
-            .submissao {
-              page-break-after: always;
-              margin-bottom: 30px;
-            }
-            .autores {
-              font-style: italic;
-              margin-bottom: 10px;
-            }
-            .resumo {
-              margin-top: 15px;
-              text-align: justify;
-            }
-            .detalhes {
-              margin-top: 10px;
-              font-size: 0.9em;
-              color: #555;
-            }
-            .detalhes span {
-              margin-right: 15px;
-            }
-            .palavras-chave {
-              margin-top: 10px;
-              font-style: italic;
-            }
-          </style>
-        </head>
-        <body>
-          <h1>Anais do Evento - ${evento.evento.nomeEvento}</h1>
-      `;
+      // Criação do documento
+      const doc = new Document({
+        styles: {
+          paragraphStyles: [
+            {
+              id: "normal",
+              name: "Normal",
+              run: {
+                size: 24, // 12pt (24 half-points)
+                font: "Arial",
+              },
+              paragraph: {
+                spacing: {
+                  line: 276, // 1.15 line spacing (240 = single, 480 = double)
+                },
+              },
+            },
+          ],
+        },
+        sections: [
+          {
+            properties: {},
+            children: [
+              // Título principal
+              new Paragraph({
+                text: `Anais do Evento - ${evento.evento.nomeEvento}`,
+                heading: HeadingLevel.HEADING_1,
+                alignment: "center",
+                spacing: { after: 400 },
+              }),
 
-      // Adicionar informações gerais
-      htmlContent += `
-        <div class="detalhes">
-          <p><strong>Total de trabalhos:</strong> ${submissaoData.length}</p>
-          ${
-            selectedTenant
-              ? `<p><strong>Instituição:</strong> ${selectedTenant.tenant}</p>`
-              : ""
-          }
-        </div>
-      `;
+              // Informações gerais
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: "Total de trabalhos: ",
+                    bold: true,
+                  }),
+                  new TextRun({
+                    text: `${submissaoData.length}`,
+                  }),
+                ],
+                spacing: { after: 200 },
+              }),
 
-      // Adicionar cada submissão
-      submissaoData.forEach((submissao, index) => {
-        const resumo = submissao.Resumo || {};
-        const area = resumo.area || {};
-        const participacoes = resumo.participacoes || [];
-        const palavrasChave =
-          resumo.PalavraChave?.map((p) => p.palavra).join(", ") ||
-          "Sem palavras-chave";
+              ...(selectedTenant
+                ? [
+                    new Paragraph({
+                      children: [
+                        new TextRun({
+                          text: "Instituição: ",
+                          bold: true,
+                        }),
+                        new TextRun({
+                          text: selectedTenant.tenant,
+                        }),
+                      ],
+                      spacing: { after: 200 },
+                    }),
+                  ]
+                : []),
 
-        // Organizar participantes por todos os cargos possíveis
-        const participantesPorCargo = {
-          AUTOR: [],
-          COAUTOR: [],
-          ORIENTADOR: [],
-          COORIENTADOR: [],
-          COLABORADOR: [],
-        };
+              // Adicionar cada submissão
+              ...submissaoData.flatMap((submissao, index) => {
+                const resumo = submissao.Resumo || {};
+                const area = resumo.area || {};
+                const participacoes = resumo.participacoes || [];
+                const palavrasChave =
+                  resumo.PalavraChave?.map((p) => p.palavra).join(", ") ||
+                  "Sem palavras-chave";
 
-        participacoes.forEach((part) => {
-          const nome = part.user?.nome || "Nome não disponível";
-          if (part.cargo && participantesPorCargo[part.cargo]) {
-            participantesPorCargo[part.cargo].push(nome);
-          }
-        });
+                // Organizar participantes por cargo
+                const participantesPorCargo = {
+                  AUTOR: [],
+                  COAUTOR: [],
+                  ORIENTADOR: [],
+                  COORIENTADOR: [],
+                  COLABORADOR: [],
+                };
 
-        htmlContent += `
-          <div class="submissao">
-            <h2>Trabalho ${index + 1}: ${sanitizeText(
-          resumo.titulo || "Sem título"
-        )}</h2>
-            
-            <div class="autores">
-              ${
-                participantesPorCargo.AUTOR.length > 0
-                  ? `<p><strong>Autores:</strong> ${participantesPorCargo.AUTOR.join(
-                      ", "
-                    )}</p>`
-                  : ""
-              }
-              ${
-                participantesPorCargo.COAUTOR.length > 0
-                  ? `<p><strong>Coautores:</strong> ${participantesPorCargo.COAUTOR.join(
-                      ", "
-                    )}</p>`
-                  : ""
-              }
-              ${
-                participantesPorCargo.ORIENTADOR.length > 0
-                  ? `<p><strong>Orientador(es):</strong> ${participantesPorCargo.ORIENTADOR.join(
-                      ", "
-                    )}</p>`
-                  : ""
-              }
-              ${
-                participantesPorCargo.COORIENTADOR.length > 0
-                  ? `<p><strong>Coorientador(es):</strong> ${participantesPorCargo.COORIENTADOR.join(
-                      ", "
-                    )}</p>`
-                  : ""
-              }
-              ${
-                participantesPorCargo.COLABORADOR.length > 0
-                  ? `<p><strong>Colaborador(es):</strong> ${participantesPorCargo.COLABORADOR.join(
-                      ", "
-                    )}</p>`
-                  : ""
-              }
-            </div>
-            
-            <div class="detalhes">
-              <span><strong>Área:</strong> ${area.area || "Sem área"}</span>
-              <span><strong>Grande Área:</strong> ${
-                area.grandeArea?.grandeArea || "Sem grande área"
-              }</span>
-              <span><strong>Categoria:</strong> ${
-                submissao.categoria || "Sem categoria"
-              }</span>
-            </div>
-  
-            <div class="palavras-chave">
-              <strong>Palavras-chave:</strong> ${palavrasChave}
-            </div>
-            
-            <h3>Resumo</h3>
-            <div class="resumo">
-              ${
-                resumo.conteudoFormatado
-                  ? resumo.conteudoFormatado.replace(/\n/g, "<br>")
-                  : "Sem resumo disponível"
-              }
-            </div>
-            
-            <div class="detalhes">
-              ${
-                submissao.premio
-                  ? "<span><strong>Premiado:</strong> Sim</span>"
-                  : ""
-              }
-              ${
-                submissao.mencaoHonrosa
-                  ? "<span><strong>Menção Honrosa:</strong> Sim</span>"
-                  : ""
-              }
-            </div>
-          </div>
-        `;
+                participacoes.forEach((part) => {
+                  const nome = part.user?.nome || "Nome não disponível";
+                  if (part.cargo && participantesPorCargo[part.cargo]) {
+                    participantesPorCargo[part.cargo].push(nome);
+                  }
+                });
+
+                return [
+                  // Título do trabalho
+                  new Paragraph({
+                    text: `${sanitizeText(resumo.titulo || "Sem título")}`,
+                    heading: HeadingLevel.HEADING_2,
+                    spacing: { before: 600, after: 200 },
+                    border: {
+                      bottom: { size: 4, color: "DDDDDD", style: "single" },
+                    },
+                  }),
+
+                  // Autores
+                  ...Object.entries(participantesPorCargo)
+                    .filter(([_, nomes]) => nomes.length > 0)
+                    .map(([cargo, nomes]) => {
+                      const cargoLabel =
+                        {
+                          AUTOR: "Autores",
+                          COAUTOR: "Coautores",
+                          ORIENTADOR: "Orientador(es)",
+                          COORIENTADOR: "Coorientador(es)",
+                          COLABORADOR: "Colaborador(es)",
+                        }[cargo] || cargo;
+
+                      return new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: `${cargoLabel}: `,
+                            bold: true,
+                          }),
+                          new TextRun({
+                            text: nomes.join(", "),
+                            italics: true,
+                          }),
+                        ],
+                        spacing: { after: 100 },
+                      });
+                    }),
+
+                  // Detalhes (Área, Grande Área, Categoria)
+                  new Paragraph({
+                    children: [
+                      new TextRun({
+                        text: `Área: ${area.area || "Sem área"}`,
+                        size: 20,
+                      }),
+                      new TextRun({
+                        text: "\tGrande Área: ",
+                        size: 20,
+                      }),
+                      new TextRun({
+                        text: area.grandeArea?.grandeArea || "Sem grande área",
+                        size: 20,
+                      }),
+                      new TextRun({
+                        text: "\tCategoria: ",
+                        size: 20,
+                      }),
+                      new TextRun({
+                        text: submissao.categoria || "Sem categoria",
+                        size: 20,
+                      }),
+                    ],
+                    spacing: { after: 100 },
+                  }),
+
+                  // Palavras-chave
+                  new Paragraph({
+                    children: [
+                      new TextRun({
+                        text: "Palavras-chave: ",
+                        bold: true,
+                      }),
+                      new TextRun({
+                        text: palavrasChave,
+                        italics: true,
+                      }),
+                    ],
+                    spacing: { after: 100 },
+                  }),
+
+                  // Seção Resumo
+                  new Paragraph({
+                    text: "Resumo",
+                    heading: HeadingLevel.HEADING_3,
+                    spacing: { before: 300, after: 100 },
+                  }),
+
+                  // Conteúdo do resumo
+                  new Paragraph({
+                    text: resumo.conteudoFormatado || "Sem resumo disponível",
+                    spacing: { after: 100 },
+                    alignment: "both", // Justificado
+                  }),
+
+                  // Detalhes adicionais (Prêmios)
+                  ...(submissao.premio || submissao.mencaoHonrosa
+                    ? [
+                        new Paragraph({
+                          children: [
+                            ...(submissao.premio
+                              ? [
+                                  new TextRun({
+                                    text: "Premiado: Sim",
+                                    size: 20,
+                                  }),
+                                  new TextRun({
+                                    text: "\t",
+                                  }),
+                                ]
+                              : []),
+                            ...(submissao.mencaoHonrosa
+                              ? [
+                                  new TextRun({
+                                    text: "Menção Honrosa: Sim",
+                                    size: 20,
+                                  }),
+                                ]
+                              : []),
+                          ],
+                          spacing: { after: 100 },
+                        }),
+                      ]
+                    : []),
+
+                  // Quebra de página (exceto para o último item)
+                  ...(index < submissaoData.length - 1
+                    ? [
+                        new Paragraph({
+                          children: [new TextRun("")],
+                          pageBreakBefore: true,
+                        }),
+                      ]
+                    : []),
+                ];
+              }),
+            ],
+          },
+        ],
       });
 
-      htmlContent += `</body></html>`;
-
-      // Criar e baixar o arquivo
-      const blob = new Blob([htmlContent], { type: "application/msword" });
+      // Gerar o blob e fazer download
+      const blob = await Packer.toBlob(doc);
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
       link.download = `anais_${evento.evento.slug}${
         selectedTenant ? `_${selectedTenant.tenant}` : ""
-      }.doc`;
+      }.docx`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -440,8 +493,7 @@ const Page = ({ params }) => {
         type="button"
         disabled={isDownloading}
       >
-        {isDownloading ? "Exportando..." : "Anais do Evento (.doc)"}{" "}
-        {/* Mudei o texto aqui */}
+        {isDownloading ? "Exportando..." : "Anais do Evento (.docx)"}
       </Button>
 
       <Button
