@@ -121,17 +121,110 @@ const Resultado = ({}) => {
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet("Participações");
 
-      // Definindo as colunas (adicionando a coluna CPF)
+      // Primeiro, vamos processar a ordem de recebimento de bolsa por edital
+      const processarOrdemRecebimento = (participacoes) => {
+        // Agrupar participantes por edital
+        const participantesPorEdital = {};
+
+        participacoes.forEach((part) => {
+          const editalTitulo = part.inscricao?.edital?.titulo || "Sem Edital";
+          if (!participantesPorEdital[editalTitulo]) {
+            participantesPorEdital[editalTitulo] = [];
+          }
+          participantesPorEdital[editalTitulo].push(part);
+        });
+
+        const resultado = {};
+
+        // Processar cada edital separadamente
+        Object.keys(participantesPorEdital).forEach((editalTitulo) => {
+          const participantesEdital = participantesPorEdital[editalTitulo];
+
+          // Filtrar apenas participantes com status APROVADO neste edital
+          const aprovados = participantesEdital.filter((part) => {
+            const vinculo = part.VinculoSolicitacaoBolsa?.[0];
+            return vinculo?.status === "APROVADO";
+          });
+
+          // Obter todas as ordens de recebimento únicas para este edital
+          const ordensUnicas = [
+            ...new Set(
+              aprovados
+                .map(
+                  (part) =>
+                    part.VinculoSolicitacaoBolsa?.[0]?.solicitacaoBolsa
+                      ?.ordemRecebimentoBolsa
+                )
+                .filter(Boolean)
+            ),
+          ].sort((a, b) => a - b);
+
+          // Obter o maior número de ordem para este edital
+          const maxOrdem =
+            ordensUnicas.length > 0 ? Math.max(...ordensUnicas) : 0;
+
+          let contadorGlobal = 1;
+
+          // Processar cada ordem de recebimento para este edital
+          for (let ordem = 1; ordem <= maxOrdem; ordem++) {
+            // Filtrar participantes com esta ordem específica neste edital
+            const participantesOrdem = aprovados.filter(
+              (part) =>
+                part.VinculoSolicitacaoBolsa?.[0]?.solicitacaoBolsa
+                  ?.ordemRecebimentoBolsa === ordem
+            );
+
+            // Ordenar por nota total (maior para menor)
+            const ordenados = [...participantesOrdem].sort((a, b) => {
+              const notaA = a.notaTotal || 0;
+              const notaB = b.notaTotal || 0;
+              return notaB - notaA; // Ordem decrescente
+            });
+
+            // Atribuir números sequenciais para este edital
+            ordenados.forEach((part) => {
+              resultado[part.id] = contadorGlobal++;
+            });
+          }
+        });
+
+        return resultado;
+      };
+
+      // Processar a ordem de recebimento
+      const ordemRecebimentoMap = processarOrdemRecebimento(participacoes);
+
+      // Definindo as colunas
       worksheet.columns = [
         { header: "Edital", key: "edital", width: 30 },
         { header: "Plano de Trabalho", key: "planoTrabalho", width: 30 },
         { header: "Orientador", key: "orientador", width: 25 },
         { header: "Aluno", key: "aluno", width: 25 },
-        { header: "CPF Aluno", key: "cpfAluno", width: 15 }, // Nova coluna
         { header: "Status Plano", key: "statusPlano", width: 20 },
+        { header: "Justificativa Plano", key: "justificativaPlano", width: 30 },
         { header: "Status Aluno", key: "statusAluno", width: 20 },
-        { header: "Status Vinculação", key: "statusVinculacao", width: 20 },
-        { header: "Fonte Pagadora", key: "fontePagadora", width: 20 },
+        { header: "Justificativa Aluno", key: "justificativaAluno", width: 30 },
+        {
+          header: "Status Solicitação de Bolsa",
+          key: "statusSolicitacaoBolsa",
+          width: 25,
+        },
+        {
+          header: "Motivo Recusa Vinculação",
+          key: "motivoRecusaVinculacao",
+          width: 30,
+        },
+        {
+          header: "Qnt Sol Bolsa Por Orientador", // NOME ALTERADO AQUI
+          key: "ordemRecebimentoInput",
+          width: 25,
+        },
+        {
+          header: "Ordem de recebimento de bolsa",
+          key: "ordemRecebimentoFinal",
+          width: 25,
+        },
+        { header: "Fonte Pagadora", key: "fontePagadora", width: 25 },
         {
           header: "Nota Total",
           key: "notaTotal",
@@ -140,29 +233,101 @@ const Resultado = ({}) => {
         },
       ];
 
-      // Adicionando os dados (incluindo o CPF)
-      const dataToExport = participacoes.map((part) => ({
-        edital: part.inscricao?.edital?.titulo || "",
-        planoTrabalho: part.planoDeTrabalho?.titulo || "",
-        orientador: part.orientadores || "N/A",
-        aluno: part.user?.nome || "",
-        cpfAluno: part.user?.cpf || "", // Adicionando o CPF aqui
-        statusPlano: part.planoDeTrabalho?.statusClassificacao || "",
-        statusAluno: part.statusParticipacao || "",
-        statusVinculacao:
-          part.VinculoSolicitacaoBolsa?.[0]?.status || "Voluntária",
-        fontePagadora:
-          part.VinculoSolicitacaoBolsa?.[0]?.solicitacaoBolsa?.bolsa?.cota
-            ?.instituicaoPagadora || "Voluntária",
-        notaTotal: part.notaTotal || null,
-      }));
+      // Adicionando os dados
+      const dataToExport = participacoes.map((part) => {
+        const isPlanoDesclassificado =
+          part.planoDeTrabalho?.statusClassificacao !== "CLASSIFICADO";
+        const isAlunoRecusado = part.statusParticipacao === "RECUSADA";
+        const vinculo = part.VinculoSolicitacaoBolsa?.[0];
+        const statusVinculacao = vinculo?.status;
+        const isVinculacaoRecusada = statusVinculacao === "RECUSADO";
+        const isVinculacaoAprovada = statusVinculacao === "APROVADO";
+
+        // Lógica para justificativas
+        const justificativaPlano = isPlanoDesclassificado
+          ? part.planoDeTrabalho?.justificativa || ""
+          : "";
+
+        const justificativaAluno = isAlunoRecusado
+          ? part.justificativa || ""
+          : "";
+
+        const motivoRecusaVinculacao = isVinculacaoRecusada
+          ? vinculo?.motivoRecusa || ""
+          : "";
+
+        // Ordem de recebimento de input (original)
+        const ordemRecebimentoInput = vinculo?.solicitacaoBolsa
+          ?.ordemRecebimentoBolsa
+          ? vinculo.solicitacaoBolsa.ordemRecebimentoBolsa.toString()
+          : "";
+
+        // Nova ordem de recebimento final (calculada)
+        let ordemRecebimentoFinal = "";
+        if (
+          isVinculacaoAprovada &&
+          !isPlanoDesclassificado &&
+          !isAlunoRecusado
+        ) {
+          ordemRecebimentoFinal =
+            ordemRecebimentoMap[part.id]?.toString() || "";
+        } else {
+          ordemRecebimentoFinal = "-";
+        }
+
+        // Lógica para status solicitação de bolsa
+        let statusSolicitacaoBolsa = "";
+        if (isPlanoDesclassificado || isAlunoRecusado) {
+          statusSolicitacaoBolsa = "-";
+        } else {
+          statusSolicitacaoBolsa = statusVinculacao || "-";
+        }
+
+        // Lógica para fonte pagadora
+        let fontePagadora = "Voluntária";
+        if (isPlanoDesclassificado || isAlunoRecusado) {
+          fontePagadora = "-";
+        } else {
+          if (isVinculacaoAprovada) {
+            if (vinculo?.solicitacaoBolsa?.bolsa) {
+              fontePagadora = `Remunerada - ${
+                vinculo.solicitacaoBolsa.bolsa.cota?.instituicaoPagadora ||
+                "N/A"
+              }`;
+            } else {
+              fontePagadora = "Voluntária em Lista de Espera";
+            }
+          } else if (isVinculacaoRecusada) {
+            fontePagadora = "Voluntária - solicitação de bolsa recusada";
+          }
+        }
+
+        return {
+          edital: part.inscricao?.edital?.titulo || "",
+          planoTrabalho: part.planoDeTrabalho?.titulo || "",
+          orientador: part.orientadores || "N/A",
+          aluno: part.user?.nome || "",
+          statusPlano: part.planoDeTrabalho?.statusClassificacao || "",
+          justificativaPlano: justificativaPlano,
+          statusAluno: isPlanoDesclassificado
+            ? "-"
+            : part.statusParticipacao || "",
+          justificativaAluno: justificativaAluno,
+          statusSolicitacaoBolsa: statusSolicitacaoBolsa,
+          motivoRecusaVinculacao: motivoRecusaVinculacao,
+          ordemRecebimentoInput: ordemRecebimentoInput,
+          ordemRecebimentoFinal: ordemRecebimentoFinal,
+          fontePagadora: fontePagadora,
+          notaTotal: part.notaTotal || null,
+        };
+      });
 
       worksheet.addRows(dataToExport);
 
-      // Adicionando a tabela (Excel Table) - atualizando para incluir a nova coluna
+      // Adicionando a tabela (Excel Table)
       worksheet.addTable({
         name: "ParticipacoesTable",
-        ref: "A1", // Canto superior esquerdo da tabela
+        ref: "A1",
         headerRow: true,
         totalsRow: false,
         style: {
@@ -174,10 +339,14 @@ const Resultado = ({}) => {
           { name: "Plano de Trabalho", filterButton: true },
           { name: "Orientador", filterButton: true },
           { name: "Aluno", filterButton: true },
-          { name: "CPF Aluno", filterButton: true }, // Nova coluna na tabela
           { name: "Status Plano", filterButton: true },
+          { name: "Justificativa Plano", filterButton: true },
           { name: "Status Aluno", filterButton: true },
-          { name: "Status Vinculação", filterButton: true },
+          { name: "Justificativa Aluno", filterButton: true },
+          { name: "Status Solicitação de Bolsa", filterButton: true },
+          { name: "Motivo Recusa Vinculação", filterButton: true },
+          { name: "Qnt Sol Bolsa Por Orientador", filterButton: true },
+          { name: "Ordem de recebimento de bolsa", filterButton: true },
           { name: "Fonte Pagadora", filterButton: true },
           { name: "Nota Total", filterButton: true },
         ],
@@ -186,16 +355,20 @@ const Resultado = ({}) => {
           item.planoTrabalho,
           item.orientador,
           item.aluno,
-          item.cpfAluno, // Incluindo o CPF nos dados
           item.statusPlano,
+          item.justificativaPlano,
           item.statusAluno,
-          item.statusVinculacao,
+          item.justificativaAluno,
+          item.statusSolicitacaoBolsa,
+          item.motivoRecusaVinculacao,
+          item.ordemRecebimentoInput,
+          item.ordemRecebimentoFinal,
           item.fontePagadora,
           item.notaTotal,
         ]),
       });
 
-      // Formatação do cabeçalho (mantido igual)
+      // Formatação do cabeçalho
       worksheet.getRow(1).eachCell((cell) => {
         cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
         cell.fill = {
@@ -211,7 +384,7 @@ const Resultado = ({}) => {
         };
       });
 
-      // Gerando o arquivo (mantido igual)
+      // Gerando o arquivo
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -414,6 +587,7 @@ const Resultado = ({}) => {
 
   const getParticipacoes = async () => {
     const response = await getParticipacoesByTenant(tenant, "aluno", ano);
+    console.log(response);
     // Processa os dados recebidos
     const comColunasVirtuais = response.map((p) => {
       const plano = p.planoDeTrabalho;
