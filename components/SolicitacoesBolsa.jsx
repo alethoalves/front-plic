@@ -87,6 +87,7 @@ const getInitialFilters = () => ({
   },
   /* ---------- novo filtro de Bolsa (cota) ---------- */
   instituicaoPagadora: { value: null, matchMode: FilterMatchMode.IN },
+  formaIngresso: { value: null, matchMode: FilterMatchMode.IN },
 });
 
 /* ======================================================================= */
@@ -126,6 +127,7 @@ export default function SolicitacoesBolsa() {
     instituicoesPagadorasDisponiveis,
     setInstituicoesPagadorasDisponiveis,
   ] = useState([]);
+  const [formaIngressoOptions, setFormaIngressoOptions] = useState([]);
 
   /* --------------------------- Cotas & bolsas --------------------------- */
   const [cotas, setCotas] = useState([]);
@@ -158,6 +160,18 @@ export default function SolicitacoesBolsa() {
         .filter(Boolean)
         .map((edital) => ({ label: edital, value: edital }))
     );
+    setFormaIngressoOptions(
+      [
+        ...new Set(
+          rawData.map(
+            (i) =>
+              i.participacao?.userTenant?.formaIngresso?.formaIngresso || "N/A"
+          )
+        ),
+      ]
+        .filter(Boolean)
+        .map((forma) => ({ label: forma, value: forma }))
+    );
     setClassificacaoStatusOptions(statusOptions.classificacao);
     setParticipacaoStatusOptions(statusOptions.participacao);
     setSolicitacaoStatusOptions(statusOptions.solicitacao);
@@ -188,6 +202,10 @@ export default function SolicitacoesBolsa() {
           .filter(Boolean)
           .join(", ") || "N/A";
 
+      // Extrair forma de ingresso
+      const formaIngresso =
+        item.participacao?.userTenant?.formaIngresso?.formaIngresso || "N/A";
+
       return {
         ...item,
         notaTotal: notaTotal ? parseFloat(notaTotal) : null,
@@ -195,6 +213,7 @@ export default function SolicitacoesBolsa() {
           item.participacao?.user?.UserTenant[0]?.rendimentoAcademico,
         vinculosAprovados: countAprovados[item.participacao.user.id] || 0,
         orientadores,
+        formaIngresso, // Nova propriedade adicionada
         /* --------- campo usado para coluna/filtragem de bolsa ---------- */
         instituicaoPagadora:
           item.solicitacaoBolsa?.bolsa?.cota?.instituicaoPagadora ??
@@ -762,7 +781,7 @@ export default function SolicitacoesBolsa() {
 
       {/* ================= TABELA PRINCIPAL ================= */}
       <Card>
-        <h5 className="pt-2 pl-2 pr-2">Solicitações de Bolsa</h5>
+        <h5 className="pt-2 pl-2 pr-2">Solicitações de Bolsas</h5>
         <DataTable
           value={processedData}
           stripedRows
@@ -903,6 +922,17 @@ export default function SolicitacoesBolsa() {
             showFilterMenu
             filterField="participacao.user.nome"
             filterPlaceholder="Filtrar por nome"
+          />
+          <Column
+            field="formaIngresso"
+            header="Forma de Ingresso"
+            sortable
+            filter
+            filterField="formaIngresso"
+            filterElement={(opts) =>
+              statusClassificacaoFilterTemplate(opts, formaIngressoOptions)
+            }
+            showFilterMenu={false}
           />
 
           {/* ORIENTADOR(ES) */}

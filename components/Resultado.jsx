@@ -26,6 +26,11 @@ import {
 } from "@/lib/tableTemplates";
 import { renderStatusTagWithJustificativa } from "@/lib/tagUtils";
 import { ativarVinculo } from "@/app/api/client/bolsa";
+import {
+  criarRegistrosDocumento,
+  getDocumentoTemplates,
+} from "@/app/api/client/documentos";
+import { Dropdown } from "primereact/dropdown";
 const getInitialFilters = () => ({
   global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   "inscricao.edital.titulo": {
@@ -104,6 +109,13 @@ const Resultado = ({}) => {
   const [participacaoStatusOptions, setParticipacaoStatusOptions] = useState(
     []
   );
+  // Novos estados para documentos
+  const [documentoTemplates, setDocumentoTemplates] = useState([]);
+  const [selectedDocumentoTemplate, setSelectedDocumentoTemplate] =
+    useState(null);
+  const [loadingDocumentos, setLoadingDocumentos] = useState(false);
+  const [showDocumentoDialog, setShowDocumentoDialog] = useState(false);
+
   // Estados para filtros
   const [globalFilterValue, setGlobalFilterValue] = useState("");
   const [filters, setFilters] = useState(getInitialFilters());
@@ -693,8 +705,78 @@ const Resultado = ({}) => {
       }
     };
 
+    const fetchDocumentoTemplates = async () => {
+      try {
+        const templates = await getDocumentoTemplates(tenant);
+        setDocumentoTemplates(templates);
+      } catch (error) {
+        console.error("Erro ao buscar templates de documento:", error);
+        showToast(
+          "warn",
+          "Aviso",
+          "Não foi possível carregar os templates de documento"
+        );
+      }
+    };
+
     fetchParticipacoes();
+    fetchDocumentoTemplates();
   }, [tenant, ano]);
+  // ==============================================
+  // NOVAS FUNÇÕES PARA DOCUMENTOS
+  // ==============================================
+
+  const handleCriarRegistrosDocumento = async () => {
+    if (selectedParticipacoes.length === 0) {
+      showToast("warn", "Aviso", "Selecione pelo menos uma participação");
+      return;
+    }
+
+    if (!selectedDocumentoTemplate) {
+      showToast("warn", "Aviso", "Selecione um template de documento");
+      return;
+    }
+
+    try {
+      setLoadingDocumentos(true);
+
+      const participacaoIds = selectedParticipacoes.map((p) => p.id);
+
+      const resultado = await criarRegistrosDocumento(
+        tenant,
+        selectedDocumentoTemplate.id,
+        participacaoIds
+      );
+
+      showToast(
+        "success",
+        "Sucesso",
+        resultado.message || "Registros de documento criados com sucesso!"
+      );
+
+      // Limpar seleções
+      setSelectedParticipacoes([]);
+      setSelectedDocumentoTemplate(null);
+      setShowDocumentoDialog(false);
+    } catch (error) {
+      console.error("Erro ao criar registros de documento:", error);
+      showToast(
+        "error",
+        "Erro",
+        error.response?.data?.message || "Falha ao criar registros de documento"
+      );
+    } finally {
+      setLoadingDocumentos(false);
+    }
+  };
+
+  const openDocumentoDialog = () => {
+    if (selectedParticipacoes.length === 0) {
+      showToast("warn", "Aviso", "Selecione pelo menos uma participação");
+      return;
+    }
+    setShowDocumentoDialog(true);
+  };
 
   // ==============================================
   // MANIPULAÇÃO DE FILTROS
@@ -737,26 +819,40 @@ const Resultado = ({}) => {
           onClick={clearFilters}
           className="p-button-outlined p-button-secondary"
         />
-        {false && selectedParticipacoes.length > 0 && (
-          <>
+
+        {selectedParticipacoes.length > 0 && (
+          <div className="flex gap-2">
             <Button
-              icon="pi pi-check-circle"
-              label="Ativar"
-              onClick={handleAtivarParticipacoes}
-              loading={loadingAtivacao}
-              className="p-button-success"
-            />
-            <Button
-              icon="pi pi-link"
-              label="Ativar Vínculo"
-              onClick={handleAtivarVinculos}
-              loading={loadingAtivacaoVinculo}
-              className="p-button-help"
-              tooltip="Ativar vínculo de bolsa das participações selecionadas"
+              icon="pi pi-file"
+              label="Criar Documentos"
+              onClick={openDocumentoDialog}
+              className="p-button-info"
+              tooltip="Criar registros de documento para as participações selecionadas"
               tooltipOptions={{ position: "bottom" }}
             />
-          </>
+            {false && (
+              <>
+                <Button
+                  icon="pi pi-check-circle"
+                  label="Ativar"
+                  onClick={handleAtivarParticipacoes}
+                  loading={loadingAtivacao}
+                  className="p-button-success"
+                />
+                <Button
+                  icon="pi pi-link"
+                  label="Ativar Vínculo"
+                  onClick={handleAtivarVinculos}
+                  loading={loadingAtivacaoVinculo}
+                  className="p-button-help"
+                  tooltip="Ativar vínculo de bolsa das participações selecionadas"
+                  tooltipOptions={{ position: "bottom" }}
+                />
+              </>
+            )}
+          </div>
         )}
+
         <IconField iconPosition="left" className="ml-2">
           <InputText
             value={globalFilterValue}
@@ -765,6 +861,95 @@ const Resultado = ({}) => {
           />
         </IconField>
       </div>
+    );
+  };
+
+  // ==============================================
+  // DIALOG PARA CRIAR DOCUMENTOS
+  // ==============================================
+
+  const renderDocumentoDialog = () => {
+    return (
+      <Dialog
+        header="Criar Registros de Documento"
+        visible={showDocumentoDialog}
+        style={{ width: "50vw" }}
+        onHide={() => setShowDocumentoDialog(false)}
+        footer={
+          <div>
+            <Button
+              label="Cancelar"
+              icon="pi pi-times"
+              onClick={() => setShowDocumentoDialog(false)}
+              className="p-button-text"
+            />
+            <Button
+              label="Criar Documentos"
+              icon="pi pi-check"
+              onClick={handleCriarRegistrosDocumento}
+              loading={loadingDocumentos}
+              disabled={!selectedDocumentoTemplate}
+            />
+          </div>
+        }
+      >
+        <div className="p-fluid">
+          <div className="field">
+            <label htmlFor="documentoTemplate">Template de Documento</label>
+            <Dropdown
+              id="documentoTemplate"
+              value={selectedDocumentoTemplate}
+              options={documentoTemplates}
+              onChange={(e) => setSelectedDocumentoTemplate(e.value)}
+              optionLabel="titulo"
+              placeholder="Selecione um template"
+              filter
+              filterBy="titulo"
+              showClear
+              className="w-full"
+            />
+          </div>
+
+          <div className="field">
+            <label>Participações Selecionadas</label>
+            <div className="p-2 border-1 surface-border border-round">
+              <ul className="m-0 p-0 list-none">
+                {selectedParticipacoes.map((participacao) => (
+                  <li key={participacao.id} className="p-1">
+                    {participacao.user?.nome} -{" "}
+                    {participacao.planoDeTrabalho?.titulo}
+                  </li>
+                ))}
+              </ul>
+              <small className="text-color-secondary">
+                Total: {selectedParticipacoes.length} participação(ões)
+              </small>
+            </div>
+          </div>
+
+          {selectedDocumentoTemplate && (
+            <div className="field">
+              <label>Informações do Template</label>
+              <div className="p-2 border-1 surface-border border-round">
+                <p>
+                  <strong>Tipo:</strong>{" "}
+                  {selectedDocumentoTemplate.tipoDocumento}
+                </p>
+                <p>
+                  <strong>Exige Assinatura:</strong>{" "}
+                  {selectedDocumentoTemplate.exigirAssinaturaOrientador
+                    ? "Sim"
+                    : "Não"}
+                </p>
+                <p>
+                  <strong>Exige Autenticação:</strong>{" "}
+                  {selectedDocumentoTemplate.exigirAutenticacao ? "Sim" : "Não"}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </Dialog>
     );
   };
 
@@ -1025,6 +1210,7 @@ const Resultado = ({}) => {
       >
         <div className="p-fluid">{justificativaAtual}</div>
       </Dialog>
+      {renderDocumentoDialog()}
     </div>
   );
 };
