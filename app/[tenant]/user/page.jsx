@@ -4,6 +4,9 @@ import {
   RiCalendarEventFill,
   RiCouponLine,
   RiFileList3Line,
+  RiFolderFill,
+  RiFolderLine,
+  RiFoldersLine,
   RiListCheck2,
 } from "@remixicon/react";
 import styles from "./page.module.scss";
@@ -108,6 +111,17 @@ const Page = ({ params }) => {
               <div className={styles.infoBoxContent}>
                 <h6>Atividades</h6>
                 <p>Não perca os prazos de entrega das atividades!</p>
+              </div>
+            </div>
+          </Link>
+          <Link href={`/${params.tenant}/user/documentos`}>
+            <div className={styles.infoBox}>
+              <div className={styles.icon}>
+                <RiFoldersLine />
+              </div>
+              <div className={styles.infoBoxContent}>
+                <h6>Documentos</h6>
+                <p>Gerencie e visualize seus documentos.</p>
               </div>
             </div>
           </Link>

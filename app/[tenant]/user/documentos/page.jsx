@@ -1,57 +1,130 @@
 "use client";
-import {
-  RiAlertLine,
-  RiCheckDoubleLine,
-  RiEditLine,
-  RiExternalLinkLine,
-  RiEyeLine,
-  RiEyeOffLine,
-  RiFoldersLine,
-  RiInformationLine,
-  RiSave2Line,
-} from "@remixicon/react";
+import { RiAlertLine, RiFoldersLine, RiFileTextLine } from "@remixicon/react";
 import styles from "./page.module.scss";
-import { useCallback, useEffect, useState } from "react";
-import { getInscricao } from "@/app/api/client/inscricao";
-import Table from "@/components/Table";
+import { useEffect, useState } from "react";
+import { getMyDocuments } from "@/app/api/client/documentos";
 import { useRouter } from "next/navigation";
-import Item from "@/components/Item";
-import Modal from "@/components/Modal";
-import Button from "@/components/Button";
-import {
-  getRegistroAtividadesOrientador,
-  updateRegistroAtividade,
-} from "@/app/api/client/registroAtividade";
-import Campo from "@/components/Campo";
-import { getCampos } from "@/app/api/client/campo";
+import Link from "next/link";
 
 const Page = ({ params }) => {
-  // Estados para gerenciamento do componente
   const [loading, setLoading] = useState(false);
-  const [itens, setItens] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [toggleBox, setToggleBox] = useState(true);
-  const [errorToGetCamposForm, setErrorToGetCamposForm] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [documentos, setDocumentos] = useState(null);
+  const [documentosPendentes, setDocumentosPendentes] = useState([]);
+  const [documentosAssinados, setDocumentosAssinados] = useState([]);
   const [error, setError] = useState(null);
-  const [errorDelete, setErrorDelete] = useState(null);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [flatItens, setFlatItens] = useState([]); // Novo estado para flatItens
-  const [itemToEdit, setItemToEdit] = useState(null);
-  const [itemToDelete, setItemToDelete] = useState(null);
-  const [idFormAtividade, setIdFormAtividade] = useState(null);
-  const [camposForm, setCamposForm] = useState([]);
-  const [formStatus, setFormStatus] = useState(null);
-  const [apiError, setApiError] = useState(null);
-  // ROTEAMENTO
   const router = useRouter();
-  //EFETUAR BUSCAS DE DADOS AO RENDERIZAR O COMPONENTE
+
+  // Função para organizar documentos por status
+  const organizarDocumentos = (docs) => {
+    const pendentes = [];
+    const assinados = [];
+
+    docs.forEach((doc) => {
+      const todasAssinaturasRealizadas = doc.assinaturas.every(
+        (assinatura) => assinatura.dataAssinatura !== null
+      );
+
+      if (todasAssinaturasRealizadas) {
+        assinados.push(doc);
+      } else {
+        pendentes.push(doc);
+      }
+    });
+
+    return { pendentes, assinados };
+  };
+
+  // Função para formatar data
+  const formatarData = (dataString) => {
+    if (!dataString) return "Não assinado";
+
+    const data = new Date(dataString);
+    return data.toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
+
+  // Componente para renderizar a lista de documentos
+  const DocumentosList = ({ documentos, titulo, emptyMessage }) => (
+    <div className={styles.documentosSection}>
+      <h6 className={styles.sectionTitle}>{titulo}</h6>
+
+      {documentos.length === 0 ? (
+        <div className={styles.emptyState}>
+          <RiAlertLine size={48} className={styles.emptyIcon} />
+          <p>{emptyMessage}</p>
+        </div>
+      ) : (
+        <div className={styles.documentosGrid}>
+          {documentos.map((doc) => (
+            <Link
+              key={doc.id}
+              href={`/${params.tenant}/user/documentos/${doc.id}`}
+              className={styles.documentoCardLink}
+            >
+              <div className={styles.documentoCard}>
+                <div className={styles.documentoCardHeader}>
+                  <RiFileTextLine className={styles.documentoIcon} />
+                  <div className={styles.documentoInfo}>
+                    <h6 className={styles.documentoTitulo}>
+                      {doc.documentoTemplate.titulo}
+                    </h6>
+                    <p className={styles.documentoMeta}>
+                      Criado em: {formatarData(doc.createdAt)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className={styles.documentoDetails}>
+                  {doc.participacao && (
+                    <span className={styles.documentoDetail}>
+                      Aluno: {doc.participacao.user.nome}
+                    </span>
+                  )}
+                  {doc.inscricaoProjeto && (
+                    <span className={styles.documentoDetail}>
+                      Projeto: {doc.inscricaoProjeto.projeto.titulo}
+                    </span>
+                  )}
+                </div>
+
+                <div className={styles.documentoFooter}>
+                  <span
+                    className={`${styles.statusBadge} ${
+                      styles[`status-${doc.status.toLowerCase()}`]
+                    }`}
+                  >
+                    {doc.status}
+                  </span>
+                  <div className={styles.documentoAction}>
+                    <RiFileTextLine size={16} />
+                    <span>Visualizar</span>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  // Buscar dados
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
+      setError(null);
       try {
+        const response = await getMyDocuments(params.tenant);
+        setDocumentos(response);
+        const { pendentes, assinados } = organizarDocumentos(response);
+        setDocumentosPendentes(pendentes);
+        setDocumentosAssinados(assinados);
       } catch (error) {
         console.error("Erro ao buscar dados:", error);
+        setError("Erro ao carregar documentos");
       } finally {
         setLoading(false);
       }
@@ -59,91 +132,52 @@ const Page = ({ params }) => {
     fetchData();
   }, [params.tenant]);
 
-  const closeModalAndResetData = () => {
-    setIsModalOpen(false);
-    setItemToEdit(null);
-    setCamposForm([]);
-    setFormStatus(null);
-    setApiError(null);
-  };
-
-  // Renderiza o conteúdo do modal
-  const renderModalContent = () => {
-    return (
-      <Modal isOpen={isModalOpen} onClose={closeModalAndResetData}>
-        {errorToGetCamposForm ? (
-          <>
-            <div className={`${styles.icon} ${styles.iconAlert} mb-2`}>
-              <RiAlertLine />
-            </div>
-            <h4>Ops :/</h4>
-            <div className={`notification notification-error`}>
-              <p className="p5">{errorToGetCamposForm}</p>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className={`${styles.icon} mb-2`}>
-              <RiEditLine />
-            </div>
-            <h4>{itemToEdit?.atividade?.titulo}</h4>
-            <p>{itemToEdit?.atividade?.descricao}</p>
-            <div className={styles.campos}>
-              {camposForm?.map((item, index) => (
-                <Campo
-                  key={item.id}
-                  schema={camposForm && camposForm[index]}
-                  camposForm={camposForm}
-                  respostas={itemToEdit?.respostas}
-                  tenantSlug={params.tenant}
-                  registroAtividadeId={itemToEdit?.id}
-                  onClose={closeModalAndResetData}
-                  onSuccess={handleCreateOrEditSuccess}
-                />
-              ))}
-            </div>
-            {itemToEdit?.status === "naoEntregue" && (
-              <Button
-                className="btn-primary mt-4"
-                onClick={() => checkFormStatus(itemToEdit)}
-              >
-                Finalizar e enviar
-              </Button>
-            )}
-
-            {formStatus === "incompleto" && (
-              <div className={`notification notification-error mt-2`}>
-                <p className="p5">Existem campos não preenchidos</p>
-              </div>
-            )}
-            {apiError && (
-              <div className={`notification notification-error mt-2`}>
-                <p className="p5">{apiError}</p>
-              </div>
-            )}
-          </>
-        )}
-      </Modal>
-    );
-  };
-
   return (
-    <>
-      {renderModalContent()}
-      <div className={styles.navContent}>
-        <div className={styles.content}>
-          <div className={styles.header}>
-            <div className={styles.icon}>
-              <RiFoldersLine />
-            </div>
-            <div className={styles.div}>
-              <h5>Documentos</h5>
-            </div>
+    <div className={styles.navContent}>
+      <div className={styles.content}>
+        <div className={styles.header}>
+          <div className={styles.headerIcon}>
+            <RiFoldersLine />
           </div>
-          <div className={styles.mainContent}></div>
+          <div className={styles.headerContent}>
+            <h6>Documentos</h6>
+            <p>Gerencie e visualize seus documentos</p>
+          </div>
+        </div>
+
+        <div className={styles.mainContent}>
+          {loading && (
+            <div className={styles.loading}>
+              <RiFileTextLine className={styles.loadingIcon} />
+              <p>Carregando documentos...</p>
+            </div>
+          )}
+
+          {error && (
+            <div className={styles.error}>
+              <RiAlertLine className={styles.errorIcon} />
+              <p>{error}</p>
+            </div>
+          )}
+
+          {!loading && !error && documentos && (
+            <div className={styles.documentosContainer}>
+              <DocumentosList
+                documentos={documentosPendentes}
+                titulo="Documentos Pendentes"
+                emptyMessage="Nenhum documento pendente de assinatura"
+              />
+
+              <DocumentosList
+                documentos={documentosAssinados}
+                titulo="Documentos Assinados"
+                emptyMessage="Nenhum documento assinado"
+              />
+            </div>
+          )}
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

@@ -253,7 +253,8 @@ const Resultado = ({}) => {
         const vinculo = part.VinculoSolicitacaoBolsa?.[0];
         const statusVinculacao = vinculo?.status;
         const isVinculacaoRecusada = statusVinculacao === "RECUSADO";
-        const isVinculacaoAprovada = statusVinculacao === "APROVADO";
+        const isVinculacaoAprovada =
+          statusVinculacao === "APROVADO" || statusVinculacao === "PENDENTE";
 
         // Lógica para justificativas
         const justificativaPlano = isPlanoDesclassificado
@@ -301,7 +302,7 @@ const Resultado = ({}) => {
           fontePagadora = "-";
         } else {
           if (isVinculacaoAprovada) {
-            if (vinculo?.solicitacaoBolsa?.bolsa) {
+            if (vinculo.solicitacaoBolsa?.bolsa?.cota) {
               fontePagadora = `Remunerada - ${
                 vinculo.solicitacaoBolsa.bolsa.cota?.instituicaoPagadora ||
                 "N/A"

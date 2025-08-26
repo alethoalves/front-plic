@@ -1,0 +1,249 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+// page.module.scss - ESTILOS PARA A PÁGINA PRINCIPAL (/documentos)
+.navContent {
+  min-height: 100vh;
+}
+
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.loadingContainer,
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  //min-height: 50vh;
+  text-align: center;
+}
+
+.errorContainer {
+  color: #ef4444;
+}
+
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  color: $primary-darken;
+  text-decoration: none;
+  
+  &:hover {
+    color: $primary-dark;
+  }
+}
+
+// ESTILOS PARA A PÁGINA DE DETALHE (/documentos/[documentoId])
+.documentoDetailContainer {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.header {
+  .backLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: $primary-darken;
+    text-decoration: none;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    svg{
+      width: 40px;
+    }
+    &:hover {
+      color: $primary-dark;
+    }
+  }
+}
+
+.documentContent {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 2rem;
+  @include responsive(xs){
+    padding: 0;
+  };
+  margin-bottom: 2rem;
+  line-height: 1.6;
+  
+  h1, h2, h3, h4, h5, h6 {
+    color: #1e293b;
+    margin: 1.5rem 0 1rem 0;
+  }
+  
+  p {
+    margin: 1rem 0;
+  }
+  
+  strong {
+    color: #1e293b;
+  }
+}
+
+.assinaturasSection {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  @include responsive(xs){
+    padding: $gap-2;
+  }
+}
+
+.assinaturasTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #1e293b;
+  margin: 0 0 1.5rem 0;
+  font-size: 1.5rem;
+  
+  .sectionIcon {
+    color: $primary-darken;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.assinaturasList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.assinaturaItem {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: $gap-1;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+
+  &.assinaturaRealizada {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+  }
+
+  &.assinaturaPendente {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+  }
+}
+
+.assinaturaInfo {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.assinaturaUser {
+  min-width: 200px;
+
+  .assinaturaNome {
+    display: block;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+  }
+
+  .assinaturaTipo {
+    display: block;
+    color: #64748b;
+    font-size: 0.875rem;
+    text-transform: capitalize;
+  }
+}
+
+.assinaturaStatus {
+  .statusRealizada {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #16a34a;
+    font-weight: 500;
+  }
+svg{
+  width: 30px;
+}
+  .statusPendente {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #f59e0b;
+    font-weight: 500;
+  }
+}
+
+.assinaturaActions {
+  .assinarButton {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, $primary-dark 0%, $primary-darken 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(127, 127, 128, 0.3);
+    }
+
+    &:disabled {
+      background: #cbd5e1;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.documentoStatus {
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.statusBadge {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  
+  &.status-pendente {
+    background: #fffbeb;
+    color: #f59e0b;
+    border: 1px solid #fcd34d;
+  }
+  
+  &.status-aceito, &.status-enviado {
+    background: #f0fdf4;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+  }
+  
+  &.status-recusado {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+  }
+}
+.buttonIcon{
+  width: 30px;
+}

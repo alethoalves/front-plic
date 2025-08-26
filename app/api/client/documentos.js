@@ -79,3 +79,48 @@ export const getDocumentoTemplates = async (tenantSlug) => {
     throw error;
   }
 };
+
+export const getMyDocuments = async (tenantSlug) => {
+  try {
+    const token = getCookie("authToken");
+    
+    const response = await req.get(
+      `/private/${tenantSlug}/documentos/getMyDocuments`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      }
+    );
+    
+    return response.data.documentos;
+  } catch (error) {
+    console.error("Erro ao buscar templates de documento:", error);
+    throw error;
+  }
+};
+
+export const assinarDocumento = async (tenantSlug, payload) => {
+  try {
+    const token = getCookie("authToken");
+    
+    const response = await req.post(
+      `/private/${tenantSlug}/documentos/assinar`,
+      payload,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    
+    return response.data.data;
+  } catch (error) {
+    console.error("Erro ao criar registros de documento:", error);
+    throw error;
+  }
+};
+
+
+
