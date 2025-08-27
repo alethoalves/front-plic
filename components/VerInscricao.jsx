@@ -80,7 +80,7 @@ const VerInscricao = ({ inscricaoSelected, tenant, setErrors, onClose }) => {
 
           {/* Botão de Enviar */}
           <Button className="btn-primary mt-2" onClick={handleSubmitInscricao}>
-            {submitting ? "Enviando..." : "FINALIZAR a inscrição"}
+            {submitting ? "Enviando..." : "Finalizar a inscrição"}
           </Button>
           {/* Exibe Edital */}
           <div className={`${styles.conteudo} ${styles.fadeIn}`}>

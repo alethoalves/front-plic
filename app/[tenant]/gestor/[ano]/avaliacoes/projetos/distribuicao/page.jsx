@@ -442,14 +442,63 @@ const Page = ({ params }) => {
                     body
                   );
 
-                  if (response) {
+                  // Verifica se a resposta tem a estrutura de resultados
+                  if (response && response.resultados) {
+                    const resultado = response.resultados[0]; // Pega o primeiro resultado (só tem um projeto)
+
+                    if (resultado.success) {
+                      showToast(
+                        "success",
+                        "Associação realizada",
+                        `Avaliador associado ao projeto com sucesso!`
+                      );
+
+                      // Atualiza os dados
+                      await processarInscricoes(
+                        params.tenant,
+                        setInscricoesProjetos
+                      );
+                      await atualizarAvaliadores(
+                        params.tenant,
+                        setAvaliadores,
+                        setTodasAreas
+                      );
+
+                      // Limpa seleções
+                      setAvaliadoresProjetoSelecionado([]);
+                      setProjetoSelecionado(null);
+                    } else {
+                      // TRATAMENTO ESPECÍFICO PARA O FORMATO DE ERRO
+                      let mensagemErro =
+                        resultado.error || "Erro na associação do avaliador";
+
+                      // Adiciona conflitos se existirem, separados por ;
+                      if (
+                        resultado.conflitos &&
+                        resultado.conflitos.length > 0
+                      ) {
+                        mensagemErro += `; ${resultado.conflitos.join("; ")}`;
+                      }
+
+                      showToast(
+                        "error",
+                        `Falha na associação do projeto ID ${resultado.inscricaoProjetoId}`,
+                        mensagemErro
+                      );
+
+                      // Remove o avaliador em caso de erro
+                      setAvaliadoresProjetoSelecionado(
+                        avaliadoresProjetoSelecionado.slice(0, -1)
+                      );
+                    }
+                  } else if (response) {
+                    // Caso a resposta não tenha a estrutura esperada, mas não é um erro
                     showToast(
                       "success",
                       "Associação realizada",
                       `Avaliador associado ao projeto com sucesso!`
                     );
 
-                    // Atualiza os dados
                     await processarInscricoes(
                       params.tenant,
                       setInscricoesProjetos
@@ -460,7 +509,6 @@ const Page = ({ params }) => {
                       setTodasAreas
                     );
 
-                    // Limpa seleções
                     setAvaliadoresProjetoSelecionado([]);
                     setProjetoSelecionado(null);
                   }
@@ -470,11 +518,28 @@ const Page = ({ params }) => {
                     avaliadoresProjetoSelecionado.slice(0, -1)
                   );
 
-                  const errorMessage =
-                    error.response?.data?.message ||
-                    error.message ||
-                    "Erro ao associar avaliador ao projeto.";
-                  showToast("error", "Erro", errorMessage);
+                  // Tratamento de erros de rede ou outros erros inesperados
+                  const errorData = error.response?.data;
+
+                  if (errorData?.resultados) {
+                    // Se o erro vier no formato de resultados
+                    const resultado = errorData.resultados[0];
+                    let mensagemErro = resultado.error || "Erro na associação";
+                    if (resultado.conflitos && resultado.conflitos.length > 0) {
+                      mensagemErro += `; ${resultado.conflitos.join("; ")}`;
+                    }
+                    showToast(
+                      "error",
+                      `Falha na associação do projeto ID ${resultado.inscricaoProjetoId}`,
+                      mensagemErro
+                    );
+                  } else {
+                    const errorMessage =
+                      errorData?.message ||
+                      error.message ||
+                      "Erro ao associar avaliador ao projeto.";
+                    showToast("error", "Erro", errorMessage);
+                  }
                 } finally {
                   setIsProcessing(false);
                   setShowModalAssociacao(false);
