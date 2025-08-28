@@ -70,7 +70,7 @@ export const RenderResumoCard = ({
             inputType="text"
             placeholder="Digite o título do seu resumo"
             rules={{ required: "O título é obrigatório" }}
-            readonly={type === "PLANO" || type === "PROJETO" ? true : false}
+            readonly={type === "PLANO" || type === "PROJETO" ? false : false}
           />
 
           {/* Textareas para cada parte do resumo */}
