@@ -154,7 +154,9 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  
+  svg{
+    width: 24px;
+  }
   &:hover {
     border-color: $primary-normal;
     box-shadow: 0 8px 30px rgba($primary-normal, 0.15);
@@ -222,7 +224,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  
+  margin-right: $gap-1;
   &.status-pendente {
     background: #fffbeb;
     color: #f59e0b;
@@ -235,7 +237,7 @@
     border: 1px solid #bbf7d0;
   }
   
-  &.status-recusado {
+  &.status-recusado, &.status-aguardando_validacao {
     background: #fef2f2;
     color: #dc2626;
     border: 1px solid #fecaca;

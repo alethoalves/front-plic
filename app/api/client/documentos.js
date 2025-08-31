@@ -122,5 +122,24 @@ export const assinarDocumento = async (tenantSlug, payload) => {
   }
 };
 
-
-
+export const salvarFormulario = async (tenantSlug, formData) => {
+  try {
+    const token = getCookie("authToken");
+    
+    const response = await req.post(
+      `/private/${tenantSlug}/documentos/salvar-formulario`,
+      formData,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "multipart/form-data", // ← MANTER como no código que funciona
+        },
+      }
+    );
+    
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao salvar formulário:", error);
+    throw error;
+  }
+};

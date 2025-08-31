@@ -120,13 +120,29 @@ border-radius: $gap-1;
   }
 
   .content {
-        
-    h5{
+    
+    a{
+        display: flex;
         padding: $gap-2;
+        &:hover{
+            
+            h5, svg{
+                text-decoration: underline;
+            }
+        }
+    }
+    h5{
+        transition: ease .3s;
         font-size: 20px;
+        flex: 1;
         @include responsive(xs){
             font-size: 16px;
         }
+        
+    }
+    svg{
+        width: 24px;
+        color: $primary-dark;
     }
     .sessoes{
         max-height: calc(500px);
@@ -276,7 +292,3 @@ border-radius: $gap-1;
 }
 
 
-.icon{
-    width: 24px;
-    color: $primary-normal;
-}

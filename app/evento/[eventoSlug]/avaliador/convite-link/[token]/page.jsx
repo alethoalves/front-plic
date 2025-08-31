@@ -21,6 +21,7 @@ import {
   getEventoByTokenConvite,
 } from "@/app/api/client/conviteEvento";
 import NoData from "@/components/NoData";
+import { useRouter } from "next/navigation";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
@@ -152,6 +153,8 @@ const Page = ({ params }) => {
     return `${horas}h${minutos}`;
   };
 
+  const router = useRouter();
+
   // Enviar formulário
   const handleFormSubmit = async (data) => {
     setLoading(true);
@@ -164,7 +167,7 @@ const Page = ({ params }) => {
         areasSelecionadas,
       };
       const aceite = await aceitarConvite(params.token, newData);
-      window.location.replace(
+      router.replace(
         `/evento/cicdf25/avaliador/convite/${aceite.convite.token}`
       );
     } catch (error) {

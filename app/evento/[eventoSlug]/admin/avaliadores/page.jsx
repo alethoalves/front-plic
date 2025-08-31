@@ -71,6 +71,7 @@ const Page = ({ params }) => {
     setLoading(true);
     try {
       const response = await consultarAvaliadoresEvento(eventoSlug);
+      console.log(response);
       setAvaliadores(response.avaliadores || []);
       setTokenConvite(response.evento?.tokenConvite || "");
       setEventoNome(response.evento?.nomeEvento || "");

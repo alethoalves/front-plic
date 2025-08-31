@@ -10,6 +10,7 @@ import {
   RiArrowRightCircleFill,
   RiBatteryLowLine,
   RiCalendarLine,
+  RiExternalLinkLine,
   RiFileExcelLine,
   RiFileWordLine,
   RiGroupLine,
@@ -577,88 +578,9 @@ const Inscricoes = ({ tenantSlug }) => {
             <Link
               href={`/evento/${eventos[currentEventIndex].data.evento.slug}/admin`}
             >
-              <h5>{eventos[currentEventIndex].data.evento.nomeEvento}</h5>
+              <h5>{eventos[currentEventIndex].data.evento.nomeEvento} </h5>
+              <RiExternalLinkLine />
             </Link>
-
-            <div className={styles.totais}>
-              {eventos[currentEventIndex].info.tenantsTotais.map((tenant) => (
-                <div
-                  className={`${styles.total} ${styles.light}`}
-                  key={tenant.tenant}
-                  onClick={() => openModalAndSetData(tenant)}
-                >
-                  <p>{tenant.quantidadeSubmissoesTotal}</p>
-                  <h6>{tenant.tenant}</h6>
-                </div>
-              ))}
-              <div
-                className={`${styles.total} ${styles.blue}`}
-                onClick={() => openModalAndSetData(null)}
-              >
-                <p>{totalSubmissoesGeral}</p>
-                <h6>Total Geral</h6>
-              </div>
-            </div>
-            <div className={styles.sessoes}>
-              {eventos[currentEventIndex].info.sessaoInfo[0] &&
-              eventos[currentEventIndex].info.sessaoInfo[0].subsessoes[0] ? (
-                eventos[currentEventIndex].info.sessaoInfo.map((sessao) => {
-                  const sessaoLabel = sessao.titulo;
-                  const capacidadeTotal = sessao.capacidade;
-                  return sessao.subsessoes.map((subs) => (
-                    <div className={styles.sessao} key={subs.inicio}>
-                      <h6>{sessaoLabel}</h6>
-                      <div className={styles.subsessoes}>
-                        <div className={styles.subsessao}>
-                          <div className={styles.description}>
-                            <div className={styles.icon}>
-                              <RiCalendarLine />
-                            </div>
-                            <div className={styles.infoBoxDescription}>
-                              <p>
-                                <strong>Início: </strong>
-                                {formatarData(subs.inicio)} -{" "}
-                                {formatarHora(subs.inicio)}
-                              </p>
-                              <p>
-                                <strong>Fim: </strong>
-                                {formatarData(subs.fim)} -{" "}
-                                {formatarHora(subs.fim)}
-                              </p>
-                            </div>
-                          </div>
-                          <div className={styles.description}>
-                            <div className={styles.icon}>
-                              <RiBatteryLowLine />
-                            </div>
-                            <div className={styles.infoBoxDescription}>
-                              <p>
-                                <strong>Capacidade: </strong>
-                                {subs.submissaoTotal} inscritos | capacidade:{" "}
-                                {capacidadeTotal}
-                              </p>
-                            </div>
-                          </div>
-                          <div className={styles.description}>
-                            <div className={styles.icon}>
-                              <RiGroupLine />
-                            </div>
-                            <div className={styles.infoBoxDescription}>
-                              <p>
-                                <strong>Avaliadores: </strong>
-                                {subs.convitesAceitos}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ));
-                })
-              ) : (
-                <NoData description="Este evento ainda não tem sessões cadastradas." />
-              )}
-            </div>
           </div>
         ) : (
           <NoData description="Nenhum evento encontrado" />
