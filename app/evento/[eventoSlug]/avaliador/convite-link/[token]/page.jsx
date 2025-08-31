@@ -167,10 +167,11 @@ const Page = ({ params }) => {
         areasSelecionadas,
       };
       console.log("Dados enviados:", newData);
+
+      const aceite = await aceitarConvite(params.token, newData);
       router.replace(
         `/evento/cicdf25/avaliador/convite/${aceite.convite.token}`
       );
-      const aceite = await aceitarConvite(params.token, newData);
     } catch (error) {
       console.error("Error:", error);
       setErrorMessage(
