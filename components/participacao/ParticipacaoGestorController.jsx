@@ -920,14 +920,24 @@ const ParticipacaoGestorController = ({
                   <div className={styles.list}>
                     <div className={styles.itemList}>
                       <div className={styles.content1}>
-                        <p>
-                          <span>
-                            {item.planoDeTrabalho.inscricao?.participacoes?.map(
-                              (orientador) =>
-                                `${orientador.user.nome} (CPF: ${orientador.user.cpf})`
-                            )}
-                          </span>
-                        </p>
+                        {item.planoDeTrabalho.inscricao?.participacoes?.map(
+                          (orientador) => (
+                            <p className="mb-2">
+                              <strong>Nome:</strong>
+                              {orientador.user.nome}
+                              <br></br>
+                              <strong>CPF:</strong>
+
+                              {orientador.user.cpf}
+                              <br></br>
+                              <strong>Email:</strong>
+                              {orientador.user.email}
+                              <br></br>
+                              <strong>Status:</strong>
+                              {orientador.statusParticipacao}
+                            </p>
+                          )
+                        )}
                       </div>
                       {false && (
                         <div className={styles.content2} onClick={() => {}}>
@@ -1031,6 +1041,9 @@ const ParticipacaoGestorController = ({
                     <p>
                       <strong>CPF: </strong>
                       {item.user?.cpf}
+                    </p>
+                    <p className="">
+                      <strong>Email:</strong> {item.user?.email}
                     </p>
                     <p className="mb-2">
                       <strong>Curso:</strong>{" "}

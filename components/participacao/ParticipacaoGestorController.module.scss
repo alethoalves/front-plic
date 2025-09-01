@@ -163,12 +163,7 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        cursor: pointer;
-        transition: ease .3s;
-        &:hover{
-            background-color: $white-darken;
-            color: $primary-darken;
-        }
+        
         &:last-child{
             border-bottom-left-radius: $gap-1;
             border-bottom-right-radius: $gap-1;
