@@ -201,20 +201,21 @@ const Page = ({ params }) => {
   };
 
   const ModalContent = () => {
+    const conteudoFormatado = formatarResumo(submissao?.Resumo?.conteudo);
+
     return (
       <Modal isOpen={isModalOpen} onClose={closeModalAndResetData}>
         <div className={`${styles.icon} mb-2`}>
           <RiFileList3Line />
         </div>
         <h4>{submissao?.Resumo?.titulo}</h4>
-
-        {submissao?.Resumo?.conteudo && (
+        {submissao?.Resumo.conteudo.map((secao, index) => (
           <div key={index} className="mb-1">
             <div className="text-justify">
-              {transformarQuebrasEmParagrafos(submissao?.Resumo?.conteudo)}
+              {transformarQuebrasEmParagrafos(secao.conteudo)}
             </div>
           </div>
-        )}
+        ))}
       </Modal>
     );
   };
@@ -223,24 +224,25 @@ const Page = ({ params }) => {
   };
   // Função para gerar feedback com IA e atualizar o textarea
   const handleGerarFeedback = async () => {
-    setLoadingFeedback(true); // Define estado de carregamento
+    setLoadingFeedback(true);
 
     try {
       const { comentarioFeedback, ...eventoSemComentario } = evento;
+      const conteudoFormatado = formatarResumo(submissao?.Resumo?.conteudo);
       const feedback = await gerarFeedback(
         submissao?.Resumo?.titulo,
-        formatarResumo(submissao?.Resumo?.conteudo),
+        conteudoFormatado, // Agora é uma string
         eventoSemComentario,
         params.idInstituicao
       );
       setEvento((prevEvento) => ({
         ...prevEvento,
-        comentarioFeedback: feedback, // Atualiza o comentário com o feedback gerado
+        comentarioFeedback: feedback,
       }));
     } catch (error) {
       console.error("Erro ao gerar feedback com IA:", error);
     } finally {
-      setLoadingFeedback(false); // Remove estado de carregamento
+      setLoadingFeedback(false);
     }
   };
   // Função para finalizar a avaliação

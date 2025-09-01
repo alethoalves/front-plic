@@ -441,131 +441,125 @@ const Page = ({ params }) => {
       {loading && <p className="mb-2">Carregando...</p>}
       <div className={styles.squares}>
         {subsessaoFiltered?.map((item) => (
-          <>
-            <div key={item.id} className={styles.square}>
-              {item.square.map((squareItem) => (
-                <div key={squareItem.id} className={styles.squareHeader}>
-                  <p>Pôster nº</p>
-                  <h6>{squareItem.numero}</h6>
-                </div>
-              ))}
-              {item.square.length == 0 && (
-                <div className={styles.squareHeader}>
-                  <p>Pôster nº</p>
-                  <h6>-</h6>
-                </div>
-              )}
-
-              {false && (
-                <div className={styles.squareHeader}>
-                  <h6>SUBMISSAO_ID_{item.id}</h6>
-                </div>
-              )}
-              <div
-                className={styles.squareContent}
-                onClick={() => {
-                  setSubmissaoSelected(item);
-                  setIsModalOpenSubmissao(true);
-                }}
-              >
-                <div className={styles.info}>
-                  <p
-                    className={`${styles.status} ${
-                      item?.status === "DISTRIBUIDA"
-                        ? styles.error
-                        : item?.status === "AGUARDANDO_AVALIACAO"
-                        ? styles.warning
-                        : item?.status === "AVALIADA"
-                        ? styles.success
-                        : item?.status === "AUSENTE"
-                        ? styles.inativada
-                        : item?.status
-                    }`}
-                  >
-                    {item?.status === "DISTRIBUIDA"
-                      ? "checkin pendente"
-                      : item?.status === "AGUARDANDO_AVALIACAO"
-                      ? "aguardando avaliação"
-                      : item?.status === "AVALIADA"
-                      ? "avaliação concluída"
-                      : item?.status === "EM_AVALIACAO"
-                      ? "em avaliação"
-                      : item?.status === "AUSENTE"
-                      ? "ausente"
-                      : item?.status}
-                  </p>
-                  <p className={styles.area}>
-                    {item.Resumo?.area?.area
-                      ? item.Resumo?.area?.area
-                      : "sem área"}{" "}
-                    - {item.tenant?.sigla.toUpperCase()}-{" "}
-                    {item.categoria?.toUpperCase()}
-                  </p>
-                </div>
-                <div className={styles.submissaoData}>
-                  <h6>{item.Resumo?.titulo}</h6>
-                  <p className={styles.participacoes}>
-                    <strong>Orientadores: </strong>
-                    {item.Resumo?.participacoes
-                      .filter(
-                        (item) =>
-                          item.cargo === "ORIENTADOR" ||
-                          item.cargo === "COORIENTADOR"
-                      )
-                      .map(
-                        (item, i) => `${i > 0 ? ", " : ""}${item.user.nome} `
-                      )}
-                  </p>
-                  <p className={styles.participacoes}>
-                    <strong>Alunos: </strong>
-                    {item.Resumo?.participacoes
-                      .filter(
-                        (item) =>
-                          item.cargo === "AUTOR" || item.cargo === "COAUTOR"
-                      )
-                      .map(
-                        (item, i) => `${i > 0 ? ", " : ""}${item.user.nome} `
-                      )}
-                  </p>
-                </div>
+          <div key={item.id} className={styles.square}>
+            {item.square.map((squareItem) => (
+              <div key={squareItem.id} className={styles.squareHeader}>
+                <p>Pôster nº</p>
+                <h6>{squareItem.numero}</h6>
               </div>
+            ))}
+            {item.square.length == 0 && (
+              <div className={styles.squareHeader}>
+                <p>Pôster nº</p>
+                <h6>-</h6>
+              </div>
+            )}
 
-              {(item.premio ||
-                item.indicacaoPremio ||
-                item.premio ||
-                item.notaFinal) && (
-                <div className={styles.premios}>
-                  {item.premio && (
-                    <div className={`${styles.squareHeader} `}>
-                      <RiShieldStarFill />
-                      <p>Premiado</p>
-                    </div>
-                  )}
-                  {item.indicacaoPremio && (
-                    <div className={`${styles.squareHeader} `}>
-                      <RiMedalLine />
-                      <p>Indicado ao Prêmio</p>
-                    </div>
-                  )}
-                  {item.mencaoHonrosa && (
-                    <div className={`${styles.squareHeader} `}>
-                      <RiStarLine />
-                      <p>Menção Honrosa</p>
-                    </div>
-                  )}
-                  {item.notaFinal && (
-                    <div className={`${styles.squareHeader} `}>
-                      <RiSpeedUpLine />
-                      <p>
-                        <strong>Nota: </strong>
-                        {item.notaFinal}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
+            {false && (
+              <div className={styles.squareHeader}>
+                <h6>SUBMISSAO_ID_{item.id}</h6>
+              </div>
+            )}
+            <div
+              className={styles.squareContent}
+              onClick={() => {
+                setSubmissaoSelected(item);
+                setIsModalOpenSubmissao(true);
+              }}
+            >
+              <div className={styles.info}>
+                <p
+                  className={`${styles.status} ${
+                    item?.status === "DISTRIBUIDA"
+                      ? styles.error
+                      : item?.status === "AGUARDANDO_AVALIACAO"
+                      ? styles.warning
+                      : item?.status === "AVALIADA"
+                      ? styles.success
+                      : item?.status === "AUSENTE"
+                      ? styles.inativada
+                      : item?.status
+                  }`}
+                >
+                  {item?.status === "DISTRIBUIDA"
+                    ? "checkin pendente"
+                    : item?.status === "AGUARDANDO_AVALIACAO"
+                    ? "aguardando avaliação"
+                    : item?.status === "AVALIADA"
+                    ? "avaliação concluída"
+                    : item?.status === "EM_AVALIACAO"
+                    ? "em avaliação"
+                    : item?.status === "AUSENTE"
+                    ? "ausente"
+                    : item?.status}
+                </p>
+                <p className={styles.area}>
+                  {item.Resumo?.area?.area
+                    ? item.Resumo?.area?.area
+                    : "sem área"}{" "}
+                  - {item.tenant?.sigla.toUpperCase()}-{" "}
+                  {item.categoria?.toUpperCase()}
+                </p>
+              </div>
+              <div className={styles.submissaoData}>
+                <h6>{item.Resumo?.titulo}</h6>
+                <p className={styles.participacoes}>
+                  <strong>Orientadores: </strong>
+                  {item.Resumo?.participacoes
+                    .filter(
+                      (item) =>
+                        item.cargo === "ORIENTADOR" ||
+                        item.cargo === "COORIENTADOR"
+                    )
+                    .map((item, i) => `${i > 0 ? ", " : ""}${item.user.nome} `)}
+                </p>
+                <p className={styles.participacoes}>
+                  <strong>Alunos: </strong>
+                  {item.Resumo?.participacoes
+                    .filter(
+                      (item) =>
+                        item.cargo === "AUTOR" || item.cargo === "COAUTOR"
+                    )
+                    .map((item, i) => `${i > 0 ? ", " : ""}${item.user.nome} `)}
+                </p>
+              </div>
             </div>
-          </>
+
+            {(item.premio ||
+              item.indicacaoPremio ||
+              item.premio ||
+              item.notaFinal) && (
+              <div className={styles.premios}>
+                {item.premio && (
+                  <div className={`${styles.squareHeader} `}>
+                    <RiShieldStarFill />
+                    <p>Premiado</p>
+                  </div>
+                )}
+                {item.indicacaoPremio && (
+                  <div className={`${styles.squareHeader} `}>
+                    <RiMedalLine />
+                    <p>Indicado ao Prêmio</p>
+                  </div>
+                )}
+                {item.mencaoHonrosa && (
+                  <div className={`${styles.squareHeader} `}>
+                    <RiStarLine />
+                    <p>Menção Honrosa</p>
+                  </div>
+                )}
+                {item.notaFinal && (
+                  <div className={`${styles.squareHeader} `}>
+                    <RiSpeedUpLine />
+                    <p>
+                      <strong>Nota: </strong>
+                      {item.notaFinal}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         ))}
       </div>
     </div>

@@ -41,15 +41,17 @@ export const getParticipacoes = async (tenantSlug, idInscricao, tipos, cpf, nome
   }
 };
 
-export const getParticipacao = async (tenantSlug, idParticipacao) => {
+export const getParticipacao = async (tenantSlug, idParticipacao, ano) => {
   try {
     const headers = getAuthHeadersClient();
     if (!headers) {
       return false;
     }
+    const params = {};
+    if (ano) params.ano = ano; 
     const response = await req.get(
       `/private/${tenantSlug}/participacoes/${idParticipacao}`,
-      { headers }
+      { headers, params }
     );
     return response.data.participacao;
   } catch (error) {

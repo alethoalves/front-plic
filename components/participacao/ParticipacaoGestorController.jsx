@@ -44,6 +44,7 @@ import { buildMergedTimeline } from "@/lib/TimeLineUnificada";
 
 const ParticipacaoGestorController = ({
   tenant,
+  ano,
   participacaoId,
   onSuccess,
 }) => {
@@ -101,8 +102,8 @@ const ParticipacaoGestorController = ({
   // ================ FUNÇÕES DE BUSCA DE DADOS ================
   const fetch = async () => {
     // 1) Busca o registro atualizado da API
-    const itemAPI = await getParticipacao(tenant, participacaoId);
-
+    const itemAPI = await getParticipacao(tenant, participacaoId, ano);
+    console.log(itemAPI);
     // 2) Mapeia o histórico de participação
     const hp = mapHistorico(itemAPI.HistoricoStatusParticipacao);
     setHistPart(hp);
@@ -177,13 +178,11 @@ const ParticipacaoGestorController = ({
   // ================ HANDLERS PARA PARTICIPAÇÃO ================
   const handleToggleAtivarPendente = async () => {
     const statusAtual = item.statusParticipacao || "EM_ANALISE";
-    console.log(statusAtual);
     setStatusAcao(statusAtual);
     handleOpenModal("toggleParticipacao");
   };
 
   const handleConfirmarAtivarPendente = async () => {
-    console.log(statusAcao);
     // Validação dos campos obrigatórios
     if (statusAcao === "PENDENTE" && !dateValue) {
       toast.current?.show({
@@ -902,6 +901,12 @@ const ParticipacaoGestorController = ({
                           {item.inscricao?.participacoes?.find(
                             (p) => p.tipo === "orientador"
                           )?.user?.nome || "Nenhum orientador encontrado"}
+                          <span>
+                            {item.planoDeTrabalho.inscricao?.participacoes?.map(
+                              (orientador) =>
+                                `${orientador.user.nome} (CPF: ${orientador.user.cpf})`
+                            )}
+                          </span>
                         </p>
                       </div>
                       {false && (
@@ -1003,6 +1008,14 @@ const ParticipacaoGestorController = ({
                     </div>
                   </div>
                   <div className={styles.contentCard}>
+                    <p>
+                      <strong>CPF: </strong>
+                      {item.user?.cpf}
+                    </p>
+                    <p className="mb-2">
+                      <strong>Curso:</strong>{" "}
+                      {item.user?.UserTenant[0]?.curso?.curso}
+                    </p>
                     <div className={styles.historico}>
                       <LinhaTempo
                         data={historicoParticipacao}

@@ -206,12 +206,14 @@ const Resultado = ({}) => {
       // Processar a ordem de recebimento
       const ordemRecebimentoMap = processarOrdemRecebimento(participacoes);
 
-      // Definindo as colunas
+      // Definindo as colunas (com as novas colunas adicionadas)
       worksheet.columns = [
         { header: "Edital", key: "edital", width: 30 },
         { header: "Plano de Trabalho", key: "planoTrabalho", width: 30 },
         { header: "Orientador", key: "orientador", width: 25 },
         { header: "Aluno", key: "aluno", width: 25 },
+        { header: "CPF Aluno", key: "cpfAluno", width: 15 }, // NOVA COLUNA
+        { header: "Curso", key: "curso", width: 30 }, // NOVA COLUNA
         { header: "Status Plano", key: "statusPlano", width: 20 },
         { header: "Justificativa Plano", key: "justificativaPlano", width: 30 },
         { header: "Status Aluno", key: "statusAluno", width: 20 },
@@ -227,7 +229,7 @@ const Resultado = ({}) => {
           width: 30,
         },
         {
-          header: "Qnt Sol Bolsa Por Orientador", // NOME ALTERADO AQUI
+          header: "Qnt Sol Bolsa Por Orientador",
           key: "ordemRecebimentoInput",
           width: 25,
         },
@@ -244,6 +246,34 @@ const Resultado = ({}) => {
           style: { numFmt: "0.0000" },
         },
       ];
+
+      // Função para formatar orientadores com CPF
+      const formatarOrientadores = (participacao) => {
+        // Buscar orientadores na inscrição
+        const orientadores =
+          participacao.inscricao?.participacoes?.filter(
+            (p) => p.tipo === "orientador" && p.user?.nome
+          ) || [];
+
+        if (orientadores.length === 0) {
+          return "N/A";
+        }
+
+        // Formatar cada orientador com nome e CPF entre parênteses
+        return orientadores
+          .map((orientador) => {
+            const nome = orientador.user.nome || "N/A";
+            const cpf = orientador.user.cpf ? `(${orientador.user.cpf})` : "";
+            return `${nome} ${cpf}`.trim();
+          })
+          .join(", ");
+      };
+
+      // Função para obter o curso do aluno
+      const obterCursoAluno = (participacao) => {
+        const userTenant = participacao.user?.UserTenant?.[0];
+        return userTenant?.curso?.curso || "N/A";
+      };
 
       // Adicionando os dados
       const dataToExport = participacoes.map((part) => {
@@ -318,8 +348,10 @@ const Resultado = ({}) => {
         return {
           edital: part.inscricao?.edital?.titulo || "",
           planoTrabalho: part.planoDeTrabalho?.titulo || "",
-          orientador: part.orientadores || "N/A",
+          orientador: formatarOrientadores(part), // Orientador formatado com CPF
           aluno: part.user?.nome || "",
+          cpfAluno: part.user?.cpf || "", // NOVA COLUNA
+          curso: obterCursoAluno(part), // NOVA COLUNA
           statusPlano: part.planoDeTrabalho?.statusClassificacao || "",
           justificativaPlano: justificativaPlano,
           statusAluno: isPlanoDesclassificado
@@ -337,7 +369,7 @@ const Resultado = ({}) => {
 
       worksheet.addRows(dataToExport);
 
-      // Adicionando a tabela (Excel Table)
+      // Adicionando a tabela (Excel Table) com as novas colunas
       worksheet.addTable({
         name: "ParticipacoesTable",
         ref: "A1",
@@ -352,6 +384,8 @@ const Resultado = ({}) => {
           { name: "Plano de Trabalho", filterButton: true },
           { name: "Orientador", filterButton: true },
           { name: "Aluno", filterButton: true },
+          { name: "CPF Aluno", filterButton: true }, // NOVA COLUNA
+          { name: "Curso", filterButton: true }, // NOVA COLUNA
           { name: "Status Plano", filterButton: true },
           { name: "Justificativa Plano", filterButton: true },
           { name: "Status Aluno", filterButton: true },
@@ -368,6 +402,8 @@ const Resultado = ({}) => {
           item.planoTrabalho,
           item.orientador,
           item.aluno,
+          item.cpfAluno, // NOVA COLUNA
+          item.curso, // NOVA COLUNA
           item.statusPlano,
           item.justificativaPlano,
           item.statusAluno,
@@ -1186,6 +1222,7 @@ const Resultado = ({}) => {
         {selectedRowData && (
           <ParticipacaoGestorController
             tenant={params.tenant}
+            ano={ano}
             participacaoId={selectedRowData?.id}
             onClose={() => setIsModalOpen(false)}
             onSuccess={
