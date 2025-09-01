@@ -227,23 +227,32 @@ export const ativarVinculo = async (tenantSlug, vinculoId) => {
     throw error;
   }
 };
-export const tornarPendenteVinculo = async (tenantSlug, vinculoId, observacao, date) => {
+export const tornarPendenteVinculo = async (tenantSlug, vinculoId, observacao, date, statusPersonalizado = null) => {
   try {
     const headers = getAuthHeadersClient();
     if (!headers) {
       return false;
     }
 
+    // Prepara os query parameters
+    const queryParams = {};
+    if (statusPersonalizado && statusPersonalizado === "CV_PENDENTE") {
+      queryParams.status = statusPersonalizado;
+    }
+
     const response = await req.put(
       `/private/${tenantSlug}/tornar-pendente-vinculo`,
       { vinculoId, observacao, date },
-      { headers }
+      { 
+        headers,
+        params: queryParams // Adiciona os query parameters
+      }
     );
     
     return response.data;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Erro na ativacão:", error);
+      console.error("Erro na ativação:", error);
       return null;
     }
     console.error("Erro ao ativar:", error);

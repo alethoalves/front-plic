@@ -21,6 +21,8 @@ const InsertUpdateDate = ({
   inputTextProps = {},
   showDateInput = false,
   dateInputProps = {},
+  showStatusDropdown = false, // Nova prop
+  statusDropdownProps = {}, // Nova prop
   children,
   isSubstituicao = false,
   substituicaoProps = {},
@@ -58,12 +60,29 @@ const InsertUpdateDate = ({
               />
             </div>
           )}
+
+          {/* Novo dropdown de status */}
+          {showStatusDropdown && (
+            <div className="field mb-3">
+              <label htmlFor="statusPendencia">Status da Pendência</label>
+              <Dropdown
+                id="statusPendencia"
+                className="w-full"
+                value={statusDropdownProps.value}
+                onChange={statusDropdownProps.onChange}
+                options={statusDropdownProps.options}
+                placeholder="Selecione o status"
+              />
+            </div>
+          )}
+
           {showInputText && (
             <div className="field mb-2">
               <label htmlFor="novoAluno">{inputTextProps.label}</label>
               <InputText className="w-100" id="inputText" {...inputTextProps} />
             </div>
           )}
+
           {showDropdown && (
             <div className="field ">
               <label htmlFor={dropdownProps.id || "dropdown"}>

@@ -78,6 +78,7 @@ const ParticipacaoGestorController = ({
 
   const [statusAcao, setStatusAcao] = useState(null);
   const [isLoadingAtivacao, setIsLoadingAtivacao] = useState(false);
+  const [statusPendencia, setStatusPendencia] = useState("PENDENTE");
 
   // Transferência de bolsa
   const [loadingAlunos, setLoadingAlunos] = useState(false);
@@ -449,26 +450,30 @@ const ParticipacaoGestorController = ({
         detail: "A data é obrigatória para ativar o vínculo",
         life: 3000,
       });
-      return; // Interrompe a execução se não tiver dateValue
+      return;
     }
     setSaving(true);
     try {
+      // Envia o status selecionado (se for PENDENTE, envia null para usar o padrão)
       await tornarPendenteVinculo(
         tenant,
         vinculoId,
         justificativa.trim(),
-        dateValue
+        dateValue,
+        statusPendencia === "PENDENTE" ? null : statusPendencia
       );
       await fetch();
       toast.current?.show({
         severity: "success",
         summary: "Sucesso",
-        detail: "Vínculo tornado pendente com sucesso",
+        detail: `Vínculo tornado ${statusPendencia.toLowerCase()} com sucesso`,
         life: 3000,
       });
       if (onSuccess) await onSuccess();
       setDateValue(null);
       setModalOpen(false);
+      // Reseta o status para o padrão após fechar o modal
+      setStatusPendencia("PENDENTE");
     } catch (err) {
       console.error("Erro:", err);
       toast.current?.show({
@@ -770,6 +775,15 @@ const ParticipacaoGestorController = ({
       onSave: () => handleTornarPendente(vinculoId),
       showDateInput: true,
       showTextarea: true,
+      showStatusDropdown: true, // Nova propriedade para mostrar o dropdown de status
+      statusDropdownProps: {
+        value: statusPendencia,
+        onChange: (e) => setStatusPendencia(e.value),
+        options: [
+          { label: "Pendente", value: "PENDENTE" },
+          { label: "CV em preenchimento", value: "CV_PENDENTE" },
+        ],
+      },
     },
     substituicao: {
       titulo: "Substituição de aluno",
@@ -817,7 +831,13 @@ const ParticipacaoGestorController = ({
       {opcoes[option] && (
         <InsertUpdateDate
           isOpen={modalOpen}
-          onClose={() => setModalOpen(false)}
+          onClose={() => {
+            setModalOpen(false);
+            // Reseta o status para PENDENTE quando fechar o modal
+            if (option === "pendenteVinculo") {
+              setStatusPendencia("PENDENTE");
+            }
+          }}
           title={opcoes[option].titulo}
           onSave={opcoes[option].onSave}
           isLoading={saving}
@@ -831,9 +851,12 @@ const ParticipacaoGestorController = ({
           }}
           showDateInput={opcoes[option].showDateInput}
           dateInputProps={{
-            value: dateValue, //dataTransferencia,
-            onChange: (e) => setDateValue(e.target.value), //setDataTransferencia(e.target.value),
+            value: dateValue,
+            onChange: (e) => setDateValue(e.target.value),
           }}
+          // Novas props para o dropdown de status
+          showStatusDropdown={opcoes[option].showStatusDropdown}
+          statusDropdownProps={opcoes[option].statusDropdownProps}
           isSubstituicao={opcoes[option].isSubstituicao}
           substituicaoProps={opcoes[option].substituicaoProps}
         />
@@ -898,9 +921,6 @@ const ParticipacaoGestorController = ({
                     <div className={styles.itemList}>
                       <div className={styles.content1}>
                         <p>
-                          {item.inscricao?.participacoes?.find(
-                            (p) => p.tipo === "orientador"
-                          )?.user?.nome || "Nenhum orientador encontrado"}
                           <span>
                             {item.planoDeTrabalho.inscricao?.participacoes?.map(
                               (orientador) =>
