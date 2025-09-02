@@ -41,6 +41,7 @@ import { LinhaTempo } from "../LinhaDoTempo";
 import { updateDataHistorico } from "@/app/api/client/historico";
 import InsertUpdateDate from "../InsertUpdateDate";
 import { buildMergedTimeline } from "@/lib/TimeLineUnificada";
+import DocumentosRegistro from "./DocumentosRegistro";
 
 const ParticipacaoGestorController = ({
   tenant,
@@ -925,8 +926,8 @@ const ParticipacaoGestorController = ({
                     <div className={styles.itemList}>
                       <div className={styles.content1}>
                         {item.planoDeTrabalho.inscricao?.participacoes?.map(
-                          (orientador) => (
-                            <p className="mb-2">
+                          (orientador, i) => (
+                            <p key={i} className="mb-2">
                               <strong>Nome:</strong>
                               {orientador.user.nome}
                               <br></br>
@@ -1053,6 +1054,7 @@ const ParticipacaoGestorController = ({
                       <strong>Curso:</strong>{" "}
                       {item.user?.UserTenant[0]?.curso?.curso}
                     </p>
+
                     <div className={styles.historico}>
                       <LinhaTempo
                         data={historicoParticipacao}
@@ -1225,6 +1227,10 @@ const ParticipacaoGestorController = ({
                         />
                       </div>
                     </div>
+                    <DocumentosRegistro
+                      tenant={tenant}
+                      documentos={item.DocumentoRegistro}
+                    />
                   </div>
                 </div>
               </div>

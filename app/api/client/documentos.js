@@ -100,6 +100,26 @@ export const getMyDocuments = async (tenantSlug) => {
   }
 };
 
+export const getDocumentById = async (tenantSlug,documentId) => {
+  try {
+    const token = getCookie("authToken");
+    
+    const response = await req.get(
+      `/private/${tenantSlug}/documento/${documentId}`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      }
+    );
+    
+    return response.data.documento;
+  } catch (error) {
+    console.error("Erro ao buscar templates de documento:", error);
+    throw error;
+  }
+};
+
 export const assinarDocumento = async (tenantSlug, payload) => {
   try {
     const token = getCookie("authToken");
@@ -140,6 +160,28 @@ export const salvarFormulario = async (tenantSlug, formData) => {
     return response.data;
   } catch (error) {
     console.error("Erro ao salvar formulário:", error);
+    throw error;
+  }
+};
+
+export const validarDocumento = async (tenantSlug, payload) => {
+  try {
+    const token = getCookie("authToken");
+    
+    const response = await req.put(
+      `/private/${tenantSlug}/validar-documento`,
+      payload,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao validar documento:", error);
     throw error;
   }
 };
