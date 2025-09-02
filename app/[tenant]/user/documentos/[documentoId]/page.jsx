@@ -174,7 +174,7 @@ const DocumentoDetailPage = ({ params }) => {
                 htmlFor={`checkbox-${index}`}
                 className={styles.campoCheckboxLabel}
               >
-                {campo.label}
+                {renderizarTextoComLinks(campo.label)}
                 {campo.obrigatorio && (
                   <span className={styles.obrigatorio}>*</span>
                 )}
@@ -220,13 +220,13 @@ const DocumentoDetailPage = ({ params }) => {
         );
       case "group":
         return (
-          <Panel key={index} header={campo.label} className={styles.groupPanel}>
+          <div key={index} header={campo.label} className={styles.groupPanel}>
             <div className={styles.groupFields}>
               {campo.campos.map((subCampo, subIndex) =>
                 renderizarCampoFormulario(subCampo, `${index}-${subIndex}`)
               )}
             </div>
-          </Panel>
+          </div>
         );
 
       default:

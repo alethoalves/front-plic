@@ -89,10 +89,15 @@
   @include responsive(xs) {
     margin-bottom: $gap-2;
   }
+  a{
+    word-break: break-all;      /* quebra a palavra em qualquer ponto */
+    /* ou melhor: */
+    overflow-wrap: break-word;  /* quebra a palavra em um ponto aceitável */
+    white-space: normal; 
+  }
 }
 
 
-.formularioContent,
 .dadosContent {
   display: flex;
   flex-direction: column;
@@ -104,7 +109,6 @@
     gap: $gap-1;
   }
 }
-
 .campoGroup {
   display: flex;
   flex-direction: column;
@@ -149,7 +153,8 @@
   font-weight: 500;
   color: #374151;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: left;
   gap: $gap-1;
 }
 
@@ -159,9 +164,9 @@
 
 .groupPanel {
   margin-bottom: $gap-2;
+  padding: $gap-2;
   border-radius: 8px;
   overflow: hidden;
-  
   .p-panel-header {
     background: #f8f9fa;
     border-bottom: 1px solid #e9ecef;
@@ -545,7 +550,7 @@
     padding: $gap-2;
   }
   
-  .formularioContent,
+ 
   .dadosContent {
     gap: $gap-2;
   }

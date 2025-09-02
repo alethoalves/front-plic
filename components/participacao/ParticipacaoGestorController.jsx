@@ -781,7 +781,11 @@ const ParticipacaoGestorController = ({
         onChange: (e) => setStatusPendencia(e.value),
         options: [
           { label: "Pendente", value: "PENDENTE" },
-          { label: "CV em preenchimento", value: "CV_PENDENTE" },
+          { label: "Lattes em preenchimento", value: "CV_PENDENTE" },
+          {
+            label: "Prestação de contas pendente",
+            value: "PRESTACAO_PENDENTE",
+          },
         ],
       },
     },
