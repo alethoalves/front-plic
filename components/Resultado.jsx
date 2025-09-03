@@ -1115,6 +1115,7 @@ const Resultado = ({}) => {
                 whiteSpace: "nowrap",
               }}
             />
+
             <Column
               field="planoDeTrabalho.statusClassificacao"
               header="Status Plano"

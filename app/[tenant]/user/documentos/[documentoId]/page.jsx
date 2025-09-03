@@ -668,6 +668,7 @@ const DocumentoDetailPage = ({ params }) => {
           <div className={styles.documentContent}>
             {/* Renderizar dados bancários se necessário */}
             {documento?.documentoTemplate?.exigirDadosBancarios &&
+              documento.status === "PENDENTE" &&
               renderizarDadosBancarios()}
             {renderizarConteudoDocumento()}
           </div>
