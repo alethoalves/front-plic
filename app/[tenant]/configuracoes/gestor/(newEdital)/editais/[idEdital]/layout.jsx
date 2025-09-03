@@ -7,7 +7,6 @@ import Header from "@/components/Header";
 
 const Layout = async ({ children, params }) => {
   const edital = await getEdital(params.tenant, params.idEdital);
-  console.log(edital);
 
   return (
     <main className={styles.main}>

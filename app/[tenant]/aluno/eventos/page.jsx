@@ -185,7 +185,6 @@ const Page = ({ params }) => {
   // Renderiza o conteúdo do modal
   const renderModalEventoContent = () => {
     let planosSemSubmissao = [];
-    //console.log(planosDeTrabalho);
     if (eventoSelecionado) {
       planosSemSubmissao = planosDeTrabalho.filter((plano) => {
         return !plano.item.planoDeTrabalho.submissao.some(
@@ -193,7 +192,6 @@ const Page = ({ params }) => {
         );
       });
     }
-    console.log(planosSemSubmissao);
 
     return (
       <Modal
@@ -225,7 +223,6 @@ const Page = ({ params }) => {
               {planosSemSubmissao.map((plano) => {
                 const idPlano = plano.id;
                 const sessaoSelecionada = selectedSessaoPorPlano[idPlano];
-                console.log(plano);
                 return (
                   <div
                     key={idPlano}

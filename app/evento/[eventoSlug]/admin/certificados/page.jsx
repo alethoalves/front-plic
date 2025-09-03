@@ -29,7 +29,6 @@ const Page = ({ params }) => {
       try {
         const certificados = await getLayoutCertificados(params.eventoSlug);
         setCertificados(certificados);
-        console.log(certificados);
       } catch (error) {
         console.error("Erro ao buscar formulários:", error);
         setError("Erro ao buscar formulários.");
@@ -55,7 +54,6 @@ const Page = ({ params }) => {
 
   const handleFileChange = async (event) => {
     const selectedFile = event.target.files[0];
-    console.log("Arquivo selecionado:", selectedFile);
 
     if (!selectedFile) {
       setError("Nenhum arquivo selecionado.");
@@ -65,11 +63,6 @@ const Page = ({ params }) => {
     const formData = new FormData();
     formData.append("file", selectedFile);
 
-    console.log("FormData enviado:");
-    for (let pair of formData.entries()) {
-      console.log(`${pair[0]}:`, pair[1]); // Deve mostrar: "file: [Object File]"
-    }
-
     setIsUploading(true);
     try {
       const response = await uploadAndSaveCertificateImage(
@@ -77,8 +70,6 @@ const Page = ({ params }) => {
         selectedCertificado.id,
         formData
       );
-
-      console.log("Resposta do servidor:", response);
 
       // Atualize o certificado na listagem
       const updatedCertificados = certificados.map((cert) =>
@@ -104,7 +95,6 @@ const Page = ({ params }) => {
   };
 
   const handleDivClick = () => {
-    console.log("Clique detectado na div");
     fileInputRef.current.click(); // Simula o clique no input de arquivo
   };
 

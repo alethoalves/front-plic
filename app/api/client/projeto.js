@@ -128,7 +128,6 @@ export const getProjetoById = async (tenantSlug, projetoId) => {
 
 // Atualizar os detalhes de um projeto pelo ID
 export const updateProjetoById = async (tenantSlug, projetoId, projetoData) => {
-  console.log(projetoData)
   try {
     const headers = getAuthHeadersClient();
     if (!headers) {

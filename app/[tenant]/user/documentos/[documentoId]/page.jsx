@@ -414,21 +414,10 @@ const DocumentoDetailPage = ({ params }) => {
         fieldMapping[campoSanitizado] = campoLabel; // Guardar o mapeamento
 
         formData.append(campoSanitizado, arquivo);
-        console.log(`Enviando: ${campoLabel} -> ${campoSanitizado}`);
       });
 
       // Adicionar o mapeamento para o backend reconstruir
       formData.append("fieldMapping", JSON.stringify(fieldMapping));
-
-      // Debug
-      console.log("FormData contents:");
-      for (let [key, value] of formData.entries()) {
-        if (value instanceof File) {
-          console.log(key, value.name, value.size, value.type);
-        } else {
-          console.log(key, value);
-        }
-      }
 
       // 4. Chamar API
       const response = await salvarFormulario(params.tenant, formData);

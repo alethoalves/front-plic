@@ -59,7 +59,6 @@ try {
     const headers = getAuthHeadersClient();
     if (!headers) return false;
     const response = await req.get(`/private/${tenantSlug}/formularios`,  {headers});
-    console.log(response)
     return response.data.formularios;
 } catch (error) {
     console.error("Erro ao obter formulários:", error);

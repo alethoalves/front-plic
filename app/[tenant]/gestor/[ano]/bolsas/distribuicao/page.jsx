@@ -115,7 +115,6 @@ const Page = ({ params }) => {
         }));
 
         setSolicitacoes(solicitacoesComInstituicao);
-        console.log(solicitacoes);
         // Prepara filtros
         const editaisUnicos = [
           ...new Set(solicitacoes.map((s) => s.inscricao?.edital?.titulo)),
@@ -285,7 +284,6 @@ const Page = ({ params }) => {
           solicitacaoBolsaId: solicitacao.id,
           cotaId,
         }).then((r) => r.data); // <- já devolve o payload
-        console.log(bolsa);
         /* 1. Atualiza a linha */
         setSolicitacoes((prev) =>
           prev.map((s) =>

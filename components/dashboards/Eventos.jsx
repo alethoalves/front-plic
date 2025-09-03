@@ -219,9 +219,6 @@ const Inscricoes = ({ tenantSlug }) => {
       );
       submissaoData.sort((a, b) => a.id - b.id);
 
-      console.log(
-        submissaoData.filter((submissao) => submissao.indicacaoPremio)
-      );
       // Criação do conteúdo HTML
       let htmlContent = `
         <html>
@@ -328,7 +325,6 @@ const Inscricoes = ({ tenantSlug }) => {
     setIsModalOpen(false);
   };
   const openModalAndSetData = (tenant) => {
-    console.log(tenant);
     setTenant(tenant);
     setIsModalOpen(true);
   };

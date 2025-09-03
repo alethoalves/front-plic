@@ -106,7 +106,6 @@ const FormPlanoDeTrabalhoV2 = ({
       }
     };
     fetchData();
-    console.log(initialData);
     if (initialData) {
       setValue("titulo", initialData.titulo);
       setValue("areaId", initialData.areaId);
@@ -132,7 +131,6 @@ const FormPlanoDeTrabalhoV2 = ({
     const fetchFormularioEdital = async () => {
       try {
         const formulario = await getFormulario(tenantSlug, idFormularioEdital);
-        console.log(formulario);
         if (formulario) {
           setFormularioEdital(formulario);
         }
@@ -154,7 +152,6 @@ const FormPlanoDeTrabalhoV2 = ({
   const handleFormSubmit = async (data) => {
     setLoading(true);
     setError("");
-    console.log(data);
     try {
       const payload = { ...data, cronograma };
       let planoDeTrabalho;

@@ -92,8 +92,6 @@ const Page = ({ params }) => {
       const response = await createInscricaoByUser(params.tenant, { editalId });
 
       if (response) {
-        console.log("Inscrição criada com sucesso:", response);
-
         // Atualiza a listagem de inscrições
         const minhasInscricoes = await getMinhasInscricoes(params.tenant);
         setInscricoes(minhasInscricoes);

@@ -43,7 +43,6 @@ const FormCampo = ({
   });
   const tipoValue = watch("tipo"); // Watch the value of 'tipo'
   useEffect(() => {
-    console.log(initialData);
     if (initialData) {
       setValue("label", initialData.label);
       setValue("descricao", initialData.descricao);
@@ -60,7 +59,6 @@ const FormCampo = ({
   }, [initialData, setValue, reset]);
 
   const handleFormSubmit = async (data) => {
-    console.log(data);
     setLoading(true);
     setError("");
     try {

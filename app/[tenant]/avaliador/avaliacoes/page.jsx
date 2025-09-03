@@ -52,7 +52,6 @@ const Page = ({ params }) => {
         params.idInstituicao
       );
       setSubmissoesEmAvaliacao(submissaoEmAvaliacao);
-      console.log(submissaoEmAvaliacao);
     } catch (error) {
       console.error("Erro ao buscar dados:", error);
     } finally {
@@ -89,7 +88,6 @@ const Page = ({ params }) => {
           item.planoDeTrabalho?.area?.area || "Área não definida";
         return updatedSelectedAreas.includes(areaNome);
       });
-      console.log(filtered);
       setFilteredSubmissoes(filtered);
     }
   };
@@ -210,7 +208,6 @@ const Page = ({ params }) => {
 
   const ModalContent = ({ modalParams, onClose }) => {
     const { resumo } = modalParams; // Resumo já disponível nos parâmetros
-    console.log(resumo);
     return (
       <Modal isOpen={true} onClose={onClose}>
         <div className={`${styles.icon} mb-2`}>

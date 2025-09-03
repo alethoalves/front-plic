@@ -142,7 +142,6 @@ const FormGestorProjetoCreateOrEdit = ({
             idInscricao,
             projetoId
           );
-          console.log(inscricaoProjeto);
           setProjetoDetalhes(inscricaoProjeto.projeto);
           setInscricaoProjeto(inscricaoProjeto);
           if (inscricaoProjeto.projeto) {

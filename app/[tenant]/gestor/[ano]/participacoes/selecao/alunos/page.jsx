@@ -146,7 +146,6 @@ const Page = ({ params }) => {
           "aluno",
           params.ano
         );
-        console.log(participacoes);
         // Processar opções para filtros
         const statusUnicos = [
           ...new Set(participacoes.map((item) => item.statusParticipacao)),

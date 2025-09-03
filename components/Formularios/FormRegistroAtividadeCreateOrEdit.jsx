@@ -164,12 +164,6 @@ const FormRegistroAtividadeCreateOrEdit = ({
         });
       }
 
-      // Debug detalhado do FormData
-      console.log("Conteúdo do FormData a ser enviado:");
-      for (let [key, val] of formData.entries()) {
-        console.log(key, val instanceof File ? `[File: ${val.name}]` : val);
-      }
-
       const registroAtividade = await submissaoAtividade(
         tenantSlug,
         formData,

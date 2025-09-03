@@ -126,7 +126,6 @@ const FormProjetoCreateOrEdit = ({
     const fetchFormularioEdital = async () => {
       try {
         const formulario = await getFormularioProjeto(tenantSlug);
-        console.log(formulario);
         if (formulario) {
           setFormularioEdital(formulario);
         }
@@ -169,7 +168,6 @@ const FormProjetoCreateOrEdit = ({
   const handleFormSubmit = async (data) => {
     setLoading(true);
     setError("");
-    console.log(data);
     try {
       const payload = { ...data, cronograma };
       let planoDeTrabalho;
@@ -185,8 +183,7 @@ const FormProjetoCreateOrEdit = ({
         }
       } else {
         planoDeTrabalho = await createProjeto(tenantSlug, payload);
-        console.log("planoDeTrabalho");
-        console.log(planoDeTrabalho);
+
         onSuccess(planoDeTrabalho);
       }
 

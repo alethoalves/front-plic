@@ -25,7 +25,6 @@ export const createCvLattes = async (tenantSlug, cvLattesData) => {
   };
   
   export const xmlLattes = async (file, name, tenantSlug) => {
-    console.log(`este é o nome passado: ${name}`);
     try {
       const headers = getAuthHeadersClient();
       if (!headers) {

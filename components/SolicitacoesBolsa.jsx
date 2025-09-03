@@ -239,7 +239,6 @@ export default function SolicitacoesBolsa() {
         setLoading(true);
         /* -- vínculos -- */
         const rawVinculos = await getVinculosByTenant(tenant, ano);
-        console.log(rawVinculos);
         const processed = await processarDados(rawVinculos);
         setProcessedData(processed);
 

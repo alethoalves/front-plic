@@ -61,7 +61,6 @@ const NewCargo = ({
   const handleFormSubmit = async (data) => {
     setLoading(true);
     setError("");
-    console.log(initialData);
     const newData = {
       id: initialData.id,
       cargo: data.cargo,

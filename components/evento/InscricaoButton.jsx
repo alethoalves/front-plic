@@ -133,7 +133,6 @@ export const InscricaoButton = ({ params }) => {
       };
 
       const response = await criarInscricaoEvento(payload);
-      console.log(payload);
       if (response) {
         showSuccess("Inscrição realizada com sucesso!");
         setInscricaoSuccess(true);
@@ -617,16 +616,7 @@ export const InscricaoButton = ({ params }) => {
                       initialData={apresentacaoData} // Passa dados salvos
                       onSubmitSuccess={(payload) => {
                         setApresentacaoData(payload); // Salva os dados
-                        console.log({
-                          slugEvento: params.edicao,
-                          tenant: selectedTenant.slug,
-                          //selectedPlanoOrProjeto:selectedPlano,
-                          cpf: cpfValue,
-                          resumos: resumoData,
-                          palavrasChave: palavrasChaveData,
-                          participantes: participantesData,
-                          apresentacao: apresentacaoData,
-                        });
+
                         setActiveStep(7);
                       }}
                     />

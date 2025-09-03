@@ -62,7 +62,6 @@ const Page = ({ params }) => {
       setLoading(true);
       try {
         const eventos = await getEventosByTenant(params.tenant);
-        console.log(eventos);
         setEventos(eventos);
 
         const areas = await getAreas(params.tenant);

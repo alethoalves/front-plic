@@ -61,7 +61,6 @@ const EditarParticipacao = ({
 
     try {
       const response = await xmlLattes(file, tenant, userId);
-      console.log(response);
       if (response && response.fileUrl) {
         // Cria o objeto atualizado da participação com a nova URL do CV Lattes
         const updatedParticipacao = {
@@ -88,7 +87,6 @@ const EditarParticipacao = ({
         // Atualiza o estado do item no modal
         setParticipacaoInfo((prev) => {
           const updated = { ...prev, ...updatedParticipacao };
-          console.log("Updated ParticipacaoInfo:", updated);
           return updated;
         });
         // Chamar a validação após edição bem-sucedida

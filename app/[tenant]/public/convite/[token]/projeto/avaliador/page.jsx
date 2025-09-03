@@ -70,7 +70,6 @@ const Page = ({ params }) => {
       const updated = prev.includes(id)
         ? prev.filter((areaId) => areaId !== id)
         : [...prev, id];
-      //console.log("Areas Selecionadas Atualizadas:", updated);
 
       return updated;
     });

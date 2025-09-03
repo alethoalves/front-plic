@@ -166,7 +166,6 @@ const Page = ({ params }) => {
         subsessoesSelecionadas,
         areasSelecionadas,
       };
-      console.log("Dados enviados:", newData);
 
       const aceite = await aceitarConvite(params.token, newData);
       router.replace(

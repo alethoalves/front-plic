@@ -62,8 +62,6 @@ const ProjetoController = ({
   }, [idProjeto, tenant]);
 
   const handleCreateOrEditProjetoSuccess = (projetoAtualizado) => {
-    console.log("projetoAtualizado");
-    console.log(projetoAtualizado);
     setMeusProjetos((prevProjetos) => {
       const index = prevProjetos.findIndex(
         (p) => p.id === projetoAtualizado.id

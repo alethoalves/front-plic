@@ -49,7 +49,6 @@ const FormPlanoDeTrabalho = ({
       try {
         //const response = await getAreas(tenantSlug);
         //setAreas(transformedArray(response));
-        //console.log(transformedArray(response));
       } catch (error) {
         setErrorDelete(
           error.response?.data?.message ?? "Erro na conexão com o servidor."
@@ -70,7 +69,6 @@ const FormPlanoDeTrabalho = ({
 
   const handleFormSubmit = async (data) => {
     setLoading(true);
-    console.log(data);
     setError("");
     try {
       if (initialData) {

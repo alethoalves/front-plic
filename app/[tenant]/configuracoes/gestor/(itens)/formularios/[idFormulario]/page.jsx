@@ -56,7 +56,6 @@ const Page = ({ params }) => {
           params.tenant,
           params.idFormulario
         );
-        console.log(formulario);
         setFormulario(formulario);
         const campos = await getCampos(params.tenant, params.idFormulario);
         // Ordene os campos pela propriedade ordem
@@ -96,7 +95,6 @@ const Page = ({ params }) => {
   }, [params.tenant, params.idFormulario, campoToDelete, campos]);
 
   const openModalAndSetData = (data) => {
-    console.log(data);
     setIsModalOpen(true);
     setCampoToEdit(data);
   };

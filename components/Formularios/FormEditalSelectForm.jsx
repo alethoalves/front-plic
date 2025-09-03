@@ -44,7 +44,6 @@ const FormEditalSelectForm = ({
   const handleFormSubmit = async (data) => {
     setLoading(true);
     setError("");
-    console.log({ [keyFormulario]: data.value });
     try {
       await updateEdital(tenantSlug, editalId, {
         [keyFormulario]: data.value ? `${data.value}` : null,

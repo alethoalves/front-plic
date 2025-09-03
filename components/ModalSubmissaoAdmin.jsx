@@ -92,7 +92,6 @@ const Modal = ({ isOpen, onClose, eventoSlug, idSubmissao, onDataUpdated }) => {
         newStatus
       );
       setSubmissao(submissaoAtualizada); // Atualiza a submissão no estado com o retorno da API
-      console.log(submissaoAtualizada);
       if (onDataUpdated) {
         onDataUpdated(); // Notifica que os dados foram atualizados
       }

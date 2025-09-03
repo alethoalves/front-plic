@@ -217,7 +217,6 @@ const Page = ({ params }) => {
           setEditais(fetchedEditais);
         }
         setItens(itensComCamposVirtuais || []);
-        console.log(itensComCamposVirtuais);
       } catch (error) {
         console.error("Erro ao buscar itens:", error);
         setError("Erro ao buscar itens.");

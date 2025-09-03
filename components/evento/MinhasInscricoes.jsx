@@ -133,7 +133,6 @@ export const MinhasInscricoes = ({ params }) => {
       };
 
       const response = await criarInscricaoEvento(payload);
-      console.log(payload);
       if (response) {
         showSuccess("Inscrição realizada com sucesso!");
         setInscricaoSuccess(true);

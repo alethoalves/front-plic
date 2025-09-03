@@ -156,7 +156,6 @@ const TabelaInscricao = ({ params }) => {
         }) || [];
 
       setItens(itensProcessados);
-      console.log(itensProcessados);
       // Configura status disponíveis
       setStatusDisponiveis([
         { label: "Pendente", value: "pendente" },

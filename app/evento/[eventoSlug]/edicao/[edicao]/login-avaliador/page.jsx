@@ -58,8 +58,6 @@ const Page = ({ params }) => {
         slugEdicaoEvento: params.edicao,
       });
 
-      console.log("Resposta completa:", response);
-
       if (
         response.codAvaliador === true ||
         response.message?.includes("código de avaliador")
@@ -70,7 +68,6 @@ const Page = ({ params }) => {
       }
 
       if (response.token) {
-        console.log("Login success:", response.token);
         setShowCodAvaliador(false);
         // Redirecionar para:
 

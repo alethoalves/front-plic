@@ -429,7 +429,6 @@ const Page = ({ params }) => {
         params.tenant,
         params.ano || null
       );
-      console.log(itens);
       const itensComCamposVirtuais = itens.map((item) => {
         const notaProjeto =
           calcularMedia(item.inscricaoProjeto?.FichaAvaliacao || []) || 0;
@@ -473,7 +472,6 @@ const Page = ({ params }) => {
           notaTotal: parseFloat(notaTotal.toFixed(4)),
         };
       });
-      console.log(itensComCamposVirtuais);
       setItens(itensComCamposVirtuais || []);
     } catch (error) {
       console.error("Erro ao buscar dados:", error);

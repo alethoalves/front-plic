@@ -108,7 +108,6 @@ const Page = ({ params }) => {
         notaTotal: novaNotaTotal,
       };
     });
-    console.log(novaNotaTotal);
   };
 
   // Função para lidar com a mudança no campo de feedback
@@ -145,7 +144,6 @@ const Page = ({ params }) => {
         ...evento,
         projetoId: params.idProjeto,
       };
-      console.log(body);
       const response = await processarFichaAvaliacao(params.tenant, body);
 
       if (response.status === "success") {

@@ -56,7 +56,6 @@ const Page = ({ params }) => {
       setFilteredSubmissoes(data.submissoesData); // Inicializa com todas as submissões
       const submissaoEmAvaliacao = await getProjetosEmAvaliacao(params.tenant);
       setSubmissoesEmAvaliacao(submissaoEmAvaliacao);
-      console.log(submissaoEmAvaliacao);
     } catch (error) {
       console.error("Erro ao buscar dados:", error);
     } finally {
@@ -92,7 +91,6 @@ const Page = ({ params }) => {
         const areaNome = item.projeto?.area?.area || "Área não definida";
         return updatedSelectedAreas.includes(areaNome);
       });
-      console.log(filtered);
       setFilteredSubmissoes(filtered);
     }
   };
@@ -132,8 +130,7 @@ const Page = ({ params }) => {
       }
     } catch (err) {
       // Define o erro para a submissão específica
-      console.log("Aqui");
-      console.log(err.response?.data?.message);
+
       setError((prevErrors) => ({
         ...prevErrors,
         [idInscricaoProjeto]:
@@ -189,7 +186,6 @@ const Page = ({ params }) => {
 
   const ModalContent = ({ modalParams, onClose }) => {
     const { resumo } = modalParams; // Resumo já disponível nos parâmetros
-    console.log(resumo);
     return (
       <Modal isOpen={true} onClose={onClose}>
         <div className={`${styles.icon} mb-2`}>

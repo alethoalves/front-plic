@@ -192,10 +192,8 @@ const Page = ({ params }) => {
         params.tenant,
         body
       );
-      console.log(response);
       if (response) {
         const { resultados } = response;
-        console.log(response);
         const sucesso = resultados.filter((r) => r.success);
         const falhas = resultados.filter((r) => !r.success);
 

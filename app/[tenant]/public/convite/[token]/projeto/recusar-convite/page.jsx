@@ -25,7 +25,6 @@ const Page = ({ params }) => {
         const convite = await recusarConvitePorToken(params.token);
         setConvite(convite);
         setTenant(convite.tenant);
-        console.log(convite);
       } catch (error) {
         console.error("Erro ao buscar eventos:", error);
         setErrorMessage(error.response.data.message);

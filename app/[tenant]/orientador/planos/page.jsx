@@ -78,10 +78,6 @@ const Page = ({ params }) => {
     try {
       const itens = await getRegistroAtividadesOrientador(params.tenant);
       setItens(itens);
-      console.log("ITENS");
-      console.log(itens);
-      console.log("ITENS TO EDIT BEFORE");
-      console.log(itemToEdit);
 
       const updatedItemToEdit = itens
         .flatMap(
@@ -91,8 +87,6 @@ const Page = ({ params }) => {
             ) || []
         ) // Combina todos os arrays de registroAtividades de todos os itens
         .find((registro) => registro.id === itemToEdit.id);
-      console.log("item to edit");
-      console.log();
 
       setItemToEdit(updatedItemToEdit);
     } catch (error) {
@@ -191,7 +185,6 @@ const Page = ({ params }) => {
   };
 
   const openModalAndSetData = async (data) => {
-    console.log(data);
     setItemToEdit(data);
     setIsModalOpen(true);
     setIdFormAtividade(data.atividade.formularioId);
@@ -202,7 +195,6 @@ const Page = ({ params }) => {
   const getFormWithRespostas = async (idFormAtividade) => {
     try {
       const campos = await getCampos(params.tenant, idFormAtividade);
-      console.log(itemToEdit);
       const respostas = itemToEdit?.respostas || [];
 
       // Mapeia os campos e associa as respostas
@@ -237,7 +229,6 @@ const Page = ({ params }) => {
   // Verifica o status do formulário
   const checkFormStatus = async () => {
     const result = await getFormWithRespostas(idFormAtividade);
-    console.log(idFormAtividade);
     setFormStatus(result.status);
     if (result.status === "completo") {
       handleFormComplete();
@@ -247,8 +238,6 @@ const Page = ({ params }) => {
   // Função chamada quando o formulário está completo
   const handleFormComplete = useCallback(async () => {
     try {
-      console.log("OLHA AQUI");
-      console.log(itemToEdit);
       await updateRegistroAtividade(
         params.tenant,
         itemToEdit.atividadeId,

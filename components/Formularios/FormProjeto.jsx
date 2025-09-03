@@ -161,7 +161,6 @@ const FormProjeto = ({
       }
     };
     fetchData();
-    console.log(initialData);
     if (initialData) {
       setValue("titulo", initialData.titulo);
       setValue("areaId", initialData.areaId);

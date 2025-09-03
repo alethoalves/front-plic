@@ -78,7 +78,6 @@ export const getEventoByTokenConvite = async (token) => {
   export const verificarCodAvaliador = async (value) => {
     try {
       const headers = getAuthHeadersClient();
-      console.log(headers)
       if (!headers) {
         return false;
       }

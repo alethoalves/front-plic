@@ -45,11 +45,9 @@ const VerProjeto = ({
         idInscricao,
         idProjeto
       );
-      console.log("Projeto vinculado com sucesso:", response);
 
       // Chama o callback para atualizar a listagem no FluxoInscricaoEdital
       if (typeof onProjetoVinculado === "function") {
-        console.log(projetoDetalhes);
         onProjetoVinculado(projetoDetalhes); // Passa o projeto vinculado
       }
       // Fecha o modal após o sucesso

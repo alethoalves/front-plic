@@ -16,13 +16,10 @@ export const RenderPlanoCard = ({
   const handleSelecionarClick = async () => {
     setLoading(true);
     try {
-      console.log("Plano selecionado:", plano);
-      console.log(type);
       let response = [];
       if (type === "PLANO") {
         // Chamar a API para obter os registros de atividade
         response = await getRegistrosAtividadePorPlano(plano.id, eventoSlug);
-        console.log("Resposta da API:", response);
 
         // Verificar se há registros de atividade
         if (response.data && typeof response.data === "object") {

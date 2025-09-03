@@ -54,10 +54,8 @@ const Page = ({ params }) => {
       try {
         const itens = await getInscricao(params.tenant, params.idInscricao);
         setItens(itens);
-        console.log(itens);
         const flatItens = flattenItems(itens); // Mover a transformação aqui
         setFlatItens(flatItens); // Salvar o resultado no estado
-        //console.log(flatItens);
       } catch (error) {
         console.error("Erro ao buscar dados:", error);
       } finally {
@@ -118,7 +116,6 @@ const Page = ({ params }) => {
 
   // Abre o modal e define os dados do item a ser editado
   const openModalAndSetData = async (data) => {
-    console.log(data);
     setItemToEdit(data);
     setIsModalOpen(true);
     setIdFormAtividade(data.idFormAtividade);
@@ -138,7 +135,6 @@ const Page = ({ params }) => {
   const getFormWithRespostas = async (idFormAtividade) => {
     try {
       const campos = await getCampos(params.tenant, idFormAtividade);
-      console.log(itemToEdit);
       const respostas = itemToEdit?.respostas || [];
 
       // Mapeia os campos e associa as respostas

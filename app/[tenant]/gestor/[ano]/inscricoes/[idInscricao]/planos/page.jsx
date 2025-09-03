@@ -62,7 +62,6 @@ const Page = ({ params }) => {
           params.tenant,
           params.idInscricao
         );
-        console.log(itens);
         setItens(itens);
       } catch (error) {
         console.error("Erro ao buscar dados:", error);

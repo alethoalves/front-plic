@@ -21,7 +21,6 @@ export const createCargo = async (tenantSlug, data) => {
 };
 export const updateCargo = async (tenantSlug, data) => {
   try {
-    console.log(data)
     const headers = getAuthHeadersClient();
     if (!headers) return false;
     const response = await req.put(`/private/${tenantSlug}/cargo/${data.id}`, data, {headers});
@@ -53,7 +52,6 @@ export const getCargos = async (tenantSlug, filters = {}) => {
     if (filters.ano) {
       queryParams.append('ano', filters.ano);
     }
-    console.log(filters)
 
     // Constrói a URL com as queries, se houver
     const url = `/private/${tenantSlug}/cargos${

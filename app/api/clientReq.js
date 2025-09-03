@@ -18,7 +18,6 @@ const getAuthHeaders = () => {
 
 
 export const getDataFromCPF = async (tenantSlug, cpf) => {
-  console.log("ENTROU")
   try {
     // Validar o CPF antes de fazer a requisição
     const validation = cpfValidatorSchema.safeParse({ cpf });
@@ -114,7 +113,6 @@ export const deleteFile = async (tenantSlug, fileUrl) => {
     }
 
     const formData = { fileUrl };
-    console.log(formData);
     const response = await req.post(
       `/private/${tenantSlug}/external/deleteFile`,
       formData,

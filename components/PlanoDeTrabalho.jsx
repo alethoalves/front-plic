@@ -63,7 +63,6 @@ const PlanoDeTrabalho = ({ params, idInscricao, idPlano }) => {
           idInscricao,
           idPlano
         );
-        console.log(plano);
         setPlano(plano);
         setItens([]);
       } catch (error) {

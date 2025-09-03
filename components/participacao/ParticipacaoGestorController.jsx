@@ -105,7 +105,6 @@ const ParticipacaoGestorController = ({
   const fetch = async () => {
     // 1) Busca o registro atualizado da API
     const itemAPI = await getParticipacao(tenant, participacaoId, ano);
-    console.log(itemAPI);
     // 2) Mapeia o histórico de participação
     const hp = mapHistorico(itemAPI.HistoricoStatusParticipacao);
     setHistPart(hp);
@@ -381,7 +380,6 @@ const ParticipacaoGestorController = ({
       onSuccess?.();
       setModalOpen(false);
     } catch (error) {
-      console.log(error);
       toast.current?.show({
         severity: "error",
         detail: error.response?.data?.message,

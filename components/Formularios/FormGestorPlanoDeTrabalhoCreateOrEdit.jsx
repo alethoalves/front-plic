@@ -236,15 +236,11 @@ const FormGestorPlanoDeTrabalhoCreateOrEdit = ({
     setActiveTab(tab);
   };
   useEffect(() => {
-    const subscription = watch((value) => {
-      console.log("Valores do formulário:", value);
-    });
+    const subscription = watch((value) => {});
     return () => subscription.unsubscribe();
   }, [watch]);
   // Submete o formulário
   const handleFormSubmit = async (data) => {
-    console.log("Dados antes do envio:", data);
-
     setLoading(true);
     setError("");
 

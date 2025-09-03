@@ -154,7 +154,7 @@ const Resultado = ({}) => {
 
           // Filtrar apenas participantes com status APROVADO neste edital
           const aprovados = participantesEdital.filter((part) => {
-            const vinculo = part.VinculoSolicitacaoBolsa?.[0];
+            const vinculo = part.VinculoSolicitacaoBolsa[0];
             return vinculo?.status === "APROVADO";
           });
 
@@ -164,7 +164,7 @@ const Resultado = ({}) => {
               aprovados
                 .map(
                   (part) =>
-                    part.VinculoSolicitacaoBolsa?.[0]?.solicitacaoBolsa
+                    part.VinculoSolicitacaoBolsa[0]?.solicitacaoBolsa
                       ?.ordemRecebimentoBolsa
                 )
                 .filter(Boolean)
@@ -182,7 +182,7 @@ const Resultado = ({}) => {
             // Filtrar participantes com esta ordem específica neste edital
             const participantesOrdem = aprovados.filter(
               (part) =>
-                part.VinculoSolicitacaoBolsa?.[0]?.solicitacaoBolsa
+                part.VinculoSolicitacaoBolsa[0]?.solicitacaoBolsa
                   ?.ordemRecebimentoBolsa === ordem
             );
 
@@ -280,7 +280,7 @@ const Resultado = ({}) => {
       };
       // Função para obter dados bancários do aluno
       const obterDadosBancarios = (participacao) => {
-        const userTenant = participacao.user?.UserTenant?.[0];
+        const userTenant = participacao.user?.UserTenant[0];
         return {
           banco: userTenant?.banco || "N/A",
           agencia: userTenant?.agencia || "N/A",
@@ -292,11 +292,14 @@ const Resultado = ({}) => {
         const isPlanoDesclassificado =
           part.planoDeTrabalho?.statusClassificacao !== "CLASSIFICADO";
         const isAlunoRecusado = part.statusParticipacao === "RECUSADA";
-        const vinculo = part.VinculoSolicitacaoBolsa?.[0];
+        const vinculo = part.VinculoSolicitacaoBolsa[0];
         const statusVinculacao = vinculo?.status;
         const isVinculacaoRecusada = statusVinculacao === "RECUSADO";
         const isVinculacaoAprovada =
-          statusVinculacao === "APROVADO" || statusVinculacao === "PENDENTE";
+          statusVinculacao === "APROVADO" ||
+          statusVinculacao === "ATIVO" ||
+          statusVinculacao === "CV_PENDENTE" ||
+          statusVinculacao === "PENDENTE";
 
         // Lógica para justificativas
         const justificativaPlano = isPlanoDesclassificado
@@ -661,7 +664,6 @@ const Resultado = ({}) => {
 
   const getParticipacoes = async () => {
     const response = await getParticipacoesByTenant(tenant, "aluno", ano);
-    console.log(response);
     // Processa os dados recebidos
     const comColunasVirtuais = response.map((p) => {
       const plano = p.planoDeTrabalho;
@@ -750,7 +752,6 @@ const Resultado = ({}) => {
     };
 
     setParticipacoes(comColunasVirtuais);
-    console.log(comColunasVirtuais);
     // Prepara opções para filtros
     prepareFilterOptions(comColunasVirtuais);
   };

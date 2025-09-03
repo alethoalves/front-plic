@@ -19,7 +19,6 @@ export const uploadAndSaveCertificateImage = async (eventoSlug, idCertificado, f
       "Content-Type": "multipart/form-data", // Inclua explicitamente o Content-Type
     };
 
-    console.log("Headers enviados:", headers);
 
     const response = await req.put(
       `/evenplic/${eventoSlug}/uploadAndSaveCertificateImage/${idCertificado}`,
@@ -125,7 +124,6 @@ export const getUserSubmissions = async (eventoId) => {
 
 export const generateAndDownloadCertificatePDF = async (eventoId, tipo, submissaoId) => {
   try {
-    console.log(submissaoId)
     // Obtenha os cabeçalhos de autenticação
     const headers = getAuthHeadersClient();
     if (!headers) {

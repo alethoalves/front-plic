@@ -53,7 +53,6 @@ const ParticipacaoFormAluno = ({
       cvLattesId,
       inicio,
     };
-    console.log(newData);
     //inscricaoId, cpf, nome, status, tipo, planoDeTrabalhoId
     setLoading(true);
     setError("");

@@ -8,8 +8,7 @@ const Layout = ({ children, params }) => {
   // Acessar os cabeçalhos da requisição
   const headersList = headers();
   const pathLogo = headersList.get("x-tenant-path-logo");
-  console.log("pathLogo");
-  console.log(params.tenant);
+
   return (
     <div className={styles.dashboard}>
       <div className={styles.item1}>

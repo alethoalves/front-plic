@@ -77,7 +77,6 @@ const Page = ({ params }) => {
         notaMinimaMencaoHonrosa:
           submissaoComResumo.evento.notaMinimaMencaoHonrosa || 0,
       });
-      // console.log("Dados carregados:", submissaoComResumo.evento);
     } catch (error) {
       console.error("Erro ao buscar dados:", error);
     } finally {
@@ -123,10 +122,6 @@ const Page = ({ params }) => {
         notaTotal: novaNotaTotal,
       };
     });
-
-    // Log para verificar as mudanças
-    //console.log("Notas selecionadas:", novasNotas);
-    //console.log("Evento atualizado:", evento);
   };
 
   // Função para lidar com a mudança no campo de feedback

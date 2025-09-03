@@ -53,9 +53,7 @@ const Page = ({ params }) => {
       setEventoId(evento.id);
       setFilteredSubmissoes(data.submissoesData); // Inicializa com todas as submissões
       const submissaoEmAvaliacao = await getSubmissoesEmAvaliacao(evento.id);
-      console.log(evento.id);
       setSubmissoesEmAvaliacao(submissaoEmAvaliacao);
-      console.log(submissaoEmAvaliacao);
     } catch (error) {
       console.error("Erro ao buscar dados:", error);
       if (
@@ -99,7 +97,6 @@ const Page = ({ params }) => {
         const areaNome = item.Resumo?.area?.area || "Área não definida";
         return updatedSelectedAreas.includes(areaNome);
       });
-      console.log(filtered);
       setFilteredSubmissoes(filtered);
     }
   };
@@ -117,7 +114,6 @@ const Page = ({ params }) => {
         eventoId,
         idSubmissao
       );
-      console.log(updatedSubmissao);
       if (updatedSubmissao) {
         // Remove a submissão da lista de submissões que aguardam avaliação
         setFilteredSubmissoes((prevSubmissoes) =>
@@ -136,7 +132,6 @@ const Page = ({ params }) => {
         });
       }
     } catch (err) {
-      console.log("ENTROU NO ERROOO");
       // Define o erro para a submissão específica
       setError((prevErrors) => ({
         ...prevErrors,
@@ -219,7 +214,6 @@ const Page = ({ params }) => {
 
   const ModalContent = ({ modalParams, onClose }) => {
     const { resumo } = modalParams; // Resumo já disponível nos parâmetros
-    console.log(resumo);
     return (
       <Modal isOpen={true} onClose={onClose}>
         <div className={`${styles.icon} mb-2`}>

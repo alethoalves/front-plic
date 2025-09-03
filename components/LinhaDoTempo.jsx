@@ -32,8 +32,6 @@ export const LinhaTempo = ({ data, onUpdate, tabelaHistorico }) => {
   };
 
   const handleEditClick = (event) => {
-    console.log("AQUI");
-    console.log(event);
     const { day, month, year, hour, minute } = parseDateString(event.date);
     setCurrentEvent(event);
     setDateParts({ day, month, year, hour, minute });
@@ -165,7 +163,6 @@ export const LinhaTempo = ({ data, onUpdate, tabelaHistorico }) => {
                       className="p-button-rounded p-button-text p-button-sm"
                       onClick={() => {
                         handleEditClick(item);
-                        console.log(data);
                       }}
                       tooltip="Editar data"
                       tooltipOptions={{ position: "top" }}

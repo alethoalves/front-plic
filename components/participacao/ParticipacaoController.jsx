@@ -40,10 +40,6 @@ const ParticipacaoController = ({
         newParticipacao?.id
       );
       if (validatedParticipacao) {
-        console.log(
-          "Participação validada com sucesso:",
-          validatedParticipacao
-        );
         const response = await getInscricaoUserById(tenant, inscricaoSelected);
         setInscricao(response);
       } else {

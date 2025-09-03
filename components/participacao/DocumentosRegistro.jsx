@@ -110,8 +110,6 @@ const DocumentosRegistro = ({
 
       // Limpa a observação
       setObservacao((prev) => ({ ...prev, [docId]: "" }));
-
-      console.log("Documento validado com sucesso:", response);
     } catch (error) {
       console.error("Erro ao validar documento:", error);
       alert(
@@ -157,8 +155,6 @@ const DocumentosRegistro = ({
 
       // Limpa a observação
       setObservacao((prev) => ({ ...prev, [docId]: "" }));
-
-      console.log("Documento recusado com sucesso:", response);
     } catch (error) {
       console.error("Erro ao recusar documento:", error);
       alert(

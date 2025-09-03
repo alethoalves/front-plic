@@ -35,8 +35,7 @@ const Page = async ({ params }) => {
   } catch (error) {
     return <h6 className="p-4">Evento não encontrado</h6>;
   }
-  console.log(evento);
-  console.log(programacao);
+
   return (
     <>
       <header>

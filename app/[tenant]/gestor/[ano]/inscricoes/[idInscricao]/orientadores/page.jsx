@@ -61,7 +61,6 @@ const Page = ({ params }) => {
           params.idInscricao,
           tipos
         );
-        console.log(itens);
         setItens(itens);
       } catch (error) {
         console.error("Erro ao buscar dados:", error);
@@ -171,7 +170,6 @@ const Page = ({ params }) => {
         params.tenant,
         itemToDelete.id
       );
-      console.log(response);
       if (response) {
         handleCreateOrEditSuccess();
         closeModalAndResetData();

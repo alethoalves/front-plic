@@ -45,7 +45,6 @@ export const createPlanoDeTrabalho = async (
     const token = getCookie("authToken"); 
     // Converte o payload para FormData
     const formData = convertToFormData(planoDeTrabalhoData);
-    console.log(formData)
     // Certifique-se de não definir manualmente o Content-Type para multipart/form-data
     // Deixe o browser definir o boundary automaticamente
     const response = await req.post(
@@ -78,7 +77,6 @@ export const createPlanoDeTrabalho = async (
       const token = getCookie("authToken"); 
     // Converte o payload para FormData
     const formData = convertToFormData(planoDeTrabalhoData);
-    console.log(formData)
       const response = await req.put(
         `/private/${tenantSlug}/${inscricaoId}/user/planosDeTrabalho/${id}`,
         formData,

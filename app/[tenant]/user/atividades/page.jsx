@@ -67,7 +67,6 @@ const Page = ({ params }) => {
           params.tenant,
           perfil
         );
-        console.log(response);
         const getAreasResponse = await getAreas(params.tenant);
         setAreas(transformedArray(getAreasResponse));
         setFilteredAreas(transformedArray(getAreasResponse));
@@ -78,7 +77,6 @@ const Page = ({ params }) => {
         );
         const grupos = groupByPlanoDeTrabalho(registrosOrdenados);
         setRegistrosAtividadesEditaisVigentes(grupos);
-        console.log(grupos);
       } catch (error) {
         console.error("Erro ao buscar dados:", error);
         toast.current.show({

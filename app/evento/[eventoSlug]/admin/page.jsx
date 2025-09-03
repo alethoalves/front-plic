@@ -464,7 +464,6 @@ const Page = ({ params }) => {
   };
 
   const openModal = (tenant = null) => {
-    console.log("Tenant selecionado:", tenant);
     setSelectedTenant(tenant);
     setIsModalOpen(true);
   };

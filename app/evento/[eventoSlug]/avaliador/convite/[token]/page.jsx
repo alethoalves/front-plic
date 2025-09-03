@@ -51,7 +51,6 @@ const Page = ({ params }) => {
         setEvento(evento);
         const convite = await consultarConviteByToken(params.token);
         setConvite(convite);
-        console.log(convite);
         if (convite) {
           const conviteAvaliadorComSubsessao =
             convite.convite?.user?.ConviteAvaliadorEvento?.some(
@@ -66,8 +65,6 @@ const Page = ({ params }) => {
             setStep(5);
           }
 
-          //console.log("Evento:", evento);
-
           // Filtrar apenas as subsessões
           const subsessoesApresentacao = evento.sessao.flatMap((sessao) =>
             sessao.subsessaoApresentacao.map((subsessao) => ({
@@ -75,7 +72,6 @@ const Page = ({ params }) => {
               areas: sessao.sessaoArea,
             }))
           );
-          //console.log("Subsessoes de Apresentacao:", subsessoesApresentacao);
           setSubsessoes(subsessoesApresentacao);
 
           // Extraindo grandes áreas sem repetir
@@ -93,7 +89,6 @@ const Page = ({ params }) => {
           });
 
           setGrandesAreas(uniqueGrandesAreas);
-          //console.log("Grandes Areas Unicas:", uniqueGrandesAreas);
         }
       } catch (error) {
         console.error("Erro ao buscar eventos:", error);
@@ -106,7 +101,6 @@ const Page = ({ params }) => {
   }, [params.eventoSlug]);
 
   const updateAreas = (selectedGrandesAreas) => {
-    //console.log("Atualizando Areas com as Grandes Areas Selecionadas:",selectedGrandesAreas);
     const uniqueAreas = [];
     const areasSet = new Set();
 
@@ -122,11 +116,9 @@ const Page = ({ params }) => {
     });
 
     setAreas(uniqueAreas);
-    //console.log("Areas Atualizadas:", uniqueAreas);
   };
 
   const updateSubsessoes = (selectedAreas) => {
-    //console.log("Atualizando Subsessoes com as Areas Selecionadas:",selectedAreas);
     const filteredSubsessoes = subsessoes.filter((subs) =>
       subs.areas.some(
         (area) =>
@@ -135,7 +127,6 @@ const Page = ({ params }) => {
       )
     );
     setSubsessoes(filteredSubsessoes);
-    //console.log("Subsessoes Atualizadas:", filteredSubsessoes);
   };
 
   const handleGrandeAreaClick = (id) => {
@@ -143,7 +134,6 @@ const Page = ({ params }) => {
       const updated = prev.includes(id)
         ? prev.filter((grandeAreaId) => grandeAreaId !== id)
         : [...prev, id];
-      //console.log("Grandes Areas Selecionadas Atualizadas:", updated);
       updateAreas(updated);
       if (!updated.includes(id)) {
         setAreasSelecionadas([]);
@@ -158,7 +148,6 @@ const Page = ({ params }) => {
       const updated = prev.includes(id)
         ? prev.filter((areaId) => areaId !== id)
         : [...prev, id];
-      //console.log("Areas Selecionadas Atualizadas:", updated);
 
       return updated;
     });
@@ -169,7 +158,6 @@ const Page = ({ params }) => {
       const updated = prev.includes(id)
         ? prev.filter((subsId) => subsId !== id)
         : [...prev, id];
-      //console.log("Subsessoes Selecionadas Atualizadas:", updated);
       return updated;
     });
   };
@@ -204,7 +192,6 @@ const Page = ({ params }) => {
       };
       const aceite = await aceitarConvite(params.token, newData);
       if (aceite?.convite.status === "ACEITO") {
-        console.log(aceite);
         setConviteAceito(true);
         setConvite(aceite);
         setStep(5);

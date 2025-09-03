@@ -28,7 +28,6 @@ const FormNewInscricao = ({ data, tenant }) => {
     try {
       const response = await createInscricao(tenant, formData);
       if (response) {
-        console.log("Inscrição criada com sucesso:", response);
         // Navega para a página de detalhes da inscrição
         router.push(`/${tenant}/gestor/inscricoes/${response.inscricao.id}`);
       }

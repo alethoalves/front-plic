@@ -134,7 +134,6 @@ const TabelaPlanoDeTrabalho = ({ params }) => {
             orientadoresString: orientadores.join(", "),
           };
         }) || [];
-      console.log(itensProcessados);
       setItens(itensProcessados);
 
       setStatusClassificacaoDisponiveis([

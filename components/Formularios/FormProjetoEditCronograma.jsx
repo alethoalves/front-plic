@@ -253,7 +253,6 @@ const FormProjetoEditCronograma = ({
   const handleFormSubmit = async (data) => {
     setLoading(true);
     setError("");
-    console.log(anexos);
     try {
       // 1. Prepare os dados do formulário
       const payload = { ...data, cronograma };
@@ -286,14 +285,10 @@ const FormProjetoEditCronograma = ({
             );
           }
         }
-
-        console.log("Anexos enviados com sucesso:", uploadedAnexos);
       }
 
       // 4. Chama o callback de sucesso
       if (onSuccess) onSuccess(projetoCriado);
-
-      console.log("Projeto e anexos enviados com sucesso.");
     } catch (error) {
       console.error("Erro ao enviar o formulário:", error);
       setError(error.message || "Erro ao enviar o formulário.");

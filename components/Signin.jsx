@@ -185,7 +185,6 @@ const Auth = ({
       const response = await verificarCodAvaliador(value);
 
       // Exibe o resultado no console ou faça outra ação com ele
-      console.log("Resultado da verificação:", response);
       setErrorMessage(
         "Entre novamente para verificar se seu acesso foi concedido."
       );
@@ -201,7 +200,6 @@ const Auth = ({
       setLoading(true);
       // Chama a API passando o tenant (slug) e o token digitado
       const response = await cadastrarAvaliador(slug, token);
-      console.log("Resultado da verificação:", response);
 
       if (response.status === "success") {
         // Se a resposta for sucesso, redireciona para a área do avaliador
@@ -420,7 +418,6 @@ const Auth = ({
                 className="btn-secondary mt-1"
                 type="button" // submit, reset, button
                 onClick={() => {
-                  console.log("Enviar email");
                   setTela(4);
                 }}
                 disabled={loading}

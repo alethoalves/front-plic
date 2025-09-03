@@ -79,8 +79,6 @@ const DocumentoDialog = ({
 
   // Função para renderizar dados bancários
   const renderizarDadosBancarios = () => {
-    console.log("AQUIIII");
-    console.log(userTenant);
     if (
       !userTenant ||
       (!userTenant.banco && !userTenant.agencia && !userTenant.conta)
