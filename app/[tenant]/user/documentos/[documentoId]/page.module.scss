@@ -647,7 +647,7 @@
 }
 
 .formularioHeader,
-.dadosHeader {
+.dadosHeader,.dadosBancariosHeader {
   display: flex;
   align-items: center;
   gap: $gap-2;
@@ -671,5 +671,14 @@
       margin: 0;
       font-size: 1.25rem;
     }
+  }
+}
+.dadosBancariosContent{
+  padding: $gap-2;
+  display: flex;
+  flex-direction: column;
+  gap: $gap-1;
+  .campoLabel{
+    margin-bottom: 0;
   }
 }

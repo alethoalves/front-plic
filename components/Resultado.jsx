@@ -213,7 +213,11 @@ const Resultado = ({}) => {
         { header: "Orientador", key: "orientador", width: 25 },
         { header: "Aluno", key: "aluno", width: 25 },
         { header: "CPF Aluno", key: "cpfAluno", width: 15 }, // NOVA COLUNA
+        { header: "Email Aluno", key: "emailAluno", width: 25 },
         { header: "Curso", key: "curso", width: 30 }, // NOVA COLUNA
+        { header: "Banco", key: "banco", width: 15 }, // NOVA COLUNA
+        { header: "Agência", key: "agencia", width: 15 }, // NOVA COLUNA
+        { header: "Conta", key: "conta", width: 15 }, // NOVA COLUNA
         { header: "Status Plano", key: "statusPlano", width: 20 },
         { header: "Justificativa Plano", key: "justificativaPlano", width: 30 },
         { header: "Status Aluno", key: "statusAluno", width: 20 },
@@ -274,7 +278,15 @@ const Resultado = ({}) => {
         const userTenant = participacao.user?.UserTenant?.[0];
         return userTenant?.curso?.curso || "N/A";
       };
-
+      // Função para obter dados bancários do aluno
+      const obterDadosBancarios = (participacao) => {
+        const userTenant = participacao.user?.UserTenant?.[0];
+        return {
+          banco: userTenant?.banco || "N/A",
+          agencia: userTenant?.agencia || "N/A",
+          conta: userTenant?.conta || "N/A",
+        };
+      };
       // Adicionando os dados
       const dataToExport = participacoes.map((part) => {
         const isPlanoDesclassificado =
@@ -344,14 +356,19 @@ const Resultado = ({}) => {
             fontePagadora = "Voluntária - solicitação de bolsa recusada";
           }
         }
-
+        // Obter dados bancários
+        const dadosBancarios = obterDadosBancarios(part);
         return {
           edital: part.inscricao?.edital?.titulo || "",
           planoTrabalho: part.planoDeTrabalho?.titulo || "",
-          orientador: formatarOrientadores(part), // Orientador formatado com CPF
+          orientador: formatarOrientadores(part),
           aluno: part.user?.nome || "",
-          cpfAluno: part.user?.cpf || "", // NOVA COLUNA
-          curso: obterCursoAluno(part), // NOVA COLUNA
+          cpfAluno: part.user?.cpf || "",
+          emailAluno: part.user?.email || "", // NOVA COLUNA
+          curso: obterCursoAluno(part),
+          banco: dadosBancarios.banco, // NOVA COLUNA
+          agencia: dadosBancarios.agencia, // NOVA COLUNA
+          conta: dadosBancarios.conta, // NOVA COLUNA
           statusPlano: part.planoDeTrabalho?.statusClassificacao || "",
           justificativaPlano: justificativaPlano,
           statusAluno: isPlanoDesclassificado
@@ -384,8 +401,12 @@ const Resultado = ({}) => {
           { name: "Plano de Trabalho", filterButton: true },
           { name: "Orientador", filterButton: true },
           { name: "Aluno", filterButton: true },
-          { name: "CPF Aluno", filterButton: true }, // NOVA COLUNA
-          { name: "Curso", filterButton: true }, // NOVA COLUNA
+          { name: "CPF Aluno", filterButton: true },
+          { name: "Email Aluno", filterButton: true }, // NOVA COLUNA
+          { name: "Curso", filterButton: true },
+          { name: "Banco", filterButton: true }, // NOVA COLUNA
+          { name: "Agência", filterButton: true }, // NOVA COLUNA
+          { name: "Conta", filterButton: true }, // NOVA COLUNA
           { name: "Status Plano", filterButton: true },
           { name: "Justificativa Plano", filterButton: true },
           { name: "Status Aluno", filterButton: true },
@@ -402,8 +423,12 @@ const Resultado = ({}) => {
           item.planoTrabalho,
           item.orientador,
           item.aluno,
-          item.cpfAluno, // NOVA COLUNA
-          item.curso, // NOVA COLUNA
+          item.cpfAluno,
+          item.emailAluno, // NOVA COLUNA
+          item.curso,
+          item.banco, // NOVA COLUNA
+          item.agencia, // NOVA COLUNA
+          item.conta, // NOVA COLUNA
           item.statusPlano,
           item.justificativaPlano,
           item.statusAluno,

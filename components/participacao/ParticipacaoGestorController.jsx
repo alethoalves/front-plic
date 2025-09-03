@@ -1230,6 +1230,7 @@ const ParticipacaoGestorController = ({
                     <DocumentosRegistro
                       tenant={tenant}
                       documentos={item.DocumentoRegistro}
+                      userTenant={item.user?.UserTenant[0]}
                     />
                   </div>
                 </div>

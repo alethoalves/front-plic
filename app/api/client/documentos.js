@@ -99,7 +99,25 @@ export const getMyDocuments = async (tenantSlug) => {
     throw error;
   }
 };
-
+export const getMyDocumentById = async (tenantSlug,documentId) => {
+  try {
+    const token = getCookie("authToken");
+    
+    const response = await req.get(
+      `/private/${tenantSlug}/meu-documento/${documentId}`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      }
+    );
+    
+    return response.data.documento;
+  } catch (error) {
+    console.error("Erro ao buscar templates de documento:", error);
+    throw error;
+  }
+};
 export const getDocumentById = async (tenantSlug,documentId) => {
   try {
     const token = getCookie("authToken");

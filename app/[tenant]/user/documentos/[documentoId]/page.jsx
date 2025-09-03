@@ -7,6 +7,7 @@ import {
   RiFileTextLine,
   RiAlertLine,
   RiEditLine,
+  RiBankLine,
 } from "@remixicon/react";
 import styles from "./page.module.scss";
 import { useEffect, useState } from "react";
@@ -14,6 +15,8 @@ import {
   getMyDocuments,
   assinarDocumento,
   salvarFormulario,
+  getDocumentById,
+  getMyDocumentById,
 } from "@/app/api/client/documentos";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -39,6 +42,11 @@ const DocumentoDetailPage = ({ params }) => {
   const [formularioData, setFormularioData] = useState({});
   const [editandoFormulario, setEditandoFormulario] = useState(false);
   const [arquivos, setArquivos] = useState({}); // ← Adicione este estado
+  const [dadosBancarios, setDadosBancarios] = useState({
+    banco: "",
+    agencia: "",
+    contaCorrente: "",
+  });
   const router = useRouter();
   const toast = useRef(null);
   const fileUploadRef = useRef({});
@@ -240,7 +248,94 @@ const DocumentoDetailPage = ({ params }) => {
         );
     }
   };
+  // Função para renderizar campos de dados bancários
+  const renderizarDadosBancarios = () => {
+    if (!documento?.documentoTemplate?.exigirDadosBancarios) return null;
 
+    return (
+      <Card className={styles.dadosBancariosCard}>
+        <div className={styles.dadosBancariosHeader}>
+          <RiBankLine />
+          <h2>Dados Bancários</h2>
+        </div>
+        <Divider />
+        <div className={`${styles.dadosBancariosContent} mb-2`}>
+          <div className={styles.campoGroup}>
+            <label className={styles.campoLabel}>Banco *</label>
+            <InputText
+              value={dadosBancarios.banco}
+              onChange={(e) =>
+                setDadosBancarios((prev) => ({
+                  ...prev,
+                  banco: e.target.value,
+                }))
+              }
+              maxLength={100}
+              placeholder="Nome do banco"
+              className={styles.campoInput}
+              required
+            />
+          </div>
+
+          <div className={styles.campoGroup}>
+            <label className={styles.campoLabel}>Agência *</label>
+            <InputText
+              value={dadosBancarios.agencia}
+              onChange={(e) =>
+                setDadosBancarios((prev) => ({
+                  ...prev,
+                  agencia: e.target.value,
+                }))
+              }
+              maxLength={20}
+              placeholder="Número da agência"
+              className={styles.campoInput}
+              required
+            />
+          </div>
+
+          <div className={styles.campoGroup}>
+            <label className={styles.campoLabel}>Conta Corrente *</label>
+            <InputText
+              value={dadosBancarios.contaCorrente}
+              onChange={(e) =>
+                setDadosBancarios((prev) => ({
+                  ...prev,
+                  contaCorrente: e.target.value,
+                }))
+              }
+              maxLength={20}
+              placeholder="Número da conta"
+              className={styles.campoInput}
+              required
+            />
+          </div>
+        </div>
+      </Card>
+    );
+  };
+  // Função para validar dados bancários
+  const validarDadosBancarios = () => {
+    if (!documento?.documentoTemplate?.exigirDadosBancarios) return true;
+
+    const { banco, agencia, contaCorrente } = dadosBancarios;
+    const camposFaltantes = [];
+
+    if (!banco.trim()) camposFaltantes.push("Banco");
+    if (!agencia.trim()) camposFaltantes.push("Agência");
+    if (!contaCorrente.trim()) camposFaltantes.push("Conta Corrente");
+
+    if (camposFaltantes.length > 0) {
+      showToast(
+        "warn",
+        "Dados bancários incompletos",
+        `Preencha os campos: ${camposFaltantes.join(", ")}`
+      );
+      return false;
+    }
+
+    return true;
+  };
   // Handler para mudanças nos campos do formulário
   const handleCampoChange = (campo, value) => {
     setFormularioData((prev) => ({
@@ -452,6 +547,14 @@ const DocumentoDetailPage = ({ params }) => {
       return;
     }
 
+    // Validar dados bancários se necessário
+    if (
+      documento?.documentoTemplate?.exigirDadosBancarios &&
+      !validarDadosBancarios()
+    ) {
+      return;
+    }
+
     setAssinando(assinatura.id);
 
     try {
@@ -460,6 +563,11 @@ const DocumentoDetailPage = ({ params }) => {
         tokenAssinatura: assinatura.tokenAssinatura,
         conteudo: documento.conteudo || documento.conteudoProcessado,
       };
+
+      // Adicionar dados bancários se exigido
+      if (documento?.documentoTemplate?.exigirDadosBancarios) {
+        payload.dadosBancarios = dadosBancarios;
+      }
 
       await assinarDocumento(params.tenant, payload);
       showToast("success", "Sucesso", "Documento assinado com sucesso!");
@@ -482,9 +590,9 @@ const DocumentoDetailPage = ({ params }) => {
   const fetchDocumento = async () => {
     try {
       setLoading(true);
-      const documentos = await getMyDocuments(params.tenant);
-      const documentoEncontrado = documentos.find(
-        (doc) => doc.id === parseInt(params.documentoId)
+      const documentoEncontrado = await getMyDocumentById(
+        params.tenant,
+        params.documentoId
       );
 
       if (documentoEncontrado) {
@@ -558,6 +666,9 @@ const DocumentoDetailPage = ({ params }) => {
           </div>
 
           <div className={styles.documentContent}>
+            {/* Renderizar dados bancários se necessário */}
+            {documento?.documentoTemplate?.exigirDadosBancarios &&
+              renderizarDadosBancarios()}
             {renderizarConteudoDocumento()}
           </div>
 

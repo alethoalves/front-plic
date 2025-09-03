@@ -13,7 +13,11 @@ import styles from "./DocumentosRegistro.module.scss";
 import { validarDocumento } from "@/app/api/client/documentos";
 import DocumentoDialog from "./DocumentoDialog";
 
-const DocumentosRegistro = ({ documentos: initialDocumentos, tenant }) => {
+const DocumentosRegistro = ({
+  documentos: initialDocumentos,
+  tenant,
+  userTenant,
+}) => {
   const [expandedDocs, setExpandedDocs] = useState({});
   const [documentos, setDocumentos] = useState(initialDocumentos);
   const [loading, setLoading] = useState({});
@@ -303,6 +307,19 @@ const DocumentosRegistro = ({ documentos: initialDocumentos, tenant }) => {
                   <p>
                     <strong>Tipo:</strong> {doc.documentoTemplate.tipoDocumento}
                   </p>
+                  {doc.documentoTemplate.exigirDadosBancarios && (
+                    <>
+                      <p>
+                        <strong>Banco:</strong> {userTenant?.banco}
+                      </p>
+                      <p>
+                        <strong>Agência:</strong> {userTenant?.agencia}
+                      </p>
+                      <p>
+                        <strong>Conta:</strong> {userTenant?.conta}
+                      </p>
+                    </>
+                  )}
                   {doc.observacao && (
                     <p>
                       <strong>Observações:</strong> {doc.observacao}
@@ -392,6 +409,7 @@ const DocumentosRegistro = ({ documentos: initialDocumentos, tenant }) => {
         tenant={tenant}
         documentoId={documentoDialog.documentoId}
         documentoData={documentoDialog.documentoData}
+        userTenant={userTenant}
       />
     </div>
   );

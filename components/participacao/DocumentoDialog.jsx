@@ -9,6 +9,7 @@ import {
   RiCalendarLine,
   RiInformationLine,
   RiExternalLinkLine,
+  RiBankLine, // ← Adicione este ícone
 } from "@remixicon/react";
 import { Dialog } from "primereact/dialog";
 import { ProgressSpinner } from "primereact/progressspinner";
@@ -27,6 +28,7 @@ const DocumentoDialog = ({
   tenant,
   documentoId,
   documentoData,
+  userTenant,
 }) => {
   const [loading, setLoading] = useState(true);
   const [documento, setDocumento] = useState(documentoData || null);
@@ -73,6 +75,53 @@ const DocumentoDialog = ({
       default:
         return <RiFileTextLine className={styles.statusIcon} />;
     }
+  };
+
+  // Função para renderizar dados bancários
+  const renderizarDadosBancarios = () => {
+    console.log("AQUIIII");
+    console.log(userTenant);
+    if (
+      !userTenant ||
+      (!userTenant.banco && !userTenant.agencia && !userTenant.conta)
+    ) {
+      return null;
+    }
+
+    return (
+      <div className={styles.dadosBancarios}>
+        <h4 className={styles.sectionTitle}>
+          <RiBankLine className={styles.sectionIcon} />
+          Dados Bancários
+        </h4>
+        <div className={styles.dadosBancariosGrid}>
+          {userTenant.banco && (
+            <div className={styles.dadoBancarioItem}>
+              <span className={styles.dadoBancarioLabel}>Banco:</span>
+              <span className={styles.dadoBancarioValue}>
+                {userTenant.banco}
+              </span>
+            </div>
+          )}
+          {userTenant.agencia && (
+            <div className={styles.dadoBancarioItem}>
+              <span className={styles.dadoBancarioLabel}>Agência:</span>
+              <span className={styles.dadoBancarioValue}>
+                {userTenant.agencia}
+              </span>
+            </div>
+          )}
+          {userTenant.conta && (
+            <div className={styles.dadoBancarioItem}>
+              <span className={styles.dadoBancarioLabel}>Conta:</span>
+              <span className={styles.dadoBancarioValue}>
+                {userTenant.conta}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+    );
   };
 
   const renderizarDadosFormulario = (dados) => {
@@ -255,7 +304,31 @@ const DocumentoDialog = ({
                   </div>
                 </div>
               )}
+
+              {/* Tipo do Documento */}
+              <div className={styles.infoItem}>
+                <div className={styles.infoIcon}>
+                  <RiFileTextLine />
+                </div>
+                <div className={styles.infoContent}>
+                  <span className={styles.infoLabel}>Tipo</span>
+                  <span className={styles.infoValue}>
+                    {documento.documentoTemplate?.tipoDocumento === "FORMULARIO"
+                      ? "Formulário"
+                      : documento.documentoTemplate?.tipoDocumento === "TERMO"
+                      ? "Termo"
+                      : documento.documentoTemplate?.tipoDocumento ===
+                        "DECLARACAO"
+                      ? "Declaração"
+                      : "Documento Externo"}
+                  </span>
+                </div>
+              </div>
             </div>
+
+            {/* Dados Bancários - APENAS SE O TEMPLATE EXIGIR */}
+            {documento.documentoTemplate?.exigirDadosBancarios &&
+              renderizarDadosBancarios()}
 
             {documento.observacao && (
               <div className={styles.observacao}>
