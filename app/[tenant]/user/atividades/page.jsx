@@ -529,19 +529,21 @@ const Page = ({ params }) => {
                               )}
                               {isWithinEditPeriod(
                                 atividade.atividade.dataFinal
-                              ) && (
-                                <Button
-                                  className={`mt-2 button btn-secondary ${styles.openModalButton}`}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    openModalAndSetData(atividade);
-                                  }}
-                                >
-                                  {atividade.respostas?.length > 0
-                                    ? "Editar Atividade"
-                                    : "Enviar Atividade"}
-                                </Button>
-                              )}
+                              ) ||
+                                (atividade.atividade
+                                  .permitirEntregaForaPrazo && (
+                                  <Button
+                                    className={`mt-2 button btn-secondary ${styles.openModalButton}`}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      openModalAndSetData(atividade);
+                                    }}
+                                  >
+                                    {atividade.respostas?.length > 0
+                                      ? "Editar Atividade"
+                                      : "Enviar Atividade"}
+                                  </Button>
+                                ))}
                               {perfil === "orientador" &&
                                 atividade.exigirValidacaoOrientador && (
                                   <button

@@ -1,0 +1,365 @@
+@import "./styles/partials/colors";
+@import "./styles/partials/layout";
+@import "./styles/partials/spacing";
+.configuracoes{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  .icon{
+      color: $primary-dark;
+  }
+  ul{
+      display: flex;
+      gap: $gap-2;
+      li{
+        
+          cursor: pointer;
+          transition: ease .3s;
+          &:hover{
+              p{
+                  text-decoration: underline;
+              }
+          }
+      }
+  }
+}
+@keyframes p-progress-spinner-color {
+    100%,
+    0% {
+      stroke: #6366f1;
+    }
+    40% {
+      stroke: #6366f1;
+    }
+    66% {
+      stroke: #6366f1;
+    }
+    80%,
+    90% {
+      stroke: #6366f1;
+    }
+  }
+  .timeInfo {
+    font-size: 0.85rem;
+    color: #666;
+  }
+.dashboard{
+    display: flex;
+    flex-wrap: wrap;
+    gap: $gap-2;
+
+}
+.card_style1{
+    display: flex;
+    flex: 1;
+    .left{
+        width: 100px;
+        border-top-left-radius:$gap-1 ;
+        border-bottom-left-radius:$gap-1 ;
+        background-color: $white-darken;
+        border-right: 2px solid $white-light;
+        h5{
+            color:$primary-darken;
+        }
+        h6{
+            color:$primary-darken;
+            text-align: center;
+        }
+        display: flex;
+        gap: 4px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: $gap-2;
+    }
+    .right{
+        //width: 166px;
+       flex: 1;
+        background-color:$white-darken;
+        border-top-right-radius:$gap-1 ;
+        border-bottom-right-radius:$gap-1 ;
+        display: flex;
+        flex-direction: column;
+        align-items: left;
+        justify-content: center;
+        padding: $gap-2;
+        p{
+            display: flex;
+            justify-content: space-between;
+            &:not(:last-child){
+                margin-bottom: $gap-1;
+            }
+        }
+    }
+}
+.distribuicaoInput {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+  
+    label {
+      font-weight: 500;
+      color: #495057;
+    }
+  
+    input {
+      width: 60px;
+      padding: 6px 8px;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      text-align: center;
+  
+      &:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+      }
+    }
+  
+    span {
+      color: #6c757d;
+      font-size: 0.9rem;
+    }
+  }
+  .autoButton {
+    padding: 4px 8px;
+    background: #e9ecef;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    margin-left: 8px;
+  
+    &:hover {
+      background: #dee2e6;
+    }
+  }
+.actions{
+    padding: $gap-2;
+
+}
+
+.distribuicao{
+    display: flex;
+    gap: $gap-2;
+    @include responsive(xs){
+      flex-direction: column;
+    }
+    .distribuicaoCard{
+        flex: 1;
+       border: 1px solid $gray-25;
+       border-radius: $gap-1;
+       ul{
+        display: flex;
+       flex-direction: column;
+       gap: $gap-1;
+       padding: $gap-1;
+       }
+        li{
+          background-color:  $gray-25;
+          p,strong, h6{
+            transition: ease .3s;
+        }
+            &.selected{
+                background-color: $white-darken;
+                p,strong, h6{
+                    color: $primary-darken;
+                }
+                .arrowRight{
+                    &:hover{
+                        color: $white-light;
+                        background-color: $primary-darken;
+                    }
+                    
+                }
+            }
+            cursor: pointer;
+            transition: ease .3s;
+            display: flex;
+            justify-content: space-between;
+            border-radius: $gap-1;
+            .checkbox{
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding-left: $gap-2;
+            }
+            .content{
+                flex:1;
+                padding: $gap-2;
+                gap: 0;
+            }
+            .arrowRight{
+                width: 40px;
+                display: flex;
+                align-items: center;
+                margin-left: $gap-2;
+                border-top-right-radius: $gap-1;
+                border-bottom-right-radius: $gap-1;
+                color: $primary-darken;
+                padding: 10px;
+                
+            }
+         h6{
+                display: flex;
+                justify-content: space-between;
+                transition: ease .3s;
+                span{
+                    font-weight: 700;
+                }
+            }
+            h6{
+                font-weight: 600;
+            }
+            &:hover, .selected{
+              background-color: $white-darken;
+              p,strong, h6{
+                  color: $primary-darken;
+              }
+              .arrowRight{
+                  &:hover{
+                      color: $white-light;
+                      background-color: $primary-darken;
+                  }
+                  
+              }
+            }
+        }
+        
+        
+    }
+    
+}
+
+.content{
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    gap: $gap-2;
+    @include responsive(s){
+        flex-direction: column;
+    }
+    button{
+        .btn-primary{
+            p{
+                color:$white-light
+            }
+        }
+        
+    }
+}
+
+.filtrosContainer {
+  padding: 0.5rem;
+  background: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.deleteIcon {
+    cursor: pointer;
+    color: #ff4d4f;
+    width: 20px;
+  }
+  
+  .deleteIcon:hover {
+    color: #ff7875;
+  }
+
+.icon{
+    width: 24px;
+    color: $primary-normal;
+}
+
+// Adicione estas classes ao seu arquivo SCSS
+
+.distribuicaoCard {
+    height: 320px;
+    display: flex;
+    flex-direction: column;
+    
+    .scrollableContainer {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0;
+      
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+      
+      &::-webkit-scrollbar-track {
+        background: $gray-25;
+        border-radius: 3px;
+      }
+      
+      &::-webkit-scrollbar-thumb {
+        background: $primary-normal;
+        border-radius: 3px;
+      }
+    }
+    
+    ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+  }
+  
+  .contentAvaliacoesPendentes{
+    display: flex;
+    
+    flex-direction: row;
+    flex-wrap: nowrap;
+    
+    @include responsive (xs){
+      flex-direction: column;
+    }
+    .time{
+        margin-right: $gap-2;
+        display: flex;
+        flex-direction: column;
+        align-items: left;
+        min-width: 100px;
+        svg{
+          width: 22px;
+          display: flex;
+          align-items: left;
+        }
+        p{
+            font-size: 10px;
+        }
+    }
+}
+.headerAvaliadoresPendente{
+  margin-top: $gap-2;
+}
+.modalActions{
+  margin-top: $gap-2;
+  display: flex;
+  gap: $gap-2;
+}
+.projetoHeader {
+  padding: 0 1rem;
+  
+  h6 {
+    word-break: break-word;
+  }
+}
+
+.associarButton {
+  width: 100%;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.projetosInfo {
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 0.2rem;
+}

@@ -21,7 +21,25 @@ import { getCookie } from 'cookies-next';
       throw error;
     }
   };
-
+  export const avaliadoresEvento = async (
+    eventoSlug
+  ) => {
+    try {
+      const headers = getAuthHeadersClient();
+      if (!headers) {
+        return false;
+      }
+      const response = await req.get(
+        `/evenplic/submissoes/evento/${eventoSlug}/avaliadores`,
+        
+        { headers }
+      );
+      return response.data.avaliadores;
+    } catch (error) {
+      console.error("Erro ao atualizar campo:", error);
+      throw error;
+    }
+  };
   export const editarAvaliadorEvento = async (
     id,
     eventoSlug,

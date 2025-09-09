@@ -4,8 +4,65 @@ import { getCookie } from 'cookies-next';
 
 
 
+export const getListaSubmissao = async (
+  eventoSlug
+) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.get(
+      `/evenplic/submissoes/evento/${eventoSlug}/lista-submissoes`,
+      
+      { headers }
+    );
+    return response.data.submissoes;
+  } catch (error) {
+    console.error("Erro ao atualizar campo:", error);
+    throw error;
+  }
+};
 
-  
+export const getListaSubmissoesAvaliacoes = async (
+  eventoSlug
+) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.get(
+      `/evenplic/submissoes/evento/${eventoSlug}/lista-submissoes-avaliacoes`,
+      
+      { headers }
+    );
+    return response.data.submissoes;
+  } catch (error) {
+    console.error("Erro ao atualizar campo:", error);
+    throw error;
+  }
+};
+
+export const getAvaliadoresComSubmissoesPendentes = async (
+  eventoSlug
+) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.get(
+      `/evenplic/submissoes/evento/${eventoSlug}/getAvaliadoresComSubmissoesPendentes`,
+      
+      { headers }
+    );
+    return response.data.data;
+  } catch (error) {
+    console.error("Erro ao atualizar campo:", error);
+    throw error;
+  }
+};
   export const getSubmissaoByIdForAdmin = async (
     eventoSlug,idSubmissao,idSquare
   ) => {
