@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { getInscricaoProjetoByTenant } from "@/app/api/client/projeto";
 import style from "./page.module.scss";
 import { Toast } from "primereact/toast";
@@ -40,6 +40,8 @@ const Page = ({ params }) => {
   const [projetosPorAvaliador, setProjetosPorAvaliador] = useState(0);
   const [avaliadorSelecionado, setAvaliadorSelecionado] = useState(null);
   const [removendoVinculacao, setRemovendoVinculacao] = useState(null);
+  const [termoBusca, setTermoBusca] = useState("");
+
   const [activeModal, setActiveModal] = useState(null);
   const [projetoSelecionado, setProjetoSelecionado] = useState(null);
   const [buscaProjeto, setBuscaProjeto] = useState("");
@@ -64,6 +66,88 @@ const Page = ({ params }) => {
       );
     }
   };
+  // Função para filtrar as avaliações pendentes
+  const avaliacoesFiltradas = useMemo(() => {
+    if (!termoBusca.trim()) {
+      return avaliadores;
+    }
+
+    const termo = termoBusca.toLowerCase().trim();
+
+    return avaliadores
+      .filter((avaliador) => {
+        // Verificar se o avaliador tem submissões que correspondem à busca
+        const submissoesCorrespondentes = avaliador.SubmissaoAvaliador?.filter(
+          (atribuicao) => {
+            const resumo = atribuicao.submissao?.Resumo;
+            if (!resumo) return false;
+
+            // Verificar título do resumo
+            const tituloCorresponde = resumo.titulo
+              ?.toLowerCase()
+              .includes(termo);
+
+            // Verificar nome do avaliador
+            const avaliadorCorresponde = avaliador.user.nome
+              ?.toLowerCase()
+              .includes(termo);
+
+            // Verificar participantes
+            const participantesCorrespondem = resumo.participacoes?.some(
+              (participacao) =>
+                participacao.user.nome?.toLowerCase().includes(termo) ||
+                participacao.user.cpf?.includes(termo) ||
+                participacao.cargo?.toLowerCase().includes(termo)
+            );
+
+            return (
+              tituloCorresponde ||
+              avaliadorCorresponde ||
+              participantesCorrespondem
+            );
+          }
+        );
+
+        // Manter o avaliador apenas se tiver submissões correspondentes
+        return (
+          submissoesCorrespondentes && submissoesCorrespondentes.length > 0
+        );
+      })
+      .map((avaliador) => {
+        // Filtrar apenas as submissões que correspondem à busca
+        const submissoesFiltradas = avaliador.SubmissaoAvaliador?.filter(
+          (atribuicao) => {
+            const resumo = atribuicao.submissao?.Resumo;
+            if (!resumo) return false;
+
+            const termo = termoBusca.toLowerCase().trim();
+            const tituloCorresponde = resumo.titulo
+              ?.toLowerCase()
+              .includes(termo);
+            const avaliadorCorresponde = avaliador.user.nome
+              ?.toLowerCase()
+              .includes(termo);
+            const participantesCorrespondem = resumo.participacoes?.some(
+              (participacao) =>
+                participacao.user.nome?.toLowerCase().includes(termo) ||
+                participacao.user.cpf?.includes(termo) ||
+                participacao.cargo?.toLowerCase().includes(termo)
+            );
+
+            return (
+              tituloCorresponde ||
+              avaliadorCorresponde ||
+              participantesCorrespondem
+            );
+          }
+        );
+
+        return {
+          ...avaliador,
+          SubmissaoAvaliador: submissoesFiltradas,
+        };
+      });
+  }, [avaliadores, termoBusca]);
   // Carrega os avaliadores quando o componente é montado
   useEffect(() => {
     const fetchData = async () => {
@@ -1056,17 +1140,32 @@ const Page = ({ params }) => {
           </div>
         </Card>
         <Card className={`mb-4 p-2`}>
-          <h5 className="mb-2">Avaliações pendentes (geral)</h5>
+          <div className=" mb-2">
+            <h5 className="mb-2">Avaliações pendentes (geral)</h5>
+            <div className="p-inputgroup">
+              <span className="p-inputgroup-addon">
+                <i className="pi pi-search"></i>
+              </span>
+              <InputText
+                placeholder="Buscar por título, participante, CPF ou avaliador..."
+                value={termoBusca}
+                onChange={(e) => setTermoBusca(e.target.value)}
+              />
+            </div>
+          </div>
+
           <div className={style.distribuicao}>
             <div className={`${style.distribuicaoCard} ${style.projetos}`}>
               <div className={style.scrollableContainer}>
-                {avaliadores.some(
+                {avaliacoesFiltradas.some(
+                  // Mudei aqui de avaliadores para avaliacoesFiltradas
                   (avaliador) =>
                     avaliador.SubmissaoAvaliador &&
                     avaliador.SubmissaoAvaliador.length > 0
                 ) ? (
                   <ul>
-                    {avaliadores.map(
+                    {avaliacoesFiltradas.map(
+                      // Mudei aqui de avaliadores para avaliacoesFiltradas
                       (avaliador) =>
                         avaliador.SubmissaoAvaliador &&
                         avaliador.SubmissaoAvaliador.map((atribuicao, idx) => {
@@ -1074,9 +1173,13 @@ const Page = ({ params }) => {
                             atribuicao.createdAt
                           );
                           const projetoTitulo =
-                            atribuicao.inscricaoProjeto?.projeto?.titulo ||
+                            atribuicao.submissao?.Resumo?.titulo ||
                             "Projeto sem título";
-                          const projetoId = atribuicao.inscricaoProjeto?.id;
+                          const projetoId = atribuicao.submissao?.Resumo?.id;
+
+                          // Obter as participações do projeto
+                          const participacoes =
+                            atribuicao.submissao?.Resumo?.participacoes || [];
 
                           return (
                             <li key={`${avaliador.id}-${projetoId}-${idx}`}>
@@ -1100,6 +1203,27 @@ const Page = ({ params }) => {
                                     <strong>Avaliador:</strong>{" "}
                                     {avaliador.user.nome}
                                   </p>
+
+                                  {/* Mostrar as participações */}
+                                  {participacoes.length > 0 && (
+                                    <div className={style.participacoes}>
+                                      <p className={style.timeInfo}>
+                                        <strong>Participantes:</strong>
+                                      </p>
+                                      {participacoes.map(
+                                        (participacao, pIdx) => (
+                                          <p
+                                            key={pIdx}
+                                            className={style.participante}
+                                          >
+                                            {participacao.user.nome} (
+                                            {participacao.cargo}) - CPF:{" "}
+                                            {participacao.user.cpf}
+                                          </p>
+                                        )
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                               <div className={style.actions}>
@@ -1114,7 +1238,7 @@ const Page = ({ params }) => {
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       handleDesassociarAvaliador(
-                                        projetoId,
+                                        atribuicao.submissao.id,
                                         avaliador.user.id
                                       );
                                     }}
@@ -1129,7 +1253,11 @@ const Page = ({ params }) => {
                   </ul>
                 ) : (
                   <div className={style.content}>
-                    <h6>Nenhuma avaliação pendente encontrada</h6>
+                    <h6>
+                      {termoBusca
+                        ? "Nenhuma avaliação encontrada para a busca"
+                        : "Nenhuma avaliação pendente encontrada"}
+                    </h6>
                   </div>
                 )}
               </div>

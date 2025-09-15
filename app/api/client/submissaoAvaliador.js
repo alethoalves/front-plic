@@ -98,6 +98,23 @@ export const desvincularAvaliadorSubmissao = async (eventoId, idSubmissao) => {
   }
 };
 
+export const desvincularAvaliadorSubmissaoPeloGestor = async (eventoId, idSubmissao) => {
+  try {
+    const headers = getAuthHeadersClientAvaliador();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.get(
+      `/evenplic/evento/${eventoId}/desvincularAvaliadorSubmissaoPeloGestor/${idSubmissao}`,
+      { headers }
+    );
+    return response.data.submissao;
+  } catch (error) {
+      console.error("Erro ao atualizar campo:", error);
+      throw error;
+  }
+};
+
 export const gerarFeedback = async (
   titulo,resumo, fichaAvaliacao,eventoId
 ) => {
@@ -135,5 +152,22 @@ export const processarAvaliacao = async (
   } catch (error) {
     console.error("Erro ao atualizar campo:", error);
     throw error;
+  }
+};
+
+export const getFichasAvaliacoesEvento = async (edicaoEventoSlug) => {
+  try {
+    const headers = getAuthHeadersClientAvaliador();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.get(
+      `/evenplic/evento/fichas-avaliacao-evento/${edicaoEventoSlug}`,
+      { headers }
+    );
+    return response.data.avaliacoes;
+  } catch (error) {
+      console.error("Erro ao atualizar campo:", error);
+      throw error;
   }
 };

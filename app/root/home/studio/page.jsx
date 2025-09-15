@@ -100,7 +100,8 @@ const Page = () => {
                 <div className={styles.info}>
                   <p
                     className={`${styles.status} ${
-                      item?.status === "DISTRIBUIDA"
+                      item?.status === "DISTRIBUIDA" ||
+                      item?.status === "SELECIONADA"
                         ? styles.error
                         : item?.status === "AGUARDANDO_AVALIACAO"
                         ? styles.warning
@@ -111,7 +112,8 @@ const Page = () => {
                         : styles.success
                     }`}
                   >
-                    {item.status === "DISTRIBUIDA"
+                    {item.status === "DISTRIBUIDA" ||
+                    item.status === "SELECIONADA"
                       ? "checkin pendente"
                       : item.status === "AGUARDANDO_AVALIACAO"
                       ? "aguardando avaliação"

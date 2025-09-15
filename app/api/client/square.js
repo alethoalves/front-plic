@@ -4,7 +4,22 @@ import { getCookie } from 'cookies-next';
 
 
 
-
+export const gerarSquareParaSubsessao = async (eventoSlug, idSubsessao) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.get(
+      `/evenplic/evento/${eventoSlug}/gerarSquareParaSubsessao/${idSubsessao}`,
+      { headers }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao gerar squares:", error);
+    throw error;
+  }
+};
   
   export const vincularSubmissao = async (
     eventoSlug,idSubmissao,idSquare

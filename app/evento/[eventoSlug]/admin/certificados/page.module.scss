@@ -23,11 +23,7 @@
     align-items: center;
     cursor: pointer;
     position: relative;
-    img{
-        border-radius: $gap-1;
-        object-fit: contain;
-    object-position: center center;
-    }
+    
 }
 
 
@@ -50,12 +46,7 @@
         
         .certificadoImg{
             position: relative;
-            img{
-                border: 1px solid $gray-50;
-                border-radius: 4px;
-                object-fit: contain;
-            object-position: center center;
-            }
+            
             
             height: 180px;
             width: 100%;

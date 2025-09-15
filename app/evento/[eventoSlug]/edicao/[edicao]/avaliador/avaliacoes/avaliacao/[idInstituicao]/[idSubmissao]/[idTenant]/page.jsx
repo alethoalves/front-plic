@@ -295,7 +295,7 @@ const Page = ({ params }) => {
             <p>{error.geral}</p>
           </div>
         )}
-        {submissao && (
+        {submissao && !loading && (
           <>
             <div className={styles.squares}>
               <div className={`${styles.square} ${styles.squareWarning}`}>
@@ -371,7 +371,7 @@ const Page = ({ params }) => {
             <NoData description="Critérios de avaliação não foram definidos." />
           ) : (
             <div className={styles.fichaDeAvaliacao}>
-              <h5>Ficha de Avaliação</h5>
+              {!loading && <h5>Ficha de Avaliação</h5>}
 
               {!loading && (
                 <>

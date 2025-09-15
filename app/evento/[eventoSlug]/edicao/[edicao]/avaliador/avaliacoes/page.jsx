@@ -48,6 +48,7 @@ const Page = ({ params }) => {
     setLoading(true);
     try {
       const evento = await getEventoBySlug(params.edicao);
+
       const data = await getSubmissoesSemAvaliacao(evento.id);
       setSubmissoes(data);
       setEventoId(evento.id);

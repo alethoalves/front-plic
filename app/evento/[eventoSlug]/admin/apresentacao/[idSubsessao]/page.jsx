@@ -3,15 +3,8 @@ import {
   RiAddCircleLine,
   RiAlarmLine,
   RiAlertLine,
-  RiArticleLine,
-  RiCalendarLine,
-  RiEditLine,
-  RiFileCheckLine,
-  RiGroupLine,
   RiMapPinLine,
   RiMedalLine,
-  RiMenLine,
-  RiMenuLine,
   RiPercentLine,
   RiPresentationLine,
   RiQuillPenLine,
@@ -19,12 +12,10 @@ import {
   RiShieldStarFill,
   RiSpeedUpLine,
   RiStarLine,
-  RiSurveyLine,
   RiThumbDownLine,
-  RiTimeLine,
 } from "@remixicon/react";
 import styles from "./page.module.scss";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSubsessaoById } from "@/app/api/client/subsessoes";
 import Button from "@/components/Button";
@@ -32,7 +23,11 @@ import Modal from "@/components/Modal";
 import ModalSubmissaoAdmin from "@/components/ModalSubmissaoAdmin";
 
 import BuscadorBack from "@/components/BuscadorBack";
-import { vincularSubmissao } from "@/app/api/client/square";
+import {
+  gerarSquareParaSubsessao,
+  vincularSubmissao,
+} from "@/app/api/client/square";
+import { Toast } from "primereact/toast";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false); // Estado de carregamento
@@ -50,10 +45,40 @@ const Page = ({ params }) => {
   const [progress, setProgress] = useState(0);
   const [total, setTotal] = useState(0);
   const [loadingAlocacao, setLoadingAlocacao] = useState(false);
-
+  const [loadingGerarPoster, setLoadingGerarPoster] = useState(false);
+  const [message, setMessage] = useState("");
   // ROTEAMENTO
   const router = useRouter();
+  const toast = useRef(null);
+  // Função para mostrar toast de sucesso
+  const showSuccess = (message) => {
+    toast.current.show({
+      severity: "success",
+      summary: "Sucesso",
+      detail: message,
+      life: 3000,
+    });
+  };
 
+  // Função para mostrar toast de erro
+  const showError = (message) => {
+    toast.current.show({
+      severity: "error",
+      summary: "Erro",
+      detail: message,
+      life: 5000,
+    });
+  };
+
+  // Função para mostrar toast de informação
+  const showInfo = (message) => {
+    toast.current.show({
+      severity: "info",
+      summary: "Informação",
+      detail: message,
+      life: 3000,
+    });
+  };
   // Função de busca dos dados ao renderizar o componente
   const fetchData = async (eventoSlug, idSubsessao, filters = {}) => {
     setLoading(true); // Define o estado de carregamento como verdadeiro
@@ -123,6 +148,32 @@ const Page = ({ params }) => {
 
     // Refaz a busca com os filtros aplicados
     fetchData(params.eventoSlug, params.idSubsessao, filters);
+  };
+  // Função para gerar os posters
+  const handleGerarPosters = async () => {
+    setLoadingGerarPoster(true);
+
+    try {
+      const resultado = await gerarSquareParaSubsessao(
+        params.eventoSlug,
+        params.idSubsessao
+      );
+
+      if (resultado.status === "success") {
+        showSuccess(resultado.message);
+        // Recarregar os dados para mostrar os novos squares
+        await fetchData(params.eventoSlug, params.idSubsessao);
+      } else {
+        showError("Erro ao gerar posters: " + resultado.message);
+      }
+    } catch (error) {
+      console.error("Erro ao gerar posters:", error);
+      showError(
+        "Erro ao gerar posters. Verifique o console para mais detalhes."
+      );
+    } finally {
+      setLoadingGerarPoster(false);
+    }
   };
   const alocarSubmissao = async (item) => {
     try {
@@ -203,7 +254,7 @@ const Page = ({ params }) => {
       </div>
       {!loading && (
         <div className={styles.squares}>
-          {false && (
+          {true && (
             <Button
               className="btn-secondary mb-2"
               icon={RiRobot2Line}
@@ -228,7 +279,8 @@ const Page = ({ params }) => {
                 <div className={styles.info}>
                   <p
                     className={`${styles.status} ${
-                      item?.status === "DISTRIBUIDA"
+                      item?.status === "DISTRIBUIDA" ||
+                      item?.status === "SELECIONADA"
                         ? styles.error
                         : item?.status === "AGUARDANDO_AVALIACAO"
                         ? styles.warning
@@ -239,7 +291,8 @@ const Page = ({ params }) => {
                         : styles.success
                     }`}
                   >
-                    {item.status === "DISTRIBUIDA"
+                    {item.status === "DISTRIBUIDA" ||
+                    item.status === "SELECIONADA"
                       ? "checkin pendente"
                       : item.status === "AGUARDANDO_AVALIACAO"
                       ? "aguardando avaliação"
@@ -264,8 +317,8 @@ const Page = ({ params }) => {
                     {item.Resumo?.participacoes
                       .filter(
                         (item) =>
-                          item.tipo === "ORIENTADOR" ||
-                          item.tipo === "COORIENTADOR"
+                          item.cargo === "ORIENTADOR" ||
+                          item.cargo === "COORIENTADOR"
                       )
                       .map(
                         (item, i) => `${i > 0 ? ", " : ""}${item.user.nome} `
@@ -331,6 +384,7 @@ const Page = ({ params }) => {
     <div className={styles.navContent}>
       {renderModalContent()}
       {renderModalSubmissao()}
+      <Toast ref={toast} position="top-right" />
       <h6 className="mb-1">
         {subsessao?.sessaoApresentacao?.titulo.toUpperCase()}
       </h6>
@@ -425,12 +479,15 @@ const Page = ({ params }) => {
       <div className={styles.actions}>
         {subsessao?.Square.length < 1 && (
           <Button
-            onClick={() => {}}
+            onClick={handleGerarPosters}
             icon={RiMapPinLine}
             className="btn-primary"
-            type="submit"
+            type="button"
+            disabled={loadingGerarPoster}
           >
-            Gerar {subsessao?.sessaoApresentacao?.capacidade} Pôsteres
+            {loadingGerarPoster
+              ? "Gerando..."
+              : `Gerar ${subsessao?.sessaoApresentacao?.capacidade} Pôsteres`}
           </Button>
         )}
       </div>
@@ -442,11 +499,7 @@ const Page = ({ params }) => {
               <p>Pôster nº</p>
               <h6>{item.numero}</h6>
             </div>
-            {false && (
-              <div className={styles.squareHeader}>
-                <h6>SUBMISSAO_ID_{item.submissaoId}</h6>
-              </div>
-            )}
+
             {!item.submissaoId ? (
               <div
                 onClick={async () => {
@@ -471,7 +524,8 @@ const Page = ({ params }) => {
                   <div className={styles.info}>
                     <p
                       className={`${styles.status} ${
-                        item.submissao?.status === "DISTRIBUIDA"
+                        item.submissao?.status === "DISTRIBUIDA" ||
+                        item.submissao?.status === "SELECIONADA"
                           ? styles.error
                           : item.submissao?.status === "AGUARDANDO_AVALIACAO"
                           ? styles.warning
@@ -482,7 +536,8 @@ const Page = ({ params }) => {
                           : item.submissao?.status
                       }`}
                     >
-                      {item.submissao?.status === "DISTRIBUIDA"
+                      {item.submissao?.status === "DISTRIBUIDA" ||
+                      item.submissao?.status === "SELECIONADA"
                         ? "checkin pendente"
                         : item.submissao?.status === "AGUARDANDO_AVALIACAO"
                         ? "aguardando avaliação"
@@ -498,35 +553,33 @@ const Page = ({ params }) => {
                       {item.submissao?.Resumo?.area?.area
                         ? item.submissao?.Resumo?.area?.area
                         : "sem área"}{" "}
-                      - {item.submissao?.tenant?.sigla.toUpperCase()}-{" "}
+                      - {item.submissao?.tenant?.sigla}-{" "}
                       {item.submissao?.categoria.toUpperCase()}
                     </p>
                   </div>
                   <div className={styles.submissaoData}>
-                    <h6>{item.submissao?.Resumo?.titulo}</h6>
+                    <h6>
+                      ID {item.submissaoId}: {item.submissao?.Resumo?.titulo}
+                    </h6>
                     <p className={styles.participacoes}>
                       <strong>Orientadores: </strong>
                       {item.submissao?.Resumo?.participacoes
                         .filter(
                           (item) =>
-                            item.tipo === "orientador" ||
-                            item.tipo === "coorientador"
+                            item.cargo === "ORIENTADOR" ||
+                            item.cargo === "COORIENTADOR"
                         )
                         .map(
-                          (item, i) =>
-                            `${i > 0 ? ", " : ""}${item.user.nome} (${
-                              item.status
-                            })`
+                          (item, i) => `${i > 0 ? ", " : ""}${item.user.nome} `
                         )}
                     </p>
                     <p className={styles.participacoes}>
                       <strong>Alunos: </strong>
-                      {item.submissao?.Resumo?.participacoes.map(
-                        (item, i) =>
-                          `${i > 0 ? ", " : ""}${item.user.nome} (${
-                            item.status
-                          })`
-                      )}
+                      {item.submissao?.Resumo?.participacoes
+                        .filter((item) => item.cargo === "AUTOR")
+                        .map(
+                          (item, i) => `${i > 0 ? ", " : ""}${item.user.nome} `
+                        )}
                     </p>
                   </div>
                 </div>

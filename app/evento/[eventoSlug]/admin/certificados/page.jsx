@@ -12,14 +12,14 @@ import {
 import Image from "next/image";
 
 const Page = ({ params }) => {
-  const [loading, setLoading] = useState(false); // Estado de carregamento
+  const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [tipoCertificado, setTipoCertificado] = useState(null);
   const [selectedCertificado, setSelectedCertificado] = useState(null);
   const [certificados, setCertificados] = useState([]);
-  const [error, setError] = useState(""); // Mensagens de erro
-  const [isUploading, setIsUploading] = useState(false); // Estado de upload
-  const fileInputRef = useRef(); // Referência para o input de arquivo
+  const [error, setError] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef();
 
   const router = useRouter();
 
@@ -71,7 +71,6 @@ const Page = ({ params }) => {
         formData
       );
 
-      // Atualize o certificado na listagem
       const updatedCertificados = certificados.map((cert) =>
         cert.id === selectedCertificado.id
           ? { ...cert, imagemFundo: response.fileUrl }
@@ -79,13 +78,12 @@ const Page = ({ params }) => {
       );
       setCertificados(updatedCertificados);
 
-      // Atualize a imagem de fundo no modal
       setSelectedCertificado((prev) => ({
         ...prev,
         imagemFundo: response.fileUrl,
       }));
 
-      setError(""); // Limpa possíveis erros
+      setError("");
     } catch (err) {
       console.error("Erro ao fazer upload:", err);
       setError("Erro ao fazer upload. Tente novamente.");
@@ -95,7 +93,7 @@ const Page = ({ params }) => {
   };
 
   const handleDivClick = () => {
-    fileInputRef.current.click(); // Simula o clique no input de arquivo
+    fileInputRef.current.click();
   };
 
   const renderModalContent = () => (
@@ -114,10 +112,7 @@ const Page = ({ params }) => {
           ? "Indicado ao Prêmio"
           : "Menção Honrosa"}
       </h4>
-      <div
-        className={`${styles.bgCertificado} mt-2`}
-        onClick={handleDivClick} // Simula o clique no input ao clicar na div
-      >
+      <div className={`${styles.bgCertificado} mt-2`} onClick={handleDivClick}>
         <div className={styles.certificadoImg}>
           {selectedCertificado?.imagemFundo ? (
             <Image
@@ -125,7 +120,8 @@ const Page = ({ params }) => {
               fill
               src={selectedCertificado.imagemFundo}
               alt={`Certificado ${selectedCertificado.tipo}`}
-              sizes="300 500 700"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              style={{ objectFit: "contain" }}
             />
           ) : (
             <RiImageAddLine />
@@ -133,10 +129,10 @@ const Page = ({ params }) => {
         </div>
         <input
           type="file"
-          ref={fileInputRef} // Conecta o input ao ref
-          style={{ display: "none" }} // Esconde o input
+          ref={fileInputRef}
+          style={{ display: "none" }}
           accept=".jpg,.jpeg,.png,.svg"
-          onChange={handleFileChange} // Faz o upload ao selecionar o arquivo
+          onChange={handleFileChange}
         />
       </div>
       {isUploading && <p className={styles.uploading}>Enviando arquivo...</p>}
@@ -159,6 +155,9 @@ const Page = ({ params }) => {
                 <Image
                   src={item.imagemFundo}
                   alt={`Certificado ${item.tipo}`}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  style={{ objectFit: "contain" }}
                 />
               ) : (
                 <RiImageAddLine />

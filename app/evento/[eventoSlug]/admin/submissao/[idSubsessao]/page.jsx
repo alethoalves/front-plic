@@ -227,7 +227,8 @@ const Page = ({ params }) => {
                 <div className={styles.info}>
                   <p
                     className={`${styles.status} ${
-                      item?.status === "DISTRIBUIDA"
+                      item?.status === "DISTRIBUIDA" ||
+                      item?.status === "SELECIONADA"
                         ? styles.error
                         : item?.status === "AGUARDANDO_AVALIACAO"
                         ? styles.warning
@@ -238,7 +239,8 @@ const Page = ({ params }) => {
                         : styles.success
                     }`}
                   >
-                    {item.status === "DISTRIBUIDA"
+                    {item.status === "DISTRIBUIDA" ||
+                    item?.status === "SELECIONADA"
                       ? "checkin pendente"
                       : item.status === "AGUARDANDO_AVALIACAO"
                       ? "aguardando avaliação"
@@ -267,17 +269,19 @@ const Page = ({ params }) => {
                           item.cargo === "COORIENTADOR"
                       )
                       .map(
-                        (item, i) =>
-                          `${i > 0 ? ", " : ""}${item.user.nome} (${
-                            item.status
-                          })`
+                        (item, i) => `${i > 0 ? ", " : ""}${item.user.nome} `
                       )}
                   </p>
                   <p className={styles.participacoes}>
                     <strong>Alunos: </strong>
-                    {item.Resumo?.participacoes.map(
-                      (item, i) => `${i > 0 ? ", " : ""}${item.user.nome} `
-                    )}
+                    {item.Resumo?.participacoes
+                      .filter(
+                        (item) =>
+                          item.cargo === "AUTOR" || item.cargo === "COAUTOR"
+                      )
+                      .map(
+                        (item, i) => `${i > 0 ? ", " : ""}${item.user.nome} `
+                      )}
                   </p>
                 </div>
               </div>
@@ -342,7 +346,7 @@ const Page = ({ params }) => {
           {formatarHora(subsessao?.inicio)} às {formatarHora(subsessao?.fim)}
         </p>
       )}
-      {false && subsessao && (
+      {true && subsessao && (
         <div className={styles.dashboard}>
           <div className={styles.subsessao}>
             <div className={styles.description}>
@@ -455,11 +459,6 @@ const Page = ({ params }) => {
               </div>
             )}
 
-            {false && (
-              <div className={styles.squareHeader}>
-                <h6>SUBMISSAO_ID_{item.id}</h6>
-              </div>
-            )}
             <div
               className={styles.squareContent}
               onClick={() => {
@@ -470,7 +469,8 @@ const Page = ({ params }) => {
               <div className={styles.info}>
                 <p
                   className={`${styles.status} ${
-                    item?.status === "DISTRIBUIDA"
+                    item?.status === "DISTRIBUIDA" ||
+                    item?.status === "SELECIONADA"
                       ? styles.error
                       : item?.status === "AGUARDANDO_AVALIACAO"
                       ? styles.warning
@@ -481,7 +481,8 @@ const Page = ({ params }) => {
                       : item?.status
                   }`}
                 >
-                  {item?.status === "DISTRIBUIDA"
+                  {item?.status === "DISTRIBUIDA" ||
+                  item?.status === "SELECIONADA"
                     ? "checkin pendente"
                     : item?.status === "AGUARDANDO_AVALIACAO"
                     ? "aguardando avaliação"
@@ -502,7 +503,9 @@ const Page = ({ params }) => {
                 </p>
               </div>
               <div className={styles.submissaoData}>
-                <h6>{item.Resumo?.titulo}</h6>
+                <h6>
+                  ID {item.id}: {item.Resumo?.titulo}
+                </h6>
                 <p className={styles.participacoes}>
                   <strong>Orientadores: </strong>
                   {item.Resumo?.participacoes

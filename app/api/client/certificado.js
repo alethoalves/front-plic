@@ -1,4 +1,4 @@
-import { getAuthHeadersClient, getAuthToken } from "@/lib/headers.js";
+import { getAuthHeadersClient, getAuthHeadersClientAvaliador, getAuthToken } from "@/lib/headers.js";
 import { req } from "./../axios.js";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -54,13 +54,13 @@ export const getLayoutCertificados = async (eventoSlug) => {
 export const generateAndDownloadAvaliadorCertificatePDF = async (eventoSlug) => {
   try {
     // Obtenha os cabeçalhos de autenticação
-    const headers = getAuthHeadersClient();
+    const headers = getAuthHeadersClientAvaliador();
     if (!headers) {
       throw new Error("Headers de autenticação não encontrados.");
     }
 
     // Chame a API para obter o HTML do certificado
-    const response = await req.get(`evenplic/evento/1/generateAvaliadorCertificate`, {
+    const response = await req.get(`evenplic/evento/${eventoSlug}/generateAvaliadorCertificate`, {
       headers,
     });
 
@@ -100,7 +100,7 @@ export const generateAndDownloadAvaliadorCertificatePDF = async (eventoSlug) => 
     pdf.save(`certificado_${eventoSlug}.pdf`);
   } catch (error) {
     console.error("Erro ao gerar ou baixar o certificado PDF:", error);
-    throw new Error("Erro ao gerar ou baixar o certificado. Tente novamente.");
+    throw new Error(error.response.data.message||"Erro ao gerar ou baixar o certificado. Tente novamente.");
   }
 };
 

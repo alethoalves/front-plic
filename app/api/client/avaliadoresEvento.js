@@ -40,6 +40,7 @@ import { getCookie } from 'cookies-next';
       throw error;
     }
   };
+  
   export const editarAvaliadorEvento = async (
     id,
     eventoSlug,

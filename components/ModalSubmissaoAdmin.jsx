@@ -122,7 +122,8 @@ const Modal = ({ isOpen, onClose, eventoSlug, idSubmissao, onDataUpdated }) => {
                   <div className={styles.info}>
                     <p
                       className={`${styles.status} ${
-                        submissao?.status === "DISTRIBUIDA"
+                        submissao?.status === "DISTRIBUIDA" ||
+                        submissao?.status === "SELECIONADA"
                           ? styles.error
                           : submissao?.status === "AGUARDANDO_AVALIACAO"
                           ? styles.warning
@@ -134,7 +135,8 @@ const Modal = ({ isOpen, onClose, eventoSlug, idSubmissao, onDataUpdated }) => {
                       }
                       }`}
                     >
-                      {submissao?.status === "DISTRIBUIDA"
+                      {submissao?.status === "DISTRIBUIDA" ||
+                      submissao?.status === "SELECIONADA"
                         ? "checkin pendente"
                         : submissao?.status === "AGUARDANDO_AVALIACAO"
                         ? "aguardando avaliação"
@@ -145,40 +147,37 @@ const Modal = ({ isOpen, onClose, eventoSlug, idSubmissao, onDataUpdated }) => {
                         : submissao?.status}
                     </p>
                     <p className={styles.area}>
-                      {submissao?.planoDeTrabalho?.area?.area
-                        ? submissao?.planoDeTrabalho?.area?.area
+                      {submissao?.Resumo?.area?.area
+                        ? submissao?.Resumo?.area?.area
                         : "sem área"}{" "}
-                      -{" "}
-                      {submissao?.planoDeTrabalho?.inscricao?.edital?.tenant?.sigla.toUpperCase()}
-                      -{" "}
-                      {submissao?.planoDeTrabalho?.inscricao?.edital?.titulo.toUpperCase()}
+                      - {submissao?.tenant?.sigla.toUpperCase()}-{" "}
+                      {submissao?.categoria?.toUpperCase()}
                     </p>
                   </div>
                   <div className={styles.submissaoData}>
                     <h6>{submissao?.planoDeTrabalho?.titulo}</h6>
                     <p className={styles.participacoes}>
                       <strong>Orientadores: </strong>
-                      {submissao?.planoDeTrabalho?.inscricao?.participacoes
+                      {submissao?.Resumo?.participacoes
                         .filter(
                           (item) =>
-                            item.tipo === "orientador" ||
-                            item.tipo === "coorientador"
+                            item.cargo === "ORIENTADOR" ||
+                            item.cargo === "COORIENTADOR"
                         )
                         .map(
-                          (item, i) =>
-                            `${i > 0 ? ", " : ""}${item.user.nome} (${
-                              item.status
-                            })`
+                          (item, i) => `${i > 0 ? ", " : ""}${item.user.nome} `
                         )}
                     </p>
                     <p className={styles.participacoes}>
                       <strong>Alunos: </strong>
-                      {submissao?.planoDeTrabalho?.participacoes?.map(
-                        (item, i) =>
-                          `${i > 0 ? ", " : ""}${item.user.nome} (${
-                            item.status
-                          })`
-                      )}
+                      {submissao?.Resumo?.participacoes
+                        .filter(
+                          (item) =>
+                            item.cargo === "AUTOR" || item.cargo === "COAUTOR"
+                        )
+                        .map(
+                          (item, i) => `${i > 0 ? ", " : ""}${item.user.nome} `
+                        )}
                     </p>
                   </div>
                 </div>
@@ -352,7 +351,8 @@ const Modal = ({ isOpen, onClose, eventoSlug, idSubmissao, onDataUpdated }) => {
                           </li>
                           <li
                             className={`${
-                              submissao?.status === "DISTRIBUIDA"
+                              submissao?.status === "DISTRIBUIDA" ||
+                              submissao?.status === "SELECIONADA"
                                 ? styles.selected
                                 : ""
                             }`}
