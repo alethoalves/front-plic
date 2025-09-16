@@ -181,31 +181,10 @@ const Page = ({ params }) => {
       }));
     }
   };
-  const handleLerResumo = async (eventoId, submissaoId, tenantId) => {
-    // Define o estado de carregamento do resumo para esta submissão
-    setLoadingResumo((prevLoading) => ({
-      ...prevLoading,
-      [submissaoId]: true, // Define o carregamento para a submissão específica
-    }));
-
-    try {
-      const resumo = await getResumo(eventoId, submissaoId, tenantId);
-
-      // Define os parâmetros e abre o modal após a busca ser concluída com sucesso
-      if (resumo) {
-        setModalParams({ eventoId, submissaoId, tenantId, resumo });
-        setIsModalOpen(true);
-      }
-    } catch (error) {
-      console.error("Erro ao buscar o resumo:", error);
-      // Trate o erro, se necessário
-    } finally {
-      // Remove o estado de carregamento para esta submissão
-      setLoadingResumo((prevLoading) => ({
-        ...prevLoading,
-        [submissaoId]: false, // Define como não carregando mais para esta submissão
-      }));
-    }
+  const handleLerResumo = (eventoId, submissaoId, tenantId) => {
+    router.push(
+      `/evento/${params.eventoSlug}/edicao/${params.edicao}/avaliador/resumo/${eventoId}/${submissaoId}/${tenantId}`
+    );
   };
 
   const closeModalAndResetData = () => {

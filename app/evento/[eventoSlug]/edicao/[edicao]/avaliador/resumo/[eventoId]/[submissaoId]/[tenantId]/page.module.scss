@@ -1,0 +1,251 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: $gap-3;
+  background-color: $white-normal;
+  min-height: 100vh;
+  
+  @include responsive(s) {
+    padding: $gap-2;
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $gap-3;
+  padding-bottom: $gap-2;
+  border-bottom: 1px solid $gray-50;
+  
+  @include responsive(s) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: $gap-2;
+  }
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  gap: $gap-1;
+  background: none;
+  border: 1px solid $gray-50;
+  border-radius: $gap-1;
+  padding: $gap-1 $gap-2;
+  color: $primary-normal;
+  cursor: pointer;
+  transition: ease .3s;
+  
+  &:hover {
+    background-color: $white-darken;
+    border-color: $primary-light;
+  }
+}
+
+.metaInfo {
+  display: flex;
+  gap: $gap-2;
+  flex-wrap: wrap;
+  
+  @include responsive(xs) {
+    gap: $gap-1;
+  }
+}
+
+.area, .tenant, .categoria {
+  padding: $gap-1 $gap-2;
+  border-radius: $gap-1;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.area {
+  background-color: $primary-lighten;
+  color: $primary-darken;
+  border: 1px solid $primary-light;
+}
+
+.tenant {
+  background-color: $success-lighten;
+  color: $success-normal;
+  border: 1px solid $success-light;
+}
+
+.categoria {
+  background-color: $warning-lighten;
+  color: $warning-darken;
+  border: 1px solid $warning-light;
+}
+
+.content {
+  margin-bottom: $gap-4;
+}
+
+.titulo {
+  color: $primary-darken;
+  margin-bottom: $gap-3;
+  font-size: 24px;
+  line-height: 1.3;
+  font-weight: 600;
+  
+  @include responsive(s) {
+    font-size: 20px;
+  }
+}
+
+.conteudoResumo {
+  line-height: 1.6;
+  color: $gray-600;
+}
+
+.secao {
+  margin-bottom: $gap-3;
+}
+
+.conteudo {
+  p {
+    margin-bottom: $gap-2;
+    text-align: justify;
+  }
+  
+  h2, h3, h4 {
+    color: $primary-darken;
+    margin: $gap-2 0 $gap-1;
+  }
+}
+
+.actions {
+  position: sticky;
+  bottom: $gap-2;
+  display: flex;
+  justify-content: center;
+  padding: $gap-2 0;
+  background: linear-gradient(transparent, $white-normal 20%);
+}
+
+.avaliarButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $gap-1;
+  background-color: $warning-dark;
+  color: $warning-lighten;
+  border: none;
+  padding: $gap-2 $gap-3;
+  border-radius: $gap-1;
+  cursor: pointer;
+  font-weight: 500;
+  transition: ease .3s;
+  box-shadow: 0px 4px 10px rgba(5, 17, 34, 0.1);
+  width: 100%;
+  svg{
+    width: 22px;
+  }
+  &:hover {
+    background-color: $warning-darken;
+    transform: translateY(-2px);
+    box-shadow: 0px 6px 15px rgba(5, 17, 34, 0.15);
+  }
+}
+
+.loading, .error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: $gap-4;
+  text-align: center;
+}
+
+.error {
+  color: $error-dark;
+  background-color: $error-lighten;
+  border: 1px solid $error-light;
+  border-radius: $gap-1;
+  padding: $gap-3;
+}
+
+// Informações do Pôster
+.posterInfo {
+  background-color: $warning-lighten;
+  border: 1px solid $warning-darken;
+  border-radius: $gap-1;
+  padding: $gap-2;
+  margin-bottom: $gap-3;
+  h3{
+    color: $warning-darken;
+  }
+}
+
+.posterHeader {
+  display: flex;
+  align-items: center;
+  gap: $gap-1;
+  margin-bottom: $gap-2;
+  color: $warning-darken;
+  svg{
+    width: 22px;
+  }
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+  }
+}
+
+.posterDetails {
+  display: flex;
+  
+  
+  gap: $gap-1;
+}
+
+.singlePoster {
+  display: flex;
+  justify-content: center;
+}
+
+.posterNumber {
+  display: inline-block;
+  background-color: $warning-dark;
+  color: white;
+  padding: $gap-1 $gap-2;
+  border-radius: $gap-1;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.multiplePosters {
+  text-align: center;
+}
+
+.warningText {
+  display: block;
+  color: $error-dark;
+  font-weight: 500;
+  margin-bottom: $gap-1;
+}
+
+.posterNumbers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $gap-1;
+  justify-content: center;
+}
+
+// Títulos das seções
+.secaoTitulo {
+  color: $primary-darken;
+  margin-bottom: $gap-1;
+  font-size: 18px;
+  font-weight: 600;
+}

@@ -298,3 +298,17 @@ export const getEventoDashboard = async (eventoSlug) => {
     throw error;
   }
 };
+
+
+export const getEventosAnoCorrente = async (slug) => {
+  try {
+    const response = await req.get(
+      `/evenplic/eventosAnoCorrente`,
+      
+    );
+    return response.data.eventos;
+  } catch (error) {
+    console.error("Erro ao chamar a API:", error);
+    throw error;
+  }
+};

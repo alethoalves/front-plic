@@ -1,7 +1,7 @@
 "use client";
 
 import styles from "./page.module.scss";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
@@ -13,7 +13,7 @@ import {
   getSubmissoesEmAvaliacao,
   getSubmissoesSemAvaliacao,
   processarAvaliacao,
-} from "@/app/api/client/submissaoAvaliador"; // Supondo que essa função está na API do client
+} from "@/app/api/client/submissaoAvaliador";
 import {
   Ri24HoursFill,
   RiArrowLeftCircleLine,
@@ -25,28 +25,37 @@ import {
   RiSpam2Line,
   RiSparkling2Line,
   RiStarLine,
+  RiErrorWarningLine,
 } from "@remixicon/react";
 import Modal from "@/components/Modal";
 import Button from "@/components/Button";
 import NoData from "@/components/NoData";
 import { transformarQuebrasEmParagrafos } from "@/lib/formatarParagrafo";
+import { Toast } from "primereact/toast";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [error, setError] = useState({}); // Erros individuais por submissão
+  const [error, setError] = useState({});
   const [submissoesEmAvaliacao, setSubmissoesEmAvaliacao] = useState([]);
-  const [filteredSubmissoes, setFilteredSubmissoes] = useState([]); // Submissões filtradas exibidas
-  const [loadingResumo, setLoadingResumo] = useState({}); // Estado separado para o carregamento de resumo
+  const [filteredSubmissoes, setFilteredSubmissoes] = useState([]);
+  const [loadingResumo, setLoadingResumo] = useState({});
   const [loadingDevolver, setLoadingDevolver] = useState({});
   const [modalParams, setModalParams] = useState(null);
   const [submissao, setSubmissao] = useState(null);
   const [evento, setEvento] = useState(null);
-  const [selectedNotas, setSelectedNotas] = useState({}); // Novo estado para armazenar notas selecionadas
-  const [notaTotal, setNotaTotal] = useState(0); // Nova chave para armazenar a média
-  const [loadingFeedback, setLoadingFeedback] = useState(false); // Estado para controlar o carregamento do feedback
+  const [selectedNotas, setSelectedNotas] = useState({});
+  const [notaTotal, setNotaTotal] = useState(0);
+  const [loadingFeedback, setLoadingFeedback] = useState(false);
+  const toast = useRef(null);
 
   const router = useRouter();
+
+  // Função para exibir toasts
+  const showToast = (severity, summary, detail) => {
+    toast.current.show({ severity, summary, detail, life: 5000 });
+  };
 
   // Função para calcular a média das notas
   const calcularNotaTotal = (criterios, notasSelecionadas) => {
@@ -72,13 +81,18 @@ const Page = ({ params }) => {
         notaTotal: 0,
         mencaoHonrosaSelecionada: false,
         premioSelecionado: false,
-        comentarioFeedback: "", // Inicializa a chave para armazenar o comentário
+        comentarioFeedback: "",
         notaMinimaPremio: submissaoComResumo.evento.notaMinimaPremio || 0,
         notaMinimaMencaoHonrosa:
           submissaoComResumo.evento.notaMinimaMencaoHonrosa || 0,
       });
     } catch (error) {
       console.error("Erro ao buscar dados:", error);
+      showToast(
+        "error",
+        "Erro",
+        "Não foi possível carregar os dados da submissão."
+      );
     } finally {
       setLoading(false);
     }
@@ -109,7 +123,7 @@ const Page = ({ params }) => {
           if (criterio.id === criterioId) {
             return {
               ...criterio,
-              notaAtribuida: valor, // Adiciona a chave para armazenar a nota atribuída
+              notaAtribuida: valor,
             };
           }
           return criterio;
@@ -129,94 +143,102 @@ const Page = ({ params }) => {
     const comentario = e.target.value;
     setEvento((prevEvento) => ({
       ...prevEvento,
-      comentarioFeedback: comentario, // Atualiza o comentário no evento
+      comentarioFeedback: comentario,
     }));
   };
+
   // Função para selecionar menção honrosa
   const handleSelecionarMencaoHonrosa = () => {
-    setEvento((prevEvento) => ({
-      ...prevEvento,
-      mencaoHonrosaSelecionada: !prevEvento.mencaoHonrosaSelecionada,
-    }));
+    if (notaTotal >= evento?.notaMinimaMencaoHonrosa) {
+      setEvento((prevEvento) => ({
+        ...prevEvento,
+        mencaoHonrosaSelecionada: !prevEvento.mencaoHonrosaSelecionada,
+        premioSelecionado: false, // Desmarca prêmio se menção for selecionada
+      }));
+    } else {
+      showToast(
+        "warn",
+        "Atenção",
+        `Nota insuficiente para menção honrosa. Mínimo: ${evento?.notaMinimaMencaoHonrosa}`
+      );
+    }
   };
 
   // Função para selecionar prêmio
   const handleSelecionarPremio = () => {
-    setEvento((prevEvento) => ({
-      ...prevEvento,
-      premioSelecionado: !prevEvento.premioSelecionado,
-    }));
+    if (notaTotal >= evento?.notaMinimaPremio) {
+      setEvento((prevEvento) => ({
+        ...prevEvento,
+        premioSelecionado: !prevEvento.premioSelecionado,
+        mencaoHonrosaSelecionada: false, // Desmarca menção se prêmio for selecionado
+      }));
+    } else {
+      showToast(
+        "warn",
+        "Atenção",
+        `Nota insuficiente para prêmio. Mínimo: ${evento?.notaMinimaPremio}`
+      );
+    }
   };
 
   // Função para tratar a desvinculação do avaliador
   const handleDesvincularAvaliador = async (eventoId, idSubmissao) => {
-    setError({});
-    setLoadingDevolver((prevLoading) => ({
-      ...prevLoading,
-      [idSubmissao]: true, // Define o carregamento do botão "Devolver"
-    }));
+    confirmDialog({
+      message: "Tem certeza que deseja devolver esta avaliação?",
+      header: "Confirmação de Devolução",
+      icon: "pi pi-exclamation-triangle",
+      accept: async () => {
+        setError({});
+        setLoadingDevolver((prevLoading) => ({
+          ...prevLoading,
+          [idSubmissao]: true,
+        }));
 
-    try {
-      const updatedSubmissao = await desvincularAvaliadorSubmissao(
-        eventoId,
-        idSubmissao
-      );
-      if (updatedSubmissao) {
-        setSubmissoesEmAvaliacao((prevSubmissoes) =>
-          prevSubmissoes.filter((submissao) => submissao.id !== idSubmissao)
-        );
-        setFilteredSubmissoes((prevSubmissoes) => [
-          ...prevSubmissoes,
-          updatedSubmissao,
-        ]);
-      }
-    } catch (err) {
-      setError((prevErrors) => ({
-        ...prevErrors,
-        [idSubmissao]:
-          err.response?.data?.error || "Erro ao desvincular submissão",
-      }));
-    } finally {
-      setLoadingDevolver((prevLoading) => ({
-        ...prevLoading,
-        [idSubmissao]: false, // Remove o estado de carregamento do botão "Devolver"
-      }));
-      router.push(
-        `/evento/${params.eventoSlug}/edicao/${params.edicao}/avaliador/avaliacoes`
-      );
-    }
+        try {
+          const updatedSubmissao = await desvincularAvaliadorSubmissao(
+            eventoId,
+            idSubmissao
+          );
+          if (updatedSubmissao) {
+            setSubmissoesEmAvaliacao((prevSubmissoes) =>
+              prevSubmissoes.filter((submissao) => submissao.id !== idSubmissao)
+            );
+            setFilteredSubmissoes((prevSubmissoes) => [
+              ...prevSubmissoes,
+              updatedSubmissao,
+            ]);
+            showToast("success", "Sucesso", "Avaliação devolvida com sucesso.");
+          }
+        } catch (err) {
+          setError((prevErrors) => ({
+            ...prevErrors,
+            [idSubmissao]:
+              err.response?.data?.error || "Erro ao desvincular submissão",
+          }));
+          showToast("error", "Erro", "Não foi possível devolver a avaliação.");
+        } finally {
+          setLoadingDevolver((prevLoading) => ({
+            ...prevLoading,
+            [idSubmissao]: false,
+          }));
+          router.push(
+            `/evento/${params.eventoSlug}/edicao/${params.edicao}/avaliador/avaliacoes`
+          );
+        }
+      },
+    });
   };
+
   const handleLerResumo = () => {
-    setIsModalOpen(true);
-  };
-
-  const closeModalAndResetData = () => {
-    setIsModalOpen(false);
-    setModalParams(null); // Limpa os parâmetros quando o modal fecha
-  };
-
-  const ModalContent = () => {
-    const conteudoFormatado = formatarResumo(submissao?.Resumo?.conteudo);
-
-    return (
-      <Modal isOpen={isModalOpen} onClose={closeModalAndResetData}>
-        <div className={`${styles.icon} mb-2`}>
-          <RiFileList3Line />
-        </div>
-        <h4>{submissao?.Resumo?.titulo}</h4>
-        {submissao?.Resumo.conteudo.map((secao, index) => (
-          <div key={index} className="mb-1">
-            <div className="text-justify">
-              {transformarQuebrasEmParagrafos(secao.conteudo)}
-            </div>
-          </div>
-        ))}
-      </Modal>
+    router.push(
+      `/evento/${params.eventoSlug}/edicao/${params.edicao}/avaliador/resumo/${params.idInstituicao}/${params.idSubmissao}/${params.idTenant}`
     );
   };
+
   const formatarResumo = (resumoArray) => {
     return transformarQuebrasEmParagrafos(resumoArray);
   };
+
   // Função para gerar feedback com IA e atualizar o textarea
   const handleGerarFeedback = async () => {
     setLoadingFeedback(true);
@@ -226,7 +248,7 @@ const Page = ({ params }) => {
       const conteudoFormatado = formatarResumo(submissao?.Resumo?.conteudo);
       const feedback = await gerarFeedback(
         submissao?.Resumo?.titulo,
-        conteudoFormatado, // Agora é uma string
+        conteudoFormatado,
         eventoSemComentario,
         params.idInstituicao
       );
@@ -234,16 +256,33 @@ const Page = ({ params }) => {
         ...prevEvento,
         comentarioFeedback: feedback,
       }));
+      showToast("success", "Sucesso", "Feedback gerado com sucesso!");
     } catch (error) {
       console.error("Erro ao gerar feedback com IA:", error);
+      showToast("error", "Erro", "Não foi possível gerar o feedback.");
     } finally {
       setLoadingFeedback(false);
     }
   };
+
   // Função para finalizar a avaliação
   const handleTerminarAvaliacao = async () => {
-    setLoading(true); // Inicia o estado de carregamento
-    setError({}); // Limpa erros anteriores
+    // Verificar se todas as notas foram atribuídas
+    const criteriosSemNota = evento.CriterioAvaliacao.filter(
+      (criterio) => selectedNotas[criterio.id] === undefined
+    );
+
+    if (criteriosSemNota.length > 0) {
+      showToast(
+        "warn",
+        "Atenção",
+        "Por favor, atribua notas a todos os critérios antes de finalizar."
+      );
+      return;
+    }
+
+    setLoading(true);
+    setError({});
 
     try {
       const body = {
@@ -253,28 +292,41 @@ const Page = ({ params }) => {
       const response = await processarAvaliacao(params.idInstituicao, body);
 
       if (response.status === "success") {
-        alert("Avaliação processada com sucesso!");
-        // Redireciona ou atualiza a página se necessário
-        router.push(
-          `/evento/${params.eventoSlug}/edicao/${params.edicao}/avaliador/avaliacoes`
-        );
+        showToast("success", "Sucesso", "Avaliação processada com sucesso!");
+        setTimeout(() => {
+          router.push(
+            `/evento/${params.eventoSlug}/edicao/${params.edicao}/avaliador/avaliacoes`
+          );
+        }, 1500);
       } else {
         setError({ geral: response.message || "Erro ao processar avaliação." });
+        showToast(
+          "error",
+          "Erro",
+          response.message || "Erro ao processar avaliação."
+        );
       }
     } catch (error) {
-      // Captura erros específicos e exibe mensagem
       setError({
         geral:
           error.response?.data?.message ||
           "Ocorreu um erro ao finalizar a avaliação.",
       });
+      showToast(
+        "error",
+        "Erro",
+        error.response?.data?.message ||
+          "Ocorreu um erro ao finalizar a avaliação."
+      );
     } finally {
-      setLoading(false); // Finaliza o estado de carregamento
+      setLoading(false);
     }
   };
+
   return (
     <>
-      {ModalContent()}
+      <Toast ref={toast} />
+      <ConfirmDialog />
       <div className={styles.navContent}>
         <div
           className={styles.voltar}
@@ -299,19 +351,14 @@ const Page = ({ params }) => {
           <>
             <div className={styles.squares}>
               <div className={`${styles.square} ${styles.squareWarning}`}>
-                {submissao.square.map((squareItem) => (
-                  <div key={squareItem.id} className={styles.squareHeader}>
-                    <p>Pôster nº</p>
-                    <h6>{squareItem.numero}</h6>
-                  </div>
-                ))}
-                {submissao.square.length == 0 && (
-                  <div className={styles.squareHeader}>
-                    <p>Pôster nº</p>
-                    <h6>-</h6>
-                  </div>
-                )}
-
+                <div className={styles.squareHeader}>
+                  <p>Pôster nº</p>
+                  <h6>
+                    {submissao.square.length > 0
+                      ? submissao.square[0].numero
+                      : "-"}
+                  </h6>
+                </div>
                 <div className={styles.squareContent}>
                   <div className={styles.info}>
                     <p className={styles.area}>
@@ -325,7 +372,7 @@ const Page = ({ params }) => {
                   </div>
                   {error[submissao.id] && (
                     <div className={styles.error}>
-                      <p>{error[item?.id]}</p>
+                      <p>{error[submissao.id]}</p>
                     </div>
                   )}
                 </div>
@@ -366,6 +413,7 @@ const Page = ({ params }) => {
             </div>
           </>
         )}
+
         <div className={styles.fichaDeAvaliacao}>
           {submissao?.CriterioAvaliacao?.length === 0 ? (
             <NoData description="Critérios de avaliação não foram definidos." />
@@ -418,7 +466,31 @@ const Page = ({ params }) => {
                       }
                     )}
                   </div>
-
+                  {/* Card de Nota Total */}
+                  {evento?.CriterioAvaliacao?.length > 0 && (
+                    <div className={styles.notaTotalCard}>
+                      <div className={styles.notaHeader}>
+                        <h5>Nota Final</h5>
+                        <div className={styles.notaValor}>
+                          <span>{notaTotal.toFixed(1)}</span>
+                          <small>/10</small>
+                        </div>
+                      </div>
+                      <div className={styles.notaProgress}>
+                        <div
+                          className={styles.notaProgressBar}
+                          style={{ width: `${notaTotal * 10}%` }}
+                        ></div>
+                      </div>
+                      <div className={styles.notaMinimas}>
+                        <p>
+                          Mínimo para menção honrosa:{" "}
+                          {evento.notaMinimaMencaoHonrosa}
+                        </p>
+                        <p>Mínimo para prêmio: {evento.notaMinimaPremio}</p>
+                      </div>
+                    </div>
+                  )}
                   {/* Exibe os botões com base nas notas mínimas e na média total */}
                   <div className={styles.item}>
                     <div className={styles.label}>
@@ -436,41 +508,47 @@ const Page = ({ params }) => {
                     </div>
                     <div className={styles.instructions}></div>
                     <div className={styles.premio}>
-                      {notaTotal >= evento?.notaMinimaMencaoHonrosa && (
-                        <div
-                          className={`${styles.value} ${
-                            evento.mencaoHonrosaSelecionada
-                              ? styles.selectedPremio
-                              : ""
-                          }`}
-                          onClick={handleSelecionarMencaoHonrosa}
-                        >
-                          <RiStarLine />
-                          <p>
-                            {evento.mencaoHonrosaSelecionada
-                              ? "Menção Honrosa Selecionada"
-                              : "Clique para indicar à Menção Honrosa"}
-                          </p>
-                        </div>
-                      )}
+                      <div
+                        className={`${styles.value} ${
+                          evento?.mencaoHonrosaSelecionada
+                            ? styles.selectedPremio
+                            : notaTotal >= evento?.notaMinimaMencaoHonrosa
+                            ? styles.available
+                            : styles.disabled
+                        }`}
+                        onClick={handleSelecionarMencaoHonrosa}
+                      >
+                        <RiStarLine />
+                        <p>
+                          {evento?.mencaoHonrosaSelecionada
+                            ? "Menção Honrosa Selecionada"
+                            : "Indicar à Menção Honrosa"}
+                        </p>
+                        {notaTotal < evento?.notaMinimaMencaoHonrosa && (
+                          <RiErrorWarningLine className={styles.warningIcon} />
+                        )}
+                      </div>
 
-                      {notaTotal >= evento?.notaMinimaPremio && (
-                        <div
-                          className={`${styles.value} ${
-                            evento.premioSelecionado
-                              ? styles.selectedPremio
-                              : ""
-                          }`}
-                          onClick={handleSelecionarPremio}
-                        >
-                          <RiMedalLine />
-                          <p>
-                            {evento.premioSelecionado
-                              ? "Prêmio Selecionado"
-                              : "Clique para indicar ao Prêmio Destaque"}
-                          </p>
-                        </div>
-                      )}
+                      <div
+                        className={`${styles.value} ${
+                          evento?.premioSelecionado
+                            ? styles.selectedPremio
+                            : notaTotal >= evento?.notaMinimaPremio
+                            ? styles.available
+                            : styles.disabled
+                        }`}
+                        onClick={handleSelecionarPremio}
+                      >
+                        <RiMedalLine />
+                        <p>
+                          {evento?.premioSelecionado
+                            ? "Prêmio Selecionado"
+                            : "Indicar ao Prêmio Destaque"}
+                        </p>
+                        {notaTotal < evento?.notaMinimaPremio && (
+                          <RiErrorWarningLine className={styles.warningIcon} />
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -481,9 +559,9 @@ const Page = ({ params }) => {
                     {false && (
                       <Button
                         className="button btn-warning-secondary mb-1 mt-2"
-                        onClick={handleGerarFeedback} // Chama a função ao clicar
+                        onClick={handleGerarFeedback}
                         icon={RiSparkling2Line}
-                        disabled={loadingFeedback} // Desabilita o botão enquanto carrega
+                        disabled={loadingFeedback}
                       >
                         {loadingFeedback
                           ? "Gerando..."
@@ -492,19 +570,19 @@ const Page = ({ params }) => {
                     )}
                     <textarea
                       type="text"
-                      placeholder="Escreva aqui"
+                      placeholder="Escreva aqui seu feedback para o autor..."
                       value={evento?.comentarioFeedback || ""}
                       onChange={handleComentarioChange}
                     ></textarea>
                   </div>
 
                   <Button
-                    className="button btn-warning mb-3"
+                    className="button btn-warning mt-3 mb-3"
                     onClick={handleTerminarAvaliacao}
                     icon={RiQuillPenLine}
                     disabled={loading}
                   >
-                    Terminar Avaliação
+                    {loading ? "Processando..." : "Finalizar Avaliação"}
                   </Button>
                 </>
               )}

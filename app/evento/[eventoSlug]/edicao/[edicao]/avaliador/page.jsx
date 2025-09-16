@@ -2,7 +2,11 @@ import Header from "@/components/Header";
 import styles from "./page.module.scss";
 import Image from "next/image";
 import Link from "next/link";
-import { RiAwardFill, RiQuillPenLine } from "@remixicon/react";
+import {
+  RiAwardFill,
+  RiFolderHistoryLine,
+  RiQuillPenLine,
+} from "@remixicon/react";
 
 const Page = ({ params }) => {
   return (
@@ -20,20 +24,30 @@ const Page = ({ params }) => {
             </div>
           </div>
         </Link>
-        {false && (
-          <Link
-            href={`/evento/${params.eventoSlug}/edicao/${params.edicao}/avaliador/certificados`}
-          >
-            <div className={styles.menu}>
-              <div className={styles.logo}>
-                <RiAwardFill />
-              </div>
-              <div className={styles.descricao}>
-                <h6>Meus certificados</h6>
-              </div>
+        <Link
+          href={`/evento/${params.eventoSlug}/edicao/${params.edicao}/avaliador/certificados`}
+        >
+          <div className={styles.menu}>
+            <div className={styles.logo}>
+              <RiFolderHistoryLine />
             </div>
-          </Link>
-        )}
+            <div className={styles.descricao}>
+              <h6>Minhas avaliações</h6>
+            </div>
+          </div>
+        </Link>
+        <Link
+          href={`/evento/${params.eventoSlug}/edicao/${params.edicao}/avaliador/certificados`}
+        >
+          <div className={styles.menu}>
+            <div className={styles.logo}>
+              <RiAwardFill />
+            </div>
+            <div className={styles.descricao}>
+              <h6>Gerar Certificado</h6>
+            </div>
+          </div>
+        </Link>
       </div>
     </main>
   );

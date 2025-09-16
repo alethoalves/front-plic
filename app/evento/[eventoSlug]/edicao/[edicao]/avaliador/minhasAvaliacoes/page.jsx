@@ -77,7 +77,7 @@ const Page = ({ params }) => {
                           {item?.categoria?.toUpperCase()}
                         </p>
                         <h6 className={`mt-1 ${styles.tituloProjeto}`}>
-                          {item?.titulo}
+                          ID {item.submissaoId} - {item?.titulo}
                         </h6>
                       </div>
                     </div>

@@ -2,6 +2,48 @@
 @import "/styles/partials/layout";
 @import "/styles/partials/spacing";
 
+// Estilos para o PrimeReact Toast
+.p-toast {
+  &.p-toast-top-right {
+    top: 6rem;
+    right: 1rem;
+  }
+  
+  .p-toast-message {
+    border-radius: $gap-1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    
+    &.p-toast-message-success {
+      background-color: lighten($success-normal, 40%);
+      border: 1px solid $success-normal;
+      color: $success-dark;
+      
+      .p-toast-message-icon {
+        color: $success-normal;
+      }
+    }
+    
+    &.p-toast-message-warn {
+      background-color: lighten($warning-normal, 40%);
+      border: 1px solid $warning-normal;
+      color: $warning-dark;
+      
+      .p-toast-message-icon {
+        color: $warning-normal;
+      }
+    }
+    
+    &.p-toast-message-error {
+      background-color: lighten($error-normal, 40%);
+      border: 1px solid $error-normal;
+      color: $error-dark;
+      
+      .p-toast-message-icon {
+        color: $error-normal;
+      }
+    }
+  }
+}
 
 .error{
     border: 1px solid $error-light;
@@ -17,8 +59,8 @@
     margin-top: $gap-1;
     position: sticky;
     top: 80px;
-    backdrop-filter: blur(10px); /* Aplique o desfoque */
-  -webkit-backdrop-filter: blur(10px); /* Para suporte ao Safari */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 .waiting{
     border: 1px solid $success-normal;
@@ -87,44 +129,152 @@
     max-width: 900px;
     
 }
+
+// Card de Nota Total
+.notaTotalCard {
+  background: linear-gradient(135deg, lighten($warning-lighten, 5%) 0%, $warning-lighten 100%);
+  border: 1px solid $warning-normal;
+  border-radius: $gap-2;
+  padding: $gap-3;
+  margin: $gap-3 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  
+  .notaHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $gap-2;
+    
+    h5 {
+      margin: 0;
+      color: $warning-darken;
+      font-weight: 600;
+    }
+    
+    .notaValor {
+      display: flex;
+      align-items: baseline;
+      
+      span {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: $warning-darken;
+        line-height: 1;
+      }
+      
+      small {
+        font-size: 1rem;
+        color: $warning-dark;
+        margin-left: 4px;
+      }
+    }
+  }
+  
+  .notaProgress {
+    height: 8px;
+    background-color: lighten($warning-normal, 30%);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: $gap-2;
+    
+    .notaProgressBar {
+      height: 100%;
+      background: linear-gradient(90deg, $warning-normal 0%, $warning-dark 100%);
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+  }
+  
+  .notaMinimas {
+    p {
+      margin: 0;
+      font-size: 0.85rem;
+      color: $warning-dark;
+      
+      &:first-child {
+        margin-bottom: 4px;
+      }
+    }
+  }
+}
+
 .fichaDeAvaliacao{
     margin: $gap-2 0;
+    
+    h5 {
+        font-size: 22px;
+      color: $primary-darken;
+      border-bottom: 2px solid $primary-light;
+      padding-bottom: $gap-1;
+      margin-bottom: $gap-3;
+    }
+    
     .quesitos{
         margin-top: $gap-2; 
     }
     .item{
         margin-top: $gap-1;
+        background-color: $white-normal;
+        border-radius: $gap-1;
+        padding: $gap-3;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        border: 1px solid $gray-50;
+        
+        &:hover {
+          border-color: $primary-light;
+        }
     }
     .label{
         h6{
             line-height: 100%;
+            color: $primary-darken;
+            margin-bottom: $gap-1;
+            
+            span {
+              color: $warning-dark;
+            }
         }
         margin-bottom: $gap-1;
+    }
+    .instructions {
+      p {
+        color: $gray-600;
+        line-height: 1.5;
+      }
     }
     textarea{
         resize: none;
         width: 100%;
-        height: 300px;
+        height: 200px;
         border: 1px solid $gray-50;
         border-radius: $gap-1;
         padding: $gap-2;
+        font-family: inherit;
+        transition: all 0.3s ease;
+        
         &:focus {
-            border-color: $warning-dark; /* Cor da borda ao selecionar */
-            outline: 1px solid $warning-dark; /* Remove a borda de destaque padrão do navegador */
+            border-color: $warning-dark;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba($warning-dark, 0.1);
         }
     }
     .premio{
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: $gap-2;
+        
         .value{
             border: 1px solid $gray-50;
             border-radius: $gap-1;
-
             display: flex;
             align-items: center;
-            margin-bottom: $gap-1;
-            margin-top: $gap-1;
+            padding: $gap-2;
             cursor: pointer;
+            transition: all 0.3s ease;
+            
             &.selectedPremio{
-                border: 1px solid $warning-dark;
+                border: 2px solid $warning-dark;
+                background-color: lighten($warning-lighten, 2%);
                 
                 svg{
                     color: $warning-lighten;
@@ -132,8 +282,34 @@
                     background-color: $warning-dark;
                 }
             }
+            
+            &.available {
+              &:hover {
+                border-color: $warning-dark;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                
+                svg {
+                  border-right-color: $warning-dark;
+                }
+              }
+            }
+            
+            &.disabled {
+              opacity: 0.6;
+              cursor: not-allowed;
+              position: relative;
+              
+              .warningIcon {
+                margin-left: auto;
+                color: $error-normal;
+              }
+            }
+            
             p{
                 margin-left: $gap-1;
+                font-weight: 500;
+                flex: 1;
             }
             svg{
                 width: 40px;
@@ -146,21 +322,14 @@
                 border-right: 1px solid $gray-50;
                 
             }
-            transition: ease .3s;
-            &:hover{
-                transform: scale(1.02);
-                border: 1px solid $warning-dark;
-                svg{
-                    border-right: 1px solid $warning-dark;
-                }
-            }
         }
     }
     .values{
-        
         display: inline-flex;
         flex-wrap: wrap;
         margin: $gap-1 0 $gap-2 0;
+        gap: 6px;
+        
         @include responsive(xs){
             margin: $gap-1 0;
         }
@@ -168,8 +337,6 @@
             border: 1px solid $warning-dark;
             width: 50px;
             height: 50px;
-            margin-left: 4px;
-            margin-top: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -179,17 +346,27 @@
                 height: 40px;
                 
             }
-            transition: ease .3s;
+            transition: all 0.3s ease;
             cursor: pointer;
+            
             &:hover{
                 background-color: $warning-lighten;
                 transform: scale(1.05);
             }
             &.selected{
                 background-color: $warning-dark;
+                transform: scale(1.1);
+                box-shadow: 0 2px 8px rgba($warning-dark, 0.3);
+                
                 p{
                     color: $warning-lighten;
+                    font-weight: 600;
                 }
+            }
+            
+            p {
+              font-weight: 500;
+              transition: all 0.3s ease;
             }
         }
     }
@@ -204,6 +381,8 @@
             flex-direction: column;
         }
         margin-bottom: $gap-1;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        
         .squareHeader, .squareContent, .squareContentEmpty{
             background-color: $white-dark;
             padding: $gap-1;
@@ -219,8 +398,17 @@
             flex-direction: column;
             justify-content: center;
             text-align: center;
+            min-width: 100px;
+            
             h6{
                 font-size: 22px;
+                color: $warning-darken;
+            }
+            
+            p {
+              font-size: 0.85rem;
+              color: $warning-dark;
+              margin-bottom: 4px;
             }
         }
         .squareContentEmpty{
@@ -250,6 +438,7 @@
             cursor: pointer;
             transition: ease .3s;
             border: 1px solid transparent;
+            
             &:hover{
                 border: 1px solid $primary-light;
             }
@@ -287,6 +476,11 @@
             .submissaoData{
                 .participacoes{
                     font-size: 12px;
+                }
+                
+                h6 {
+                  color: $primary-darken;
+                  line-height: 1.4;
                 }
             }
         }
@@ -382,6 +576,32 @@
     color: $primary-normal;
 }
 
+// Animações
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
+.navContent > * {
+  animation: fadeIn 0.5s ease forwards;
+}
 
-
+// Responsividade melhorada
+@include responsive(s) {
+  .notaTotalCard {
+    padding: $gap-2;
+    
+    .notaHeader {
+      flex-direction: column;
+      align-items: flex-start;
+      
+      .notaValor {
+        margin-top: $gap-1;
+      }
+    }
+  }
+  
+  .premio {
+    grid-template-columns: 1fr !important;
+  }
+}
