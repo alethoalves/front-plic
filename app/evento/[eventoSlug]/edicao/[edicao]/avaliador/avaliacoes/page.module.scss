@@ -415,6 +415,80 @@ flex-wrap: wrap;
     color: $primary-normal;
 }
 
+// Adicione ao seu arquivo SCSS - versão corrigida
+.p-multiselect {
+  border: 1px solid $gray-50;
+  border-radius: $gap-1;
+  width: 100%;
+  
+  &:hover {
+    border-color: $primary-light;
+  }
+  
+  &:focus {
+    box-shadow: 0 0 0 2px $primary-light;
+    border-color: $primary-normal;
+  }
+  
+  .p-multiselect-label {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: $gap-1;
+    min-height: 38px;
+  }
+}
 
+.p-multiselect-panel {
+  border: 1px solid $gray-50;
+  border-radius: $gap-1;
+  box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+}
 
+.p-multiselect-item {
+  padding: $gap-1 $gap-2;
+  
+  &.p-highlight {
+    background-color: $primary-lighten;
+    color: $primary-darken;
+  }
+}
 
+.p-multiselect-token {
+  background-color: $primary-light;
+  color: $primary-darken;
+  border-radius: 4px;
+  margin: 2px;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  
+  .p-multiselect-token-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+  }
+  
+  .p-multiselect-token-icon {
+    color: $primary-darken;
+    flex-shrink: 0;
+    
+    &:hover {
+      color: $error-dark;
+    }
+  }
+}
+
+// Estilo para quando muitos chips são selecionados
+.p-multiselect-label-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+// Para o texto "X áreas selecionadas"
+.p-multiselect-token + .p-multiselect-token {
+  margin-left: 4px;
+}

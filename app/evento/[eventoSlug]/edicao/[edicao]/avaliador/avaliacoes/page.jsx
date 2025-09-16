@@ -22,6 +22,7 @@ import {
 import Modal from "@/components/Modal";
 import { getEventoBySlug } from "@/app/api/client/eventos";
 import { transformarQuebrasEmParagrafos } from "@/lib/formatarParagrafo";
+import { MultiSelect } from "primereact/multiselect";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
@@ -29,6 +30,7 @@ const Page = ({ params }) => {
   const [error, setError] = useState({}); // Erros individuais por submissão
   const [loadingSubmissao, setLoadingSubmissao] = useState({}); // Carregamento individual por submissão
   const [selectedAreas, setSelectedAreas] = useState([]); // Estado para áreas selecionadas (usando nomes)
+  const [areaOptions, setAreaOptions] = useState([]); // Opções para o MultiSelect
   const [submissoes, setSubmissoes] = useState({
     submissoesData: [],
     areasPendentesDeAvaliacao: {},
@@ -73,30 +75,29 @@ const Page = ({ params }) => {
   useEffect(() => {
     fetchData(); // Inicializa sem filtros
   }, []);
-
-  // Função de filtro por área, usando o nome da área
-  const handleAreaSelection = (areaName) => {
-    const isSelected = selectedAreas.includes(areaName);
-    let updatedSelectedAreas;
-
-    if (isSelected) {
-      // Remove a área se já estiver selecionada
-      updatedSelectedAreas = selectedAreas.filter((name) => name !== areaName);
-    } else {
-      // Adiciona a área se não estiver selecionada
-      updatedSelectedAreas = [...selectedAreas, areaName];
+  // Adicione este useEffect para popular as opções do MultiSelect
+  useEffect(() => {
+    if (submissoes.areasPendentesDeAvaliacao) {
+      const options = Object.keys(submissoes.areasPendentesDeAvaliacao).map(
+        (areaName) => ({
+          name: areaName,
+          code: areaName.toLowerCase().replace(/\s+/g, "_"),
+        })
+      );
+      setAreaOptions(options);
     }
+  }, [submissoes.areasPendentesDeAvaliacao]);
+  // Função de filtro por área, usando o nome da área
+  const handleAreaSelection = (selectedOptions) => {
+    setSelectedAreas(selectedOptions);
 
-    setSelectedAreas(updatedSelectedAreas);
-
-    if (updatedSelectedAreas.length === 0) {
-      // Se nenhuma área for selecionada, mostrar todas as submissões
+    if (selectedOptions.length === 0) {
       setFilteredSubmissoes(submissoes.submissoesData);
     } else {
-      // Filtra localmente para submissões das áreas selecionadas
+      const selectedAreaNames = selectedOptions.map((option) => option.name);
       const filtered = submissoes.submissoesData.filter((item) => {
         const areaNome = item.Resumo?.area?.area || "Área não definida";
-        return updatedSelectedAreas.includes(areaNome);
+        return selectedAreaNames.includes(areaNome);
       });
       setFilteredSubmissoes(filtered);
     }
@@ -222,16 +223,150 @@ const Page = ({ params }) => {
           />
         </div>
       )}
-      <div className={styles.navContent}>
-        {submissoesEmAvaliacao && submissoesEmAvaliacao.length > 0 && (
-          <>
-            <p className="mb-1">Trabalhos aguardando a sua avaliação</p>
+      {!loading && (
+        <div className={styles.navContent}>
+          {submissoesEmAvaliacao && submissoesEmAvaliacao.length > 0 && (
+            <>
+              <p className="mb-1">Trabalhos aguardando a sua avaliação</p>
+              <div className={styles.squares}>
+                {submissoesEmAvaliacao.length > 0 &&
+                  submissoesEmAvaliacao.map((item, index) => (
+                    <div
+                      key={index}
+                      className={`${styles.square} ${styles.squareWarning}`}
+                    >
+                      {item.square.map((squareItem) => (
+                        <div
+                          key={squareItem.id}
+                          className={styles.squareHeader}
+                        >
+                          <p>Pôster nº</p>
+                          <h6>{squareItem.numero}</h6>
+                        </div>
+                      ))}
+                      {item.square.length == 0 && (
+                        <div className={styles.squareHeader}>
+                          <p>Pôster nº</p>
+                          <h6>-</h6>
+                        </div>
+                      )}
+
+                      <div className={styles.squareContent}>
+                        <div className={styles.info}>
+                          <p className={styles.area}>
+                            {item?.Resumo?.area?.area || "sem área"} -{" "}
+                            {item?.tenant?.sigla.toUpperCase()} -{" "}
+                            {item?.categoria.toUpperCase()}
+                          </p>
+                        </div>
+                        <div className={styles.submissaoData}>
+                          <h6>{item?.Resumo?.titulo}</h6>
+                        </div>
+                        {error[item.id] && (
+                          <div className={styles.error}>
+                            <p>{error[item.id]}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className={styles.actions}>
+                        <div className={styles.item1}>
+                          <div
+                            className={`${styles.squareHeader} ${styles.action} ${styles.actionError}`}
+                            onClick={() =>
+                              handleDesvincularAvaliador(
+                                item.evento.id,
+                                item.id
+                              )
+                            }
+                          >
+                            <RiDeleteBinLine />
+                            <p>
+                              {loadingDevolver[item.id]
+                                ? "Devolvendo..."
+                                : "Devolver"}
+                            </p>
+                          </div>
+
+                          <div
+                            className={`${styles.squareHeader} ${styles.action}`}
+                            onClick={() =>
+                              handleLerResumo(
+                                eventoId,
+                                item.id,
+                                item.tenant?.id
+                              )
+                            }
+                          >
+                            <RiFileList3Line />
+                            <p>
+                              {loadingResumo[item.id]
+                                ? "Buscando resumo..."
+                                : "Ler Resumo"}
+                            </p>
+                          </div>
+                        </div>
+                        <div
+                          className={`${styles.squareHeader}  ${styles.action} ${styles.actionPrimary}`}
+                          onClick={() =>
+                            router.push(
+                              `/evento/${params.eventoSlug}/edicao/${params.edicao}/avaliador/avaliacoes/avaliacao/${eventoId}/${item.id}/${item.tenant?.id}`
+                            )
+                          }
+                        >
+                          <RiQuillPenLine />
+                          <p>Avaliar agora</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </>
+          )}
+
+          <div className="mb-3">
+            <label
+              htmlFor="areaFilter"
+              className="block text-sm font-medium mb-2"
+            >
+              Filtrar por área ({filteredSubmissoes.length} trabalhos)
+            </label>
+            <MultiSelect
+              id="areaFilter"
+              value={selectedAreas}
+              onChange={(e) => handleAreaSelection(e.value)}
+              options={areaOptions}
+              optionLabel="name"
+              placeholder="Selecione as áreas"
+              maxSelectedLabels={2}
+              className="w-100"
+              display="chip"
+              selectedItemsLabel="{0} áreas selecionadas"
+              itemTemplate={(option) => (
+                <div className="flex justify-between items-center w-100">
+                  <span>
+                    {option.name} (
+                    {submissoes.areasPendentesDeAvaliacao[option.name] || 0})
+                  </span>
+                </div>
+              )}
+              // Adicione estas props para melhor controle
+              scrollHeight="300px"
+              virtualScrollerOptions={{ itemSize: 38 }}
+              panelClassName={styles.multiselectPanel} // Classe adicional se necessário
+            />
+          </div>
+          <p className="mb-1">Selecione um trabalho para avaliar</p>
+          {loading ? (
+            <p>Carregando...</p>
+          ) : (
             <div className={styles.squares}>
-              {submissoesEmAvaliacao.length > 0 &&
-                submissoesEmAvaliacao.map((item, index) => (
+              {filteredSubmissoes.length > 0 ? (
+                filteredSubmissoes.map((item, index) => (
                   <div
                     key={index}
-                    className={`${styles.square} ${styles.squareWarning}`}
+                    className={styles.square}
+                    onClick={() => handleClickOnSquare(item.evento.id, item.id)} // Chama a função ao clicar na submissão
                   >
                     {item.square.map((squareItem) => (
                       <div key={squareItem.id} className={styles.squareHeader}>
@@ -239,23 +374,22 @@ const Page = ({ params }) => {
                         <h6>{squareItem.numero}</h6>
                       </div>
                     ))}
-                    {item.square.length == 0 && (
-                      <div className={styles.squareHeader}>
-                        <p>Pôster nº</p>
-                        <h6>-</h6>
-                      </div>
-                    )}
 
                     <div className={styles.squareContent}>
                       <div className={styles.info}>
                         <p className={styles.area}>
                           {item?.Resumo?.area?.area || "sem área"} -{" "}
                           {item?.tenant?.sigla.toUpperCase()} -{" "}
-                          {item?.categoria.toUpperCase()}
+                          {item?.categoria?.toUpperCase()}
                         </p>
                       </div>
                       <div className={styles.submissaoData}>
                         <h6>{item?.Resumo?.titulo}</h6>
+                        {loadingSubmissao[item.id] && (
+                          <p className={styles.waiting}>
+                            Aguarde... Fazendo a vinculação do projeto
+                          </p> // Mensagem de carregamento
+                        )}
                       </div>
                       {error[item.id] && (
                         <div className={styles.error}>
@@ -263,122 +397,16 @@ const Page = ({ params }) => {
                         </div>
                       )}
                     </div>
-
-                    <div className={styles.actions}>
-                      <div className={styles.item1}>
-                        <div
-                          className={`${styles.squareHeader} ${styles.action} ${styles.actionError}`}
-                          onClick={() =>
-                            handleDesvincularAvaliador(item.evento.id, item.id)
-                          }
-                        >
-                          <RiDeleteBinLine />
-                          <p>
-                            {loadingDevolver[item.id]
-                              ? "Devolvendo..."
-                              : "Devolver"}
-                          </p>
-                        </div>
-
-                        <div
-                          className={`${styles.squareHeader} ${styles.action}`}
-                          onClick={() =>
-                            handleLerResumo(eventoId, item.id, item.tenant?.id)
-                          }
-                        >
-                          <RiFileList3Line />
-                          <p>
-                            {loadingResumo[item.id]
-                              ? "Buscando resumo..."
-                              : "Ler Resumo"}
-                          </p>
-                        </div>
-                      </div>
-                      <div
-                        className={`${styles.squareHeader}  ${styles.action} ${styles.actionPrimary}`}
-                        onClick={() =>
-                          router.push(
-                            `/evento/${params.eventoSlug}/edicao/${params.edicao}/avaliador/avaliacoes/avaliacao/${eventoId}/${item.id}/${item.tenant?.id}`
-                          )
-                        }
-                      >
-                        <RiQuillPenLine />
-                        <p>Avaliar agora</p>
-                      </div>
-                    </div>
                   </div>
-                ))}
+                ))
+              ) : (
+                <p>Nenhuma submissão encontrada</p>
+              )}
             </div>
-          </>
-        )}
-
-        <p>Filtre por área</p>
-
-        <div className={styles.totais}>
-          {Object.entries(submissoes.areasPendentesDeAvaliacao).map(
-            ([areaNome, total], index) => (
-              <div
-                key={index}
-                className={`${styles.total} ${
-                  selectedAreas.includes(areaNome) ? styles.selected : ""
-                } ${styles.light}`}
-                onClick={() => handleAreaSelection(areaNome)} // Usa o nome da área para filtro
-              >
-                <p>{total}</p>
-                <h6>{areaNome}</h6>
-              </div>
-            )
           )}
         </div>
-        <p className="mb-1">Selecione um trabalho para avaliar</p>
-        {loading ? (
-          <p>Carregando...</p>
-        ) : (
-          <div className={styles.squares}>
-            {filteredSubmissoes.length > 0 ? (
-              filteredSubmissoes.map((item, index) => (
-                <div
-                  key={index}
-                  className={styles.square}
-                  onClick={() => handleClickOnSquare(item.evento.id, item.id)} // Chama a função ao clicar na submissão
-                >
-                  {item.square.map((squareItem) => (
-                    <div key={squareItem.id} className={styles.squareHeader}>
-                      <p>Pôster nº</p>
-                      <h6>{squareItem.numero}</h6>
-                    </div>
-                  ))}
-
-                  <div className={styles.squareContent}>
-                    <div className={styles.info}>
-                      <p className={styles.area}>
-                        {item?.Resumo?.area?.area || "sem área"} -{" "}
-                        {item?.tenant?.sigla.toUpperCase()} -{" "}
-                        {item?.categoria?.toUpperCase()}
-                      </p>
-                    </div>
-                    <div className={styles.submissaoData}>
-                      <h6>{item?.Resumo?.titulo}</h6>
-                      {loadingSubmissao[item.id] && (
-                        <p className={styles.waiting}>
-                          Aguarde... Fazendo a vinculação do projeto
-                        </p> // Mensagem de carregamento
-                      )}
-                    </div>
-                    {error[item.id] && (
-                      <div className={styles.error}>
-                        <p>{error[item.id]}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p>Nenhuma submissão encontrada</p>
-            )}
-          </div>
-        )}
-      </div>
+      )}
+      {loading && <p>Carregando...</p>}
     </>
   );
 };
