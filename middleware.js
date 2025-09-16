@@ -262,7 +262,7 @@ export const middleware = async (request) => {
     // APENAS /avaliador
     if (pathname === '/avaliador') {
       console.log('ENTROU NA ROTA APENAS /avaliador')
-      if (pongAvaliador) return NextResponse.redirect(urlToAvaliador);
+      //if (pongAvaliador) return NextResponse.redirect(urlToAvaliador);
       console.log(pongAvaliador)
       return NextResponse.next();
     }
