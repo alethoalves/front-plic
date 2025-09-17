@@ -8,6 +8,7 @@ import {
   RiCouponLine,
   RiHome6Line,
   RiMapPinLine,
+  RiPresentationFill,
   RiUserStarLine,
 } from "@remixicon/react";
 import { Card } from "primereact/card";
@@ -97,6 +98,15 @@ const Page = async ({ params }) => {
               <div className={styles.desktop}>
                 <MinhasInscricoes params={params} />
               </div>
+              <Link
+                href={`/evento/${params.eventoSlug}/edicao/${params.edicao}/apresentacoes`}
+                className={styles.edicaoLink}
+              >
+                <div className={styles.action}>
+                  <RiPresentationFill />
+                  <h6>Lista de Apresentações</h6>
+                </div>
+              </Link>
               <Link
                 href={`/evento/${params.eventoSlug}/edicao/${params.edicao}/publicacoes`}
                 className={styles.edicaoLink}

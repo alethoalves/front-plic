@@ -22,6 +22,7 @@ import Button from "@/components/Button";
 import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
 import {
+  gestorDesassociarAvaliadorSubmissao,
   getAvaliadoresComSubmissoesPendentes,
   getListaSubmissao,
   getListaSubmissoesAvaliacoes,
@@ -308,8 +309,8 @@ const Page = ({ params }) => {
         }
       }
 
-      await processarInscricoes(params.tenant, setInscricoesProjetos);
-      await atualizarAvaliadores(params.tenant, setAvaliadores, setTodasAreas);
+      //await processarInscricoes(params.tenant, setInscricoesProjetos);
+      //await atualizarAvaliadores(params.tenant, setAvaliadores, setTodasAreas);
 
       setAvaliadoresList([]);
       setChecked(false);
@@ -404,32 +405,26 @@ const Page = ({ params }) => {
 
   const projetosParaDistribuir = getProjetosNaoDistribuidosPorArea().length;
   const podeAtribuir = avaliadoresList.length > 0 && projetosParaDistribuir > 0;
-  const handleDesassociarAvaliador = async (
-    inscricaoProjetoId,
-    avaliadorId
-  ) => {
+  const handleDesassociarAvaliador = async (submissaoAvaliadorId) => {
     // Armazena o ID da vinculação que está sendo removida
-    setRemovendoVinculacao(inscricaoProjetoId);
+    setRemovendoVinculacao(submissaoAvaliadorId);
 
     try {
-      await GestorDesassociarAvaliadorInscricaoProjeto(
-        params.tenant,
-        inscricaoProjetoId,
-        avaliadorId
-      );
+      // Chama o novo endpoint que recebe submissaoAvaliadorId via params
+      await gestorDesassociarAvaliadorSubmissao(submissaoAvaliadorId);
 
       // Atualiza os dados após a remoção bem-sucedida
       await processarInscricoes(params.tenant, setInscricoesProjetos);
       await atualizarAvaliadores(params.tenant, setAvaliadores, setTodasAreas);
 
-      showToast("success", "Sucesso", "Vinculação removida com sucesso!");
+      showToast("success", "Sucesso", "Avaliador desassociado com sucesso!");
     } catch (error) {
       // Se houver erro, volta o item para a lista
       setRemovendoVinculacao(null);
 
       const errorMessage =
         error.response?.data?.message ||
-        "Erro ao remover a vinculação do avaliador.";
+        "Erro ao desassociar o avaliador da submissão.";
       showToast("error", "Erro", errorMessage);
     } finally {
       setRemovendoVinculacao(null);
@@ -640,505 +635,511 @@ const Page = ({ params }) => {
             </div>
           </Card>
         )}
-        <Card className={`mb-4 p-2`}>
-          <h5 className="mb-2">Distribuição por projeto específico</h5>
-          <div className={`${style.distribuicao}`}>
-            <div className={`${style.distribuicaoCard} ${style.projetos}`}>
-              <div className={style.scrollableContainer}>
-                {/* Adicionando os filtros */}
-                <div className={style.filtrosContainer}>
-                  {/* Input de busca por nome do projeto ou orientador */}
-                  <span
-                    className="p-input-icon-left"
-                    style={{ width: "100%", marginBottom: "1rem" }}
-                  >
-                    <InputText
-                      placeholder="Buscar projeto ou orientador..."
-                      style={{ width: "100%" }}
-                      onChange={(e) => setBuscaProjeto(e.target.value)}
+        {false && (
+          <Card className={`mb-4 p-2`}>
+            <h5 className="mb-2">Distribuição por projeto específico</h5>
+            <div className={`${style.distribuicao}`}>
+              <div className={`${style.distribuicaoCard} ${style.projetos}`}>
+                <div className={style.scrollableContainer}>
+                  {/* Adicionando os filtros */}
+                  <div className={style.filtrosContainer}>
+                    {/* Input de busca por nome do projeto ou orientador */}
+                    <span
+                      className="p-input-icon-left"
+                      style={{ width: "100%", marginBottom: "1rem" }}
+                    >
+                      <InputText
+                        placeholder="Buscar projeto ou orientador..."
+                        style={{ width: "100%" }}
+                        onChange={(e) => setBuscaProjeto(e.target.value)}
+                      />
+                    </span>
+
+                    {/* Select para filtrar por área */}
+                    <Dropdown
+                      value={areaFiltro}
+                      options={[
+                        { label: "Todas as áreas", value: null },
+                        ...todasAreas.map((area) => ({
+                          label: area.label,
+                          value: area.value,
+                        })),
+                      ]}
+                      optionLabel="label"
+                      optionValue="value"
+                      onChange={(e) => {
+                        setAreaFiltro(e.value); // agora e.value é null, string, etc.
+                        setProjetoSelecionado(null); // continua resetando o projeto selecionado
+                      }}
+                      placeholder="Filtrar por área"
+                      style={{ width: "100%", marginBottom: "1rem" }}
                     />
-                  </span>
+                  </div>
 
-                  {/* Select para filtrar por área */}
-                  <Dropdown
-                    value={areaFiltro}
-                    options={[
-                      { label: "Todas as áreas", value: null },
-                      ...todasAreas.map((area) => ({
-                        label: area.label,
-                        value: area.value,
-                      })),
-                    ]}
-                    optionLabel="label"
-                    optionValue="value"
-                    onChange={(e) => {
-                      setAreaFiltro(e.value); // agora e.value é null, string, etc.
-                      setProjetoSelecionado(null); // continua resetando o projeto selecionado
-                    }}
-                    placeholder="Filtrar por área"
-                    style={{ width: "100%", marginBottom: "1rem" }}
-                  />
-                </div>
+                  <ul>
+                    {inscricoesProjetos
+                      .filter((projeto) => {
+                        // Filtro por status
+                        const statusMatch =
+                          projeto.status === "AGUARDANDO_AVALIACAO";
 
-                <ul>
-                  {inscricoesProjetos
-                    .filter((projeto) => {
-                      // Filtro por status
-                      const statusMatch =
-                        projeto.status === "AGUARDANDO_AVALIACAO";
+                        // Filtro por busca (projeto ou orientador)
+                        const buscaMatch =
+                          !buscaProjeto ||
+                          projeto.Resumo?.titulo
+                            ?.toLowerCase()
+                            .includes(buscaProjeto.toLowerCase()) ||
+                          projeto.inscricao?.proponente?.nome
+                            ?.toLowerCase()
+                            .includes(buscaProjeto.toLowerCase());
 
-                      // Filtro por busca (projeto ou orientador)
-                      const buscaMatch =
-                        !buscaProjeto ||
-                        projeto.Resumo?.titulo
-                          ?.toLowerCase()
-                          .includes(buscaProjeto.toLowerCase()) ||
-                        projeto.inscricao?.proponente?.nome
-                          ?.toLowerCase()
-                          .includes(buscaProjeto.toLowerCase());
+                        // Filtro por área
+                        // Por esta versão mais robusta:
+                        const areaMatch =
+                          areaFiltro === null || // Quando seleciona "Todas as áreas"
+                          (areaFiltro === "Sem área definida"
+                            ? !projeto.Resumo.area
+                            : projeto.Resumo.area?.area === areaFiltro);
 
-                      // Filtro por área
-                      // Por esta versão mais robusta:
-                      const areaMatch =
-                        areaFiltro === null || // Quando seleciona "Todas as áreas"
-                        (areaFiltro === "Sem área definida"
-                          ? !projeto.Resumo.area
-                          : projeto.Resumo.area?.area === areaFiltro);
-
-                      return statusMatch && buscaMatch && areaMatch;
-                    })
-                    .map((projeto, index) => (
-                      <li
-                        key={index}
-                        onClick={() => {
-                          setAvaliadorSelecionado(null);
-                          setProjetoSelecionado(projeto);
-                          setAvaliadoresProjetoSelecionado([]); // Limpa seleção ao mudar projeto
-                        }}
-                        className={
-                          projetoSelecionado?.id === projeto.id
-                            ? style.selected
-                            : ""
-                        }
-                      >
-                        <div className={style.content}>
-                          <h6>
-                            {projeto.Resumo?.titulo || "Projeto sem título"} -
-                            ID {projeto.id}
-                          </h6>
-                          <p>
-                            <strong>Área:</strong>{" "}
-                            {projeto.Resumo.area?.area || "Sem área definida"}
-                          </p>
-                          {projeto.inscricao?.proponente?.nome && (
-                            <p>
-                              <strong>Orientador:</strong>{" "}
-                              {projeto.inscricao?.proponente?.nome}
-                            </p>
-                          )}
-                          {projeto.InscricaoProjetoAvaliador?.length > 0 && (
-                            <p>
-                              <strong>Avaliadores atribuídos:</strong>{" "}
-                              {projeto.InscricaoProjetoAvaliador.length}
-                            </p>
-                          )}
-                        </div>
-                      </li>
-                    ))}
-                </ul>
-              </div>
-            </div>
-
-            <div className={`${style.distribuicaoCard} ${style.avaliadores}`}>
-              <div className={style.scrollableContainer}>
-                {projetoSelecionado ? (
-                  <>
-                    <div className="flex align-items-center mt-2 pl-2 mb-2">
-                      <p>Selecione avaliadores para este projeto:</p>
-                    </div>
-
-                    <ul>
-                      {avaliadores.length === 0 ? (
-                        <li>
+                        return statusMatch && buscaMatch && areaMatch;
+                      })
+                      .map((projeto, index) => (
+                        <li
+                          key={index}
+                          onClick={() => {
+                            setAvaliadorSelecionado(null);
+                            setProjetoSelecionado(projeto);
+                            setAvaliadoresProjetoSelecionado([]); // Limpa seleção ao mudar projeto
+                          }}
+                          className={
+                            projetoSelecionado?.id === projeto.id
+                              ? style.selected
+                              : ""
+                          }
+                        >
                           <div className={style.content}>
-                            <NoData description="Nenhum avaliador disponível" />
+                            <h6>
+                              {projeto.Resumo?.titulo || "Projeto sem título"} -
+                              ID {projeto.id}
+                            </h6>
+                            <p>
+                              <strong>Área:</strong>{" "}
+                              {projeto.Resumo.area?.area || "Sem área definida"}
+                            </p>
+                            {projeto.inscricao?.proponente?.nome && (
+                              <p>
+                                <strong>Orientador:</strong>{" "}
+                                {projeto.inscricao?.proponente?.nome}
+                              </p>
+                            )}
+                            {projeto.InscricaoProjetoAvaliador?.length > 0 && (
+                              <p>
+                                <strong>Avaliadores atribuídos:</strong>{" "}
+                                {projeto.InscricaoProjetoAvaliador.length}
+                              </p>
+                            )}
                           </div>
                         </li>
-                      ) : (
-                        avaliadores
-                          .filter((avaliador) =>
-                            // Filtra por área do projeto
-                            avaliador?.user?.userArea?.some(
-                              (ua) =>
-                                ua.area.area ===
-                                projetoSelecionado.Resumo.area?.area
+                      ))}
+                  </ul>
+                </div>
+              </div>
+
+              <div className={`${style.distribuicaoCard} ${style.avaliadores}`}>
+                <div className={style.scrollableContainer}>
+                  {projetoSelecionado ? (
+                    <>
+                      <div className="flex align-items-center mt-2 pl-2 mb-2">
+                        <p>Selecione avaliadores para este projeto:</p>
+                      </div>
+
+                      <ul>
+                        {avaliadores.length === 0 ? (
+                          <li>
+                            <div className={style.content}>
+                              <NoData description="Nenhum avaliador disponível" />
+                            </div>
+                          </li>
+                        ) : (
+                          avaliadores
+                            .filter((avaliador) =>
+                              // Filtra por área do projeto
+                              avaliador?.user?.userArea?.some(
+                                (ua) =>
+                                  ua.area.area ===
+                                  projetoSelecionado.Resumo.area?.area
+                              )
                             )
-                          )
-                          .map((avaliador, index) => (
-                            <li
-                              key={index}
-                              onClick={() =>
-                                handleSelecionarAvaliador(avaliador)
-                              }
-                              style={{ cursor: "pointer" }}
-                            >
-                              <div className={style.checkbox}></div>
-                              <div className={style.content}>
-                                <h6>{avaliador.user.nome}</h6>
-                                <p>
-                                  <strong>
-                                    {avaliador.user.userArea[0]?.area?.area ||
-                                      "Sem área"}
-                                  </strong>
-                                  {avaliador.user.userArea.length > 1 && (
-                                    <span>
-                                      {" "}
-                                      +{avaliador.user.userArea.length - 1}{" "}
-                                      outras áreas
-                                    </span>
-                                  )}
-                                </p>
-                                <p className={style.projetosInfo}>
-                                  Projetos atribuídos:{" "}
-                                  {avaliador.SubmissaoAvaliador.length || 0}
-                                </p>
-                              </div>
-                            </li>
-                          ))
-                      )}
-                    </ul>
-                  </>
-                ) : (
-                  <div className={style.content}>
-                    <NoData description="Selecione um projeto para atribuir avaliadores." />
-                  </div>
-                )}
+                            .map((avaliador, index) => (
+                              <li
+                                key={index}
+                                onClick={() =>
+                                  handleSelecionarAvaliador(avaliador)
+                                }
+                                style={{ cursor: "pointer" }}
+                              >
+                                <div className={style.checkbox}></div>
+                                <div className={style.content}>
+                                  <h6>{avaliador.user.nome}</h6>
+                                  <p>
+                                    <strong>
+                                      {avaliador.user.userArea[0]?.area?.area ||
+                                        "Sem área"}
+                                    </strong>
+                                    {avaliador.user.userArea.length > 1 && (
+                                      <span>
+                                        {" "}
+                                        +{avaliador.user.userArea.length -
+                                          1}{" "}
+                                        outras áreas
+                                      </span>
+                                    )}
+                                  </p>
+                                  <p className={style.projetosInfo}>
+                                    Projetos atribuídos:{" "}
+                                    {avaliador.SubmissaoAvaliador.length || 0}
+                                  </p>
+                                </div>
+                              </li>
+                            ))
+                        )}
+                      </ul>
+                    </>
+                  ) : (
+                    <div className={style.content}>
+                      <NoData description="Selecione um projeto para atribuir avaliadores." />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        </Card>
-        <Card className={`mb-4 p-2`}>
-          <h5 className="mb-2">Distribuição por área</h5>
-          {avaliadoresList?.length > 0 && areaSelecionada && (
-            <div className={`${style.actions}`}>
-              <button
-                className="button btn-primary"
-                onClick={handleAtribuicao}
-                disabled={isProcessing || !podeAtribuir}
-              >
-                {isProcessing ? (
-                  <p>Carregando...</p>
-                ) : (
-                  <p>
-                    {`Atribuir ${
-                      getProjetosNaoDistribuidosPorArea().length
-                    } projetos da área ${areaSelecionada} para ${
-                      avaliadoresList.length
-                    } avaliadores`}
-                  </p>
-                )}
-              </button>
-            </div>
-          )}
-          <div className={`${style.distribuicao}`}>
-            <div className={`${style.distribuicaoCard} ${style.projetos}`}>
-              <div className={style.scrollableContainer}>
-                <ul>
-                  {areasComProjetos.length > 0 ? (
-                    areasComProjetos.map((item, index) => (
-                      <li
-                        key={index}
-                        onClick={() => setAreaSelecionada(item.area)}
-                        className={
-                          areaSelecionada === item.area ? style.selected : ""
-                        }
-                      >
+          </Card>
+        )}
+        {false && (
+          <Card className={`mb-4 p-2`}>
+            <h5 className="mb-2">Distribuição por área</h5>
+            {avaliadoresList?.length > 0 && areaSelecionada && (
+              <div className={`${style.actions}`}>
+                <button
+                  className="button btn-primary"
+                  onClick={handleAtribuicao}
+                  disabled={isProcessing || !podeAtribuir}
+                >
+                  {isProcessing ? (
+                    <p>Carregando...</p>
+                  ) : (
+                    <p>
+                      {`Atribuir ${
+                        getProjetosNaoDistribuidosPorArea().length
+                      } projetos da área ${areaSelecionada} para ${
+                        avaliadoresList.length
+                      } avaliadores`}
+                    </p>
+                  )}
+                </button>
+              </div>
+            )}
+            <div className={`${style.distribuicao}`}>
+              <div className={`${style.distribuicaoCard} ${style.projetos}`}>
+                <div className={style.scrollableContainer}>
+                  <ul>
+                    {areasComProjetos.length > 0 ? (
+                      areasComProjetos.map((item, index) => (
+                        <li
+                          key={index}
+                          onClick={() => setAreaSelecionada(item.area)}
+                          className={
+                            areaSelecionada === item.area ? style.selected : ""
+                          }
+                        >
+                          <div className={style.content}>
+                            <h6>
+                              {item.area} <span>{item.count}</span>
+                            </h6>
+                          </div>
+                        </li>
+                      ))
+                    ) : (
+                      <li>
                         <div className={style.content}>
-                          <h6>
-                            {item.area} <span>{item.count}</span>
-                          </h6>
+                          <h6>Nenhum projeto não distribuído encontrado</h6>
                         </div>
                       </li>
-                    ))
-                  ) : (
-                    <li>
-                      <div className={style.content}>
-                        <h6>Nenhum projeto não distribuído encontrado</h6>
-                      </div>
-                    </li>
-                  )}
-                </ul>
+                    )}
+                  </ul>
+                </div>
               </div>
-            </div>
 
-            <div className={`${style.distribuicaoCard} ${style.avaliadores}`}>
-              <div className={style.scrollableContainer}>
-                {areaSelecionada && getAvaliadoresPorArea().length > 0 && (
-                  <div className="flex align-items-center pl-2 pt-2 pr-2 mb-2">
-                    <Checkbox onChange={handleSelectAll} checked={checked} />
-                    <p className="ml-2">Selecionar todos</p>
-                  </div>
-                )}
-                <ul>
-                  {!areaSelecionada ? (
-                    <li>
-                      <div className={style.content}>
-                        <h6>Clique em uma área</h6>
-                      </div>
-                    </li>
-                  ) : getAvaliadoresPorArea().length === 0 ? (
-                    <li>
-                      <div className={style.content}>
-                        <h6>Nenhum avaliador encontrado para esta área</h6>
-                      </div>
-                    </li>
-                  ) : (
-                    getAvaliadoresPorArea().map((avaliador, index) => (
-                      <li
-                        key={index}
-                        onClick={(e) => {
-                          if (e.target.tagName !== "INPUT") {
-                            const isChecked = avaliadoresList.some(
-                              (a) => a.id === avaliador.id
-                            );
-                            if (isChecked) {
-                              setAvaliadoresList(
-                                avaliadoresList.filter(
-                                  (a) => a.id !== avaliador.id
-                                )
+              <div className={`${style.distribuicaoCard} ${style.avaliadores}`}>
+                <div className={style.scrollableContainer}>
+                  {areaSelecionada && getAvaliadoresPorArea().length > 0 && (
+                    <div className="flex align-items-center pl-2 pt-2 pr-2 mb-2">
+                      <Checkbox onChange={handleSelectAll} checked={checked} />
+                      <p className="ml-2">Selecionar todos</p>
+                    </div>
+                  )}
+                  <ul>
+                    {!areaSelecionada ? (
+                      <li>
+                        <div className={style.content}>
+                          <h6>Clique em uma área</h6>
+                        </div>
+                      </li>
+                    ) : getAvaliadoresPorArea().length === 0 ? (
+                      <li>
+                        <div className={style.content}>
+                          <h6>Nenhum avaliador encontrado para esta área</h6>
+                        </div>
+                      </li>
+                    ) : (
+                      getAvaliadoresPorArea().map((avaliador, index) => (
+                        <li
+                          key={index}
+                          onClick={(e) => {
+                            if (e.target.tagName !== "INPUT") {
+                              const isChecked = avaliadoresList.some(
+                                (a) => a.id === avaliador.id
                               );
-                            } else {
-                              setAvaliadoresList([
-                                ...avaliadoresList,
-                                avaliador,
-                              ]);
-                            }
-                          }
-                        }}
-                        style={{ cursor: "pointer" }}
-                      >
-                        <div className={style.checkbox}>
-                          <Checkbox
-                            onChange={(e) => {
-                              if (e.checked) {
-                                setAvaliadoresList([
-                                  ...avaliadoresList,
-                                  avaliador,
-                                ]);
-                              } else {
+                              if (isChecked) {
                                 setAvaliadoresList(
                                   avaliadoresList.filter(
                                     (a) => a.id !== avaliador.id
                                   )
                                 );
+                              } else {
+                                setAvaliadoresList([
+                                  ...avaliadoresList,
+                                  avaliador,
+                                ]);
                               }
-                            }}
-                            checked={avaliadoresList.some(
-                              (a) => a.id === avaliador.id
-                            )}
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        </div>
-                        <div className={style.content}>
-                          <h6>
-                            {avaliador.user.nome}{" "}
-                            <span>
-                              {avaliador.SubmissaoAvaliador.length || 0}
-                            </span>
-                          </h6>
-                          <p>
-                            <strong>{areaSelecionada || "Sem área"}</strong>
-                            {avaliador.user.userArea.length > 1 && (
-                              <span>
-                                {" "}
-                                +{avaliador.user.userArea.length - 1} outras
-                                áreas
-                              </span>
-                            )}
-                          </p>
-                        </div>
-                      </li>
-                    ))
-                  )}
-                </ul>
-              </div>
-            </div>
-          </div>
-        </Card>
-        <Card className={`mb-4 p-2`}>
-          <h5 className="mb-2">Avaliadores x Projetos</h5>
-          <div className={`${style.distribuicao}`}>
-            <div className={`${style.distribuicaoCard} ${style.avaliadores}`}>
-              <div className={style.scrollableContainer}>
-                <ul>
-                  {avaliadores
-                    .sort((a, b) =>
-                      a.user.nome
-                        .toLowerCase()
-                        .localeCompare(b.user.nome.toLowerCase())
-                    )
-                    .map((avaliador, index) => (
-                      <li
-                        key={index}
-                        onClick={() => {
-                          setAvaliadorSelecionado(avaliador);
-                        }}
-                        className={
-                          avaliadorSelecionado?.id === avaliador.id
-                            ? style.selected
-                            : ""
-                        }
-                        style={{ cursor: "pointer" }}
-                      >
-                        <div className={style.content}>
-                          <h6>
-                            {avaliador.user.nome}{" "}
-                            <span>
-                              {avaliador.SubmissaoAvaliador.length || 0}
-                            </span>
-                          </h6>
-                          <p>
-                            <strong>
-                              {avaliador.user.userArea[0]?.area?.area ||
-                                "Sem área"}
-                            </strong>
-                            {avaliador.user.userArea.length > 1 && (
-                              <span>
-                                {" "}
-                                +{avaliador.user.userArea.length - 1} outras
-                                áreas
-                              </span>
-                            )}
-                          </p>
-                        </div>
-                      </li>
-                    ))}
-                </ul>
-              </div>
-            </div>
-
-            <div className={`${style.distribuicaoCard} ${style.projetos}`}>
-              <div className={style.scrollableContainer}>
-                {avaliadorSelecionado ? (
-                  <>
-                    <h6 className="mt-2 ml-2 mb-2">Aguardando avaliação</h6>
-                    <ul>
-                      {avaliadorSelecionado.SubmissaoAvaliador.sort(
-                        (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
-                      ).map((atribuicao, idx) => {
-                        const tempo = calcularTempoDesdeAtribuicao(
-                          atribuicao.createdAt
-                        );
-                        return (
-                          <li key={idx}>
-                            <div className={style.content}>
-                              <h6>
-                                {atribuicao.inscricaoProjeto?.projeto?.titulo ||
-                                  "Projeto sem título"}{" "}
-                                - ID {atribuicao.inscricaoProjeto?.id}
-                              </h6>
-                              <p className={style.timeInfo}>
-                                <strong>Tempo desde atribuição:</strong>{" "}
-                                {tempo.display}
-                              </p>
-                            </div>
-                            <div className={style.actions}>
-                              {removendoVinculacao ===
-                              atribuicao.inscricaoProjetoId ? (
-                                <i
-                                  className="pi pi-spinner pi-spin"
-                                  style={{ marginLeft: "10px" }}
-                                />
-                              ) : (
-                                <RiDeleteBinLine
-                                  className={style.deleteIcon}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDesassociarAvaliador(
-                                      atribuicao.inscricaoProjetoId,
-                                      avaliadorSelecionado.user.id
-                                    );
-                                  }}
-                                  title="Remover vinculação"
-                                />
+                            }
+                          }}
+                          style={{ cursor: "pointer" }}
+                        >
+                          <div className={style.checkbox}>
+                            <Checkbox
+                              onChange={(e) => {
+                                if (e.checked) {
+                                  setAvaliadoresList([
+                                    ...avaliadoresList,
+                                    avaliador,
+                                  ]);
+                                } else {
+                                  setAvaliadoresList(
+                                    avaliadoresList.filter(
+                                      (a) => a.id !== avaliador.id
+                                    )
+                                  );
+                                }
+                              }}
+                              checked={avaliadoresList.some(
+                                (a) => a.id === avaliador.id
                               )}
-                            </div>
-                          </li>
-                        );
-                      })}
-                    </ul>
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          </div>
+                          <div className={style.content}>
+                            <h6>
+                              {avaliador.user.nome}{" "}
+                              <span>
+                                {avaliador.SubmissaoAvaliador.length || 0}
+                              </span>
+                            </h6>
+                            <p>
+                              <strong>{areaSelecionada || "Sem área"}</strong>
+                              {avaliador.user.userArea.length > 1 && (
+                                <span>
+                                  {" "}
+                                  +{avaliador.user.userArea.length - 1} outras
+                                  áreas
+                                </span>
+                              )}
+                            </p>
+                          </div>
+                        </li>
+                      ))
+                    )}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
+        {false && (
+          <Card className={`mb-4 p-2`}>
+            <h5 className="mb-2">Avaliadores x Projetos</h5>
+            <div className={`${style.distribuicao}`}>
+              <div className={`${style.distribuicaoCard} ${style.avaliadores}`}>
+                <div className={style.scrollableContainer}>
+                  <ul>
+                    {avaliadores
+                      .sort((a, b) =>
+                        a.user.nome
+                          .toLowerCase()
+                          .localeCompare(b.user.nome.toLowerCase())
+                      )
+                      .map((avaliador, index) => (
+                        <li
+                          key={index}
+                          onClick={() => {
+                            setAvaliadorSelecionado(avaliador);
+                          }}
+                          className={
+                            avaliadorSelecionado?.id === avaliador.id
+                              ? style.selected
+                              : ""
+                          }
+                          style={{ cursor: "pointer" }}
+                        >
+                          <div className={style.content}>
+                            <h6>
+                              {avaliador.user.nome}{" "}
+                              <span>
+                                {avaliador.SubmissaoAvaliador.length || 0}
+                              </span>
+                            </h6>
+                            <p>
+                              <strong>
+                                {avaliador.user.userArea[0]?.area?.area ||
+                                  "Sem área"}
+                              </strong>
+                              {avaliador.user.userArea.length > 1 && (
+                                <span>
+                                  {" "}
+                                  +{avaliador.user.userArea.length - 1} outras
+                                  áreas
+                                </span>
+                              )}
+                            </p>
+                          </div>
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+              </div>
 
-                    <h6 className="mt-2 ml-2 mb-2">Avaliados</h6>
-                    <ul>
-                      {inscricoesProjetos.filter((inscricao) =>
-                        inscricao.FichaAvaliacao?.some(
-                          (ficha) =>
-                            ficha.avaliadorId === avaliadorSelecionado.user.id
-                        )
-                      ).length > 0 ? (
-                        inscricoesProjetos
-                          .filter((inscricao) =>
-                            inscricao.FichaAvaliacao?.some(
-                              (ficha) =>
-                                ficha.avaliadorId ===
-                                avaliadorSelecionado.user.id
-                            )
+              <div className={`${style.distribuicaoCard} ${style.projetos}`}>
+                <div className={style.scrollableContainer}>
+                  {avaliadorSelecionado ? (
+                    <>
+                      <h6 className="mt-2 ml-2 mb-2">Aguardando avaliação</h6>
+                      <ul>
+                        {avaliadorSelecionado.SubmissaoAvaliador.sort(
+                          (a, b) =>
+                            new Date(a.createdAt) - new Date(b.createdAt)
+                        ).map((atribuicao, idx) => {
+                          const tempo = calcularTempoDesdeAtribuicao(
+                            atribuicao.createdAt
+                          );
+                          return (
+                            <li key={idx}>
+                              <div className={style.content}>
+                                <h6>
+                                  {atribuicao.inscricaoProjeto?.projeto
+                                    ?.titulo || "Projeto sem título"}{" "}
+                                  - ID {atribuicao.inscricaoProjeto?.id}
+                                </h6>
+                                <p className={style.timeInfo}>
+                                  <strong>Tempo desde atribuição:</strong>{" "}
+                                  {tempo.display}
+                                </p>
+                              </div>
+                              <div className={style.actions}>
+                                {removendoVinculacao ===
+                                atribuicao.inscricaoProjetoId ? (
+                                  <i
+                                    className="pi pi-spinner pi-spin"
+                                    style={{ marginLeft: "10px" }}
+                                  />
+                                ) : (
+                                  <RiDeleteBinLine
+                                    className={style.deleteIcon}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      console.log(atribuicao.id);
+                                      handleDesassociarAvaliador(atribuicao.id); // Passa o ID da atribuição (submissaoAvaliadorId)
+                                    }}
+                                    title="Remover vinculação"
+                                  />
+                                )}
+                              </div>
+                            </li>
+                          );
+                        })}
+                      </ul>
+
+                      <h6 className="mt-2 ml-2 mb-2">Avaliados</h6>
+                      <ul>
+                        {inscricoesProjetos.filter((inscricao) =>
+                          inscricao.FichaAvaliacao?.some(
+                            (ficha) =>
+                              ficha.avaliadorId === avaliadorSelecionado.user.id
                           )
-                          .map((inscricao, idx) => {
-                            const fichasDoAvaliador =
-                              inscricao.FichaAvaliacao?.filter(
+                        ).length > 0 ? (
+                          inscricoesProjetos
+                            .filter((inscricao) =>
+                              inscricao.FichaAvaliacao?.some(
                                 (ficha) =>
                                   ficha.avaliadorId ===
                                   avaliadorSelecionado.user.id
-                              ) || [];
+                              )
+                            )
+                            .map((inscricao, idx) => {
+                              const fichasDoAvaliador =
+                                inscricao.FichaAvaliacao?.filter(
+                                  (ficha) =>
+                                    ficha.avaliadorId ===
+                                    avaliadorSelecionado.user.id
+                                ) || [];
 
-                            return (
-                              <li key={idx}>
-                                <div className={style.content}>
-                                  <h6>
-                                    {inscricao.projeto?.titulo ||
-                                      "Projeto sem título"}{" "}
-                                  </h6>
-                                  <p>
-                                    <strong>Status:</strong>{" "}
-                                    {inscricao.statusAvaliacao}
-                                  </p>
-                                  {fichasDoAvaliador.length > 0 && (
-                                    <>
-                                      <p>
-                                        <strong>Sua nota:</strong>{" "}
-                                        {fichasDoAvaliador[0].notaTotal.toFixed(
-                                          2
-                                        )}
-                                      </p>
-                                      <p>
-                                        <strong>Média geral:</strong>{" "}
-                                        {inscricao.notaMedia}
-                                      </p>
-                                    </>
-                                  )}
-                                </div>
-                              </li>
-                            );
-                          })
-                      ) : (
-                        <li>
-                          <div className={style.content}>
-                            <h6>Nenhum projeto avaliado</h6>
-                          </div>
-                        </li>
-                      )}
-                    </ul>
-                  </>
-                ) : (
-                  <div className={style.content}>
-                    <NoData description="Selecione um avaliador." />
-                  </div>
-                )}
+                              return (
+                                <li key={idx}>
+                                  <div className={style.content}>
+                                    <h6>
+                                      {inscricao.projeto?.titulo ||
+                                        "Projeto sem título"}{" "}
+                                    </h6>
+                                    <p>
+                                      <strong>Status:</strong>{" "}
+                                      {inscricao.statusAvaliacao}
+                                    </p>
+                                    {fichasDoAvaliador.length > 0 && (
+                                      <>
+                                        <p>
+                                          <strong>Sua nota:</strong>{" "}
+                                          {fichasDoAvaliador[0].notaTotal.toFixed(
+                                            2
+                                          )}
+                                        </p>
+                                        <p>
+                                          <strong>Média geral:</strong>{" "}
+                                          {inscricao.notaMedia}
+                                        </p>
+                                      </>
+                                    )}
+                                  </div>
+                                </li>
+                              );
+                            })
+                        ) : (
+                          <li>
+                            <div className={style.content}>
+                              <h6>Nenhum projeto avaliado</h6>
+                            </div>
+                          </li>
+                        )}
+                      </ul>
+                    </>
+                  ) : (
+                    <div className={style.content}>
+                      <NoData description="Selecione um avaliador." />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        </Card>
+          </Card>
+        )}
         <Card className={`mb-4 p-2`}>
           <div className=" mb-2">
             <h5 className="mb-2">Avaliações pendentes (geral)</h5>
@@ -1175,7 +1176,7 @@ const Page = ({ params }) => {
                           const projetoTitulo =
                             atribuicao.submissao?.Resumo?.titulo ||
                             "Projeto sem título";
-                          const projetoId = atribuicao.submissao?.Resumo?.id;
+                          const projetoId = atribuicao.submissao?.id;
 
                           // Obter as participações do projeto
                           const participacoes =
@@ -1201,7 +1202,8 @@ const Page = ({ params }) => {
                                   </h6>
                                   <p className={style.timeInfo}>
                                     <strong>Avaliador:</strong>{" "}
-                                    {avaliador.user.nome}
+                                    {avaliador.user.nome} (ID vinculacão -{" "}
+                                    {atribuicao?.id})
                                   </p>
 
                                   {/* Mostrar as participações */}
@@ -1237,10 +1239,7 @@ const Page = ({ params }) => {
                                     className={style.deleteIcon}
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      handleDesassociarAvaliador(
-                                        atribuicao.submissao.id,
-                                        avaliador.user.id
-                                      );
+                                      handleDesassociarAvaliador(atribuicao.id); // Passa o ID da atribuição (submissaoAvaliadorId)
                                     }}
                                     title="Remover vinculação"
                                   />

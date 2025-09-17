@@ -8,16 +8,31 @@ export const getListaSubmissao = async (
   eventoSlug
 ) => {
   try {
+    
+    const response = await req.get(
+      `/evenplic/submissoes/evento/${eventoSlug}/lista-submissoes`,
+      
+    );
+    return response.data.submissoes;
+  } catch (error) {
+    console.error("Erro ao atualizar campo:", error);
+    throw error;
+  }
+};
+
+export const gestorDesassociarAvaliadorSubmissao = async (
+  submissaoAvaliadorId
+) => {
+  try {
     const headers = getAuthHeadersClient();
     if (!headers) {
       return false;
     }
     const response = await req.get(
-      `/evenplic/submissoes/evento/${eventoSlug}/lista-submissoes`,
-      
+      `/evenplic/submissoes/evento/${submissaoAvaliadorId}/desassociar-avaliador`,
       { headers }
     );
-    return response.data.submissoes;
+    return response.data.data;
   } catch (error) {
     console.error("Erro ao atualizar campo:", error);
     throw error;

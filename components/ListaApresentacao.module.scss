@@ -1,0 +1,328 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: $gap-3;
+  
+  @include responsive(xs) {
+    padding: $gap-2;
+  }
+}
+
+.title {
+  color: $primary-darken;
+  margin-bottom: $gap-3;
+  text-align: center;
+  font-size: 2rem;
+  
+  @include responsive(xs) {
+    font-size: 1.5rem;
+    margin-bottom: $gap-2;
+  }
+}
+
+.searchContainer {
+  position: relative;
+  margin-bottom: $gap-3;
+  display: flex;
+  justify-content: center;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.searchInput {
+  width: 100%;
+  padding: $gap-2;
+  padding-right: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background-color: color-mix(in srgb, $white-dark 25%, transparent);
+  color: $primary-darken;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  
+  &::placeholder {
+    color: rgba($primary-darken, 0.6);
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: $primary-darken;
+  }
+}
+
+.clearButton {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: rgba($primary-darken, 0.6);
+  
+  &:hover {
+    color: $primary-darken;
+  }
+}
+
+.resultsCount {
+  text-align: center;
+  margin-bottom: $gap-2;
+  color: $primary-darken;
+  font-style: italic;
+}
+
+.loading, .error, .noResults {
+  text-align: center;
+  padding: $gap-4;
+  color: $primary-darken;
+  background-color: color-mix(in srgb, $white-dark 25%, transparent);
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.apresentacoesList {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-3;
+}
+
+.apresentacaoCard {
+  background-color: color-mix(in srgb, $white-dark 25%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.cardHeader {
+  padding: $gap-3;
+  background-color: color-mix(in srgb, $primary-darken 15%, transparent);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  
+  @include responsive(xs) {
+    flex-direction: column;
+    gap: $gap-1;
+  }
+}
+
+.titulo {
+  color: $white-light;
+  margin: 0;
+  flex: 1;
+  font-size: 1.25rem;
+  line-height: 1.4;
+  
+  @include responsive(xs) {
+    font-size: 1.1rem;
+  }
+}
+
+.headerMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: $gap-1;
+  
+  @include responsive(xs) {
+    flex-direction: row;
+    align-items: center;
+    margin-top: $gap-1;
+  }
+}
+
+.categoria {
+  background-color: color-mix(in srgb, $warning-dark 70%, transparent);
+  color: $white-dark;
+  padding: 4px $gap-1;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.premio {
+  background-color: color-mix(in srgb, $success-dark 70%, transparent);
+  color: $white-light;
+  padding: 4px $gap-1;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.cardBody {
+  padding: $gap-3;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: $gap-2;
+  margin-bottom: $gap-3;
+  
+  @include responsive(xs) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+}
+
+.infoLabel {
+  font-weight: 600;
+  color: $primary-darken;
+  margin-bottom: 4px;
+  font-size: 0.9rem;
+}
+
+.infoValue {
+  color: $white-dark;
+  line-height: 1.4;
+}
+
+.sectionTitle {
+  color: $primary-darken;
+  margin-bottom: $gap-1;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.participantes {
+  margin-bottom: $gap-3;
+}
+
+.participante {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $gap-1;
+  margin-bottom: 8px;
+  align-items: center;
+  
+  @include responsive(xs) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+}
+
+.participanteNome {
+  color: $white-dark;
+  font-weight: 500;
+}
+
+.participanteCargo {
+  color: rgba($white-dark, 0.8);
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+.participanteEmail {
+  color: rgba($white-dark, 0.7);
+  font-size: 0.85rem;
+}
+
+.area {
+  margin-bottom: $gap-3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: $gap-1;
+}
+
+.areaValue {
+  color: $white-dark;
+  font-weight: 500;
+}
+
+.grandeAreaValue {
+  color: rgba($white-dark, 0.8);
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+.palavrasChaveList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $gap-1;
+  margin-top: $gap-1;
+}
+
+.palavraChave {
+  background-color: color-mix(in srgb, $primary-darken 20%, transparent);
+  color: $white-light;
+  padding: 4px 8px;
+  border-radius: 16px;
+  font-size: 0.8rem;
+}
+
+// Adicione estas classes ao seu arquivo SCSS
+
+// Status Badge Styles
+.statusBadge {
+  padding: 8px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-radius: 4px 4px 0 0;
+  color: $white-normal;
+}
+
+.statusAguardando {
+  background-color: $warning-normal;
+  color: $black-normal;
+}
+
+.statusEmAvaliacao {
+  background-color: $warning-light;
+  color: $warning-darken;
+}
+
+.statusAvaliada {
+  background-color: $success-normal;
+  color: $white-normal;
+}
+
+.statusSelecionada {
+  background-color: $error-lighten;
+  color: $error-dark;
+}
+
+.statusDistribuida {
+  background-color: $error-lighten;
+  color: $error-dark;
+}
+
+.statusAusente {
+  background-color: $primary-dark;
+  color: $white-normal;
+}
+
+.statusAusenteJustificada {
+  background-color: $primary-dark;
+  color: $white-normal;
+}
+
+.statusDefault {
+  background-color: $gray-400;
+  color: $white-normal;
+}

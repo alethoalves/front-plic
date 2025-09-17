@@ -25,7 +25,7 @@ const Page = ({ params }) => {
           </div>
         </Link>
         <Link
-          href={`/evento/${params.eventoSlug}/edicao/${params.edicao}/avaliador/certificados`}
+          href={`/evento/${params.eventoSlug}/edicao/${params.edicao}/avaliador/minhasAvaliacoes`}
         >
           <div className={styles.menu}>
             <div className={styles.logo}>

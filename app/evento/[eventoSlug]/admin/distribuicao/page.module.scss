@@ -177,7 +177,7 @@
                     
                 }
             }
-            cursor: pointer;
+            //cursor: pointer;
             transition: ease .3s;
             display: flex;
             justify-content: space-between;
@@ -216,7 +216,7 @@
                 font-weight: 600;
             }
             &:hover, .selected{
-              background-color: $white-darken;
+              //background-color: $white-darken;
               p,strong, h6{
                   color: $primary-darken;
               }

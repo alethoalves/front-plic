@@ -89,7 +89,10 @@ const Page = ({ params }) => {
                     Edição {evento.edicaoEvento}
                   </span>
                 </div>
-                <div className={styles.arrow}>Ambiente de Avaliação →</div>
+                <div className={styles.ctaButton}>
+                  <span>Acessar Ambiente de Avaliação</span>
+                  <div className={styles.arrowIcon}>→</div>
+                </div>
               </div>
             </Link>
           ))}

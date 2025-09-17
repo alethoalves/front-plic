@@ -282,3 +282,40 @@ $error-light: #fee2e2;
     margin-bottom: $gap-2;
   }
 }
+
+.ctaButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $gap-2;
+  background: linear-gradient(135deg, $blue-primary 0%, $blue-secondary 100%);
+  color: white;
+  padding: $gap-2 $gap-3;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  margin-top: $gap-3;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+  
+  .arrowIcon {
+    transition: transform 0.3s ease;
+  }
+}
+
+.eventCard {
+  // mantém todos os estilos anteriores...
+  
+  &:hover {
+    // mantém todos os estilos anteriores...
+    
+    .ctaButton {
+      background: linear-gradient(135deg, $blue-secondary 0%, $blue-dark 100%);
+      box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+      
+      .arrowIcon {
+        transform: translateX(4px);
+      }
+    }
+  }
+}
