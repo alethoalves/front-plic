@@ -210,8 +210,8 @@ const Page = ({ params }) => {
   const alocarSubmissoesSequencialmente = async () => {
     setLoadingAlocacao(true);
     setTotal(subsessaoFiltered.length);
+    console.log(subsessaoFiltered.length);
     setProgress(0);
-
     subsessaoFiltered.forEach(async (item, i) => {
       try {
         const updatedSquare = await vincularSubmissao(
@@ -253,122 +253,121 @@ const Page = ({ params }) => {
         {loading && <p className="mt-2">Carregando...</p>}{" "}
         {/* Exibe o indicador de carregamento dentro do modal */}
       </div>
-      {!loading ||
-        (false && (
-          <div className={styles.squares}>
-            {true && (
-              <Button
-                className="btn-secondary mb-2"
-                icon={RiRobot2Line}
-                type="button"
-                disabled={loadingAlocacao}
-                onClick={alocarSubmissoesSequencialmente}
-              >
-                {loading
-                  ? `Alocando: ${progress} de ${total} (${Math.round(
-                      (progress / total) * 100
-                    )}%)`
-                  : "Alocar automaticamente"}
-              </Button>
-            )}
-            {subsessaoFiltered?.map((item) => (
-              <div
-                key={item.id}
-                className={styles.square}
-                onClick={() => alocarSubmissao(item)}
-              >
-                <div className={`${styles.squareContent} m-0`}>
-                  <div className={styles.info}>
-                    <p
-                      className={`${styles.status} ${
-                        item?.status === "DISTRIBUIDA" ||
-                        item?.status === "SELECIONADA"
-                          ? styles.error
-                          : item?.status === "AGUARDANDO_AVALIACAO"
-                          ? styles.warning
-                          : item?.status === "AVALIADA"
-                          ? styles.success
-                          : item?.status === "AUSENTE"
-                          ? styles.inativada
-                          : styles.success
-                      }`}
-                    >
-                      {item.status === "DISTRIBUIDA" ||
-                      item.status === "SELECIONADA"
-                        ? "checkin pendente"
-                        : item.status === "AGUARDANDO_AVALIACAO"
-                        ? "aguardando avaliação"
-                        : item.status === "AVALIADA"
-                        ? "avaliação concluída"
-                        : item.status === "AUSENTE"
-                        ? "ausente"
-                        : item.status}
-                    </p>
-                    <p className={styles.area}>
-                      {item.Resumo?.area?.area
-                        ? item.Resumo?.area?.area
-                        : "sem área"}
-                      - {item.tenant?.sigla.toUpperCase()}-{" "}
-                      {item.categoria.toUpperCase()}
-                    </p>
-                  </div>
-                  <div className={styles.submissaoData}>
-                    <h6>{item.Resumo.titulo}</h6>
-                    <p className={styles.participacoes}>
-                      <strong>Orientadores: </strong>
-                      {item.Resumo?.participacoes
-                        .filter(
-                          (item) =>
-                            item.cargo === "ORIENTADOR" ||
-                            item.cargo === "COORIENTADOR"
-                        )
-                        .map(
-                          (item, i) => `${i > 0 ? ", " : ""}${item.user.nome} `
-                        )}
-                    </p>
-                    <p className={styles.participacoes}>
-                      <strong>Alunos: </strong>
-                      {item.Resumo?.participacoes.map(
-                        (item, i) => `${i > 0 ? ", " : ""}${item.user.nome}`
-                      )}
-                    </p>
-                  </div>
+      {!loading && (
+        <div className={styles.squares}>
+          {false && (
+            <Button
+              className="btn-secondary mb-2"
+              icon={RiRobot2Line}
+              type="button"
+              disabled={loadingAlocacao}
+              onClick={alocarSubmissoesSequencialmente}
+            >
+              {loading
+                ? `Alocando: ${progress} de ${total} (${Math.round(
+                    (progress / total) * 100
+                  )}%)`
+                : "Alocar automaticamente"}
+            </Button>
+          )}
+          {subsessaoFiltered?.map((item) => (
+            <div
+              key={item.id}
+              className={styles.square}
+              onClick={() => alocarSubmissao(item)}
+            >
+              <div className={`${styles.squareContent} m-0`}>
+                <div className={styles.info}>
+                  <p
+                    className={`${styles.status} ${
+                      item?.status === "DISTRIBUIDA" ||
+                      item?.status === "SELECIONADA"
+                        ? styles.error
+                        : item?.status === "AGUARDANDO_AVALIACAO"
+                        ? styles.warning
+                        : item?.status === "AVALIADA"
+                        ? styles.success
+                        : item?.status === "AUSENTE"
+                        ? styles.inativada
+                        : styles.success
+                    }`}
+                  >
+                    {item.status === "DISTRIBUIDA" ||
+                    item.status === "SELECIONADA"
+                      ? "checkin pendente"
+                      : item.status === "AGUARDANDO_AVALIACAO"
+                      ? "aguardando avaliação"
+                      : item.status === "AVALIADA"
+                      ? "avaliação concluída"
+                      : item.status === "AUSENTE"
+                      ? "ausente"
+                      : item.status}
+                  </p>
+                  <p className={styles.area}>
+                    {item.Resumo?.area?.area
+                      ? item.Resumo?.area?.area
+                      : "sem área"}
+                    - {item.tenant?.sigla.toUpperCase()}-{" "}
+                    {item.categoria.toUpperCase()}
+                  </p>
                 </div>
-                {(item?.premio ||
-                  item?.indicacaoPremio ||
-                  item?.premio ||
-                  item?.notaFinal) && (
-                  <div className={styles.premios}>
-                    {item?.premio && (
-                      <div className={`${styles.squareHeader} `}>
-                        <RiShieldStarFill />
-                        <p>Premiado</p>
-                      </div>
+                <div className={styles.submissaoData}>
+                  <h6>{item.Resumo.titulo}</h6>
+                  <p className={styles.participacoes}>
+                    <strong>Orientadores: </strong>
+                    {item.Resumo?.participacoes
+                      .filter(
+                        (item) =>
+                          item.cargo === "ORIENTADOR" ||
+                          item.cargo === "COORIENTADOR"
+                      )
+                      .map(
+                        (item, i) => `${i > 0 ? ", " : ""}${item.user.nome} `
+                      )}
+                  </p>
+                  <p className={styles.participacoes}>
+                    <strong>Alunos: </strong>
+                    {item.Resumo?.participacoes.map(
+                      (item, i) => `${i > 0 ? ", " : ""}${item.user.nome}`
                     )}
-                    {item?.indicacaoPremio && (
-                      <div className={`${styles.squareHeader} `}>
-                        <RiMedalLine />
-                        <p>Indicado ao Prêmio</p>
-                      </div>
-                    )}
-                    {item?.mencaoHonrosa && (
-                      <div className={`${styles.squareHeader} `}>
-                        <RiStarLine />
-                        <p>Menção Honrosa</p>
-                      </div>
-                    )}
-                    {item?.notaFinal && (
-                      <div className={`${styles.squareHeader} `}>
-                        <RiSpeedUpLine />
-                        <p>{item?.notaFinal}</p>
-                      </div>
-                    )}
-                  </div>
-                )}
+                  </p>
+                </div>
               </div>
-            ))}
-          </div>
-        ))}
+              {(item?.premio ||
+                item?.indicacaoPremio ||
+                item?.premio ||
+                item?.notaFinal) && (
+                <div className={styles.premios}>
+                  {item?.premio && (
+                    <div className={`${styles.squareHeader} `}>
+                      <RiShieldStarFill />
+                      <p>Premiado</p>
+                    </div>
+                  )}
+                  {item?.indicacaoPremio && (
+                    <div className={`${styles.squareHeader} `}>
+                      <RiMedalLine />
+                      <p>Indicado ao Prêmio</p>
+                    </div>
+                  )}
+                  {item?.mencaoHonrosa && (
+                    <div className={`${styles.squareHeader} `}>
+                      <RiStarLine />
+                      <p>Menção Honrosa</p>
+                    </div>
+                  )}
+                  {item?.notaFinal && (
+                    <div className={`${styles.squareHeader} `}>
+                      <RiSpeedUpLine />
+                      <p>{item?.notaFinal}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </Modal>
   );
 
@@ -572,7 +571,10 @@ const Page = ({ params }) => {
                             item.cargo === "COORIENTADOR"
                         )
                         .map(
-                          (item, i) => `${i > 0 ? ", " : ""}${item.user.nome} `
+                          (item, i) =>
+                            `${i > 0 ? ", " : ""}${item.user.nome} (${
+                              item.user.cpf
+                            })`
                         )}
                     </p>
                     <p className={styles.participacoes}>
@@ -580,7 +582,10 @@ const Page = ({ params }) => {
                       {item.submissao?.Resumo?.participacoes
                         .filter((item) => item.cargo === "AUTOR")
                         .map(
-                          (item, i) => `${i > 0 ? ", " : ""}${item.user.nome} `
+                          (item, i) =>
+                            `${i > 0 ? ", " : ""}${item.user.nome} (${
+                              item.user.cpf
+                            }) `
                         )}
                     </p>
                   </div>

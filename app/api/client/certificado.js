@@ -121,18 +121,41 @@ export const getUserSubmissions = async (eventoId) => {
     throw error;
   }
 }; 
-
-export const generateAndDownloadCertificatePDF = async (eventoId, tipo, submissaoId) => {
+// api/client/certificado.js
+export const getCertificados = async (eventoId, tipoBusca, valor) => {
   try {
-    // Obtenha os cabeçalhos de autenticação
+    
+
+    // Construir a URL com query parameters
+    const queryParam = tipoBusca === "cpf" ? `cpf=${valor}` : `codigo=${valor}`;
+    const url = `/evenplic/evento/${eventoId}/getCertificados?${queryParam}`;
+
+    const response = await req.get(url, );
+
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      console.error("Certificados não encontrados:", error);
+      return { status: "error", message: "Nenhum certificado encontrado" };
+    }
+    console.error("Erro ao obter certificados:", error);
+    throw error;
+  }
+};
+export const generateAndDownloadCertificatePDF = async (eventoId, tipo, submissaoId, codigo = null) => {
+  try {
     const headers = getAuthHeadersClient();
-    if (!headers) {
-      throw new Error("Headers de autenticação não encontrados.");
+   
+
+    // Construir a URL com parâmetros opcionais
+    let url = `/evenplic/evento/${eventoId}/generateCertificate/${tipo}/${submissaoId}`;
+    
+    if (codigo) {
+      url += `?codigo=${codigo}`;
     }
 
-    // Chame a API para obter o HTML do certificado
-    const response = await req.get(`/evenplic/evento/${eventoId}/generateCertificate/${tipo}/${submissaoId}`, {
-      headers,
+    const response = await req.get(url, {
+      headers: headers || {} // Envia headers se disponível, senão envia vazio
     });
 
     const { status, html } = response.data;
@@ -141,34 +164,28 @@ export const generateAndDownloadCertificatePDF = async (eventoId, tipo, submissa
       throw new Error("Erro ao obter o HTML do certificado.");
     }
 
-    // Cria um elemento temporário para renderizar o HTML
+    // Resto do código permanece igual...
     const container = document.createElement("div");
     container.innerHTML = html;
-    container.style.width = "1123px"; // Largura aproximada de uma folha A4 (landscape)
-    container.style.height = "794px"; // Altura aproximada de uma folha A4 (landscape)
+    container.style.width = "1123px";
+    container.style.height = "794px";
     container.style.position = "relative";
     document.body.appendChild(container);
 
-    // Aguarde para garantir que a imagem foi carregada
     await new Promise((resolve) => setTimeout(resolve, 500));
 
-    // Renderiza o HTML como canvas
-    const canvas = await html2canvas(container, { scale: 2 }); // Aumente o `scale` para melhorar a qualidade
+    const canvas = await html2canvas(container, { scale: 2 });
     const canvasWidth = canvas.width;
     const canvasHeight = canvas.height;
 
-    // Remove o elemento do DOM
     document.body.removeChild(container);
 
-    // Cria um PDF com jsPDF
     const pdf = new jsPDF("landscape", "px", [canvasWidth, canvasHeight]);
     const imgData = canvas.toDataURL("image/png");
 
-    // Adiciona a imagem ao PDF no tamanho exato
     pdf.addImage(imgData, "PNG", 0, 0, canvasWidth, canvasHeight);
-
-    // Inicia o download do PDF
     pdf.save(`certificado_${eventoId}.pdf`);
+    
   } catch (error) {
     console.error("Erro ao gerar ou baixar o certificado PDF:", error);
     throw new Error("Erro ao gerar ou baixar o certificado. Tente novamente.");

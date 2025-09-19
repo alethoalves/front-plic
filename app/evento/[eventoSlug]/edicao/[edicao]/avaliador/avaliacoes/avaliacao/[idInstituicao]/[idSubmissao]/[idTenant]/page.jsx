@@ -264,7 +264,7 @@ const Page = ({ params }) => {
       setLoadingFeedback(false);
     }
   };
-
+  const [avaliacaoFinalizada, setAvaliacaoFinalizada] = useState(false);
   // Função para finalizar a avaliação
   const handleTerminarAvaliacao = async () => {
     // Verificar se todas as notas foram atribuídas
@@ -293,11 +293,10 @@ const Page = ({ params }) => {
 
       if (response.status === "success") {
         showToast("success", "Sucesso", "Avaliação processada com sucesso!");
-        setTimeout(() => {
-          router.push(
-            `/evento/${params.eventoSlug}/edicao/${params.edicao}/avaliador/avaliacoes`
-          );
-        }, 1500);
+        setAvaliacaoFinalizada;
+        router.push(
+          `/evento/${params.eventoSlug}/edicao/${params.edicao}/avaliador/avaliacoes`
+        );
       } else {
         setError({ geral: response.message || "Erro ao processar avaliação." });
         showToast(

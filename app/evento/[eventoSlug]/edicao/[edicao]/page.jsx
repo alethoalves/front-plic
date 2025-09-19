@@ -23,6 +23,7 @@ import { Accordion, AccordionTab } from "primereact/accordion";
 import { formatDateForDisplay } from "@/lib/formatDateForDisplay";
 import NoData from "@/components/NoData";
 import { MinhasInscricoes } from "@/components/evento/MinhasInscricoes";
+import { CertificadoEvento } from "@/components/evento/CertificadoEvento";
 // Função para formatar AAAA-MM-DD para DD/MM/AAAA
 const formatDate = (dateString) => {
   const [year, month, day] = dateString.split("-");
@@ -117,12 +118,9 @@ const Page = async ({ params }) => {
                 </div>
               </Link>
 
-              {false && (
-                <div className={styles.action}>
-                  <RiAwardFill />
-                  <h6>Certificados</h6>
-                </div>
-              )}
+              <div>
+                <CertificadoEvento eventoId={evento.id} params={params} />
+              </div>
             </div>
 
             <div className={`${styles.edicoesContent}`}>
