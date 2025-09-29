@@ -77,6 +77,7 @@ const Page = ({ params }) => {
       // Definir colunas atualizadas
       worksheet.columns = [
         { header: "ID", key: "id", width: 10 },
+        { header: "Poster", key: "poster", width: 10 },
         { header: "Título", key: "titulo", width: 30 },
         { header: "Área", key: "area", width: 20 },
         { header: "Grande Área", key: "grandeArea", width: 20 },
@@ -141,6 +142,7 @@ const Page = ({ params }) => {
 
         worksheet.addRow({
           id: submissao.id,
+          poster: submissao.square[0]?.numero || "-",
           titulo: sanitizeText(resumo.titulo || "Sem título"),
           area: sanitizeText(area.area || "Sem área"),
           grandeArea: sanitizeText(
