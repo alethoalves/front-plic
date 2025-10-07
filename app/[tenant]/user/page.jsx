@@ -138,6 +138,20 @@ const Page = ({ params }) => {
               </div>
             </div>
           </Link>
+          <Link href={`/${params.tenant}/user/certificados`}>
+            <div className={styles.infoBox}>
+              <div className={styles.icon}>
+                <RiAwardFill />
+              </div>
+              <div className={styles.infoBoxContent}>
+                <h6>Certificados</h6>
+                <p>
+                  Acesse os certificados de conclusão de projetos de iniciação
+                  científica.
+                </p>
+              </div>
+            </div>
+          </Link>
           {false && (
             <>
               {" "}
