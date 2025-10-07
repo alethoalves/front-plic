@@ -1,0 +1,495 @@
+@import "./styles/partials/colors";
+@import "./styles/partials/layout";
+@import "./styles/partials/spacing";
+
+.content {
+  margin-top: $gap-4;
+  display: flex;
+  flex-direction: column;
+  gap: $gap-4;
+
+  @include responsive(s) {
+    margin-top: $gap-3;
+    gap: $gap-3;
+  }
+}
+
+// Header Section
+.contentHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $gap-2;
+
+  @include responsive(s) {
+    flex-direction: column;
+    gap: $gap-2;
+    align-items: stretch;
+  }
+
+  .searchContainer {
+    flex: 1;
+    max-width: 400px;
+
+    @include responsive(s) {
+      max-width: none;
+    }
+  }
+}
+
+// Certificados Grid
+.certificados {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: $gap-4;
+  margin-top: $gap-3;
+
+  @include responsive(m) {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: $gap-3;
+  }
+
+  @include responsive(s) {
+    grid-template-columns: 1fr;
+    gap: $gap-2;
+  }
+}
+
+// Card de Certificado
+.certificado {
+  background: $white-normal;
+  border: 1px solid $gray-100;
+  border-radius: 12px;
+  padding: $gap-3;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(7, 23, 46, 0.08);
+    border-color: $primary-light;
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.certificadoImg {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  background: $gray-25;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: $gap-3;
+  border: 1px dashed $gray-200;
+  overflow: hidden;
+  transition: all 0.3s ease;
+
+  .certificado:hover & {
+    border-color: $primary-normal;
+    background: $white-light;
+  }
+}
+
+.uploadPlaceholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $gap-1;
+  color: $gray-400;
+  transition: color 0.3s ease;
+
+  .certificado:hover & {
+    color: $primary-normal;
+  }
+
+  svg {
+    width: 48px;
+    height: 48px;
+    margin-bottom: $gap-1;
+  }
+
+  p {
+    font-size: 0.9rem;
+    margin: 0;
+    text-align: center;
+    color: $gray-500;
+  }
+}
+
+.descricao {
+  text-align: center;
+
+  p {
+    font-weight: 500;
+    color: $black-normal;
+    margin: 0;
+    font-size: 1.1rem;
+    line-height: 1.4;
+  }
+}
+
+// Modal Styles
+.modalHeader {
+  text-align: center;
+  margin-bottom: $gap-4;
+
+  .icon {
+    width: 48px;
+    height: 48px;
+    color: $primary-normal;
+    margin: 0 auto $gap-2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  h4 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: $black-normal;
+    margin: 0;
+  }
+}
+
+.bgCertificado {
+  background: $white-normal;
+  border: 2px dashed $gray-200;
+  border-radius: 12px;
+  padding: $gap-4;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: $gap-3;
+
+  &:hover {
+    border-color: $primary-normal;
+    background: $white-light;
+  }
+}
+
+// Estados de Loading e Upload
+.uploading {
+  text-align: center;
+  color: $primary-normal;
+  font-weight: 500;
+  margin: $gap-2 0;
+  padding: $gap-2;
+  background: $white-light;
+  border-radius: 8px;
+  border: 1px solid $primary-light;
+}
+
+.error {
+  text-align: center;
+  color: $error-normal;
+  font-weight: 500;
+  margin: $gap-2 0;
+  padding: $gap-2;
+  background: $white-light;
+  border-radius: 8px;
+  border: 1px solid $error-light;
+}
+
+.success {
+  text-align: center;
+  color: $success-normal;
+  font-weight: 500;
+  margin: $gap-2 0;
+  padding: $gap-2;
+  background: $white-light;
+  border-radius: 8px;
+  border: 1px solid $success-light;
+}
+
+// Skeleton Loading
+.skeletonGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: $gap-4;
+
+  @include responsive(m) {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: $gap-3;
+  }
+
+  @include responsive(s) {
+    grid-template-columns: 1fr;
+    gap: $gap-2;
+  }
+}
+
+// No Data State
+.noData {
+  text-align: center;
+  padding: $gap-6;
+  color: $gray-500;
+  background: $white-normal;
+  border-radius: 12px;
+  border: 1px dashed $gray-200;
+
+  @include responsive(s) {
+    padding: $gap-4;
+  }
+
+  .noDataIcon {
+    width: 64px;
+    height: 64px;
+    color: $gray-300;
+    margin: 0 auto $gap-3;
+    
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  p {
+    font-size: 1.1rem;
+    margin: 0;
+    color: $gray-600;
+  }
+}
+
+// Status badges (caso precise)
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  
+  &.statusActive {
+    background: $success-lighten;
+    color: $success-dark;
+  }
+  
+  &.statusInactive {
+    background: $warning-lighten;
+    color: $warning-darken;
+  }
+  
+  &.statusError {
+    background: $error-lighten;
+    color: $error-dark;
+  }
+}
+
+// Tooltip para informações adicionais
+.tooltip {
+  position: relative;
+  
+  &:hover::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: $black-normal;
+    color: $white-normal;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    white-space: nowrap;
+    z-index: 1000;
+  }
+}
+
+// Responsividade adicional
+@include responsive(s) {
+  .certificado {
+    padding: $gap-2;
+  }
+  
+  .certificadoImg {
+    height: 160px;
+    margin-bottom: $gap-2;
+  }
+  
+  .bgCertificado {
+    padding: $gap-3;
+  }
+  
+  .modalHeader {
+    margin-bottom: $gap-3;
+    
+    h4 {
+      font-size: 1.3rem;
+    }
+    
+    .icon {
+      width: 40px;
+      height: 40px;
+      margin-bottom: $gap-1;
+    }
+  }
+  
+  .certificados {
+    margin-top: $gap-2;
+  }
+}
+
+// Animações
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.certificado {
+  animation: fadeIn 0.3s ease-out;
+}
+
+// Scroll personalizado (opcional)
+.certificados::-webkit-scrollbar {
+  width: 6px;
+}
+
+.certificados::-webkit-scrollbar-track {
+  background: $gray-25;
+  border-radius: 3px;
+}
+
+.certificados::-webkit-scrollbar-thumb {
+  background: $gray-300;
+  border-radius: 3px;
+  
+  &:hover {
+    background: $gray-400;
+  }
+}
+
+// Card para adicionar novo certificado
+.certificadoAdd {
+  background: $white-normal;
+  border: 2px dashed $gray-200;
+  border-radius: 12px;
+  padding: $gap-3;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 250px;
+
+  &:hover {
+    border-color: $primary-normal;
+    background: $primary-light;
+    transform: translateY(-2px);
+  }
+
+  .addIcon {
+    width: 64px;
+    height: 64px;
+    color: $primary-normal;
+    margin-bottom: $gap-2;
+    
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
+
+// Formulário no modal de criação
+.formGroup {
+  margin-bottom: $gap-3;
+
+  .label {
+    display: block;
+    margin-bottom: $gap-1;
+    font-weight: 500;
+    color: $black-normal;
+  }
+
+  .select {
+    width: 100%;
+    padding: $gap-2;
+    border: 1px solid $gray-200;
+    border-radius: 8px;
+    background: $white-normal;
+    color: $black-normal;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+
+    &:focus {
+      outline: none;
+      border-color: $primary-normal;
+      box-shadow: 0 0 0 3px rgba($primary-normal, 0.1);
+    }
+  }
+}
+
+// Ações do modal
+.modalActions {
+  display: flex;
+  gap: $gap-2;
+  justify-content: flex-end;
+  margin-top: $gap-4;
+
+  @include responsive(s) {
+    flex-direction: column;
+  }
+}
+
+.btnPrimary {
+  background: $primary-normal;
+  color: $white-normal;
+  border: none;
+  border-radius: 8px;
+  padding: $gap-2 $gap-3;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 120px;
+
+  &:hover:not(:disabled) {
+    background: $primary-dark;
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+.btnSecondary {
+  background: $white-normal;
+  color: $gray-600;
+  border: 1px solid $gray-200;
+  border-radius: 8px;
+  padding: $gap-2 $gap-3;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 120px;
+
+  &:hover:not(:disabled) {
+    background: $gray-25;
+    border-color: $gray-300;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}

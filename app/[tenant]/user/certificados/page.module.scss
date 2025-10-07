@@ -2,538 +2,606 @@
 @import "/styles/partials/layout";
 @import "/styles/partials/spacing";
 
-
-.squares{
-    padding: $gap-3;
-    .square{
-        margin-bottom: $gap-1;
-        border: 1px solid $gray-50;
-        border-radius: $gap-1;
-        padding: 3px;
-        display: flex;
-        
-            flex-direction: column;
-        
-        
-        .squareHeader, .squareContent, .squareContentEmpty{
-            background-color: $white-darken;
-            padding: $gap-1;
-            border-radius: 6px;
-        }
-        .squareContent{
-            margin-bottom: 4px;
-        }
-        .premios{
-            
-            p{
-                text-wrap: wrap;
-            }
-            
-           
-                margin-left: 0;
-            
-            :not(:last-child){
-                margin-bottom: 4px;
-               }
-            .squareHeader{
-                flex: 1;
-                background-color: $warning-lighten;
-                color: $warning-darken;
-                cursor: pointer;
-                border: 1px solid transparent;
-                transition: ease .3s;
-                border-radius: 6px;
-                &:hover{
-                    border: 1px solid $warning-darken;
-                    transform: scale(1.03);
-                }
-                svg{
-                    margin: 0;
-                }
-                
-            }
-            .squareHeader.loading {
-                opacity: 0.6;
-                pointer-events: none;
-              }
-            
-            
-        }
-        .squareHeader{
-            margin-right: 0px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            text-align: center;
-            h6{
-                font-size: 22px;
-            }
-        }
-        
-       
-        
-    }
-}
-.icon{
-    width: 24px;
-    color: $primary-normal;
+// page.module.scss
+.navContent {
+  min-height: 100vh;
 }
 
-
-.semResumo{
-    background-color: $error-light;
-    border-radius: $gap-1;
-    margin-bottom: $gap-1;
-    p{
-        color: $white-light;
-        padding: $gap-1 $gap-2;
-        
-    }
-}
-.successMsg{
-    width: 100%;
-   h3{
-    background-color: $success-normal;
-    padding: $gap-4 ;
-    
-    padding-top: $gap-7;
-    padding-bottom: $gap-8;
-    color: $white-light;
-    line-height: 100%;
-   }
-   .successMsgContent{
-    margin-top: -30px;
-    padding: $gap-4 ;
-    border-radius: $gap-1;
-    border-top-right-radius: $gap-3;
-    border-top-left-radius: $gap-3;
-    @include responsive(xs){
-        border-top-right-radius: $gap-2;
-        border-top-left-radius: $gap-2;
-        padding: $gap-2 ;
-    };
-    background-color:$white-light;
-    .boxButton{
-        margin-top: -80px;
-        @include responsive(xs){
-            margin-top: -60px;
-            border-radius: $gap-2;
-        }
-        border-radius: $gap-2;
-        background-color: $white-light;
-        border: none;
-        box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.15);
-        .description{
-            &:not(:last-child){
-                margin-bottom: $gap-2;
-            }
-            display: flex;
-            align-items: center;
-            .icon{
-                margin-right: $gap-1;
-                
-                svg{
-                    color: $success-normal;
-                }
-            }
-            .infoBoxDescription{
-                flex: 1;
-            }
-        }
-    }
-   }
-}
-.mainContent{
-    margin-top: $gap-2;
-    h6{
-        margin-bottom: $gap-1;
-    }
-    
-    .box{
-        padding: $gap-2;
-        border: 1px solid $gray-50;
-        box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
-        border-radius: $gap-1;
-        &:not(:last-child){
-            margin-bottom: $gap-1;
-        }
-        position: relative;
-        
-        .flags{
-            display: flex;
-            flex-wrap: wrap;
-            .flag{
-                border: 1px solid $gray-50;
-                padding: $gap-1 $gap-2;
-                border-radius: $gap-1;
-                background-color: $gray-100;
-                margin-bottom: $gap-1;
-                &:not(:last-child){
-                    margin-right: $gap-1;
-                }
-                p{
-                    color: $primary-darken;
-                }
-            }
-        }
-        .menuActions{
-            border-top-right-radius: $gap-1;
-            border-bottom-right-radius: $gap-1;
-            cursor: pointer;
-            padding: 4px $gap-2;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-
-            &:hover{
-                background-color: $gray-100;
-                .circle{
-                    background-color: $primary-normal;
-                }
-            }
-            .circle{
-                width: 4px;
-                height: 4px;
-                border-radius: 50%;
-                background-color: $primary-darken;
-                &:not(:last-child){
-                    margin-bottom: 2px;
-                }
-            }
-            
-        }
-        .innerBoxGray{
-            background-color: $gray-50;
-            p{
-                color: $primary-darken;
-                margin-bottom: 0;
-                font-weight: 700;
-                line-height: 120%;
-                align-items: center;
-            }
-        }
-        .innerBoxWhite{
-            border: 1px solid $gray-50;
-            p{
-                color: $primary-darken;
-                margin-bottom: 0;
-                line-height: 120%;
-                align-items: center;
-            }
-        }
-        
-        .innerBox{
-            display: flex;
-            justify-content: space-between;
-            align-items: stretch;
-            border-radius: $gap-1;
-            margin-bottom: $gap-1;
-            p{
-                padding: $gap-2 ;
-            }
-            cursor: pointer;
-        }
-        .statusInativo{
-            cursor:default;
-            background-color: $white-dark;
-            border: 1px solid $white-dark;
-            p{
-                color: $gray-400;
-            }
-        }
-        .participacoes {
-            display: flex;
-            flex-wrap: wrap;
-            border: 1px solid red;
-            span{
-                font-weight: 300;
-            }
-            
-            
-        }
-        
-    }
-   
-
-
-
-
-   
-    
-    
-}
-.icon{
-    width: 24px;
-    color: $primary-normal;
-}
-.menu{
-    h5{
-        margin-bottom: $gap-3;
-    }
-    button:not(:last-child){
-        margin-bottom: $gap-2;
-    }
-}
-.actionsTable{
-    display: flex;
-    margin-top: $gap-2;
-    margin-bottom: $gap-3;
-    
-    button{
-        flex: 1;
-        border-radius: $gap-1;
-        &:not(:last-child) {
-           margin-right: $gap-2;
-        }
-        
-        
-    
-    }
-}
-.navContent{
-    
-    width: 500px;
-    @include responsive(s){
-        width: 100%;
-    }
-
-    .content{
-        max-width: 990px;
-        @include responsive(s){
-            flex-direction: column;
-            padding: $gap-1;
-        }
-        
-        padding: $gap-2;
-        .header{
-            h5{
-                font-weight: 300;
-
-                span{
-                    padding: 4px $gap-2;
-                    border-radius: $gap-1;
-                    background-color: $primary-darken;
-                    color: $white-light
-                    
-                }
-                
-            };
-            display: flex;
-            flex-direction: column;
-            align-items: left;
-        }
-        
-        
-    }
-    
-
-}
-.modalHeader{
-    padding: $gap-4 $gap-4 0 $gap-4;
-}
-.modal{
-    .margin{
-        margin: $gap-4;
-    }
-}
-.boxButton{
-   
-    &:not(:last-child){
-        margin-bottom: $gap-2;
-    }
-    border-radius: $gap-1;
-    
-    border: 1px solid $gray-50;
-    padding: $gap-3;
-    cursor: pointer;
-    &:hover{
-        box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
-    }
-    .labelWithIcon{
-        display: flex;
-        align-items: center;
-        &:not(:last-child){
-            margin-bottom: $gap-2;
-        }
-        .label,.description{
-            display: flex;
-            flex-direction: column;
-        }
-        .label{
-            flex: 1;
-            
-            .status{
-                
-                p{
-                    font-size: 12px;
-                    display: inline;
-                    white-space: nowrap;
-                    text-align: center;
-                    padding: 4px $gap-2;
-                    border-radius: 20px;
-                    margin-right: $gap-2;
-                    text-transform: lowercase;
-                    @include responsive(xs){
-                        margin-bottom: $gap-1;
-                    }
-                }
-                @include responsive(xs){
-                    margin-left: 0;
-                }
-            }
-            .warning{
-                
-                p{
-                    background-color: $warning-light;
-                    color:red
-                }
-            }
-            .success{
-                p{
-                    background-color: $success-light;
-                }
-                
-            }
-            .error{
-                p{
-                    color: $white-light;
-                    background-color: $error-light;
-                }
-            }
-            p{
-                display: flex;
-                align-items: center;
-                
-                svg{
-                    display: none;
-                    @include responsive (xs){
-                        display: block;
-                        margin-right: $gap-1;
-                    }
-                }
-            }
-            @include responsive (xs){
-                margin-left: 0;
-            }
-            .description{
-                margin-top: $gap-1;
-                p{
-                    font-weight: 600;
-                    text-transform: uppercase;
-                }
-                p.destaque{
-                        color: $primary-darken;
-                    }
-                
-            }
-        }
-        
-        
-        svg{
-            color: $primary-darken;
-            width: 20px;
-            height: 20px;
-            margin-right: $gap-2;
-            @include responsive (xs){
-                display: none;
-            }
-        }
-    }
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: $gap-2;
 }
 
-.inscricaoEvento{
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+  
+  .headerIcon {
+    background: linear-gradient(135deg, $primary-dark 0%, $primary-darken 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 16px;
     display: flex;
     align-items: center;
-    @include responsive(xs){
-        flex-direction: column;
-        align-items: start;
-        justify-content: left;
-    }
-    p{
-        flex: 1;
-    }
-    button{
-        width: 100px;
-        @include responsive(xs){
-            width: 100%;
-            margin-top: $gap-2;
-        }
-    }
-}
-.infoEvento{
-    flex: 1;
-}
-.itemList{
-    margin-top: $gap-1;
+    justify-content: center;
     
-    .headItemList{
-        
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: $gap-2 $gap-3;
-        //box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
-        border: 1px solid $gray-50;
-        cursor: pointer;
-        border-radius: $gap-1;
-
-        @include responsive(xs){
-            flex-direction: column;
-           align-items: flex-start;
-        }
-        .info{
-            flex: 1;
-            @include responsive(xs){
-                display: flex;
-                flex-direction: column;
-            }
-        }
-        .head{
-            display: flex;
-            align-items: center;
-            @include responsive(xs){
-                display: flex;
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            p.titulo{
-                width: 170px;
-                @include responsive(xs){
-                    width: 100%;
-                    margin-bottom: $gap-1;
-                }
-                color:$primary-darken;
-                font-weight: 600;
-                text-transform: uppercase;
-                margin-right: $gap-2;
-            }
-            p.subtitulo{
-                color:$gray-400;
-                display: flex;
-                flex-direction: column;
-                margin-right: $gap-2;
-                span{
-                    font-weight: 700;
-                }
-                @include responsive(xs){
-                    margin-bottom: $gap-1;
-                }
-            }
-            p.descricao{
-                font-weight: 300;
-                margin-top: $gap-1;
-                color: $gray-400;
-            }
-        }
-
-        
-        .actions{
-            @include responsive(xs){
-                width: 100%;
-            }
-        }
+    svg {
+      width: 32px;
+      height: 32px;
     }
-   
+  }
+  
+  .headerContent {
+    h6 {
+      margin: 0;
+      color: #1e293b;
+      font-size: 1.5rem;
+    }
+    
+    p {
+      margin: 0.5rem 0 0 0;
+      color: #64748b;
+    }
+  }
+}
+
+.mainContent {
+  margin-top: 1rem;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  text-align: center;
+  color: #64748b;
+  
+  .loadingIcon {
+    margin-bottom: 1rem;
+    width: 48px;
+    height: 48px;
+    color: $primary-darken;
+  }
+}
+
+.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: #ef4444;
+  background: #fef2f2;
+  border-radius: 12px;
+  border: 1px solid #fecaca;
+  
+  .errorIcon {
+    margin-right: 0.75rem;
+    width: 24px;
+    height: 24px;
+  }
+  
+  p {
+    margin: 0;
+    font-weight: 500;
+  }
+}
+
+.atividadesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.planoCard {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: $primary-normal;
+    box-shadow: 0 4px 20px rgba($primary-normal, 0.1);
+  }
+}
+
+.planoHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  
+  &:hover {
+    background: #f8fafc;
+  }
+}
+
+.planoInfo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.planoIcon {
+  color: $primary-darken;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.planoDetails {
+  flex: 1;
+  
+  .planoTitulo {
+    margin: 0;
+    color: $primary-darken;
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  
+  .planoEdital {
+    margin: 0.25rem 0 0 0;
+    color: #64748b;
+    font-size: 0.875rem;
+  }
+}
+
+.planoToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #64748b;
+  transition: all 0.2s ease;
+  
+  svg {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.3s ease;
+    
+    &.rotated {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+// CONTEÚDO DO ACCORDION - CORRIGIDO
+.planoContent {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  padding: 0 1.5rem;
+  border-top: 1px solid transparent;
+  
+  &.planoContentOpen {
+    max-height: 50000px; // Valor suficientemente grande
+    padding: 0 1.5rem 1.5rem 1.5rem;
+    border-top: 1px solid #f1f5f9;
+  }
+}
+
+.planoMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+  padding-top: 1.5rem;
+}
+
+.metaItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.metaIcon {
+  color: $primary-darken;
+  width: 20px;
+  height: 20px;
+  margin-top: 0.125rem;
+  flex-shrink: 0;
+}
+
+.metaContent {
+  flex: 1;
+  
+  .metaLabel {
+    display: block;
+    color: #475569;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+  
+  .metaValue {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+}
+
+.personItem {
+  color: #374151;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.areaSection {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.areaValue {
+  color: #374151;
+  font-size: 0.9rem;
+}
+
+.editAreaButton {
+  background: none;
+  border: none;
+  color: $primary-darken;
+  font-size: 0.8rem;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  
+  &:hover {
+    background: #f1f5f9;
+  }
+}
+
+.areaDropdown {
+  margin-top: 0.5rem;
+}
+
+.loadingArea {
+  color: #64748b;
+  font-style: italic;
+}
+
+.atividadesSection {
+  .sectionTitle {
+    color: $primary-darken;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+}
+
+.atividadesList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.atividadeCard {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    border-color: $primary-normal;
+    box-shadow: 0 2px 8px rgba($primary-normal, 0.1);
+  }
+}
+
+.atividadeHeader {
+  margin-bottom: 1rem;
+}
+
+.atividadeInfo {
+  .atividadeStatus {
+    margin-bottom: 0.75rem;
+  }
+  
+  .atividadeTitulo {
+    margin: 0 0 0.5rem 0;
+    color: $primary-darken;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  
+  .atividadePeriodo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    color: #64748b;
+    font-size: 0.875rem;
+    
+    .periodoIcon {
+      width: 16px;
+      height: 16px;
+    }
+  }
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  
+  .statusIcon {
+    width: 16px;
+    height: 16px;
+  }
+  
+  &.statusSuccess {
+    background: #f0fdf4;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+  }
+  
+  &.statusWarning {
+    background: #fffbeb;
+    color: #f59e0b;
+    border: 1px solid #fde68a;
+  }
+  
+  &.statusError {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+  }
+  
+  &.statusDefault {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+  }
+}
+
+.respostasSection {
+  margin: 1.5rem 0;
+  @include responsive(xs){
+    max-width: 60vw;
+  }
+
+  .respostasTitle {
+    color: $primary-darken;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+}
+
+.respostasContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.respostaItem {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  
+}
+
+.respostaHeader {
+  background: #f8fafc;
+  padding: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  
+  h6 {
+    margin: 0;
+    color: $primary-darken;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+}
+
+.respostaContent {
+  padding: 1rem;
+  
+  .respostaLinks {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: $primary-darken;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    background: #f1f5f9;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: $primary-normal;
+      color: white;
+    }
+  }
+  
+  p {
+    margin: 0;
+    color: #374151;
+    line-height: 1.5;
+  }
+}
+
+.atividadeActions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid $primary-normal;
+  background: white;
+  color: $primary-darken;
+  
+  &:hover:not(:disabled) {
+    background: $primary-normal;
+    color: white;
+    transform: translateY(-1px);
+    p{
+      color: white;
+    }
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  &.approveButton {
+    background: linear-gradient(135deg, $primary-dark 0%, $primary-darken 100%);
+    color: white;
+    border: none;
+    
+    &:hover:not(:disabled) {
+      background: linear-gradient(135deg, $primary-dark 0%, $primary-darken 100%);
+    color: white;
+      transform: translateY(-1px);
+    }
+  }
+}
+
+.emptyState {
+  text-align: center;
+  padding: 2rem;
+  color: #64748b;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 2px dashed #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  
+  .emptyIcon {
+    margin-bottom: 1rem;
+    color: #cbd5e1;
+    width: 32px;
+    height: 32px;
+  }
+  
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+}
+
+.modalHeader {
+  margin-bottom: 1.5rem;
+  
+  h6 {
+    margin: 0 0 0.5rem 0;
+    color: $primary-darken;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+  
+  p {
+    margin: 0;
+    color: #64748b;
+    line-height: 1.5;
+  }
+}
+
+.campos {
+  margin-top: 1rem;
+}
+
+// Responsive
+@include responsive(s) {
+  .content {
+    padding: $gap-1;
+  }
+  
+  .header {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  
+  .planoMeta {
+    gap: 1rem;
+  }
+  
+  .metaItem {
+    gap: 0.5rem;
+  }
+  
+  .atividadeActions {
+    flex-direction: column;
+  }
+  
+  .actionButton {
+    justify-content: center;
+  }
 }
 
 
+
+.certificadoButton {
+  background-color: $warning-lighten;
+  margin-bottom: 1rem;
+  color: white;
+  border: none;
+  padding: 1rem 1.5rem;
+  border-radius: 6px;
+  border: 1px solid $warning-dark;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  p{
+    display: flex;
+    align-items: center;
+  justify-items: center;
+  padding: 1rem 0;
+  color: $warning-darken;
+  }
+  svg{
+    width: 22px;
+    height: 22px
+  }
+  transition: ease .3s;
+  &:hover {
+    transform: scale(1.02);
+  }
+  
+  &:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+  }
+}

@@ -100,11 +100,6 @@ const Page = ({ params }) => {
           </Link>
           <Link href={`/${params.tenant}/user/atividades`}>
             <div className={styles.infoBox}>
-              {atividadesNaoEntregues > 0 && (
-                <div className={styles.notification}>
-                  <p>{atividadesNaoEntregues}</p>
-                </div>
-              )}
               <div className={styles.icon}>
                 <RiListCheck2 />
               </div>
