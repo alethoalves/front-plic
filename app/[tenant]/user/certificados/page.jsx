@@ -13,7 +13,8 @@ import {
   RiFileTextLine,
   RiTimeLine,
   RiAwardFill,
-  RiFileDownloadLine, // Adicionei este ícone para o certificado
+  RiFileDownloadLine,
+  RiLoader4Line, // Adicionei este ícone para o certificado
 } from "@remixicon/react";
 import styles from "./page.module.scss";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -155,9 +156,11 @@ const Page = ({ params }) => {
       setUpdatingPlano(null);
     }
   };
+  const [generatingCertificate, setGeneratingCertificate] = useState(null); // Novo estado para controlar o loading do certificado
 
   // Função para emitir certificado - você precisará implementar a lógica real
   const handleEmitirCertificado = async (plano) => {
+    setGeneratingCertificate(plano.id); // Inicia o loading para este plano específico
     try {
       console.log("Emitindo certificado para o plano:", plano.id);
 
@@ -172,12 +175,15 @@ const Page = ({ params }) => {
       });
     } catch (error) {
       console.error("Erro ao emitir certificado:", error);
+
       toast.current.show({
         severity: "error",
         summary: "Erro",
-        detail: error.message || "Falha ao gerar certificado",
+        detail: error.response?.data?.message || "Falha ao gerar certificado",
         life: 5000,
       });
+    } finally {
+      setGeneratingCertificate(null); // Finaliza o loading
     }
   };
 
@@ -568,9 +574,22 @@ const Page = ({ params }) => {
                             e.stopPropagation();
                             handleEmitirCertificado(plano);
                           }}
+                          disabled={generatingCertificate === plano.id} // Desabilita o botão durante o loading
                         >
-                          <RiFileDownloadLine size={16} />
-                          Emitir Certificado de Conclusão
+                          {generatingCertificate === plano.id ? (
+                            <>
+                              <RiLoader4Line
+                                size={16}
+                                className={styles.loadingSpinner}
+                              />
+                              Gerando Certificado...
+                            </>
+                          ) : (
+                            <>
+                              <RiFileDownloadLine size={16} />
+                              Emitir Certificado de Conclusão
+                            </>
+                          )}
                         </Button>
                       </div>
 

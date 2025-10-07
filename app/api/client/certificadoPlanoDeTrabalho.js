@@ -182,10 +182,10 @@ export const generateAndDownloadCertificatePlanoPDF = async (tenantSlug, planoId
     const imgData = canvas.toDataURL("image/png");
 
     pdf.addImage(imgData, "PNG", 0, 0, canvasWidth, canvasHeight);
-    pdf.save(`certificado_${planoId}.pdf`);
-    
+    pdf.save(`certificado_conclusao.pdf`);
+    return response
   } catch (error) {
     console.error("Erro ao gerar ou baixar o certificado PDF:", error);
-    throw new Error("Erro ao gerar ou baixar o certificado. Tente novamente.");
+    throw error;
   }
 };
