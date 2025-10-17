@@ -113,6 +113,7 @@
   display: flex;
   flex-direction: column;
   gap: $gap-1;
+  padding: $gap-2;
 }
 
 .campoLabel {
@@ -682,3 +683,120 @@
     margin-bottom: 0;
   }
 }
+// Adicione estes estilos no seu arquivo SCSS
+
+.documentoModeloCard {
+  border: none;
+  border-radius: 12px;
+  margin-bottom: $gap-3;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  
+  @include responsive(xs) {
+    margin-bottom: $gap-2;
+  }
+}
+
+.documentoModeloHeader {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+  color: $primary-darken;
+  padding: $gap-3;
+  
+  svg {
+    width: 24px;
+    height: 24px;
+  }
+  
+  h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1e293b;
+  }
+
+  @include responsive(xs) {
+    padding: $gap-2;
+    gap: $gap-1;
+    
+    h2 {
+      font-size: 1.25rem;
+    }
+  }
+}
+
+.documentoModeloContent {
+  padding: $gap-3;
+  
+  @include responsive(xs) {
+    padding: $gap-2;
+  }
+}
+
+.documentoModeloDescricao {
+  margin: 0 0 $gap-2 0;
+  color: #475569;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.documentoModeloActions {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-2;
+}
+
+.documentoModeloLink {
+  display: inline-flex;
+  align-items: center;
+  gap: $gap-2;
+  background: linear-gradient(135deg, $primary-dark 0%, $primary-darken 100%);
+  color: white;
+  text-decoration: none;
+  padding: $gap-2 $gap-3;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  width: fit-content;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba($primary-darken, 0.3);
+    color: white;
+    text-decoration: none;
+  }
+  
+  .linkIcon {
+    width: 20px;
+    height: 20px;
+  }
+
+  @include responsive(xs) {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.documentoModeloInfo {
+  color: #64748b;
+  font-size: 0.875rem;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.formularioContainer {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-3;
+  
+  @include responsive(xs) {
+    gap: $gap-2;
+  }
+}
+
+// Ajuste para o card do formulário
+.formularioCard {
+  border: none;
+  border-radius: 12px;
+}
+

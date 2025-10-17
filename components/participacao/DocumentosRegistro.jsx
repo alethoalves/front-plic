@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   RiFileTextLine,
   RiCheckboxCircleLine,
@@ -10,8 +10,13 @@ import {
   RiDeleteBinLine,
 } from "@remixicon/react";
 import styles from "./DocumentosRegistro.module.scss";
-import { validarDocumento } from "@/app/api/client/documentos";
+import {
+  deleteDocumentoNaoAssinado,
+  validarDocumento,
+} from "@/app/api/client/documentos";
 import DocumentoDialog from "./DocumentoDialog";
+import { Toast } from "primereact/toast";
+import { confirmDialog, ConfirmDialog } from "primereact/confirmdialog";
 
 const DocumentosRegistro = ({
   documentos: initialDocumentos,
@@ -27,7 +32,7 @@ const DocumentosRegistro = ({
     documentoId: null,
     documentoData: null,
   });
-
+  const toast = useRef(null);
   const toggleDocument = (docId) => {
     setExpandedDocs((prev) => ({
       ...prev,
@@ -184,9 +189,23 @@ const DocumentosRegistro = ({
     });
   };
 
-  const handleExcluirDocumento = (docId) => {
-    console.log("Excluir documento:", docId);
-    // Implementar lógica de exclusão aqui
+  // Função para excluir documento
+  const handleExcluirDocumento = async (docId) => {
+    setLoading((prev) => ({ ...prev, [docId]: true }));
+
+    try {
+      await deleteDocumentoNaoAssinado(tenant, docId);
+
+      // Remove o documento da lista localmente
+      setDocumentos((prev) => prev.filter((doc) => doc.id !== docId));
+
+      // Fecha o item expandido se estiver aberto
+      setExpandedDocs((prev) => ({ ...prev, [docId]: false }));
+    } catch (error) {
+      console.error("Erro ao excluir documento:", error);
+    } finally {
+      setLoading((prev) => ({ ...prev, [docId]: false }));
+    }
   };
 
   // Função para atualizar observação
@@ -242,6 +261,8 @@ const DocumentosRegistro = ({
   if (!documentos || documentos.length === 0) {
     return (
       <div className={styles.documentosSection}>
+        <Toast ref={toast} /> {/* ← ADICIONAR ESTA LINHA */}
+        <ConfirmDialog /> {/* ← ADICIONAR ESTA LINHA */}
         <h6 className={styles.sectionTitle}>
           <RiFileTextLine className={styles.sectionIcon} />
           Documentos
@@ -371,9 +392,13 @@ const DocumentosRegistro = ({
                     <button
                       className={styles.botaoExcluir}
                       onClick={() => handleExcluirDocumento(doc.id)}
+                      disabled={loading[doc.id]} // ← ADICIONAR disabled
                     >
                       <RiDeleteBinLine className={styles.acaoIcon} />
-                      Excluir Documento
+                      {loading[doc.id]
+                        ? "Excluindo..."
+                        : "Excluir Documento"}{" "}
+                      {/* ← ADICIONAR loading */}
                     </button>
                   </div>
                 )}

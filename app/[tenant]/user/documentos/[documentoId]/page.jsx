@@ -8,6 +8,8 @@ import {
   RiAlertLine,
   RiEditLine,
   RiBankLine,
+  RiDownloadLine,
+  RiExternalLinkLine,
 } from "@remixicon/react";
 import styles from "./page.module.scss";
 import { useEffect, useState } from "react";
@@ -54,6 +56,43 @@ const DocumentoDetailPage = ({ params }) => {
   const showToast = (severity, summary, detail) => {
     toast.current.show({ severity, summary, detail, life: 3000 });
   };
+  // Verificar se existe link do documento modelo
+  const hasLinkDocModelo = documento?.documentoTemplate?.linkDocModelo;
+
+  // Função para renderizar o card do documento modelo
+  const renderizarDocumentoModelo = () => {
+    if (!hasLinkDocModelo) return null;
+
+    return (
+      <Card className={styles.documentoModeloCard}>
+        <div className={styles.documentoModeloHeader}>
+          <RiDownloadLine size={24} />
+          <h2>Documento Modelo</h2>
+        </div>
+        <Divider />
+        <div className={styles.documentoModeloContent}>
+          <p className={styles.documentoModeloDescricao}>
+            Faça o download do documento modelo para preenchimento:
+          </p>
+          <div className={styles.documentoModeloActions}>
+            <a
+              href={documento.documentoTemplate.linkDocModelo}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.documentoModeloLink}
+            >
+              <RiExternalLinkLine className={styles.linkIcon} />
+              Abrir Documento Modelo
+            </a>
+            <small className={styles.documentoModeloInfo}>
+              O documento será aberto em uma nova aba. Preencha-o e/ou assine-o
+              conforme orientações da sua instituição de ensino.
+            </small>
+          </div>
+        </div>
+      </Card>
+    );
+  };
 
   // Verificar se é documento do tipo FORMULÁRIO
   const isFormulario =
@@ -89,28 +128,34 @@ const DocumentoDetailPage = ({ params }) => {
       const campos = documento.documentoTemplate.formularioPadrao;
 
       return (
-        <Card className={styles.formularioCard}>
-          <div className={styles.formularioHeader}>
-            <RiFileTextLine size={24} />
-            <h2>Preencha o formulário</h2>
-          </div>
-          <Divider />
-          <div className={styles.formularioContent}>
-            {campos.map((campo, index) =>
-              renderizarCampoFormulario(campo, index)
-            )}
-          </div>
-          <Divider />
-          <div className={styles.formularioActions}>
-            <Button
-              label="Salvar Respostas"
-              icon="pi pi-check"
-              className="p-button-success"
-              onClick={handleSalvarFormulario}
-              loading={loading}
-            />
-          </div>
-        </Card>
+        <div className={styles.formularioContainer}>
+          {/* Card do Documento Modelo */}
+          {renderizarDocumentoModelo()}
+
+          {/* Card do Formulário */}
+          <Card className={styles.formularioCard}>
+            <div className={styles.formularioHeader}>
+              <RiFileTextLine size={24} />
+              <h2>Preencha o formulário</h2>
+            </div>
+            <Divider />
+            <div className={styles.formularioContent}>
+              {campos.map((campo, index) =>
+                renderizarCampoFormulario(campo, index)
+              )}
+            </div>
+            <Divider />
+            <div className={styles.formularioActions}>
+              <Button
+                label="Salvar Respostas"
+                icon="pi pi-check"
+                className="p-button-success"
+                onClick={handleSalvarFormulario}
+                loading={loading}
+              />
+            </div>
+          </Card>
+        </div>
       );
     } catch (error) {
       console.error("Erro ao renderizar formulário:", error);

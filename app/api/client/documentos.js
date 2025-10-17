@@ -58,7 +58,17 @@ export const criarRegistrosDocumento = async (tenantSlug, documentoTemplateId, p
     throw error;
   }
 };
-
+export const deleteDocumentoNaoAssinado = async (tenantSlug, documentoId) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+    const response = await req.delete(`/private/${tenantSlug}/deleteDocumentoNaoAssinado/${documentoId}`, {headers});
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao deletar edital:', error);
+    throw error;
+  }
+};
 // Função para buscar os templates de documento disponíveis
 export const getDocumentoTemplates = async (tenantSlug) => {
   try {
