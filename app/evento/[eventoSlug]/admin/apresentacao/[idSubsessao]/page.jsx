@@ -13,6 +13,7 @@ import {
   RiSpeedUpLine,
   RiStarLine,
   RiThumbDownLine,
+  RiSearchLine,
 } from "@remixicon/react";
 import styles from "./page.module.scss";
 import { useEffect, useRef, useState } from "react";
@@ -28,15 +29,20 @@ import {
   vincularSubmissao,
 } from "@/app/api/client/square";
 import { Toast } from "primereact/toast";
+import { InputText } from "primereact/inputtext";
 
 const Page = ({ params }) => {
-  const [loading, setLoading] = useState(false); // Estado de carregamento
+  const [loading, setLoading] = useState(false);
   const [itens, setItens] = useState(null);
   const [subsessao, setSubsessao] = useState(null);
   const [subsessaoFiltered, setSubsessaoFiltered] = useState(null);
-  const [searchValue, setSearchValue] = useState(""); // Para armazenar o valor de busca
+  const [searchValue, setSearchValue] = useState("");
   const [squareSelected, setSquareSelected] = useState(null);
   const [submissaoSelected, setSubmissaoSelected] = useState(null);
+
+  // Novo estado para o filtro dos squares
+  const [squareFilter, setSquareFilter] = useState("");
+  const [filteredSquares, setFilteredSquares] = useState([]);
 
   const [isModalOpen, setIsModalOpen] = useState(null);
   const [isModalOpenSubmissao, setIsModalOpenSubmissao] = useState(null);
@@ -47,10 +53,11 @@ const Page = ({ params }) => {
   const [loadingAlocacao, setLoadingAlocacao] = useState(false);
   const [loadingGerarPoster, setLoadingGerarPoster] = useState(false);
   const [message, setMessage] = useState("");
-  // ROTEAMENTO
+
   const router = useRouter();
   const toast = useRef(null);
-  // Função para mostrar toast de sucesso
+
+  // Funções de toast (mantidas iguais)
   const showSuccess = (message) => {
     toast.current.show({
       severity: "success",
@@ -60,7 +67,6 @@ const Page = ({ params }) => {
     });
   };
 
-  // Função para mostrar toast de erro
   const showError = (message) => {
     toast.current.show({
       severity: "error",
@@ -70,7 +76,6 @@ const Page = ({ params }) => {
     });
   };
 
-  // Função para mostrar toast de informação
   const showInfo = (message) => {
     toast.current.show({
       severity: "info",
@@ -79,18 +84,72 @@ const Page = ({ params }) => {
       life: 3000,
     });
   };
-  // Função de busca dos dados ao renderizar o componente
+
+  // Função para filtrar os squares
+  const filterSquares = (filterValue, squares) => {
+    if (!filterValue.trim()) {
+      return squares || [];
+    }
+
+    const lowerCaseFilter = filterValue.toLowerCase();
+
+    return squares.filter((square) => {
+      if (!square.submissaoId || !square.submissao) {
+        return false; // Ignora squares sem submissão
+      }
+
+      const { submissao } = square;
+      const { Resumo } = submissao;
+
+      // Busca por nome em participações
+      const hasNameMatch = Resumo?.participacoes?.some((participacao) =>
+        participacao.user.nome.toLowerCase().includes(lowerCaseFilter)
+      );
+
+      // Busca por CPF em participações
+      const hasCpfMatch = Resumo?.participacoes?.some((participacao) =>
+        participacao.user.cpf.toLowerCase().includes(lowerCaseFilter)
+      );
+
+      // Busca por título do resumo
+      const hasTitleMatch = Resumo?.titulo
+        ?.toLowerCase()
+        .includes(lowerCaseFilter);
+
+      // Busca por área
+      const hasAreaMatch = Resumo?.area?.area
+        ?.toLowerCase()
+        .includes(lowerCaseFilter);
+
+      return hasNameMatch || hasCpfMatch || hasTitleMatch || hasAreaMatch;
+    });
+  };
+
+  // Atualiza os squares filtrados quando o filtro ou subsessao mudam
+  useEffect(() => {
+    if (subsessao?.Square) {
+      const filtered = filterSquares(squareFilter, subsessao.Square);
+      setFilteredSquares(filtered);
+    }
+  }, [squareFilter, subsessao]);
+
   const fetchData = async (eventoSlug, idSubsessao, filters = {}) => {
-    setLoading(true); // Define o estado de carregamento como verdadeiro
+    setLoading(true);
     try {
       const subsessao = await getSubsessaoById(
         eventoSlug,
         idSubsessao,
         filters
       );
+
       // Ordena os items dentro de subsessao.Square pelo campo "numero" de forma crescente
       subsessao.Square.sort((a, b) => a.numero - b.numero);
       setSubsessao(subsessao);
+
+      // Atualiza os squares filtrados
+      const filtered = filterSquares(squareFilter, subsessao.Square);
+      setFilteredSquares(filtered);
+
       const subsessaoFiltered = subsessao.Submissao.filter(
         (item) => item.square.length < 1
       );
@@ -98,18 +157,19 @@ const Page = ({ params }) => {
     } catch (error) {
       console.error("Erro ao buscar dados:", error);
     } finally {
-      setLoading(false); // Define o estado de carregamento como falso ao finalizar
+      setLoading(false);
     }
   };
-  // Função que será passada para o modal, responsável por atualizar os dados
+
   const onDataUpdated = async () => {
     await fetchData(params.eventoSlug, params.idSubsessao);
   };
+
   useEffect(() => {
-    fetchData(params.eventoSlug, params.idSubsessao); // Inicializa sem filtros
+    fetchData(params.eventoSlug, params.idSubsessao);
   }, [params.eventoSlug, params.idSubsessao]);
 
-  // Função para formatar data
+  // Funções de formatação (mantidas iguais)
   const formatarData = (dataIso) => {
     const data = new Date(dataIso);
     const dia = data.getUTCDate().toString().padStart(2, "0");
@@ -118,7 +178,6 @@ const Page = ({ params }) => {
     return `${dia}/${mes}/${ano}`;
   };
 
-  // Função para formatar hora
   const formatarHora = (dataIso) => {
     const data = new Date(dataIso);
     const horas = data.getUTCHours().toString().padStart(2, "0");
@@ -128,40 +187,33 @@ const Page = ({ params }) => {
 
   const closeModalAndResetData = async () => {
     if (isUpdated) {
-      await fetchData(params.eventoSlug, params.idSubsessao); // Só faz fetch se houver atualização
-      setIsUpdated(false); // Reseta o estado após atualizar os dados
+      await fetchData(params.eventoSlug, params.idSubsessao);
+      setIsUpdated(false);
     }
     setIsModalOpen(false);
     setIsModalOpenSubmissao(false);
   };
 
-  // Função para lidar com a busca
   const handleSearch = async (value) => {
-    setSearchValue(value); // Atualiza o valor de busca
-
-    // Cria os filtros com o valor de busca aplicado a nome, cpf, e título
+    setSearchValue(value);
     const filters = {
       nome: value,
       cpf: value,
       titulo: value,
     };
-
-    // Refaz a busca com os filtros aplicados
     fetchData(params.eventoSlug, params.idSubsessao, filters);
   };
-  // Função para gerar os posters
+
+  // Funções handleGerarPosters, alocarSubmissao, alocarSubmissoesSequencialmente (mantidas iguais)
   const handleGerarPosters = async () => {
     setLoadingGerarPoster(true);
-
     try {
       const resultado = await gerarSquareParaSubsessao(
         params.eventoSlug,
         params.idSubsessao
       );
-
       if (resultado.status === "success") {
         showSuccess(resultado.message);
-        // Recarregar os dados para mostrar os novos squares
         await fetchData(params.eventoSlug, params.idSubsessao);
       } else {
         showError("Erro ao gerar posters: " + resultado.message);
@@ -175,73 +227,65 @@ const Page = ({ params }) => {
       setLoadingGerarPoster(false);
     }
   };
+
   const alocarSubmissao = async (item) => {
     try {
       setLoading(true);
-
       const updatedSquare = await vincularSubmissao(
         params.eventoSlug,
-        item.id, // id da submissão
-        squareSelected.id // id do square selecionado
+        item.id,
+        squareSelected.id
       );
-
       if (updatedSquare) {
-        // Atualiza o estado local sem precisar buscar novamente
         setSubsessao((prevSubsessao) => {
-          // Encontra o Square que foi atualizado
           const updatedSquares = prevSubsessao.Square.map((square) => {
             if (square.id === squareSelected.id) {
               return { ...square, submissaoId: item.id, submissao: item };
             }
             return square;
           });
-
           return { ...prevSubsessao, Square: updatedSquares };
         });
-
         closeModalAndResetData();
       }
     } catch (error) {
       console.error("Erro ao alocar submissão:", error);
     } finally {
-      setLoading(false); // Para o estado de carregamento
+      setLoading(false);
     }
   };
+
   const alocarSubmissoesSequencialmente = async () => {
     setLoadingAlocacao(true);
     setTotal(subsessaoFiltered.length);
-    console.log(subsessaoFiltered.length);
     setProgress(0);
     subsessaoFiltered.forEach(async (item, i) => {
       try {
         const updatedSquare = await vincularSubmissao(
           params.eventoSlug,
-          item.id, // id da submissão
-          squareSelected.id + i // id do square selecionado
+          item.id,
+          squareSelected.id + i
         );
-
         if (updatedSquare) {
-          // Atualiza o estado local sem precisar buscar novamente
           setSubsessao((prevSubsessao) => {
-            // Encontra o Square que foi atualizado
             const updatedSquares = prevSubsessao.Square.map((square) => {
               if (square.id === squareSelected.id) {
                 return { ...square, submissaoId: item.id, submissao: item };
               }
               return square;
             });
-
             return { ...prevSubsessao, Square: updatedSquares };
           });
         }
       } catch (error) {
         console.error("Erro ao alocar submissão:", error);
       }
-      setProgress(i + 1); // Atualiza o progresso
+      setProgress(i + 1);
     });
-
     setLoadingAlocacao(false);
   };
+
+  // Modal content (mantido igual)
   const renderModalContent = () => (
     <Modal isOpen={isModalOpen} onClose={closeModalAndResetData}>
       <div className={`${styles.icon} mb-2`}>
@@ -250,8 +294,7 @@ const Page = ({ params }) => {
       <h4>Inserir Trabalho</h4>
       <div className={`${styles.buscador} mb-2`}>
         <BuscadorBack onSearch={handleSearch} />
-        {loading && <p className="mt-2">Carregando...</p>}{" "}
-        {/* Exibe o indicador de carregamento dentro do modal */}
+        {loading && <p className="mt-2">Carregando...</p>}
       </div>
       {!loading && (
         <div className={styles.squares}>
@@ -377,7 +420,7 @@ const Page = ({ params }) => {
       onClose={closeModalAndResetData}
       eventoSlug={params.eventoSlug}
       idSubmissao={submissaoSelected?.id}
-      onDataUpdated={onDataUpdated} // Passa o callback
+      onDataUpdated={onDataUpdated}
     />
   );
 
@@ -386,15 +429,18 @@ const Page = ({ params }) => {
       {renderModalContent()}
       {renderModalSubmissao()}
       <Toast ref={toast} position="top-right" />
+
       <h6 className="mb-1">
         {subsessao?.sessaoApresentacao?.titulo.toUpperCase()}
       </h6>
+
       {subsessao && (
         <p>
           {formatarData(subsessao?.inicio)} - de{" "}
           {formatarHora(subsessao?.inicio)} às {formatarHora(subsessao?.fim)}
         </p>
       )}
+
       {subsessao && (
         <div className={styles.dashboard}>
           <div className={styles.subsessao}>
@@ -476,7 +522,26 @@ const Page = ({ params }) => {
           </div>
         </div>
       )}
-
+      {/* Buscador para filtrar os squares */}
+      <div className="mb-3">
+        <div className="p-inputgroup">
+          <span className="p-inputgroup-addon">
+            <RiSearchLine />
+          </span>
+          <InputText
+            value={squareFilter}
+            onChange={(e) => setSquareFilter(e.target.value)}
+            placeholder="Filtrar por nome, CPF, título ou área..."
+            className="w-full"
+          />
+        </div>
+        {squareFilter && (
+          <small className="text-muted">
+            Mostrando {filteredSquares.length} de {subsessao?.Square.length}{" "}
+            pôsteres
+          </small>
+        )}
+      </div>
       <div className={styles.actions}>
         {subsessao?.Square.length < 1 && (
           <Button
@@ -492,143 +557,147 @@ const Page = ({ params }) => {
           </Button>
         )}
       </div>
+
       {loading && <p className="mb-2">Carregando...</p>}
+
       <div className={styles.squares}>
-        {subsessao?.Square.map((item) => (
-          <div key={item.id} className={styles.square}>
-            <div className={styles.squareHeader}>
-              <p>Pôster nº</p>
-              <h6>{item.numero}</h6>
-            </div>
-
-            {!item.submissaoId ? (
-              <div
-                onClick={async () => {
-                  setSearchValue();
-                  setIsModalOpen(true);
-                  setSquareSelected(item);
-                  await fetchData(params.eventoSlug, params.idSubsessao, {});
-                }}
-                className={styles.squareContentEmpty}
-              >
-                <p>Inserir trabalho</p>
+        {(squareFilter ? filteredSquares : subsessao?.Square || []).map(
+          (item) => (
+            <div key={item.id} className={styles.square}>
+              <div className={styles.squareHeader}>
+                <p>Pôster nº</p>
+                <h6>{item.numero}</h6>
               </div>
-            ) : (
-              <>
-                <div
-                  className={styles.squareContent}
-                  onClick={() => {
-                    setSubmissaoSelected(item.submissao);
-                    setIsModalOpenSubmissao(true);
-                  }}
-                >
-                  <div className={styles.info}>
-                    <p
-                      className={`${styles.status} ${
-                        item.submissao?.status === "DISTRIBUIDA" ||
-                        item.submissao?.status === "SELECIONADA"
-                          ? styles.error
-                          : item.submissao?.status === "AGUARDANDO_AVALIACAO"
-                          ? styles.warning
-                          : item.submissao?.status === "AVALIADA"
-                          ? styles.success
-                          : item.submissao?.status === "AUSENTE"
-                          ? styles.inativada
-                          : item.submissao?.status
-                      }`}
-                    >
-                      {item.submissao?.status === "DISTRIBUIDA" ||
-                      item.submissao?.status === "SELECIONADA"
-                        ? "checkin pendente"
-                        : item.submissao?.status === "AGUARDANDO_AVALIACAO"
-                        ? "aguardando avaliação"
-                        : item.submissao?.status === "AVALIADA"
-                        ? "avaliação concluída"
-                        : item.submissao?.status === "EM_AVALIACAO"
-                        ? "em avaliação"
-                        : item.submissao?.status === "AUSENTE"
-                        ? "ausente"
-                        : item.submissao?.status}
-                    </p>
-                    <p className={styles.area}>
-                      {item.submissao?.Resumo?.area?.area
-                        ? item.submissao?.Resumo?.area?.area
-                        : "sem área"}{" "}
-                      - {item.submissao?.tenant?.sigla}-{" "}
-                      {item.submissao?.categoria.toUpperCase()}
-                    </p>
-                  </div>
-                  <div className={styles.submissaoData}>
-                    <h6>
-                      ID {item.submissaoId}: {item.submissao?.Resumo?.titulo}
-                    </h6>
-                    <p className={styles.participacoes}>
-                      <strong>Orientadores: </strong>
-                      {item.submissao?.Resumo?.participacoes
-                        .filter(
-                          (item) =>
-                            item.cargo === "ORIENTADOR" ||
-                            item.cargo === "COORIENTADOR"
-                        )
-                        .map(
-                          (item, i) =>
-                            `${i > 0 ? ", " : ""}${item.user.nome} (${
-                              item.user.cpf
-                            })`
-                        )}
-                    </p>
-                    <p className={styles.participacoes}>
-                      <strong>Alunos: </strong>
-                      {item.submissao?.Resumo?.participacoes
-                        .filter((item) => item.cargo === "AUTOR")
-                        .map(
-                          (item, i) =>
-                            `${i > 0 ? ", " : ""}${item.user.nome} (${
-                              item.user.cpf
-                            }) `
-                        )}
-                    </p>
-                  </div>
-                </div>
 
-                {(item.submissao.premio ||
-                  item.submissao.indicacaoPremio ||
-                  item.submissao?.premio ||
-                  item.submissao?.notaFinal) && (
-                  <div className={styles.premios}>
-                    {item.submissao.premio && (
-                      <div className={`${styles.squareHeader} `}>
-                        <RiShieldStarFill />
-                        <p>Premiado</p>
-                      </div>
-                    )}
-                    {item.submissao.indicacaoPremio && (
-                      <div className={`${styles.squareHeader} `}>
-                        <RiMedalLine />
-                        <p>Indicado ao Prêmio</p>
-                      </div>
-                    )}
-                    {item.submissao?.mencaoHonrosa && (
-                      <div className={`${styles.squareHeader} `}>
-                        <RiStarLine />
-                        <p>Menção Honrosa</p>
-                      </div>
-                    )}
-                    {item.submissao?.notaFinal && (
-                      <div className={`${styles.squareHeader} `}>
-                        <RiSpeedUpLine />
-                        <p>
-                          <strong>Nota: </strong>
-                          {item.submissao?.notaFinal}
-                        </p>
-                      </div>
-                    )}
+              {!item.submissaoId ? (
+                <div
+                  onClick={async () => {
+                    setSearchValue("");
+                    setIsModalOpen(true);
+                    setSquareSelected(item);
+                    await fetchData(params.eventoSlug, params.idSubsessao, {});
+                  }}
+                  className={styles.squareContentEmpty}
+                >
+                  <p>Inserir trabalho</p>
+                </div>
+              ) : (
+                <>
+                  <div
+                    className={styles.squareContent}
+                    onClick={() => {
+                      setSubmissaoSelected(item.submissao);
+                      setIsModalOpenSubmissao(true);
+                    }}
+                  >
+                    <div className={styles.info}>
+                      <p
+                        className={`${styles.status} ${
+                          item.submissao?.status === "DISTRIBUIDA" ||
+                          item.submissao?.status === "SELECIONADA"
+                            ? styles.error
+                            : item.submissao?.status === "AGUARDANDO_AVALIACAO"
+                            ? styles.warning
+                            : item.submissao?.status === "AVALIADA"
+                            ? styles.success
+                            : item.submissao?.status === "AUSENTE"
+                            ? styles.inativada
+                            : item.submissao?.status
+                        }`}
+                      >
+                        {item.submissao?.status === "DISTRIBUIDA" ||
+                        item.submissao?.status === "SELECIONADA"
+                          ? "checkin pendente"
+                          : item.submissao?.status === "AGUARDANDO_AVALIACAO"
+                          ? "aguardando avaliação"
+                          : item.submissao?.status === "AVALIADA"
+                          ? "avaliação concluída"
+                          : item.submissao?.status === "EM_AVALIACAO"
+                          ? "em avaliação"
+                          : item.submissao?.status === "AUSENTE"
+                          ? "ausente"
+                          : item.submissao?.status}
+                      </p>
+                      <p className={styles.area}>
+                        {item.submissao?.Resumo?.area?.area
+                          ? item.submissao?.Resumo?.area?.area
+                          : "sem área"}{" "}
+                        - {item.submissao?.tenant?.sigla}-{" "}
+                        {item.submissao?.categoria.toUpperCase()}
+                      </p>
+                    </div>
+                    <div className={styles.submissaoData}>
+                      <h6>
+                        ID {item.submissaoId}: {item.submissao?.Resumo?.titulo}
+                      </h6>
+                      <p className={styles.participacoes}>
+                        <strong>Orientadores: </strong>
+                        {item.submissao?.Resumo?.participacoes
+                          .filter(
+                            (item) =>
+                              item.cargo === "ORIENTADOR" ||
+                              item.cargo === "COORIENTADOR"
+                          )
+                          .map(
+                            (item, i) =>
+                              `${i > 0 ? ", " : ""}${item.user.nome} (${
+                                item.user.cpf
+                              })`
+                          )}
+                      </p>
+                      <p className={styles.participacoes}>
+                        <strong>Alunos: </strong>
+                        {item.submissao?.Resumo?.participacoes
+                          .filter((item) => item.cargo === "AUTOR")
+                          .map(
+                            (item, i) =>
+                              `${i > 0 ? ", " : ""}${item.user.nome} (${
+                                item.user.cpf
+                              }) `
+                          )}
+                      </p>
+                    </div>
                   </div>
-                )}
-              </>
-            )}
-          </div>
-        ))}
+
+                  {(item.submissao.premio ||
+                    item.submissao.indicacaoPremio ||
+                    item.submissao?.premio ||
+                    item.submissao?.notaFinal) && (
+                    <div className={styles.premios}>
+                      {item.submissao.premio && (
+                        <div className={`${styles.squareHeader} `}>
+                          <RiShieldStarFill />
+                          <p>Premiado</p>
+                        </div>
+                      )}
+                      {item.submissao.indicacaoPremio && (
+                        <div className={`${styles.squareHeader} `}>
+                          <RiMedalLine />
+                          <p>Indicado ao Prêmio</p>
+                        </div>
+                      )}
+                      {item.submissao?.mencaoHonrosa && (
+                        <div className={`${styles.squareHeader} `}>
+                          <RiStarLine />
+                          <p>Menção Honrosa</p>
+                        </div>
+                      )}
+                      {item.submissao?.notaFinal && (
+                        <div className={`${styles.squareHeader} `}>
+                          <RiSpeedUpLine />
+                          <p>
+                            <strong>Nota: </strong>
+                            {item.submissao?.notaFinal}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )
+        )}
       </div>
     </div>
   );

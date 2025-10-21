@@ -4,7 +4,8 @@ import styles from "./page.module.scss";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Document, Paragraph, TextRun, HeadingLevel, Packer } from "docx";
-
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import Link from "next/link";
 import {
   RiArrowLeftCircleFill,
@@ -24,6 +25,7 @@ import { formatarData, formatarHora } from "@/lib/formatarDatas";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import { getSubmissaoByEvento } from "@/app/api/client/relatorios";
+import { getSubmissoesComAvaliacoes } from "@/app/api/client/submissao";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
@@ -31,6 +33,8 @@ const Page = ({ params }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isDownloadingSubmissoes, setIsDownloadingSubmissoes] = useState(false);
+  const [isDownloadingAvaliacoes, setIsDownloadingAvaliacoes] = useState(false);
+
   const [selectedTenant, setSelectedTenant] = useState(null);
   const router = useRouter();
 
@@ -465,6 +469,478 @@ const Page = ({ params }) => {
     }
   };
 
+  // Função para gerar Word com resumos e avaliações - VERSÃO CORRIGIDA
+
+  const gerarHTMLParaDownload = async () => {
+    setIsDownloadingAvaliacoes(true);
+    try {
+      const submissoes = await getSubmissoesComAvaliacoes(params.eventoSlug);
+
+      if (!Array.isArray(submissoes)) {
+        throw new Error("Dados retornados não são um array");
+      }
+
+      // Criar conteúdo HTML completo
+      const htmlContent = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resumos e Avaliações - ${evento.evento.nomeEvento}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: Arial, sans-serif; 
+            line-height: 1.6; 
+            color: #333; 
+            background: #fff; 
+            padding: 20px; 
+            max-width: 1200px; 
+            margin: 0 auto; 
+        }
+        .header { 
+            text-align: center; 
+            margin-bottom: 40px; 
+            padding-bottom: 20px; 
+            border-bottom: 3px solid #007bff; 
+        }
+        .header h1 { 
+            font-size: 28px; 
+            margin-bottom: 10px; 
+            color: #2c3e50; 
+        }
+        .header h2 { 
+            font-size: 20px; 
+            color: #7f8c8d; 
+            margin-bottom: 15px; 
+        }
+        .header p { 
+            margin: 5px 0; 
+            color: #666; 
+        }
+        .trabalho { 
+            margin-bottom: 50px; 
+            padding: 25px; 
+            border: 1px solid #e1e8ed; 
+            border-radius: 10px; 
+            background: #fafbfc; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        }
+        .titulo-trabalho { 
+            font-size: 20px; 
+            color: #2c3e50; 
+            margin-bottom: 15px; 
+            padding-bottom: 10px; 
+            border-bottom: 2px solid #3498db; 
+        }
+        .info-basica { 
+            background: #ecf0f1; 
+            padding: 15px; 
+            border-radius: 5px; 
+            margin-bottom: 15px; 
+            font-size: 14px; 
+        }
+        .info-basica span { 
+            margin-right: 20px; 
+        }
+        .participantes { 
+            margin: 15px 0; 
+        }
+        .cargo { 
+            margin: 8px 0; 
+        }
+        .cargo strong { 
+            color: #2c3e50; 
+            min-width: 120px; 
+            display: inline-block; 
+        }
+        .area-info { 
+            background: #d5edff; 
+            padding: 12px; 
+            border-radius: 5px; 
+            margin: 15px 0; 
+            border-left: 4px solid #3498db; 
+        }
+        .secao { 
+            margin: 25px 0; 
+        }
+        .secao-titulo { 
+            font-size: 18px; 
+            color: #2980b9; 
+            margin-bottom: 15px; 
+            padding-bottom: 5px; 
+            border-bottom: 1px solid #bdc3c7; 
+        }
+        .conteudo-resumo { 
+            text-align: justify; 
+            line-height: 1.8; 
+            white-space: pre-line; 
+            background: white; 
+            padding: 15px; 
+            border-radius: 5px; 
+            border: 1px solid #e1e8ed; 
+        }
+        .avaliacao { 
+            background: white; 
+            border: 1px solid #e1e8ed; 
+            border-radius: 8px; 
+            padding: 20px; 
+            margin: 15px 0; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+        }
+        .avaliacao-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 15px; 
+            padding-bottom: 10px; 
+            border-bottom: 1px solid #ecf0f1; 
+        }
+        .avaliacao-info { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 10px; 
+            margin-bottom: 15px; 
+            font-size: 14px; 
+        }
+        .criterios { 
+            margin-top: 15px; 
+        }
+        .criterio { 
+            display: flex; 
+            justify-content: space-between; 
+            margin: 5px 0; 
+            padding: 5px 0; 
+            border-bottom: 1px dotted #ecf0f1; 
+        }
+        .observacao { 
+            background: #fffde7; 
+            padding: 15px; 
+            border-radius: 5px; 
+            border-left: 4px solid #ffd600; 
+            margin: 10px 0; 
+            white-space: pre-line; 
+        }
+        .observacao-ia { 
+            background: #e8f5e8; 
+            padding: 15px; 
+            border-radius: 5px; 
+            border-left: 4px solid #4caf50; 
+            margin: 10px 0; 
+            white-space: pre-line; 
+        }
+        .sem-dados { 
+            text-align: center; 
+            color: #7f8c8d; 
+            font-style: italic; 
+            padding: 30px; 
+            background: #ecf0f1; 
+            border-radius: 5px; 
+        }
+        .acoes { 
+            position: fixed; 
+            top: 20px; 
+            right: 20px; 
+            background: white; 
+            padding: 15px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
+            z-index: 1000; 
+        }
+        .btn { 
+            padding: 10px 20px; 
+            margin: 5px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 14px; 
+            transition: background 0.3s; 
+        }
+        .btn-print { 
+            background: #007bff; 
+            color: white; 
+        }
+        .btn-print:hover { 
+            background: #0056b3; 
+        }
+        .btn-pdf { 
+            background: #28a745; 
+            color: white; 
+        }
+        .btn-pdf:hover { 
+            background: #1e7e34; 
+        }
+        .btn-close { 
+            background: #dc3545; 
+            color: white; 
+        }
+        .btn-close:hover { 
+            background: #c82333; 
+        }
+        @media print {
+            .acoes { display: none; }
+            body { padding: 0; }
+            .trabalho { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="acoes">
+        <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir</button>
+        <button class="btn btn-close" onclick="window.close()">❌ Fechar</button>
+    </div>
+
+    <div class="header">
+        <h1>Resumos e Avaliações</h1>
+        <h2>${evento.evento.nomeEvento}</h2>
+        <p><strong>Total de trabalhos:</strong> ${submissoes.length}</p>
+        ${
+          selectedTenant
+            ? `<p><strong>Instituição:</strong> ${selectedTenant.tenant}</p>`
+            : ""
+        }
+        <p><strong>Data de geração:</strong> ${new Date().toLocaleDateString(
+          "pt-BR"
+        )} ${new Date().toLocaleTimeString("pt-BR")}</p>
+    </div>
+
+    ${
+      submissoes.length > 0
+        ? submissoes
+            .map((submissao, index) => {
+              const resumo = submissao.Resumo || {};
+              const participacoes = resumo.participacoes || [];
+              const avaliacoes = submissao.Avaliacao || [];
+
+              const participantesPorCargo = {
+                AUTOR: [],
+                COAUTOR: [],
+                ORIENTADOR: [],
+                COORIENTADOR: [],
+                COLABORADOR: [],
+              };
+
+              participacoes.forEach((part) => {
+                const nome = part.user?.nome || "Nome não disponível";
+                if (part.cargo && participantesPorCargo[part.cargo]) {
+                  participantesPorCargo[part.cargo].push(nome);
+                }
+              });
+
+              return `
+        <div class="trabalho">
+            <h2 class="titulo-trabalho">${index + 1}. ${sanitizeText(
+                resumo.titulo || "Sem título"
+              )}</h2>
+            
+            <div class="info-basica">
+                <span><strong>ID:</strong> ${submissao.id}</span>
+                <span><strong>Categoria:</strong> ${
+                  submissao.categoria || "N/A"
+                }</span>
+                <span><strong>Status:</strong> ${
+                  submissao.status || "N/A"
+                }</span>
+                <span><strong>Nota Final:</strong> ${
+                  submissao.notaFinal ? submissao.notaFinal.toFixed(2) : "N/A"
+                }</span>
+            </div>
+
+            <div class="participantes">
+                ${Object.entries(participantesPorCargo)
+                  .filter(([_, nomes]) => nomes.length > 0)
+                  .map(([cargo, nomes]) => {
+                    const cargoLabel =
+                      {
+                        AUTOR: "Autores",
+                        COAUTOR: "Coautores",
+                        ORIENTADOR: "Orientador(es)",
+                        COORIENTADOR: "Coorientador(es)",
+                        COLABORADOR: "Colaborador(es)",
+                      }[cargo] || cargo;
+
+                    return `<div class="cargo"><strong>${cargoLabel}:</strong> ${nomes.join(
+                      ", "
+                    )}</div>`;
+                  })
+                  .join("")}
+            </div>
+
+            <div class="area-info">
+                <p><strong>Área:</strong> ${resumo.area?.area || "Sem área"}</p>
+                <p><strong>Grande Área:</strong> ${
+                  resumo.area?.grandeArea?.grandeArea || "Sem grande área"
+                }</p>
+                <p><strong>Palavras-chave:</strong> <em>${
+                  resumo.PalavraChave?.map((p) => p.palavra).join(", ") ||
+                  "Sem palavras-chave"
+                }</em></p>
+            </div>
+
+            <div class="secao">
+                <h3 class="secao-titulo">RESUMO</h3>
+                ${
+                  resumo.conteudo && Array.isArray(resumo.conteudo)
+                    ? resumo.conteudo
+                        .map(
+                          (secao) => `
+                      <div style="margin: 20px 0;">
+                          <h4 style="color: #2c3e50; margin-bottom: 10px; font-size: 16px;">${secao.nome.toUpperCase()}</h4>
+                          <div class="conteudo-resumo">${sanitizeText(
+                            secao.conteudo
+                          )}</div>
+                      </div>
+                    `
+                        )
+                        .join("")
+                    : '<div class="sem-dados">Resumo não disponível</div>'
+                }
+            </div>
+
+            <div class="secao">
+                <h3 class="secao-titulo">AVALIAÇÕES (${avaliacoes.length})</h3>
+                ${
+                  avaliacoes.length > 0
+                    ? avaliacoes
+                        .map((avaliacao, avIndex) => {
+                          const dataAvaliacao = avaliacao.createdAt
+                            ? new Date(avaliacao.createdAt).toLocaleDateString(
+                                "pt-BR"
+                              )
+                            : "Data não disponível";
+
+                          return `
+                        <div class="avaliacao">
+                            <div class="avaliacao-header">
+                                <strong>Avaliação ${avIndex + 1}</strong>
+                                <span>${dataAvaliacao}</span>
+                            </div>
+                            
+                            <div class="avaliacao-info">
+                                <div><strong>Nota Total:</strong> ${
+                                  avaliacao.notaTotal != null
+                                    ? avaliacao.notaTotal
+                                    : "N/A"
+                                }</div>
+                                <div><strong>Indicação Prêmio:</strong> ${
+                                  avaliacao.indicacaoPremio
+                                    ? "✅ Sim"
+                                    : "❌ Não"
+                                }</div>
+                                <div><strong>Menção Honrosa:</strong> ${
+                                  avaliacao.mencaoHonrosa ? "✅ Sim" : "❌ Não"
+                                }</div>
+                                <div><strong>Premiado:</strong> ${
+                                  avaliacao.premio ? "✅ Sim" : "❌ Não"
+                                }</div>
+                            </div>
+
+                            ${
+                              avaliacao.observacao &&
+                              avaliacao.observacao.trim() !== ""
+                                ? `
+                              <div class="observacao">
+                                  <strong>Observação:</strong><br>
+                                  ${sanitizeText(avaliacao.observacao)}
+                              </div>
+                            `
+                                : ""
+                            }
+
+                            ${
+                              avaliacao.observacaoDepuradaIA &&
+                              avaliacao.observacaoDepuradaIA.trim() !== ""
+                                ? `
+                              <div class="observacao-ia">
+                                  <strong>Observação Depurada (IA):</strong><br>
+                                  ${sanitizeText(
+                                    avaliacao.observacaoDepuradaIA
+                                  )}
+                              </div>
+                            `
+                                : ""
+                            }
+
+                            ${
+                              avaliacao.registros &&
+                              avaliacao.registros.length > 0
+                                ? `
+                              <div class="criterios">
+                                  <strong>Critérios Avaliados:</strong>
+                                  ${avaliacao.registros
+                                    .map(
+                                      (registro) => `
+                                    <div class="criterio">
+                                        <span>${registro.titulo}</span>
+                                        <strong>Nota: ${registro.nota}</strong>
+                                    </div>
+                                  `
+                                    )
+                                    .join("")}
+                              </div>
+                            `
+                                : ""
+                            }
+                        </div>
+                      `;
+                        })
+                        .join("")
+                    : '<div class="sem-dados">Nenhuma avaliação disponível</div>'
+                }
+            </div>
+        </div>
+      `;
+            })
+            .join("")
+        : `
+      <div class="sem-dados">
+          <h3>Nenhum trabalho encontrado</h3>
+          <p>Não há submissões com avaliações para este evento.</p>
+      </div>
+    `
+    }
+
+    <script>
+        function gerarPDF() {
+            window.print();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const trabalhos = document.querySelectorAll('.trabalho');
+            trabalhos.forEach((trabalho, index) => {
+                if (index > 0) {
+                    trabalho.style.pageBreakBefore = 'always';
+                }
+            });
+        });
+    </script>
+</body>
+</html>`;
+
+      // Criar blob e fazer download
+      const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `resumos_avaliacoes_${evento.evento.slug}${
+        selectedTenant ? `_${selectedTenant.tenant}` : ""
+      }.html`;
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Limpar URL
+      setTimeout(() => URL.revokeObjectURL(url), 100);
+    } catch (error) {
+      console.error("Erro ao gerar HTML para download:", error);
+      alert("Erro ao gerar o arquivo HTML: " + error.message);
+    } finally {
+      setIsDownloadingAvaliacoes(false);
+    }
+  };
+
   const openModal = (tenant = null) => {
     setSelectedTenant(tenant);
     setIsModalOpen(true);
@@ -486,7 +962,6 @@ const Page = ({ params }) => {
           ? `Exportar dados da instituição ${selectedTenant.tenant}`
           : "Exportar dados gerais do evento"}
       </p>
-
       <Button
         onClick={gerarWordEvento}
         icon={RiFileWordLine}
@@ -496,7 +971,6 @@ const Page = ({ params }) => {
       >
         {isDownloading ? "Exportando..." : "Anais do Evento (.docx)"}
       </Button>
-
       <Button
         onClick={() => gerarRelatorioSubmissoes(selectedTenant?.tenant)}
         icon={RiFileExcelLine}
@@ -505,6 +979,17 @@ const Page = ({ params }) => {
         disabled={isDownloadingSubmissoes}
       >
         {isDownloadingSubmissoes ? "Exportando..." : "Submissões (.xlsx)"}
+      </Button>
+      <Button
+        onClick={gerarHTMLParaDownload}
+        icon={RiFileWordLine}
+        className="btn-secondary mt-2"
+        type="button"
+        disabled={isDownloadingAvaliacoes}
+      >
+        {isDownloadingAvaliacoes
+          ? "Gerando..."
+          : "Resumos + Avaliações (.html)"}
       </Button>
     </Modal>
   );
