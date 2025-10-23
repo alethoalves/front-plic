@@ -7,6 +7,7 @@ import {
   RiFolderFill,
   RiFolderLine,
   RiFoldersLine,
+  RiHistoryLine,
   RiListCheck2,
 } from "@remixicon/react";
 import styles from "./page.module.scss";
@@ -117,6 +118,19 @@ const Page = ({ params }) => {
               <div className={styles.infoBoxContent}>
                 <h6>Documentos</h6>
                 <p>Gerencie e visualize seus documentos.</p>
+              </div>
+            </div>
+          </Link>
+          <Link href={`/${params.tenant}/user/historico`}>
+            <div className={styles.infoBox}>
+              <div className={styles.icon}>
+                <RiHistoryLine />
+              </div>
+              <div className={styles.infoBoxContent}>
+                <h6>Histórico e Declarações</h6>
+                <p>
+                  Consulte o seu histórico e emita declaração de participação.
+                </p>
               </div>
             </div>
           </Link>

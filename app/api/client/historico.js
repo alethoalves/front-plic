@@ -14,4 +14,22 @@ export const updateDataHistorico = async (tenantSlug, dd,mm,yyyy,hh,min, tabelaH
   }
 };
 
+export const getHistoricoParticipacaoByCPF = async (
+  tenantSlug
+) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+    // rota pública não precisa de cabeçalhos de autenticação
+    const { data } = await req.get(
+      `/private/tenant/${tenantSlug}/historico-participacao`,{headers}
+    );
+
+    return data;                
+  } catch (error) {
+    console.error('Erro ao aceitar convite:', error);
+    throw error;
+  }
+};
+
 
