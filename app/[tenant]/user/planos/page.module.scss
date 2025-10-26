@@ -2,323 +2,1238 @@
 @import "/styles/partials/layout";
 @import "/styles/partials/spacing";
 
-
-
-.content{
-    margin-top: $gap-7;
-    margin-bottom: $gap-7;
-    max-width: 990px;
-               
-    @include responsive(s){
-        flex-direction: column;
-    }
-    
+// page.module.scss
+.navContent {
+  min-height: 100vh;
 }
-.mainContent{
-    margin-top: $gap-2;
-    h6{
-        margin-bottom: $gap-1;
-    }
-    
-    .box{
-        padding: $gap-2;
-        border: 1px solid $gray-50;
-        box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
-        border-radius: $gap-1;
-        &:not(:last-child){
-            margin-bottom: $gap-1;
-        }
-        position: relative;
-        
-        .flags{
-            display: flex;
-            flex-wrap: wrap;
-            .flag{
-                border: 1px solid $gray-50;
-                padding: $gap-1 $gap-2;
-                border-radius: $gap-1;
-                background-color: $gray-100;
-                margin-bottom: $gap-1;
-                &:not(:last-child){
-                    margin-right: $gap-1;
-                }
-                p{
-                    color: $primary-darken;
-                }
-            }
-        }
-        .menuActions{
-            border-top-right-radius: $gap-1;
-            border-bottom-right-radius: $gap-1;
-            cursor: pointer;
-            padding: 4px $gap-2;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
 
-            &:hover{
-                background-color: $gray-100;
-                .circle{
-                    background-color: $primary-normal;
-                }
-            }
-            .circle{
-                width: 4px;
-                height: 4px;
-                border-radius: 50%;
-                background-color: $primary-darken;
-                &:not(:last-child){
-                    margin-bottom: 2px;
-                }
-            }
-            
-        }
-        .innerBoxGray{
-            background-color: $gray-50;
-            p{
-                color: $primary-darken;
-                margin-bottom: 0;
-                font-weight: 700;
-                line-height: 120%;
-                align-items: center;
-            }
-        }
-        .innerBoxWhite{
-            border: 1px solid $gray-50;
-            p{
-                color: $primary-darken;
-                margin-bottom: 0;
-                line-height: 120%;
-                align-items: center;
-            }
-        }
-        
-        .innerBox{
-            display: flex;
-            justify-content: space-between;
-            align-items: stretch;
-            border-radius: $gap-1;
-            margin-bottom: $gap-1;
-            p{
-                padding: $gap-2 ;
-            }
-            cursor: pointer;
-        }
-        .statusInativo{
-            cursor:default;
-            background-color: $white-dark;
-            border: 1px solid $white-dark;
-            p{
-                color: $gray-400;
-            }
-        }
-        .participacoes {
-            display: flex;
-            flex-wrap: wrap;
-            
-            span{
-                font-weight: 300;
-            }
-            .innerBox{
-                margin-right: $gap-1;
-                flex: 1;
-                min-width: 250px;
-                @include responsive(s){
-                    min-width: 200px;
-                }
-                @include responsive(xs){
-                    min-width: 150px;
-                }
-                display: flex;
-                flex-direction: row;
-                justify-content: flex-start;
-                align-items: center;
-                
-            }
-            
-        }
-        
-    }
-   
-
-
-
-
-   
-    
-    
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: $gap-2;
 }
-.icon{
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+  
+  .headerIcon {
+    background: linear-gradient(135deg, $primary-dark 0%, $primary-darken 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    svg {
+      width: 32px;
+      height: 32px;
+    }
+  }
+  
+  .headerContent {
+    h6 {
+      margin: 0;
+      color: #1e293b;
+      font-size: 1.5rem;
+    }
+    
+    p {
+      margin: 0.5rem 0 0 0;
+      color: #64748b;
+    }
+  }
+}
+
+.mainContent {
+  margin-top: 1rem;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  text-align: center;
+  color: #64748b;
+  
+  .loadingIcon {
+    margin-bottom: 1rem;
+    width: 48px;
+    height: 48px;
+    color: $primary-darken;
+  }
+}
+
+.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: #ef4444;
+  background: #fef2f2;
+  border-radius: 12px;
+  border: 1px solid #fecaca;
+  
+  .errorIcon {
+    margin-right: 0.75rem;
     width: 24px;
-    color: $primary-normal;
-}
-.menuItens{
-    margin-top: $gap-2;
-    p{
-        &:not(:last-child){
-        margin-bottom: $gap-2;
-        }
-        transition: ease .3s;
-        padding: $gap-2 $gap-2;
-        border-radius: $gap-1;
-        //box-shadow: 0px 0px 4px rgba(5, 17, 34, 0.06);
-        border: 1px solid $gray-50;
-        color: $primary-darken;
-        cursor: pointer;
-        &:hover{
-            background-color: $white-dark;
-        }
-    }
+    height: 24px;
+  }
+  
+  p {
+    margin: 0;
+    font-weight: 500;
+  }
 }
 
-
-.navContent{
-    .content{
-        margin-top: $gap-1;
-        margin-right: $gap-2;
-        @include responsive(s){
-            margin-right: 0;
-        }
-        .header{
-            display: flex;
-            align-items: center;
-            
-            .div{
-                display: flex;
-                width: 100%;
-                justify-content: space-between;
-                .toogle{
-                    display: flex;
-                    justify-content: flex-end;
-                    align-items: center;
-                    right: $gap-2;
-                    top: 10px;
-                    cursor: pointer;
-                    color: $primary-darken;
-                    svg{
-                        margin-right: $gap-1;
-                        width: 30px;
-                    }
-                    &:hover{
-                        color: $primary-normal;
-                        p{
-                            color: $primary-normal;
-                        }
-                    }
-                }
-            }
-            h5{
-                margin-left: $gap-2;
-            }
-        }
-    }
-
+.atividadesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 
+.planoCard {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: $primary-normal;
+    box-shadow: 0 4px 20px rgba($primary-normal, 0.1);
+  }
+}
 
+.planoHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  @include responsive(s){
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  &:hover {
+    background: #f8fafc;
+  }
+}
 
+.planoInfo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  @include responsive(s){
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}
 
-.itemList{
-    margin-top: $gap-1;
+.planoIcon {
+  color: $primary-darken;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.planoDetails {
+  flex: 1;
+  
+  .planoTitulo {
+    margin: 0;
+    color: $primary-darken;
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  
+  .planoEdital {
+    margin: 0.25rem 0 0 0;
+    color: #64748b;
+    font-size: 0.875rem;
+  }
+}
+
+.planoToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #64748b;
+  transition: all 0.2s ease;
+  
+  svg {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.3s ease;
     
-    .headItemList{
-        
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: $gap-2 $gap-3;
-        //box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
-        border: 1px solid $gray-50;
-        cursor: pointer;
-        border-radius: $gap-1;
-
-        @include responsive(xs){
-            flex-direction: column;
-           align-items: flex-start;
-        }
-        .info{
-            flex: 1;
-            @include responsive(xs){
-                display: flex;
-                flex-direction: column;
-            }
-        }
-        .head{
-            display: flex;
-            align-items: center;
-            @include responsive(xs){
-                display: flex;
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            p.titulo{
-                width: 170px;
-                @include responsive(xs){
-                    width: 100%;
-                    margin-bottom: $gap-1;
-                }
-                color:$primary-darken;
-                font-weight: 600;
-                text-transform: uppercase;
-                margin-right: $gap-2;
-            }
-            p.subtitulo{
-                color:$gray-400;
-                display: flex;
-                flex-direction: column;
-                margin-right: $gap-2;
-                span{
-                    font-weight: 700;
-                }
-                @include responsive(xs){
-                    margin-bottom: $gap-1;
-                }
-            }
-            p.descricao{
-                font-weight: 300;
-                margin-top: $gap-1;
-                color: $gray-400;
-            }
-        }
-
-        .status{
-            width: 110px;
-            white-space: nowrap;
-            text-align: center;
-            display: inline-block;
-            padding: 4px $gap-2;
-            border-radius: 20px;
-            margin-right: $gap-2;
-            text-transform: lowercase;
-            @include responsive(xs){
-                margin-bottom: $gap-1;
-            }
-            p{
-                font-size: 12px;
-            }
-            @include responsive(xs){
-                margin-left: 0;
-            }
-        }
-        .warning{
-            background-color: $warning-light;
-            p{color:red}
-        }
-        .success{
-            background-color: $success-light;
-        }
-        .error{
-            p{color: $white-light;}
-            
-            background-color: $error-light;
-        }
-        .actions{
-            @include responsive(xs){
-                width: 100%;
-            }
-        }
+    &.rotated {
+      transform: rotate(180deg);
     }
-   
+  }
+}
+
+// CONTEÚDO DO ACCORDION - CORRIGIDO
+.planoContent {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  padding: 0 1.5rem;
+  border-top: 1px solid transparent;
+  
+  &.planoContentOpen {
+    max-height: 50000px; // Valor suficientemente grande
+    padding: 0 1.5rem 1.5rem 1.5rem;
+    border-top: 1px solid #f1f5f9;
+  }
+}
+
+.planoMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+  padding-top: 1.5rem;
+}
+
+.metaItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.metaIcon {
+  color: $primary-darken;
+  width: 20px;
+  height: 20px;
+  margin-top: 0.125rem;
+  flex-shrink: 0;
+}
+
+.metaContent {
+  flex: 1;
+  
+  .metaLabel {
+    display: block;
+    color: #475569;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+  
+  .metaValue {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+}
+
+.personItem {
+  color: #374151;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.areaSection {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.areaValue {
+  color: #374151;
+  font-size: 0.9rem;
+}
+
+.editAreaButton {
+  background: none;
+  border: none;
+  color: $primary-darken;
+  font-size: 0.8rem;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  
+  &:hover {
+    background: #f1f5f9;
+  }
+}
+
+.areaDropdown {
+  margin-top: 0.5rem;
+}
+
+.loadingArea {
+  color: #64748b;
+  font-style: italic;
+}
+
+.atividadesSection {
+  .sectionTitle {
+    color: $primary-darken;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+}
+
+.atividadesList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.atividadeCard {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    border-color: $primary-normal;
+    box-shadow: 0 2px 8px rgba($primary-normal, 0.1);
+  }
+}
+
+.atividadeHeader {
+  margin-bottom: 1rem;
+}
+
+.atividadeInfo {
+  .atividadeStatus {
+    margin-bottom: 0.75rem;
+  }
+  
+  .atividadeTitulo {
+    margin: 0 0 0.5rem 0;
+    color: $primary-darken;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  
+  .atividadePeriodo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    color: #64748b;
+    font-size: 0.875rem;
+    
+    .periodoIcon {
+      width: 16px;
+      height: 16px;
+    }
+  }
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  
+  .statusIcon {
+    width: 16px;
+    height: 16px;
+  }
+  
+  &.statusSuccess {
+    background: #f0fdf4;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+  }
+  
+  &.statusWarning {
+    background: #fffbeb;
+    color: #f59e0b;
+    border: 1px solid #fde68a;
+  }
+  
+  &.statusError {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+  }
+  
+  &.statusDefault {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+  }
+}
+
+.respostasSection {
+  margin: 1.5rem 0;
+  @include responsive(xs){
+    max-width: 60vw;
+  }
+
+  .respostasTitle {
+    color: $primary-darken;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+}
+
+.respostasContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.respostaItem {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  
+}
+
+.respostaHeader {
+  background: #f8fafc;
+  padding: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  
+  h6 {
+    margin: 0;
+    color: $primary-darken;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+}
+
+.respostaContent {
+  padding: 1rem;
+  
+  .respostaLinks {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: $primary-darken;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    background: #f1f5f9;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: $primary-normal;
+      color: white;
+    }
+  }
+  
+  p {
+    margin: 0;
+    color: #374151;
+    line-height: 1.5;
+  }
+}
+
+.atividadeActions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid $primary-normal;
+  background: white;
+  color: $primary-darken;
+  
+  &:hover:not(:disabled) {
+    background: $primary-normal;
+    color: white;
+    transform: translateY(-1px);
+    p{
+      color: white;
+    }
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  &.approveButton {
+    background: linear-gradient(135deg, $primary-dark 0%, $primary-darken 100%);
+    color: white;
+    border: none;
+    
+    &:hover:not(:disabled) {
+      background: linear-gradient(135deg, $primary-dark 0%, $primary-darken 100%);
+    color: white;
+      transform: translateY(-1px);
+    }
+  }
+}
+
+.emptyState {
+  text-align: center;
+  padding: 2rem;
+  color: #64748b;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 2px dashed #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  
+  .emptyIcon {
+    margin-bottom: 1rem;
+    color: #cbd5e1;
+    width: 32px;
+    height: 32px;
+  }
+  
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+}
+
+.modalHeader {
+  margin-bottom: 1.5rem;
+  
+  h6 {
+    margin: 0 0 0.5rem 0;
+    color: $primary-darken;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+  
+  p {
+    margin: 0;
+    color: #64748b;
+    line-height: 1.5;
+  }
+}
+
+.campos {
+  margin-top: 1rem;
+}
+
+// Responsive
+@include responsive(s) {
+  .content {
+    padding: $gap-1;
+  }
+  
+  .header {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  
+  .planoMeta {
+    gap: 1rem;
+  }
+  
+  .metaItem {
+    gap: 0.5rem;
+  }
+  
+  .atividadeActions {
+    flex-direction: column;
+  }
+  
+  .actionButton {
+    justify-content: center;
+  }
 }
 
 
+
+.certificadoButton {
+  background-color: $warning-lighten;
+  margin-bottom: 1rem;
+  color: white;
+  border: none;
+  padding: 1rem 1.5rem;
+  border-radius: 6px;
+  border: 1px solid $warning-dark;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  p{
+    display: flex;
+    align-items: center;
+  justify-items: center;
+  padding: 1rem 0;
+  color: $warning-darken;
+  }
+  svg{
+    width: 22px;
+    height: 22px
+  }
+  transition: ease .3s;
+  &:hover {
+    transform: scale(1.02);
+  }
+  
+  &:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+  }
+}
+
+// Adicione estas classes ao seu arquivo page.module.scss
+
+// Container do título com botão de edição
+.tituloContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: left;
+  align-items: flex-start;
+  svg{
+    width: 32px;
+  }
+  .planoTitulo {
+    margin: 0;
+    color: $primary-darken;
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.4;
+    flex: 1;
+  }
+}
+
+// Botão de editar título
+.editTituloButton {
+  background: none;
+  border: 1px solid $white-darken;
+  color: $primary-normal;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  svg{
+    width: 32px;
+  }
+  &:hover {
+    background: #f1f5f9;
+    color: $primary-darken;
+    transform: scale(1.03);
+  }
+}
+
+// Estilos para o modal de edição de título
+.campoGroup {
+  margin-bottom: 1.5rem;
+  
+  .label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: $primary-darken;
+    font-weight: 500;
+    font-size: 0.9rem;
+  }
+  
+  .input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transition: border-color 0.2s ease;
+    
+    &:focus {
+      outline: none;
+      border-color: $primary-normal;
+      box-shadow: 0 0 0 3px rgba($primary-normal, 0.1);
+    }
+    
+    &:disabled {
+      background-color: #f8fafc;
+      cursor: not-allowed;
+    }
+  }
+  
+  .textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 100px;
+    transition: border-color 0.2s ease;
+    
+    &:focus {
+      outline: none;
+      border-color: $primary-normal;
+      box-shadow: 0 0 0 3px rgba($primary-normal, 0.1);
+    }
+    
+    &:disabled {
+      background-color: #f8fafc;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.modalActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+  
+  .cancelButton {
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+    
+    &:hover:not(:disabled) {
+      background: #e2e8f0;
+      color: #374151;
+    }
+  }
+  
+  .confirmButton {
+    background: linear-gradient(135deg, $primary-dark 0%, $primary-darken 100%);
+    color: white;
+    border: none;
+    p{
+      color: white;
+    }
+    &:hover:not(:disabled) {
+      background: linear-gradient(135deg, $primary-dark 0%, $primary-darken 100%);
+      transform: translateY(-1px);
+    }
+    
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.loadingSpinner {
+  animation: spin 1s linear infinite;
+  
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+// ÁREA DE EDIÇÃO PROFISSIONAL
+.edicaoSection {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  
+  .edicaoTitle {
+    color: $primary-darken;
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    &::before {
+      content: "✎";
+      font-size: 1.1rem;
+    }
+  }
+}
+
+.edicaoBotoes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.botaoEdicao {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: white;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  width: 100%;
+  
+  &:hover {
+    border-color: $primary-normal;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba($primary-normal, 0.15);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.botaoIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, $primary-light 0%, $primary-normal 100%);
+  border-radius: 8px;
+  color: white;
+  flex-shrink: 0;
+  
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.botaoContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.botaoTitulo {
+  color: $primary-darken;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.botaoDescricao {
+  color: #64748b;
+  font-size: 0.8rem;
+  line-height: 1.3;
+}
+
+.botaoArrow {
+  color: #94a3b8;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+// Container do dropdown da área
+.areaDropdownContainer {
+  margin-top: 1rem;
+  padding: 1.5rem;
+  background: white;
+  border: 1.5px solid $primary-normal;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba($primary-normal, 0.1);
+  
+  .areaDropdownHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    
+    span {
+      color: $primary-darken;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+  }
+}
+
+.fecharDropdown {
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 1.5rem;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  
+  &:hover {
+    background: #f1f5f9;
+    color: $primary-darken;
+  }
+}
+
+// Ajustes na seção de área para remover o botão antigo
+.areaSection {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+  
+  // Remove o botão antigo de editar área
+  .editAreaButton {
+    display: none;
+  }
+}
+
+.areaValue {
+  color: #374151;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.grandeArea {
+  color: #64748b;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+// Responsividade
+@include responsive(s) {
+  .edicaoBotoes {
+    grid-template-columns: 1fr;
+  }
+  
+  .botaoEdicao {
+    padding: 1rem;
+  }
+  
+  .botaoIcon {
+    width: 40px;
+    height: 40px;
+    
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+  
+  .areaDropdownContainer {
+    padding: 1rem;
+  }
+}
+
+@include responsive(xs) {
+  .edicaoSection {
+    padding: 1rem;
+  }
+  
+  .botaoEdicao {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+  }
+  
+  .botaoContent {
+    align-items: center;
+  }
+}
+
+// Estilos para os modais
+.modalHeaderTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+  
+  h6 {
+    margin: 0;
+    color: $primary-darken;
+    font-size: 1.25rem;
+    font-weight: 600;
+    flex: 1;
+  }
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: #f1f5f9;
+    color: $primary-darken;
+  }
+}
+
+.searchableSelectContainer {
+  margin-bottom: 1rem;
+}
+
+.areaInfo {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  
+  .areaInfoLabel {
+    display: block;
+    color: #64748b;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+  
+  .areaInfoValue {
+    color: $primary-darken;
+    font-weight: 500;
+    font-size: 0.9rem;
+  }
+}
+
+// Ajustes nos botões de ação do modal
+.modalActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  
+  .cancelButton {
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover:not(:disabled) {
+      background: #e2e8f0;
+      color: #374151;
+    }
+    
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+  
+  .confirmButton {
+    background: linear-gradient(135deg, $primary-dark 0%, $primary-darken 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+    
+    &:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba($primary-dark, 0.3);
+    }
+    
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+  }
+}
+
+// Ajustes na área de edição (remove o dropdown antigo)
+.edicaoSection {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  
+  .edicaoTitle {
+    color: $primary-darken;
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    &::before {
+      content: "✎";
+      font-size: 1.1rem;
+    }
+  }
+}
+
+.edicaoBotoes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.botaoEdicao {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: white;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  width: 100%;
+  
+  &:hover {
+    border-color: $primary-normal;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba($primary-normal, 0.15);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.botaoIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, $primary-light 0%, $primary-normal 100%);
+  border-radius: 8px;
+  color: white;
+  flex-shrink: 0;
+  
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.botaoContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.botaoTitulo {
+  color: $primary-darken;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.botaoDescricao {
+  color: #64748b;
+  font-size: 0.8rem;
+  line-height: 1.3;
+}
+
+.botaoArrow {
+  color: #94a3b8;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+// Remove estilos antigos do dropdown da área
+.areaDropdownContainer {
+  display: none; // Esconde o dropdown antigo
+}
+
+// Responsividade
+@include responsive(s) {
+  .edicaoBotoes {
+    grid-template-columns: 1fr;
+  }
+  
+  .botaoEdicao {
+    padding: 1rem;
+  }
+  
+  .botaoIcon {
+    width: 40px;
+    height: 40px;
+    
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+  
+  .modalActions {
+    flex-direction: column;
+    
+    .cancelButton,
+    .confirmButton {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}
+
+@include responsive(xs) {
+  .edicaoSection {
+    padding: 1rem;
+  }
+  
+  .botaoEdicao {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+  }
+  
+  .botaoContent {
+    align-items: center;
+  }
+}

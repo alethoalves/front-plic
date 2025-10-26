@@ -104,6 +104,37 @@ export const createPlanoDeTrabalho = async (
       throw error;
     }
   };
+  export const updateTituloPlanoDeTrabalho = async (tenantSlug, idPlano, novoTitulo, justificativa) => {
+    try {
+      const headers = getAuthHeadersClient();
+      if (!headers) return false;
+      const response = await req.put(`/private/${tenantSlug}/user/atualizar-titulo-planoDeTrabalho/${idPlano}`, {
+        novoTitulo: novoTitulo,
+        justificativa: justificativa
+      }, {headers});
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao atualizar título do plano de trabalho:', error);
+      throw error;
+    }
+  };
+  ///:tenant/user/getPlanosDeTrabalhoByUser
+  export const getPlanosDeTrabalhoByUser = async (tenantSlug) => {
+    try {
+      const headers = getAuthHeadersClient();
+      if (!headers) {
+        return false;
+      }
+      const response = await req.get(
+        `/private/${tenantSlug}/user/getPlanosDeTrabalhoByUser`,
+        {headers}
+      );
+      return response.data.planosDeTrabalho;
+    } catch (error) {
+      console.error("Erro ao obter Planos de Trabalho:", error);
+      throw error;
+    }
+  };
   export const getPlanoDeTrabalhos = async (tenantSlug, inscricaoId) => {
     try {
       const headers = getAuthHeadersClient();
