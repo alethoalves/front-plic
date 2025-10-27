@@ -46,6 +46,7 @@ import {
 } from "@remixicon/react";
 
 import styles from "./SolicitacoesBolsa.module.scss";
+import { Dropdown } from "primereact/dropdown";
 
 /* ----------------------------- filtros custom ---------------------------- */
 FilterService.register("intervalo", (value, filters) => {
@@ -97,6 +98,13 @@ export default function SolicitacoesBolsa() {
   const { tenant, ano } = useParams();
   const toast = useRef(null);
 
+  // Ordena array pela notaTotal (desc). Valores nulos ficam por último.
+  const sortByNota = (arr = []) =>
+    [...arr].sort(
+      (a, b) =>
+        (b?.notaTotal ?? Number.NEGATIVE_INFINITY) -
+        (a?.notaTotal ?? Number.NEGATIVE_INFINITY)
+    );
   /* ------------------------- estados principais ------------------------- */
   const [processedData, setProcessedData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -240,7 +248,7 @@ export default function SolicitacoesBolsa() {
         /* -- vínculos -- */
         const rawVinculos = await getVinculosByTenant(tenant, ano);
         const processed = await processarDados(rawVinculos);
-        setProcessedData(processed);
+        setProcessedData(sortByNota(processed));
 
         /* -- cotas -- */
         const cotasResp = await getCotas(tenant, ano);
@@ -529,7 +537,8 @@ export default function SolicitacoesBolsa() {
 
           /* 3. recarrega dados após cada lote para refletir novos status */
           const raw = await getVinculosByTenant(tenant, ano);
-          setProcessedData(await processarDados(raw));
+          const processedAfter = await processarDados(raw);
+          setProcessedData(sortByNota(processedAfter));
         } catch (err) {
           const msg =
             err?.response?.data?.message ||
@@ -615,6 +624,73 @@ export default function SolicitacoesBolsa() {
     setFilters(getInitialFilters());
     setGlobalFilterValue("");
   };
+  /* ==================================================================== */
+  /*                         LISTA DE ESPERA                              */
+  /* ==================================================================== */
+  const [displayListaEsperaDialog, setDisplayListaEsperaDialog] =
+    useState(false);
+  const [editalSelecionado, setEditalSelecionado] = useState(null);
+
+  const aplicarFiltrosListaEspera = () => {
+    if (!editalSelecionado) {
+      showToast(
+        "warn",
+        "Aviso",
+        "Selecione um edital para gerar a lista de espera."
+      );
+      return;
+    }
+
+    // Aplicar filtros
+    const novosFiltros = {
+      ...getInitialFilters(),
+      "participacao.inscricao.edital.titulo": {
+        value: [editalSelecionado],
+        matchMode: FilterMatchMode.IN,
+      },
+      "participacao.planoDeTrabalho.statusClassificacao": {
+        value: ["CLASSIFICADO"],
+        matchMode: FilterMatchMode.IN,
+      },
+      "participacao.statusParticipacao": {
+        value: ["ATIVA"],
+        matchMode: FilterMatchMode.IN,
+      },
+      "solicitacaoBolsa.status": {
+        value: ["APROVADA"],
+        matchMode: FilterMatchMode.IN,
+      },
+      "solicitacaoBolsa.ordemRecebimentoBolsa": {
+        value: [null, 1],
+        matchMode: "intervalo",
+      },
+      instituicaoPagadora: {
+        value: ["Não alocado"],
+        matchMode: FilterMatchMode.IN,
+      },
+      status: {
+        value: ["APROVADO", "PENDENTE"],
+        matchMode: FilterMatchMode.IN,
+      },
+    };
+
+    setFilters(novosFiltros);
+
+    // Aplicar ordenação por nota total decrescente
+    // Isso depende de como sua DataTable lida com ordenação
+    // Normalmente você teria um estado para sorting que seria atualizado aqui
+
+    setDisplayListaEsperaDialog(false);
+    setEditalSelecionado(null);
+
+    showToast("success", "Sucesso", "Filtros da lista de espera aplicados!");
+  };
+
+  const limparFiltrosListaEspera = () => {
+    setFilters(getInitialFilters());
+    setGlobalFilterValue("");
+    showToast("info", "Filtros limpos", "Todos os filtros foram resetados.");
+  };
 
   /* ==================================================================== */
   /*                               HEADER                                 */
@@ -632,6 +708,13 @@ export default function SolicitacoesBolsa() {
           label="Limpar"
           onClick={clearFilters}
           className="p-button-outlined p-button-secondary"
+        />
+        {/* BOTÃO LISTA DE ESPERA - NOVO */}
+        <Button
+          label="Lista de Espera"
+          icon="pi pi-list"
+          className="p-button-help"
+          onClick={() => setDisplayListaEsperaDialog(true)}
         />
 
         {processedData.some(
@@ -1163,6 +1246,101 @@ export default function SolicitacoesBolsa() {
           autoResize
           placeholder="Digite o motivo da recusa..."
         />
+      </Dialog>
+      {/* =================== MODAL LISTA DE ESPERA =================== */}
+      <Dialog
+        header="Gerar Lista de Espera"
+        visible={displayListaEsperaDialog}
+        style={{ width: "500px" }}
+        onHide={() => {
+          setDisplayListaEsperaDialog(false);
+          setEditalSelecionado(null);
+        }}
+        footer={
+          <div className="flex justify-content-end gap-2">
+            <Button
+              label="Cancelar"
+              icon="pi pi-times"
+              className="p-button-text"
+              onClick={() => {
+                setDisplayListaEsperaDialog(false);
+                setEditalSelecionado(null);
+              }}
+            />
+            <Button
+              label="Limpar Filtros"
+              icon="pi pi-filter-slash"
+              className="p-button-warning"
+              onClick={limparFiltrosListaEspera}
+            />
+            <Button
+              label="Aplicar Filtros"
+              icon="pi pi-check"
+              className="p-button-primary"
+              onClick={aplicarFiltrosListaEspera}
+              disabled={!editalSelecionado}
+            />
+          </div>
+        }
+      >
+        <div className="p-fluid">
+          <div className="field mb-4">
+            <label htmlFor="edital" className="block font-medium mb-2">
+              Selecione o Edital para gerar a lista de espera
+            </label>
+            <Dropdown
+              id="edital"
+              value={editalSelecionado}
+              options={editaisOptions}
+              onChange={(e) => setEditalSelecionado(e.value)}
+              placeholder="Selecione um edital..."
+              className="w-full"
+              filter
+            />
+          </div>
+
+          <div className="border-round border-1 surface-border p-3">
+            <h5 className="mt-0 mb-3 text-color-secondary">
+              Filtros que serão aplicados:
+            </h5>
+            <div className="grid">
+              <div className="col-6">
+                <div className="flex align-items-center gap-2 mb-2">
+                  <i className="pi pi-check-circle text-green-500"></i>
+                  <span className="text-sm">Edital: Selecionado</span>
+                </div>
+                <div className="flex align-items-center gap-2 mb-2">
+                  <i className="pi pi-check-circle text-green-500"></i>
+                  <span className="text-sm">Status Plano: CLASSIFICADO</span>
+                </div>
+                <div className="flex align-items-center gap-2 mb-2">
+                  <i className="pi pi-check-circle text-green-500"></i>
+                  <span className="text-sm">Status Aluno: ATIVA</span>
+                </div>
+              </div>
+              <div className="col-6">
+                <div className="flex align-items-center gap-2 mb-2">
+                  <i className="pi pi-check-circle text-green-500"></i>
+                  <span className="text-sm">Status Solicitação: APROVADA</span>
+                </div>
+                <div className="flex align-items-center gap-2 mb-2">
+                  <i className="pi pi-check-circle text-green-500"></i>
+                  <span className="text-sm">Ordem Bolsa: Máx. 1</span>
+                </div>
+                <div className="flex align-items-center gap-2 mb-2">
+                  <i className="pi pi-check-circle text-green-500"></i>
+                  <span className="text-sm">Bolsa: Não alocado</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex align-items-center gap-2 mt-2">
+              <i className="pi pi-sort-alt text-blue-500"></i>
+              <span className="text-sm">
+                Ordenação: Nota Total (Decrescente)
+              </span>
+            </div>
+          </div>
+        </div>
       </Dialog>
     </div>
   );
