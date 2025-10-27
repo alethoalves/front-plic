@@ -530,14 +530,7 @@ export const CertificadoEvento = ({ params, eventoId }) => {
                         ${avaliacao.indicacaoPremio ? "SIM" : "NÃO"}
                     </span>
                 </div>
-                <div class="indicacao-item">
-                    <span class="indicacao-label">Premiado:</span>
-                    <span class="indicacao-badge ${
-                      avaliacao.premio ? "badge-sim" : "badge-nao"
-                    }">
-                        ${avaliacao.premio ? "SIM" : "NÃO"}
-                    </span>
-                </div>
+                
             </div>
         </div>
 
