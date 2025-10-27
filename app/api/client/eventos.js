@@ -16,6 +16,18 @@ export const cpfVerificationForInscricao = async (cpf) => {
     throw error;
   }
 };
+export const getUltimaAvaliacaoDepurada = async (eventoSlug,submissaoId) => {
+  try {
+    
+    const response = await req.get(
+      `/evenplic/evento/${eventoSlug}/ultima-avaliacao/${submissaoId}`,
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao chamar a API:", error);
+    throw error;
+  }
+};
 export const getSubmissoesByCPFAndEvento = async (cpf,eventoSlug) => {
   try {
     
