@@ -9,6 +9,7 @@ import {
   RiFoldersLine,
   RiHistoryLine,
   RiListCheck2,
+  RiMicroscopeLine,
 } from "@remixicon/react";
 import styles from "./page.module.scss";
 import { useEffect, useState } from "react";
@@ -99,17 +100,32 @@ const Page = ({ params }) => {
               </div>
             </div>
           </Link>
-          <Link href={`/${params.tenant}/user/atividades`}>
+          <Link href={`/${params.tenant}/user/planos`}>
             <div className={styles.infoBox}>
               <div className={styles.icon}>
-                <RiListCheck2 />
+                <RiMicroscopeLine />
               </div>
               <div className={styles.infoBoxContent}>
-                <h6>Atividades</h6>
-                <p>Não perca os prazos de entrega das atividades!</p>
+                <h6>Minhas Pesquisas</h6>
+                <p>
+                  Edite informações, gerencie atividades e emita certificados.
+                </p>
               </div>
             </div>
           </Link>
+          {false && (
+            <Link href={`/${params.tenant}/user/atividades`}>
+              <div className={styles.infoBox}>
+                <div className={styles.icon}>
+                  <RiListCheck2 />
+                </div>
+                <div className={styles.infoBoxContent}>
+                  <h6>Atividades</h6>
+                  <p>Não perca os prazos de entrega das atividades!</p>
+                </div>
+              </div>
+            </Link>
+          )}
           <Link href={`/${params.tenant}/user/documentos`}>
             <div className={styles.infoBox}>
               <div className={styles.icon}>
@@ -152,20 +168,22 @@ const Page = ({ params }) => {
               </div>
             </div>
           </Link>
-          <Link href={`/${params.tenant}/user/certificados`}>
-            <div className={styles.infoBox}>
-              <div className={styles.icon}>
-                <RiAwardFill />
+          {false && (
+            <Link href={`/${params.tenant}/user/certificados`}>
+              <div className={styles.infoBox}>
+                <div className={styles.icon}>
+                  <RiAwardFill />
+                </div>
+                <div className={styles.infoBoxContent}>
+                  <h6>Certificados</h6>
+                  <p>
+                    Acesse os certificados de conclusão de projetos de iniciação
+                    científica.
+                  </p>
+                </div>
               </div>
-              <div className={styles.infoBoxContent}>
-                <h6>Certificados</h6>
-                <p>
-                  Acesse os certificados de conclusão de projetos de iniciação
-                  científica.
-                </p>
-              </div>
-            </div>
-          </Link>
+            </Link>
+          )}
           {false && (
             <>
               {" "}

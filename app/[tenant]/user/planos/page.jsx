@@ -18,6 +18,7 @@ import {
   RiMicroscopeLine,
   RiPencilLine,
   RiCloseLine,
+  RiHistoryLine,
 } from "@remixicon/react";
 import styles from "./page.module.scss";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -44,6 +45,7 @@ import {
   updateTituloPlanoDeTrabalho,
 } from "@/app/api/client/planoDeTrabalho";
 import { generateAndDownloadCertificatePlanoPDF } from "@/app/api/client/certificadoPlanoDeTrabalho";
+import Link from "next/link";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
@@ -499,11 +501,41 @@ const Page = ({ params }) => {
     return (
       <Modal isOpen={isTituloModalOpen} onClose={handleCloseEditTitulo}>
         <div className={styles.modalHeader}>
-          <h6>Editar Título do Plano de Trabalho</h6>
+          <div className={styles.modalHeaderTop}>
+            <h6>Editar Título do Plano de Trabalho</h6>
+          </div>
           <p>
             Atualize o título do plano de trabalho e forneça uma justificativa
             para a alteração.
           </p>
+        </div>
+
+        {/* ALERTA PROFISSIONAL ADICIONADO AQUI */}
+        <div className={styles.alertaImportante}>
+          <div className={styles.alertaIcon}>
+            <RiAlertLine size={20} />
+          </div>
+          <div className={styles.alertaContent}>
+            <h6 className={styles.alertaTitulo}>
+              Atenção à Alteração de Título
+            </h6>
+            <p className={styles.alertaTexto}>
+              A alteração do título{" "}
+              <strong>
+                não pode modificar o escopo principal do projeto e/ou do plano
+                de trabalho
+              </strong>
+              , uma vez que ambos foram avaliados e aprovados com base em seus
+              objetivos originais. Mudanças significativas no escopo
+              invalidariam o processo de avaliação anterior.
+            </p>
+            <p className={styles.alertaTexto}>
+              Todas as alterações de título, bem como sua frequência, estão
+              sujeitas à análise tanto pelos avaliadores durante a execução da
+              pesquisa quanto pela equipe gestora do programa de Iniciação
+              Científica, podendo influenciar avaliações futuras.
+            </p>
+          </div>
         </div>
 
         <div className={styles.campos}>
@@ -525,10 +557,13 @@ const Page = ({ params }) => {
               value={justificativa}
               onChange={(e) => setJustificativa(e.target.value)}
               className={styles.textarea}
-              placeholder="Explique o motivo da alteração do título"
+              placeholder="Explique detalhadamente o motivo da alteração do título, garantindo que o escopo principal do projeto permanece inalterado"
               rows={4}
               disabled={updatingPlano === editingTitulo?.id}
             />
+            <div className={styles.contadorCaracteres}>
+              {justificativa.length} caracteres
+            </div>
           </div>
 
           <div className={styles.modalActions}>
@@ -646,12 +681,6 @@ const Page = ({ params }) => {
         <div className={styles.modalHeader}>
           <div className={styles.modalHeaderTop}>
             <h6>Editar Área do Plano de Trabalho</h6>
-            <button
-              className={styles.closeButton}
-              onClick={handleCloseEditArea}
-            >
-              <RiCloseLine size={20} />
-            </button>
           </div>
           <p>Selecione a nova área de conhecimento para o plano de trabalho.</p>
         </div>
@@ -727,12 +756,44 @@ const Page = ({ params }) => {
             <div className={styles.headerContent}>
               <h6>Minhas Pesquisas</h6>
               <p>
-                Gerencie seus planos de trabalho relacionados às suas pesquisas
-                de iniciação científica.
+                Edite informações de suas pesquisas, gerencie a entrega de
+                atividades e emita certificado de conclusão.
               </p>
             </div>
           </div>
+          {/* MENU DE NAVEGAÇÃO RÁPIDA COM LINK */}
+          <div className={styles.navegacaoRapida}>
+            <div className={styles.navegacaoContent}>
+              <span className={styles.navegacaoLabel}>Acesso rápido:</span>
+              <div className={styles.navegacaoBotoes}>
+                <Link
+                  href={`/${params.tenant}/user/documentos`}
+                  className={styles.botaoNavegacao}
+                  title="Acessar Meus Documentos"
+                >
+                  <div className={styles.botaoNavegacaoIcon}>
+                    <RiFoldersLine size={18} />
+                  </div>
+                  <span className={styles.botaoNavegacaoText}>
+                    Meus Documentos
+                  </span>
+                </Link>
 
+                <Link
+                  href={`/${params.tenant}/user/historico`}
+                  className={styles.botaoNavegacao}
+                  title="Acessar Histórico e Declarações"
+                >
+                  <div className={styles.botaoNavegacaoIcon}>
+                    <RiHistoryLine size={18} />
+                  </div>
+                  <span className={styles.botaoNavegacaoText}>
+                    Histórico/Declarações
+                  </span>
+                </Link>
+              </div>
+            </div>
+          </div>
           <div className={styles.mainContent}>
             {loading && (
               <div className={styles.loading}>
