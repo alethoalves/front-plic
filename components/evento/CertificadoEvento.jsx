@@ -109,11 +109,43 @@ export const CertificadoEvento = ({ params, eventoId }) => {
   };
 
   // Função para gerar o HTML da ficha de avaliação
-  // Função para gerar o HTML da ficha de avaliação
   const gerarFichaAvaliacaoHTML = (avaliacaoData) => {
     const avaliacao = avaliacaoData.avaliacao;
     const tituloTrabalho = avaliacaoData.titulo || "Trabalho não identificado";
     const eventoNome = avaliacaoData.eventoNome || "Evento não identificado";
+    const participacoesByCargo = avaliacaoData.participacoesByCargo || {};
+
+    // Função para formatar as participações por cargo
+    const formatarParticipacoes = () => {
+      if (
+        !participacoesByCargo ||
+        Object.keys(participacoesByCargo).length === 0
+      ) {
+        return '<div class="participacao-item">Nenhuma informação de participação disponível</div>';
+      }
+
+      let html = "";
+
+      // Ordenar os cargos para exibição consistente
+      const cargosOrdenados = Object.keys(participacoesByCargo).sort();
+
+      cargosOrdenados.forEach((cargo) => {
+        const participacoes = participacoesByCargo[cargo];
+        if (participacoes && participacoes.length > 0) {
+          const nomes = participacoes
+            .map((p) => p.user?.nome || "Nome não informado")
+            .join(", ");
+          html += `
+          <div class="participacao-item">
+            <span class="participacao-cargo">${cargo}:</span>
+            <span class="participacao-nomes">${nomes}</span>
+          </div>
+        `;
+        }
+      });
+
+      return html;
+    };
 
     return `
 <!DOCTYPE html>
@@ -229,6 +261,41 @@ export const CertificadoEvento = ({ params, eventoId }) => {
             font-size: 48px;
             font-weight: 700;
             color: #495057;
+        }
+
+        .participacoes {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .participacoes h3 {
+            color: #495057;
+            margin-bottom: 15px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .participacao-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            padding: 8px 0;
+        }
+
+        .participacao-cargo {
+            font-weight: 600;
+            color: #495057;
+            min-width: 120px;
+            margin-right: 15px;
+        }
+
+        .participacao-nomes {
+            color: #6c757d;
+            flex: 1;
+            line-height: 1.4;
         }
 
         .criterios {
@@ -368,8 +435,6 @@ export const CertificadoEvento = ({ params, eventoId }) => {
             gap: 8px;
         }
 
-        
-
         .observacao-ia-texto {
             color: #004085;
             line-height: 1.6;
@@ -438,6 +503,16 @@ export const CertificadoEvento = ({ params, eventoId }) => {
                 padding: 20px;
             }
             
+            .participacao-item {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .participacao-cargo {
+                min-width: auto;
+                margin-right: 0;
+            }
+            
             .criterio-header {
                 flex-direction: column;
                 gap: 10px;
@@ -493,6 +568,11 @@ export const CertificadoEvento = ({ params, eventoId }) => {
             <div class="valor">${avaliacao.notaTotal.toFixed(1)}</div>
         </div>
 
+        <div class="participacoes">
+            <h3>PARTICIPAÇÕES</h3>
+            ${formatarParticipacoes()}
+        </div>
+
         <div class="criterios">
             ${avaliacao.registros
               .map(
@@ -530,7 +610,6 @@ export const CertificadoEvento = ({ params, eventoId }) => {
                         ${avaliacao.indicacaoPremio ? "SIM" : "NÃO"}
                     </span>
                 </div>
-                
             </div>
         </div>
 
@@ -545,7 +624,6 @@ export const CertificadoEvento = ({ params, eventoId }) => {
             : ""
         }
 
-        
         <div class="metadata">
             <div class="metadata-item">
                 <div class="metadata-label">ID DA AVALIAÇÃO</div>
