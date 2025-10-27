@@ -160,6 +160,7 @@ const Page = async ({ params }) => {
                 >
                   {evento.nomeEvento}
                 </h5>
+                {evento.isbn ? <p>ISBN: {evento.isbn}</p> : null}
                 <div className={styles.card}>
                   <div className={styles.cardContent}>
                     <div>
