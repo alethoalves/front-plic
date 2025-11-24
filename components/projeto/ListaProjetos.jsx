@@ -38,7 +38,7 @@ const ListaProjetos = ({
             </div>
           ))
         ) : (
-          <NoData description="Não encontramos nenhum projeto. Crie um novo!" />
+          <NoData description="Não encontramos projetos. Crie um novo!" />
         )}
       </div>
     </>
