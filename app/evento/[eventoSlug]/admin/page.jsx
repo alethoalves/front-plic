@@ -223,7 +223,7 @@ const Page = ({ params }) => {
         evento.evento.id,
         selectedTenant?.tenant
       );
-
+      console.log(submissaoData);
       // Criação do documento
       const doc = new Document({
         styles: {
