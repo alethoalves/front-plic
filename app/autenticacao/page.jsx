@@ -206,31 +206,33 @@ const CertificateValidationPage = () => {
 
     return (
       <div className={styles.certificateActions}>
-        <button
-          onClick={generatePDF}
-          disabled={pdfLoading}
-          className={styles.pdfButton}
-        >
-          {pdfLoading ? (
-            <>
-              <ProgressSpinner
-                style={{
-                  width: "16px",
-                  height: "16px",
-                  marginRight: "8px",
-                }}
-                strokeWidth="4"
-                animationDuration=".5s"
-              />
-              Gerando PDF...
-            </>
-          ) : (
-            <>
-              <i className="pi pi-file-pdf" style={{ marginRight: "8px" }} />
-              Baixar como PDF
-            </>
-          )}
-        </button>
+        {false && (
+          <button
+            onClick={generatePDF}
+            disabled={pdfLoading}
+            className={styles.pdfButton}
+          >
+            {pdfLoading ? (
+              <>
+                <ProgressSpinner
+                  style={{
+                    width: "16px",
+                    height: "16px",
+                    marginRight: "8px",
+                  }}
+                  strokeWidth="4"
+                  animationDuration=".5s"
+                />
+                Gerando PDF...
+              </>
+            ) : (
+              <>
+                <i className="pi pi-file-pdf" style={{ marginRight: "8px" }} />
+                Baixar como PDF
+              </>
+            )}
+          </button>
+        )}
 
         <div className={styles.verificationInfo}>
           <p>
