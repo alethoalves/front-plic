@@ -789,18 +789,18 @@
     height: 794px;
     margin: 0 auto;
     transform-origin: top center;
-    transform: scale(0.8);
+    transform: scale(1);
     
     @include responsive(m) {
-      transform: scale(0.7);
+      transform: scale(1);
     }
     
     @include responsive(s) {
-      transform: scale(0.6);
+      transform: scale(1);
     }
     
     @include responsive(xs) {
-      transform: scale(0.5);
+      transform: scale(1);
     }
     
     // Garantir que a imagem de fundo apareça corretamente

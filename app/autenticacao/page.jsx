@@ -41,6 +41,23 @@ const CertificateValidationPage = () => {
       // Aguardar um momento para garantir que todas as imagens estão carregadas
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
+      // Aguardar imagens carregarem e definir crossorigin se necessário
+      const imgs = container.querySelectorAll("img");
+      await Promise.all(
+        Array.from(imgs).map(
+          (img) =>
+            new Promise((resolve) => {
+              // se a src foi corrigida para uma URL remota, adiciona crossorigin
+              if (!img.getAttribute("crossorigin")) {
+                img.setAttribute("crossorigin", "anonymous");
+              }
+              if (img.complete) return resolve();
+              img.onload = () => resolve();
+              img.onerror = () => resolve();
+            })
+        )
+      );
+
       // Converter para canvas
       const canvas = await html2canvas(container, {
         scale: 2,
@@ -150,6 +167,14 @@ const CertificateValidationPage = () => {
     try {
       // Chamada real para a API
       const result = await validarCertificado(certificateCode);
+
+      // CORREÇÃO: limpar prefixo inválido "data:image/...;base64," quando seguido por uma URL http(s)
+      if (result?.html) {
+        result.html = result.html.replace(
+          /data:image\/[^;]+;base64,(https?:\/\/)/g,
+          "$1"
+        );
+      }
 
       // Verificar se a API retornou sucesso
       if (result.status === "success") {
@@ -693,8 +718,8 @@ const CertificateValidationPage = () => {
         <footer className={styles.footer}>
           <div className={styles.footerContent}>
             <p className={styles.footerText}>
-              © {new Date().getFullYear()} PLIC - Plataforma de Certificação
-              Digital. Todos os direitos reservados.
+              © {new Date().getFullYear()} PLIC - Plataforma de Iniciação
+              Científica. Todos os direitos reservados.
             </p>
             <div className={styles.footerLinks}>
               <Link href="/politica-privacidade">Política de Privacidade</Link>
