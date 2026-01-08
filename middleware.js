@@ -84,7 +84,10 @@ export const middleware = async (request) => {
   const tokenAvaliador = getCookie("authTokenAvaliador", { cookies });
   const perfilSelecionado = getCookie("perfilSelecionado", { cookies });
   console.log('ENTROU NO MIDDLEWARE')
-
+// Permitir explicitamente a página de autenticação sem tratá‑la como tenant
+if (pathname === "/autenticacao" || pathname.startsWith("/autenticacao/")) {
+  return NextResponse.next();
+}
   
   try {
     /******************

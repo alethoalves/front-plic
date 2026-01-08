@@ -1,0 +1,926 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+
+.main {
+  min-height: 100vh;
+  //background: linear-gradient(135deg, $gray-25 0%, $gray-100 100%);
+  padding: $gap-2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  @include responsive(xs) {
+    padding: $gap-1;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+}
+
+// Header
+.header {
+  text-align: center;
+  margin-bottom: $gap-4;
+  margin-top: $gap-4;
+  @include responsive(m) {
+    margin-bottom: $gap-3;
+  }
+
+  .logoContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $gap-2;
+  }
+
+  .logoLink {
+    display: inline-block;
+    transition: transform 0.3s ease;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+
+  .logo {
+    object-fit: contain;
+  }
+
+  .title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: $primary-dark;
+    margin: 0;
+    line-height: 1.2;
+    
+    @include responsive(m) {
+      font-size: 2rem;
+    }
+    
+    @include responsive(s) {
+      font-size: 1.75rem;
+    }
+    
+    @include responsive(xs) {
+      font-size: 1.5rem;
+    }
+  }
+
+  .subtitle {
+    font-size: 1.125rem;
+    color: $gray-600;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+    
+    @include responsive(s) {
+      font-size: 1rem;
+      padding: 0 $gap-1;
+    }
+  }
+}
+
+// Content Area
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-4;
+}
+
+// Validation Section
+.validationSection {
+  .validationCard {
+    background: $white-normal;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba($black-light, 0.1);
+    padding: $gap-4;
+    border: 1px solid $gray-100;
+    
+    @include responsive(m) {
+      padding: $gap-3;
+    }
+    
+    @include responsive(s) {
+      padding: $gap-2;
+    }
+  }
+
+  .cardHeader {
+    text-align: center;
+    margin-bottom: $gap-4;
+    
+    .headerIcon {
+      margin-bottom: $gap-2;
+      
+      img {
+        filter: drop-shadow(0 4px 6px rgba($black-light, 0.1));
+      }
+    }
+
+    .cardTitle {
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: $primary-dark;
+      margin-bottom: $gap-1;
+      
+      @include responsive(s) {
+        font-size: 1.5rem;
+      }
+    }
+
+    .cardDescription {
+      color: $gray-600;
+      font-size: 1.125rem;
+      line-height: 1.6;
+      max-width: 500px;
+      margin: 0 auto;
+      
+      @include responsive(s) {
+        font-size: 1rem;
+      }
+    }
+  }
+}
+
+// Form Styles
+.validationForm {
+  .inputGroup {
+    margin-bottom: $gap-3;
+  }
+
+  .inputLabel {
+    display: block;
+    font-weight: 600;
+    color: $black-light;
+    margin-bottom: $gap-1;
+    font-size: 1.125rem;
+  }
+
+  .inputWrapper {
+    position: relative;
+  }
+
+  .inputField {
+    width: 100%;
+    padding: $gap-2 $gap-3;
+    font-size: 1.25rem;
+    border: 2px solid $gray-200;
+    border-radius: 12px;
+    background: $white-light;
+    color: $black-normal;
+    transition: all 0.3s ease;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 1px;
+    
+    &:focus {
+      outline: none;
+      border-color: $primary-normal;
+      box-shadow: 0 0 0 3px rgba($primary-normal, 0.1);
+    }
+    
+    &:disabled {
+      background: $gray-50;
+      cursor: not-allowed;
+    }
+    
+    @include responsive(s) {
+      font-size: 1.125rem;
+      padding: $gap-1 $gap-2;
+    }
+  }
+
+  .inputHint {
+    display: block;
+    margin-top: $gap-1;
+    font-size: 0.875rem;
+    color: $gray-500;
+  }
+}
+
+// Button Styles
+.buttonGroup {
+  display: flex;
+  gap: $gap-2;
+  flex-wrap: wrap;
+  
+  @include responsive(xs) {
+    flex-direction: column;
+  }
+
+  .validateButton {
+    flex: 1;
+    min-width: 200px;
+    padding: $gap-2 $gap-4;
+    font-size: 1.125rem;
+    font-weight: 600;
+    background: linear-gradient(224.78deg, $primary-normal 8.12%, $primary-dark 92.21%);
+    color: $white-normal;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $gap-1;
+    
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba($primary-normal, 0.3);
+    }
+    
+    &:active:not(:disabled) {
+      transform: translateY(0);
+    }
+    
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background: $gray-400;
+    }
+    
+    @include responsive(xs) {
+      width: 100%;
+    }
+  }
+
+  .resetButton {
+    padding: $gap-2 $gap-4;
+    font-size: 1.125rem;
+    font-weight: 600;
+    background: $white-normal;
+    color: $gray-600;
+    border: 2px solid $gray-300;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      background: $gray-25;
+      border-color: $gray-400;
+      color: $black-light;
+    }
+    
+    @include responsive(xs) {
+      width: 100%;
+    }
+  }
+}
+
+// Status Card
+.statusCard {
+  margin-top: $gap-3;
+  padding: $gap-3;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+  animation: slideIn 0.5s ease;
+  
+  &.valid {
+    background: $success-lighten;
+    border: 1px solid $success-light;
+  }
+  
+  &.invalid {
+    background: $error-lighten;
+    border: 1px solid $error-light;
+  }
+
+  .statusIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: $white-normal;
+    
+    .valid & {
+      background: $success-normal;
+    }
+    
+    .invalid & {
+      background: $error-normal;
+    }
+  }
+
+  .statusContent {
+    flex: 1;
+  }
+
+  .statusTitle {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: $gap-1;
+    
+    .valid & {
+      color: $success-dark;
+    }
+    
+    .invalid & {
+      color: $error-dark;
+    }
+  }
+
+  .statusMessage {
+    color: $gray-500;
+    line-height: 1.5;
+  }
+}
+
+// Error Message
+.errorMessage {
+  margin-top: $gap-2;
+  padding: $gap-2;
+  background: $error-lighten;
+  border: 1px solid $error-light;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: $gap-1;
+  animation: shake 0.5s ease;
+
+  .errorIcon {
+    color: $error-normal;
+    font-size: 1.25rem;
+    font-weight: bold;
+  }
+
+  p {
+    color: $error-dark;
+    font-weight: 500;
+    margin: 0;
+  }
+}
+
+// Results Section
+.resultsSection {
+  animation: fadeIn 0.8s ease;
+}
+
+// Certificate Actions
+.certificateActions {
+  display: flex;
+  gap: $gap-2;
+  margin-top: $gap-4;
+  flex-wrap: wrap;
+  
+  @include responsive(s) {
+    flex-direction: column;
+  }
+
+  .actionButton {
+    flex: 1;
+    padding: $gap-2 $gap-3;
+    background: $white-normal;
+    border: 2px solid $primary-light;
+    border-radius: 10px;
+    color: $primary-dark;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $gap-1;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      background: $primary-lighten;
+      transform: translateY(-2px);
+      border-color: $primary-normal;
+    }
+    
+    img {
+      filter: invert(24%) sepia(89%) saturate(1584%) hue-rotate(200deg);
+    }
+  }
+}
+
+// Legal Info
+.legalInfo {
+  margin-top: $gap-4;
+  padding: $gap-3;
+  background: $gray-25;
+  border-radius: 12px;
+  border-left: 4px solid $primary-normal;
+
+  h4 {
+    color: $primary-dark;
+    margin-bottom: $gap-2;
+    font-size: 1.125rem;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      padding-left: $gap-2;
+      margin-bottom: $gap-1;
+      position: relative;
+      color: $gray-600;
+      line-height: 1.6;
+
+      &:before {
+        content: "•";
+        color: $primary-normal;
+        font-weight: bold;
+        position: absolute;
+        left: 0;
+      }
+    }
+  }
+}
+
+// Help Section
+.helpSection {
+  .helpCard {
+    background: $white-normal;
+    border-radius: 16px;
+    padding: $gap-4;
+    box-shadow: 0 5px 20px rgba($black-light, 0.05);
+    border: 1px solid $gray-100;
+    
+    @include responsive(m) {
+      padding: $gap-3;
+    }
+
+    h3 {
+      text-align: center;
+      color: $primary-dark;
+      margin-bottom: $gap-3;
+      font-size: 1.5rem;
+    }
+  }
+
+  .helpGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: $gap-3;
+    
+    @include responsive(m) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    @include responsive(s) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .helpItem {
+    text-align: center;
+    padding: $gap-3;
+    background: $gray-25;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-4px);
+      background: $white-light;
+      box-shadow: 0 4px 12px rgba($gray-200, 0.5);
+    }
+
+    .helpNumber {
+      width: 40px;
+      height: 40px;
+      background: $primary-normal;
+      color: $white-normal;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 1.25rem;
+      margin: 0 auto $gap-2;
+    }
+
+    p {
+      color: $gray-600;
+      line-height: 1.6;
+      margin: 0;
+    }
+  }
+}
+
+// Footer
+.footer {
+  margin-top: $gap-6;
+  padding-top: $gap-3;
+  border-top: 1px solid $gray-200;
+  
+  .footerContent {
+    text-align: center;
+  }
+
+  .footerText {
+    color: $gray-600;
+    margin-bottom: $gap-2;
+  }
+
+  .footerLinks {
+    display: flex;
+    justify-content: center;
+    gap: $gap-3;
+    flex-wrap: wrap;
+    
+    a {
+      color: $primary-normal;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        color: $primary-dark;
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+// Animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+// Responsive Utilities
+@include responsive(xs) {
+  .main {
+    .container {
+      width: 100%;
+      padding: 0;
+    }
+  }
+  
+  .validationCard,
+  .helpCard {
+    border-radius: 12px !important;
+  }
+}
+
+// Utility Classes (opcional - para manter consistência)
+.gap-1 { gap: $gap-1; }
+.gap-2 { gap: $gap-2; }
+.gap-3 { gap: $gap-3; }
+.gap-4 { gap: $gap-4; }
+.gap-5 { gap: $gap-5; }
+.gap-6 { gap: $gap-6; }
+
+.primary-darken {
+  color: $primary-darken;
+}
+
+.text-green-500 {
+  color: $success-dark;
+}
+
+.text-red-400 {
+  color: $error-light;
+}
+
+.text-yellow-500 {
+  color: $warning-dark;
+}
+
+.color-white {
+  color: $white-normal;
+}
+
+.color-black {
+  color: $black-light;
+}
+
+.color-primary {
+  color: $primary-normal;
+}
+
+.color-gradient {
+  display: inline-block;
+  background: linear-gradient(224.78deg, $primary-normal 8.12%, $primary-dark 92.21%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.bg-gradient {
+  background: linear-gradient(224.78deg, $primary-normal 8.12%, $primary-dark 92.21%);
+}
+
+.bg-primary {
+  background-color: $white-darken;
+  color: $primary-darken;
+}
+
+// Aplicando algumas classes de utilidade diretamente
+.mt-2 { margin-top: $gap-2 !important; }
+.mb-2 { margin-bottom: $gap-2 !important; }
+.mb-3 { margin-bottom: $gap-3 !important; }
+.mb-4 { margin-bottom: $gap-4 !important; }
+.p-0 { padding: 0 !important; }
+
+// Estilos para os detalhes da API
+.apiDetails {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #007bff;
+
+  h4 {
+    margin-bottom: 1rem;
+    color: #333;
+  }
+}
+
+.detailsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.detailItem {
+  background: white;
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+
+  strong {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #495057;
+    font-size: 0.9rem;
+  }
+
+  span {
+    display: block;
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-bottom: 0.25rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// Status de erro
+.error {
+  background-color: #fff3cd !important;
+  border-color: #ffeaa7 !important;
+  color: #856404 !important;
+}
+
+// Estilos para o container do certificado
+// Estilos para o container do certificado
+.certificateContainer {
+  background: $white-normal;
+  border-radius: 16px;
+  padding: $gap-4;
+  box-shadow: 0 5px 20px rgba($black-light, 0.05);
+  border: 1px solid $gray-100;
+  margin-bottom: $gap-4;
+
+  .certificateHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $gap-3;
+    flex-wrap: wrap;
+    gap: $gap-2;
+
+    h3 {
+      color: $primary-dark;
+      font-size: 1.5rem;
+      margin: 0;
+    }
+  }
+}
+
+// Ações do certificado
+.certificateActions {
+  display: flex;
+  align-items: center;
+  gap: $gap-3;
+  flex-wrap: wrap;
+
+  .pdfButton {
+    padding: $gap-1 $gap-3;
+    background: linear-gradient(224.78deg, $error-normal 8.12%, $error-dark 92.21%);
+    color: $white-normal;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba($error-normal, 0.3);
+    }
+
+    &:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+  }
+
+  .verificationInfo {
+    p {
+      margin: 0;
+      color: $gray-600;
+      font-size: 0.9rem;
+
+      &.smallText {
+        font-size: 0.8rem;
+        color: $gray-500;
+      }
+    }
+  }
+}
+
+// Preview do certificado
+.certificatePreview {
+  background: $white-light;
+  border: 1px solid $gray-200;
+  border-radius: 8px;
+  padding: $gap-2;
+  margin-bottom: $gap-3;
+  overflow: auto;
+  max-height: 600px;
+  position: relative;
+  
+  // Estilos para o conteúdo HTML do certificado
+  > div {
+    width: 1123px;
+    height: 794px;
+    margin: 0 auto;
+    transform-origin: top center;
+    transform: scale(0.8);
+    
+    @include responsive(m) {
+      transform: scale(0.7);
+    }
+    
+    @include responsive(s) {
+      transform: scale(0.6);
+    }
+    
+    @include responsive(xs) {
+      transform: scale(0.5);
+    }
+    
+    // Garantir que a imagem de fundo apareça corretamente
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+  }
+}
+
+// Informações do certificado
+.certificateInfo {
+  background: $gray-25;
+  border-radius: 8px;
+  padding: $gap-3;
+  
+  .infoRow {
+    display: flex;
+    align-items: center;
+    margin-bottom: $gap-2;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+    
+    .infoLabel {
+      flex: 0 0 150px;
+      font-weight: 600;
+      color: $black-light;
+      
+      @include responsive(xs) {
+        flex: 0 0 120px;
+      }
+    }
+    
+    .infoValue {
+      flex: 1;
+      color: $gray-600;
+    }
+  }
+}
+
+// Estilos para os detalhes da API
+.apiDetails {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #007bff;
+
+  h4 {
+    margin-bottom: 1rem;
+    color: #333;
+  }
+}
+
+.detailsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.detailItem {
+  background: white;
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+
+  strong {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #495057;
+    font-size: 0.9rem;
+  }
+
+  span {
+    display: block;
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-bottom: 0.25rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// Legal Info
+.legalInfo {
+  margin-top: $gap-4;
+  padding: $gap-3;
+  background: $gray-25;
+  border-radius: 12px;
+  border-left: 4px solid $primary-normal;
+
+  h4 {
+    color: $primary-dark;
+    margin-bottom: $gap-2;
+    font-size: 1.125rem;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      padding-left: $gap-2;
+      margin-bottom: $gap-1;
+      position: relative;
+      color: $gray-600;
+      line-height: 1.6;
+
+      &:before {
+        content: "•";
+        color: $primary-normal;
+        font-weight: bold;
+        position: absolute;
+        left: 0;
+      }
+    }
+  }
+}
