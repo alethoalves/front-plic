@@ -249,7 +249,73 @@ const Resultado = ({}) => {
           width: 15,
           style: { numFmt: "0.0000" },
         },
+        // Novas colunas de histórico de participação (como datas reais)
+        {
+          header: "Início Participação (mais antigo)",
+          key: "inicioParticipacao",
+          width: 25,
+          style: { numFmt: "dd/mm/yyyy" },
+        },
+        {
+          header: "Status Início Participação",
+          key: "statusInicioParticipacao",
+          width: 20,
+        },
+        {
+          header: "Fim Participação (mais recente)",
+          key: "fimParticipacao",
+          width: 25,
+          style: { numFmt: "dd/mm/yyyy" },
+        },
+        {
+          header: "Status Fim Participação",
+          key: "statusFimParticipacao",
+          width: 20,
+        },
       ];
+      // Helper para extrair o histórico mais antigo e mais recente de uma participação
+      const getHistoricoRange = (participacao) => {
+        // Tenta achar o registro correspondente dentro do planoDeTrabalho.participacoes
+        const plano = participacao.planoDeTrabalho;
+        const participacaoNoPlano =
+          plano?.participacoes?.find((p) => p.id === participacao.id) ||
+          participacao;
+
+        const historico =
+          participacaoNoPlano?.HistoricoStatusParticipacao || [];
+
+        if (!historico || historico.length === 0) {
+          return {
+            inicioParticipacao: null,
+            statusInicioParticipacao: "",
+            fimParticipacao: null,
+            statusFimParticipacao: "",
+          };
+        }
+
+        const ordenado = [...historico].sort(
+          (a, b) => new Date(a.inicio).getTime() - new Date(b.inicio).getTime()
+        );
+
+        const primeiro = ordenado[0];
+        const ultimo = ordenado[ordenado.length - 1];
+
+        // Converte a string ISO para um objeto Date no UTC (00:00:00) para evitar deslocamentos por timezone
+        const toUtcDateOnly = (iso) => {
+          if (!iso) return null;
+          const d = new Date(iso);
+          return new Date(
+            Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())
+          );
+        };
+
+        return {
+          inicioParticipacao: toUtcDateOnly(primeiro?.inicio),
+          statusInicioParticipacao: primeiro?.status || "",
+          fimParticipacao: toUtcDateOnly(ultimo?.inicio),
+          statusFimParticipacao: ultimo?.status || "",
+        };
+      };
 
       // Função para formatar orientadores com CPF
       const formatarOrientadores = (participacao) => {
@@ -361,6 +427,8 @@ const Resultado = ({}) => {
         }
         // Obter dados bancários
         const dadosBancarios = obterDadosBancarios(part);
+        // Extrai histórico (inicio/fim) para esta participação
+        const historicoRange = getHistoricoRange(part);
         return {
           edital: part.inscricao?.edital?.titulo || "",
           planoTrabalho: part.planoDeTrabalho?.titulo || "",
@@ -384,6 +452,11 @@ const Resultado = ({}) => {
           ordemRecebimentoFinal: ordemRecebimentoFinal,
           fontePagadora: fontePagadora,
           notaTotal: part.notaTotal || null,
+          // Campos de histórico adicionados
+          inicioParticipacao: historicoRange.inicioParticipacao,
+          statusInicioParticipacao: historicoRange.statusInicioParticipacao,
+          fimParticipacao: historicoRange.fimParticipacao,
+          statusFimParticipacao: historicoRange.statusFimParticipacao,
         };
       });
 
@@ -420,6 +493,11 @@ const Resultado = ({}) => {
           { name: "Ordem de recebimento de bolsa", filterButton: true },
           { name: "Fonte Pagadora", filterButton: true },
           { name: "Nota Total", filterButton: true },
+          // Cabeçalhos das colunas de histórico
+          { name: "Início Participação (mais antigo)", filterButton: true },
+          { name: "Status Início Participação", filterButton: true },
+          { name: "Fim Participação (mais recente)", filterButton: true },
+          { name: "Status Fim Participação", filterButton: true },
         ],
         rows: dataToExport.map((item) => [
           item.edital,
@@ -442,6 +520,11 @@ const Resultado = ({}) => {
           item.ordemRecebimentoFinal,
           item.fontePagadora,
           item.notaTotal,
+          // Valores das novas colunas de histórico
+          item.inicioParticipacao,
+          item.statusInicioParticipacao,
+          item.fimParticipacao,
+          item.statusFimParticipacao,
         ]),
       });
 
