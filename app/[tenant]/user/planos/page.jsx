@@ -1010,7 +1010,7 @@ const Page = ({ params }) => {
                           ) : (
                             <>
                               <RiFileDownloadLine size={16} />
-                              Emitir Certificado
+                              Emitir Certificadoooo
                             </>
                           )}
                         </Button>

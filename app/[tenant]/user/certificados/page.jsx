@@ -76,7 +76,7 @@ const Page = ({ params }) => {
       try {
         const response = await getRegistroAtividadesByCpf(
           params.tenant,
-          perfil
+          perfil,
         );
         const getAreasResponse = await getAreas(params.tenant);
         setAreas(transformedArray(getAreasResponse));
@@ -84,7 +84,7 @@ const Page = ({ params }) => {
 
         const registrosOrdenados = response.registrosAtividade.sort(
           (a, b) =>
-            new Date(a.atividade.dataInicio) - new Date(b.atividade.dataInicio)
+            new Date(a.atividade.dataInicio) - new Date(b.atividade.dataInicio),
         );
         const grupos = groupByPlanoDeTrabalho(registrosOrdenados);
         setRegistrosAtividadesEditaisVigentes(grupos);
@@ -116,7 +116,7 @@ const Page = ({ params }) => {
       const planoResponse = await updateAreaPlanoDeTrabalho(
         params.tenant,
         planoId,
-        e
+        e,
       );
 
       setRegistrosAtividadesEditaisVigentes((prev) =>
@@ -129,8 +129,8 @@ const Page = ({ params }) => {
                   area: planoResponse?.area.area,
                 },
               }
-            : plano
-        )
+            : plano,
+        ),
       );
 
       setOpenAreaDropdowns((prev) => ({
@@ -209,8 +209,8 @@ const Page = ({ params }) => {
       prev.map((registro) =>
         registro.id === updatedRegistro.id
           ? { ...registro, ...updatedRegistro }
-          : registro
-      )
+          : registro,
+      ),
     );
     closeModalAndResetData();
     toast.current.show({
@@ -304,13 +304,13 @@ const Page = ({ params }) => {
 
       const updatedResponse = await getRegistroAtividadesByCpf(
         params.tenant,
-        perfil
+        perfil,
       );
       setRegistrosAtividadesEditaisVigentes(
         updatedResponse.registrosAtividade.sort(
           (a, b) =>
-            new Date(a.atividade.dataInicio) - new Date(b.atividade.dataInicio)
-        )
+            new Date(a.atividade.dataInicio) - new Date(b.atividade.dataInicio),
+        ),
       );
     } catch (error) {
       console.error("Erro ao aprovar atividade:", error);
@@ -494,7 +494,7 @@ const Page = ({ params }) => {
                                 .filter(
                                   (item) =>
                                     item.tipo === "orientador" ||
-                                    item.tipo === "coorientador"
+                                    item.tipo === "coorientador",
                                 )
                                 .map((item, index) => (
                                   <span
@@ -609,7 +609,7 @@ const Page = ({ params }) => {
                                       className={`${
                                         styles.statusBadge
                                       } ${getStatusBadgeClass(
-                                        atividade.status
+                                        atividade.status,
                                       )}`}
                                     >
                                       {getStatusIcon(atividade.status)}
@@ -625,11 +625,11 @@ const Page = ({ params }) => {
                                     />
                                     Período:{" "}
                                     {formatDateForDisplay(
-                                      atividade.atividade.dataInicio
+                                      atividade.atividade.dataInicio,
                                     )}{" "}
                                     a{" "}
                                     {formatDateForDisplay(
-                                      atividade.atividade.dataFinal
+                                      atividade.atividade.dataFinal,
                                     )}
                                   </p>
                                 </div>
@@ -648,7 +648,7 @@ const Page = ({ params }) => {
                               {/* Ações */}
                               <div className={styles.atividadeActions}>
                                 {(isWithinEditPeriod(
-                                  atividade.atividade.dataFinal
+                                  atividade.atividade.dataFinal,
                                 ) ||
                                   atividade.atividade
                                     .permitirEntregaForaPrazo) && (
