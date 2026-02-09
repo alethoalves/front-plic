@@ -65,7 +65,7 @@ const Page = ({ params }) => {
       try {
         const response = await getRegistroAtividadesByCpf(
           params.tenant,
-          perfil
+          perfil,
         );
         const getAreasResponse = await getAreas(params.tenant);
         setAreas(transformedArray(getAreasResponse));
@@ -73,7 +73,7 @@ const Page = ({ params }) => {
 
         const registrosOrdenados = response.registrosAtividade.sort(
           (a, b) =>
-            new Date(a.atividade.dataInicio) - new Date(b.atividade.dataInicio)
+            new Date(a.atividade.dataInicio) - new Date(b.atividade.dataInicio),
         );
         const grupos = groupByPlanoDeTrabalho(registrosOrdenados);
         setRegistrosAtividadesEditaisVigentes(grupos);
@@ -100,7 +100,7 @@ const Page = ({ params }) => {
       const planoResponse = await updateAreaPlanoDeTrabalho(
         params.tenant,
         planoId,
-        e
+        e,
       );
 
       // Atualiza o estado local sem precisar recarregar tudo
@@ -114,8 +114,8 @@ const Page = ({ params }) => {
                   area: planoResponse?.area.area,
                 },
               }
-            : plano
-        )
+            : plano,
+        ),
       );
       // Fecha o dropdown após a atualização bem-sucedida
       setOpenAreaDropdowns((prev) => ({
@@ -162,8 +162,8 @@ const Page = ({ params }) => {
       prev.map((registro) =>
         registro.id === updatedRegistro.id
           ? { ...registro, ...updatedRegistro }
-          : registro
-      )
+          : registro,
+      ),
     );
     closeModalAndResetData();
     toast.current.show({
@@ -254,13 +254,13 @@ const Page = ({ params }) => {
 
       const updatedResponse = await getRegistroAtividadesByCpf(
         params.tenant,
-        perfil
+        perfil,
       );
       setRegistrosAtividadesEditaisVigentes(
         updatedResponse.registrosAtividade.sort(
           (a, b) =>
-            new Date(a.atividade.dataInicio) - new Date(b.atividade.dataInicio)
-        )
+            new Date(a.atividade.dataInicio) - new Date(b.atividade.dataInicio),
+        ),
       );
     } catch (error) {
       console.error("Erro ao aprovar atividade:", error);
@@ -391,7 +391,7 @@ const Page = ({ params }) => {
                                   .filter(
                                     (item) =>
                                       item.tipo === "orientador" ||
-                                      item.tipo === "coorientador"
+                                      item.tipo === "coorientador",
                                   )
                                   .map((item, index) => (
                                     <p className={styles.person} key={index}>
@@ -509,11 +509,11 @@ const Page = ({ params }) => {
                                   <p className={styles.atividadePeriodo}>
                                     Período:{" "}
                                     {formatDateForDisplay(
-                                      atividade.atividade.dataInicio
+                                      atividade.atividade.dataInicio,
                                     )}{" "}
                                     a{" "}
                                     {formatDateForDisplay(
-                                      atividade.atividade.dataFinal
+                                      atividade.atividade.dataFinal,
                                     )}
                                   </p>
                                 </div>
@@ -528,7 +528,7 @@ const Page = ({ params }) => {
                                 </div>
                               )}
                               {isWithinEditPeriod(
-                                atividade.atividade.dataFinal
+                                atividade.atividade.dataFinal,
                               ) ||
                                 (atividade.atividade
                                   .permitirEntregaForaPrazo && (

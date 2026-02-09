@@ -89,11 +89,12 @@
 }
 
 .errorMsg {
-    display: inline-block;
-        color: $error-light;
-        text-align: right;
-        font-size: 14px;
-    }
+    display: block;
+    color: $error-light;
+    text-align: left;
+    font-size: 12px;
+    margin-top: $gap-1;
+}
 
 .optionsListContainer {
   position: relative;

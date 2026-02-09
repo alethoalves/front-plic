@@ -99,12 +99,12 @@ const Page = ({ params }) => {
             plano.registroAtividades?.sort(
               (a, b) =>
                 new Date(a.atividade.dataInicio) -
-                new Date(b.atividade.dataInicio)
+                new Date(b.atividade.dataInicio),
             ) || [],
         }));
 
         setRegistrosAtividadesEditaisVigentes(
-          planosComAtividadesOrdenadas || []
+          planosComAtividadesOrdenadas || [],
         );
         console.log(planosComAtividadesOrdenadas);
         // Inicializar todos os accordions como fechados
@@ -162,7 +162,7 @@ const Page = ({ params }) => {
         params.tenant,
         editingTitulo.id,
         novoTitulo.trim(),
-        justificativa.trim()
+        justificativa.trim(),
       );
 
       // Atualizar o estado local com o novo título - CORRIGIDO
@@ -173,8 +173,8 @@ const Page = ({ params }) => {
                 ...plano,
                 titulo: resultado.dados.tituloNovo, // Alterado para resultado.dados.tituloNovo
               }
-            : plano
-        )
+            : plano,
+        ),
       );
 
       toast.current.show({
@@ -203,7 +203,7 @@ const Page = ({ params }) => {
       const planoResponse = await updateAreaPlanoDeTrabalho(
         params.tenant,
         planoId,
-        e
+        e,
       );
 
       setRegistrosAtividadesEditaisVigentes((prev) =>
@@ -217,8 +217,8 @@ const Page = ({ params }) => {
                   grandeArea: planoResponse?.area?.grandeArea,
                 },
               }
-            : plano
-        )
+            : plano,
+        ),
       );
 
       setOpenAreaDropdowns((prev) => ({
@@ -276,7 +276,7 @@ const Page = ({ params }) => {
     return participacoes.filter(
       (participacao) =>
         participacao.tipo === "aluno" &&
-        participacao.statusParticipacao === "ATIVA"
+        participacao.statusParticipacao === "ATIVA",
     );
   };
 
@@ -286,7 +286,7 @@ const Page = ({ params }) => {
       (participacao) =>
         (participacao.tipo === "orientador" ||
           participacao.tipo === "coorientador") &&
-        participacao.statusParticipacao === "APROVADA"
+        participacao.statusParticipacao === "APROVADA",
     );
   };
 
@@ -298,9 +298,9 @@ const Page = ({ params }) => {
         registroAtividades: plano.registroAtividades.map((atividade) =>
           atividade.id === updatedRegistro.id
             ? { ...atividade, ...updatedRegistro }
-            : atividade
+            : atividade,
         ),
-      }))
+      })),
     );
     closeModalAndResetData();
     toast.current.show({
@@ -386,9 +386,9 @@ const Page = ({ params }) => {
           registroAtividades: plano.registroAtividades.map((atividade) =>
             atividade.id === registro.id
               ? { ...atividade, validadoOrientador: true }
-              : atividade
+              : atividade,
           ),
-        }))
+        })),
       );
     } catch (error) {
       console.error("Erro ao aprovar atividade:", error);
@@ -412,10 +412,16 @@ const Page = ({ params }) => {
         </div>
       );
     }
+    // Ordena cópia das respostas pela propriedade `campo.ordem`
+    const respostasOrdenadas = [...respostas].sort((a, b) => {
+      const ordemA = a?.campo?.ordem ?? 0;
+      const ordemB = b?.campo?.ordem ?? 0;
+      return ordemA - ordemB;
+    });
 
     return (
       <div className={styles.respostasContainer}>
-        {respostas.map((resposta, index) => (
+        {respostasOrdenadas.map((resposta, index) => (
           <div key={`resposta-${index}`} className={styles.respostaItem}>
             <div className={styles.respostaHeader}>
               <h6>{resposta.campo?.label}</h6>
@@ -635,7 +641,7 @@ const Page = ({ params }) => {
       const planoResponse = await updateAreaPlanoDeTrabalho(
         params.tenant,
         editingArea.id,
-        novaArea
+        novaArea,
       );
 
       // Atualizar o estado local com a nova área
@@ -650,8 +656,8 @@ const Page = ({ params }) => {
                   grandeArea: planoResponse?.area?.grandeArea,
                 },
               }
-            : plano
-        )
+            : plano,
+        ),
       );
 
       toast.current.show({
@@ -862,7 +868,7 @@ const Page = ({ params }) => {
                                     {item.user.nome} (status:{" "}
                                     {item.statusParticipacao})
                                   </span>
-                                )
+                                ),
                               )}
                             </div>
                           </div>
@@ -1031,7 +1037,7 @@ const Page = ({ params }) => {
                                         className={`${
                                           styles.statusBadge
                                         } ${getStatusBadgeClass(
-                                          atividade.status
+                                          atividade.status,
                                         )}`}
                                       >
                                         {getStatusIcon(atividade.status)}
@@ -1047,11 +1053,11 @@ const Page = ({ params }) => {
                                       />
                                       Período:{" "}
                                       {formatDateForDisplay(
-                                        atividade.atividade.dataInicio
+                                        atividade.atividade.dataInicio,
                                       )}{" "}
                                       a{" "}
                                       {formatDateForDisplay(
-                                        atividade.atividade.dataFinal
+                                        atividade.atividade.dataFinal,
                                       )}
                                     </p>
                                   </div>
@@ -1070,7 +1076,7 @@ const Page = ({ params }) => {
                                 {/* Ações */}
                                 <div className={styles.atividadeActions}>
                                   {(isWithinEditPeriod(
-                                    atividade.atividade.dataFinal
+                                    atividade.atividade.dataFinal,
                                   ) ||
                                     atividade.atividade
                                       .permitirEntregaForaPrazo) && (

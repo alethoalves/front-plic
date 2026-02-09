@@ -51,7 +51,7 @@ const EditalAtividades = ({ params }) => {
         // 1a) Buscar todas as atividades do ano
         const respAtividades = await getAtividadesByAno(
           params.tenant,
-          params.ano
+          params.ano,
         );
         setAtividades(respAtividades || []);
 
@@ -62,7 +62,9 @@ const EditalAtividades = ({ params }) => {
         // 1c) Buscar todos os formulários disponíveis
         const respFormularios = await getFormularios(params.tenant);
         const listaDeFormularios = Array.isArray(respFormularios)
-          ? respFormularios.filter((f) => f.tipo === "atividade")
+          ? respFormularios.filter(
+              (f) => f.tipo === "atividade" || f.tipo === "atividadeAluno",
+            )
           : [];
         setFormulariosDoAno(listaDeFormularios);
       } catch (err) {
@@ -220,7 +222,7 @@ const EditalAtividades = ({ params }) => {
                     <Item
                       titulo={atividade.titulo}
                       subtitulo={`De ${formatDateForDisplay(
-                        atividade.dataInicio
+                        atividade.dataInicio,
                       )} a ${formatDateForDisplay(atividade.dataFinal)}`}
                       //descricao={atividade.descricao}
                       handleEdit={() => openModalEditar(atividade)}

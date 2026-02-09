@@ -87,7 +87,7 @@ const Formularios = ({ params, atividades = false }) => {
       setFormularioToDelete(null);
     } catch (error) {
       setErrorDelete(
-        error.response?.data?.message ?? "Erro na conexão com o servidor."
+        error.response?.data?.message ?? "Erro na conexão com o servidor.",
       );
     }
   }, [params.tenant, formularioToDelete, formularios]);
@@ -115,8 +115,8 @@ const Formularios = ({ params, atividades = false }) => {
             ? "Editar formulário de atividade"
             : "Editar formulário"
           : atividades
-          ? "Nova formulário de atividade"
-          : "Novo formulário"}
+            ? "Nova formulário de atividade"
+            : "Novo formulário"}
       </h4>
       <p>
         {formularioToEdit
@@ -147,7 +147,9 @@ const Formularios = ({ params, atividades = false }) => {
   // Função de filtragem principal
   const getFilteredFormularios = useCallback(() => {
     if (atividades) {
-      return formularios.filter((f) => f.tipo === "atividade");
+      return formularios.filter(
+        (f) => f.tipo === "atividadeAluno" || f.tipo === "atividade",
+      );
     } else {
       return formularios.filter((f) => f.tipo !== "atividade");
     }
@@ -159,7 +161,7 @@ const Formularios = ({ params, atividades = false }) => {
 
     return searchTerm
       ? baseList.filter((formulario) =>
-          formulario.titulo.toLowerCase().includes(searchTerm.toLowerCase())
+          formulario.titulo.toLowerCase().includes(searchTerm.toLowerCase()),
         )
       : baseList;
   }, [searchTerm, getFilteredFormularios]);

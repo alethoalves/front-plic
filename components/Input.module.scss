@@ -90,7 +90,8 @@
     .errorMsg{
         color: $error-light;
         text-align: left;
-        font-size: 14px;
+        font-size: 12px;
+        margin-top: $gap-1;
     }
     input.inputError{
         border: 1px solid $error-light;

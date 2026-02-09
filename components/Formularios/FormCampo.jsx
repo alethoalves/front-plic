@@ -48,7 +48,7 @@ const FormCampo = ({
       setValue("descricao", initialData.descricao);
       setValue("tipo", initialData.tipo || null);
       setValue("tipoFile", initialData.tipoFile);
-      setValue("maxChar", initialData.maxChar.toString());
+      setValue("maxChar", initialData?.maxChar?.toString());
       setValue("obrigatorio", initialData.obrigatorio ? "true" : "false");
       const optionLabels =
         initialData.opcoes?.map((option) => option.label) || null;
@@ -73,7 +73,7 @@ const FormCampo = ({
     } catch (error) {
       console.error("Error:", error);
       setError(
-        error.response?.data?.message ?? "Erro na conexão com o servidor."
+        error.response?.data?.message ?? "Erro na conexão com o servidor.",
       );
     } finally {
       setLoading(false);
@@ -131,6 +131,8 @@ const FormCampo = ({
             { label: "Texto longo", value: "textLong" },
             //{ label: "Palavras-chave", value: "flag" },
             //{ label: "Seleção", value: "select" },
+            { label: "Seleção", value: "select" },
+            { label: "Multisseleção", value: "multiselect" },
             { label: "Arquivo", value: "arquivo" },
             { label: "Link", value: "link" },
           ]}

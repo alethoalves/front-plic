@@ -1,7 +1,7 @@
 "use client";
 
 //HOOKS
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -34,7 +34,7 @@ const FormRegistroAtividadeCreateOrEdit = ({
   const [formularioEdital, setFormularioEdital] = useState(null);
   const [errorDelete, setErrorDelete] = useState();
   const toast = useRef();
-  //DEFINE O SCHEMA DO PLANO DE TRABALHO
+  const previousValuesRef = useRef({});
   // 1) dados vindos do backend
   const campos = formularioEdital?.campos ?? [];
 
@@ -58,6 +58,7 @@ const FormRegistroAtividadeCreateOrEdit = ({
     setValue,
     reset,
     watch,
+    getValues,
   } = useForm({
     resolver: zodResolver(planoDeTrabalhoSchema),
     defaultValues: {
@@ -73,7 +74,7 @@ const FormRegistroAtividadeCreateOrEdit = ({
         console.log(initialData);
       } catch (error) {
         setErrorDelete(
-          error.response?.data?.message ?? "Erro na conexão com o servidor."
+          error.response?.data?.message ?? "Erro na conexão com o servidor.",
         );
       } finally {
         setLoading(false);
@@ -110,9 +111,32 @@ const FormRegistroAtividadeCreateOrEdit = ({
       const dynamicValues = { camposDinamicos: {} };
       if (initialData.respostas && Array.isArray(initialData.respostas)) {
         initialData.respostas.forEach((resposta) => {
-          // Usa a mesma chave definida nos inputs: "camposDinamicos.campo_{campoId}"
-          dynamicValues[`camposDinamicos.campo_${resposta.campoId}`] =
-            resposta.value;
+          // Encontra o campo correspondente para verificar o tipo
+          const campo = formularioEdital.campos?.find(
+            (c) => c.id === resposta.campoId,
+          );
+
+          let value = resposta.value;
+
+          // Para multiselect, tenta fazer o parse do JSON string
+          if (campo?.tipo === "multiselect") {
+            try {
+              // Se for uma string JSON, faz o parse
+              if (typeof value === "string" && value.startsWith("[")) {
+                value = JSON.parse(value);
+              } else if (typeof value === "string") {
+                // Se for uma string simples, converte para array
+                value = [value];
+              } else if (!Array.isArray(value)) {
+                value = [];
+              }
+            } catch (e) {
+              // Se falhar no parse, trata como string única
+              value = typeof value === "string" ? [value] : [];
+            }
+          }
+
+          dynamicValues[`camposDinamicos.campo_${resposta.campoId}`] = value;
         });
       }
 
@@ -125,6 +149,106 @@ const FormRegistroAtividadeCreateOrEdit = ({
       setLoading(false);
     }
   }, [initialData, formularioEdital, reset]);
+
+  /**
+   * Verifica se uma condição é atingida dinamicamente
+   */
+  const verificaCondicaoDinamica = (valor, condicao, valores) => {
+    const valorArray = Array.isArray(valor) ? valor : [valor];
+
+    switch (condicao) {
+      case "IGUAL":
+        return valorArray.some((v) => valores.includes(v));
+      case "DIFERENTE":
+        return !valorArray.some((v) => valores.includes(v));
+      case "CONTÉM":
+        return valorArray.some((v) =>
+          v && typeof v === "string"
+            ? valores.some((val) => v.toLowerCase().includes(val.toLowerCase()))
+            : false,
+        );
+      case "NÃO_CONTÉM":
+        return !valorArray.some((v) =>
+          v && typeof v === "string"
+            ? valores.some((val) => v.toLowerCase().includes(val.toLowerCase()))
+            : false,
+        );
+      case "VAZIO":
+        return (
+          !valor || (Array.isArray(valor) && valor.length === 0) || valor === ""
+        );
+      case "NÃO_VAZIO":
+        return (
+          valor && (Array.isArray(valor) ? valor.length > 0 : valor !== "")
+        );
+      case "MAIOR_QUE":
+        return Number(valor) > Number(valores[0]);
+      case "MENOR_QUE":
+        return Number(valor) < Number(valores[0]);
+      default:
+        return true;
+    }
+  };
+
+  /**
+   * Retorna o valor padrão para um campo baseado em seu tipo
+   */
+  const getDefaultValueForField = (campoId, campos) => {
+    const campo = campos?.find((c) => c.id === campoId);
+    if (!campo) return undefined;
+
+    switch (campo.tipo) {
+      case "multiselect":
+        return [];
+      case "select":
+      case "text":
+      case "textLong":
+        return "";
+      case "number":
+        return undefined;
+      case "date":
+        return "";
+      case "arquivo":
+        return undefined;
+      default:
+        return undefined;
+    }
+  };
+
+  // Remove o useEffect que monitora campos com regras
+  // Isso será tratado no renderDynamicFields com onChange handlers
+
+  /**
+   * Processa as regras e reseta campos alvo quando necessário
+   */
+  const handleFieldChangeWithRules = useCallback(
+    (campoId, novoValor) => {
+      if (!formularioEdital) return;
+
+      const campo = formularioEdital.campos?.find((c) => c.id === campoId);
+      if (!campo || !campo.regras || campo.regras.length === 0) return;
+
+      campo.regras.forEach((regra) => {
+        const condicaoAtingida = verificaCondicaoDinamica(
+          novoValor,
+          regra.condicao,
+          regra.valores,
+        );
+
+        // Se a ação é MOSTRAR e a condição NÃO foi atingida, reseta os campos alvo
+        if (regra.acao === "MOSTRAR" && !condicaoAtingida) {
+          regra.camposAlvo.forEach((campoAlvoId) => {
+            const defaultValue = getDefaultValueForField(
+              campoAlvoId,
+              formularioEdital.campos,
+            );
+            setValue(`camposDinamicos.campo_${campoAlvoId}`, defaultValue);
+          });
+        }
+      });
+    },
+    [formularioEdital, setValue],
+  );
 
   // Submete o formulário
   const handleFormSubmit = async (data) => {
@@ -157,7 +281,11 @@ const FormRegistroAtividadeCreateOrEdit = ({
               formData.append(`camposDinamicos.${key}`, file);
             });
           }
-          // Caso 4: Valor normal (texto, número, etc.)
+          // Caso 4: É um array (multiselect) - converte para JSON string
+          else if (Array.isArray(value)) {
+            formData.append(`camposDinamicos.${key}`, JSON.stringify(value));
+          }
+          // Caso 5: Valor normal (texto, número, etc.)
           else {
             formData.append(`camposDinamicos.${key}`, value);
           }
@@ -167,7 +295,7 @@ const FormRegistroAtividadeCreateOrEdit = ({
       const registroAtividade = await submissaoAtividade(
         tenantSlug,
         formData,
-        initialData?.id
+        initialData?.id,
       );
 
       if (!registroAtividade?.id) {
@@ -205,14 +333,15 @@ const FormRegistroAtividadeCreateOrEdit = ({
     >
       <Toast ref={toast} />
       <div className={`${styles.conteudo}`}>
-        <div className={`${styles.camposDinamicos}`}>
+        <div className={`${styles.camposDinamicos} `}>
           {renderDynamicFields(
             formularioEdital,
             control,
             loading,
             register,
             errors,
-            watch
+            watch,
+            handleFieldChangeWithRules,
           )}
         </div>
       </div>

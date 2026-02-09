@@ -29,6 +29,17 @@
 .p-multiselect-token{
     padding: 4px 0 4px $gap-2;
     margin-right: $gap-1;
+    max-width: 89px;
+    box-sizing: border-box;
+    overflow: hidden; /* garante que conteúdo não vaze do token */
+    vertical-align: middle;
+}
+.p-multiselect-token-label{
+    display: inline-block;
+    max-width: 100%; /* respeita o max-width do token pai */
+    overflow: hidden;
+    //text-overflow: ellipsis; /* mostra reticências quando cortar */
+    white-space: nowrap; /* força truncamento em uma linha */
 }
 .p-multiselect-token svg{
     margin-right: $gap-1;
