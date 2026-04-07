@@ -31,13 +31,13 @@ const ParticipacaoController = ({
       // Chamar a função para validar a participação
       await handleValidateParticipacao(tenant, newParticipacao);
     },
-    [setInscricao]
+    [setInscricao],
   );
   const handleValidateParticipacao = async (tenantSlug, newParticipacao) => {
     try {
       const validatedParticipacao = await validarParticipacao(
         tenantSlug,
-        newParticipacao?.id
+        newParticipacao?.id,
       );
       if (validatedParticipacao) {
         const response = await getInscricaoUserById(tenant, inscricaoSelected);

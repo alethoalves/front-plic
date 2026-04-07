@@ -7,12 +7,18 @@ import {
   RiDeleteBinLine,
   RiExternalLinkLine,
   RiFileExcelLine,
+  RiSave2Line,
 } from "@remixicon/react";
 import styles from "./EditarParticipacao.module.scss";
 import NoData from "../NoData";
 import ParticipacaoForm from "../Formularios/ParticipacaoForm";
 import CPFVerificationForm from "../Formularios/CPFVerificationForm";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { createDynamicSchema } from "@/lib/createDynamicSchema";
+import { renderDynamicFields } from "@/lib/renderDynamicFields";
 import generateLattesText from "@/lib/generateLattesText";
 import FileInput from "../FileInput";
 import { deleteParticipacao } from "@/app/api/client/participacao";
@@ -39,6 +45,62 @@ const EditarParticipacao = ({
   const [deletingId, setDeletingId] = useState(null); // ID da participação sendo deletada
   const [errorMessages, setErrorMessages] = useState({});
   const [editalInfo, setEditalInfo] = useState(null);
+  const [loadingForm, setLoadingForm] = useState(false);
+  const [errorForm, setErrorForm] = useState("");
+
+  // Define os campos a serem exibidos com base no tipo de participação
+  const getCamposByTipoParticipacao = () => {
+    switch (tipoParticipacao) {
+      case "orientador":
+        return camposFormOrientador;
+      case "coorientador":
+        return camposFormCoorientador;
+      case "aluno":
+        return camposFormAluno;
+      default:
+        return [];
+    }
+  };
+
+  const campos = getCamposByTipoParticipacao();
+
+  const participacaoSchema = useMemo(
+    () =>
+      z.object({
+        camposDinamicos: createDynamicSchema(campos || []),
+      }),
+    [campos],
+  );
+
+  const {
+    register,
+    control,
+    formState: { errors },
+    handleSubmit,
+    setValue,
+    reset,
+    watch,
+  } = useForm({
+    resolver: zodResolver(participacaoSchema),
+    defaultValues: {
+      // valores iniciais se necessário
+    },
+  });
+
+  const handleFormSubmit = async (data) => {
+    setLoadingForm(true);
+    setErrorForm("");
+    try {
+      console.log("Dados do formulário:", data);
+      // Chamada fake para API
+      alert("Formulário enviado com sucesso (fake)!");
+    } catch (error) {
+      console.error("Erro ao enviar o formulário:", error);
+      setErrorForm(error.message || "Erro ao enviar o formulário.");
+    } finally {
+      setLoadingForm(false);
+    }
+  };
   const handleFileUpload = async (file, userId) => {
     if (!file) {
       setFileInputErrors((prev) => ({
@@ -80,7 +142,7 @@ const EditarParticipacao = ({
           participacoes: prevState.participacoes.map((participacao) =>
             participacao.id === updatedParticipacao.id
               ? { ...participacao, ...updatedParticipacao }
-              : participacao
+              : participacao,
           ),
         }));
 
@@ -112,7 +174,7 @@ const EditarParticipacao = ({
 
   const handleDeleteParticipacao = async (idParticipacao) => {
     const confirmed = window.confirm(
-      "Tem certeza que deseja excluir esta participação?"
+      "Tem certeza que deseja excluir esta participação?",
     );
     if (!confirmed) return;
 
@@ -125,7 +187,7 @@ const EditarParticipacao = ({
       setInscricao((prevState) => ({
         ...prevState,
         participacoes: prevState.participacoes.filter(
-          (participacao) => participacao?.id !== idParticipacao
+          (participacao) => participacao?.id !== idParticipacao,
         ),
       }));
     } catch (error) {
@@ -150,7 +212,7 @@ const EditarParticipacao = ({
           participacoes: prevState.participacoes.map((participacao) =>
             participacao.id === updatedParticipacao.id
               ? { ...participacao, ...updatedParticipacao }
-              : participacao
+              : participacao,
           ),
         };
       });
@@ -168,7 +230,7 @@ const EditarParticipacao = ({
         console.error("Erro ao validar participação:", error);
       }
     },
-    [setInscricao, tenant]
+    [setInscricao, tenant],
   );
 
   useEffect(() => {
@@ -182,28 +244,28 @@ const EditarParticipacao = ({
         if (response.edital.formOrientadorId) {
           const responseFormOrientador = await getFormulario(
             tenant,
-            response.edital.formOrientadorId
+            response.edital.formOrientadorId,
           );
           setCamposFormOrientador(
-            responseFormOrientador.campos.sort((a, b) => a.ordem - b.ordem)
+            responseFormOrientador.campos.sort((a, b) => a.ordem - b.ordem),
           );
         }
         if (response.edital.formCoorientadorId) {
           const responseFormCoorientador = await getFormulario(
             tenant,
-            response.edital.formCoorientadorId
+            response.edital.formCoorientadorId,
           );
           setCamposFormCoorientador(
-            responseFormCoorientador.campos.sort((a, b) => a.ordem - b.ordem)
+            responseFormCoorientador.campos.sort((a, b) => a.ordem - b.ordem),
           );
         }
         if (response.edital.formAlunoId) {
           const responseFormAluno = await getFormulario(
             tenant,
-            response.edital.formAlunoId
+            response.edital.formAlunoId,
           );
           setCamposFormAluno(
-            responseFormAluno.campos.sort((a, b) => a.ordem - b.ordem)
+            responseFormAluno.campos.sort((a, b) => a.ordem - b.ordem),
           );
         }
       } catch (error) {
@@ -214,21 +276,6 @@ const EditarParticipacao = ({
     };
     fetchData();
   }, [tenant, participacaoInfo, inscricaoSelected]);
-  // Define os campos a serem exibidos com base no tipo de participação
-  const getCamposByTipoParticipacao = () => {
-    switch (tipoParticipacao) {
-      case "orientador":
-        return camposFormOrientador;
-      case "coorientador":
-        return camposFormCoorientador;
-      case "aluno":
-        return camposFormAluno;
-      default:
-        return [];
-    }
-  };
-
-  const campos = getCamposByTipoParticipacao();
   return (
     <div className={styles.orientador}>
       <div className={styles.label}>
@@ -266,7 +313,7 @@ const EditarParticipacao = ({
               {generateLattesText(
                 participacaoInfo.user.cvLattes[
                   participacaoInfo.user.cvLattes?.length - 1
-                ]?.url
+                ]?.url,
               )}
             </a>
           </div>
@@ -292,23 +339,33 @@ const EditarParticipacao = ({
             Preencha os campos abaixo para o tipo:{" "}
             {tipoParticipacao.toUpperCase()}
           </h6>
-          <div className={`${styles.campos} mt-2`}>
-            {campos?.map((campo, index) => (
-              <Campo
-                perfil="participante"
-                readOnly={false}
-                key={campo.id}
-                schema={campo}
-                camposForm={campos}
-                respostas={participacaoInfo?.respostas}
-                tenantSlug={tenant}
-                participacaoId={participacaoInfo?.id}
-                onSuccess={handleCreateOrEditSuccess}
-                loading={loading}
-                setLoading={setLoading}
-              />
-            ))}
-          </div>
+          <form onSubmit={handleSubmit(handleFormSubmit)}>
+            <div className={`${styles.camposDinamicos} mt-2`}>
+              {renderDynamicFields(
+                { campos: campos },
+                control,
+                loadingForm,
+                register,
+                errors,
+                watch,
+              )}
+            </div>
+            <div className={`${styles.btnSubmit} mt-2`}>
+              <Button
+                icon={RiSave2Line}
+                className="btn-primary"
+                type="submit"
+                disabled={loadingForm}
+              >
+                {loadingForm ? "Carregando..." : "Salvar"}
+              </Button>
+              {errorForm && (
+                <div className={`notification notification-error`}>
+                  <p className="p5">{errorForm}</p>
+                </div>
+              )}
+            </div>
+          </form>
         </div>
       )}
       {!loading && (

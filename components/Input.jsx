@@ -38,7 +38,7 @@ const Input = (props) => {
       const newCursorPosition = calculateNewCursorPosition(
         cursorPosition,
         oldValue,
-        inputValue
+        inputValue,
       );
 
       inputElement.value = inputValue;
@@ -62,14 +62,14 @@ const Input = (props) => {
       if (inputValue.length > 9) {
         inputValue = inputValue.replace(
           /(\d{3})\.(\d{3})\.(\d{3})(\d{2})/,
-          "$1.$2.$3-$4"
+          "$1.$2.$3-$4",
         );
       }
 
       const newCursorPosition = calculateNewCursorPosition(
         cursorPosition,
         oldValue,
-        inputValue
+        inputValue,
       );
 
       inputElement.value = inputValue;
@@ -99,7 +99,7 @@ const Input = (props) => {
       const newCursorPosition = calculateNewCursorPosition(
         cursorPosition,
         oldValue,
-        inputValue
+        inputValue,
       );
 
       inputElement.value = inputValue;
@@ -111,6 +111,8 @@ const Input = (props) => {
       return;
     } else if (props.inputType === "file") {
       inputValue = inputElement.files[0];
+    } else if (props.inputType === "number") {
+      inputValue = inputValue.replace(/[^0-9]/g, "");
     }
 
     field.onChange(inputValue);
@@ -161,12 +163,14 @@ const Input = (props) => {
           props.inputType === "password" && showPassword
             ? "text"
             : props.inputType === "password"
-            ? "password"
-            : props.inputType === "checkbox"
-            ? "checkbox"
-            : props.inputType === "file"
-            ? "file"
-            : "text"
+              ? "password"
+              : props.inputType === "checkbox"
+                ? "checkbox"
+                : props.inputType === "file"
+                  ? "file"
+                  : props.inputType === "number"
+                    ? "number"
+                    : "text"
         }
         placeholder={props.placeholder}
         autoFocus={props.autoFocus}
