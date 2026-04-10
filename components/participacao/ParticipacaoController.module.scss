@@ -1,3 +1,89 @@
 @import "/styles/partials/colors";
 @import "/styles/partials/layout";
 @import "/styles/partials/spacing";
+
+.participacaoInfo {
+  display: flex;
+  align-items: flex-start;
+  gap: $gap-3;
+  padding: $gap-3;
+  background: $white-normal;
+  border-radius: $gap-1;
+  border: 1px solid $gray-50;
+  transition: all 0.2s ease;
+  margin-bottom: $gap-3;
+
+  
+
+  .icon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $gray-25;
+    border-radius: $gap-2;
+    transition: all 0.2s ease;
+    @include responsive(xs) {
+        display: none;
+    }
+    svg {
+      width: 24px;
+      height: 24px;
+      color: $gray-500;
+    }
+  }
+
+  .content {
+    flex: 1;
+    
+    h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: $black-light;
+      margin: 0 0 $gap-1 0;
+      line-height: 1.4;
+    }
+
+    .cpf {
+      font-size: 0.875rem;
+      color: $gray-500;
+      margin: 0;
+      line-height: 1.5;
+      font-family: monospace;
+    }
+  }
+}
+
+.tipoBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: $gap-1;
+  padding: $gap-1 $gap-2;
+  background: $gray-25;
+  border-radius: $gap-1;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: $gray-600;
+  margin-top: $gap-2;
+  
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.participacaoInfo {
+  .icon {
+      background: rgba($success-normal, 0.1);
+      svg { color: $success-normal; }
+    }
+    
+    .tipoBadge {
+      background: rgba($success-normal, 0.1);
+      color: $success-dark;
+    }
+  
+    
+}

@@ -29,7 +29,7 @@ const Button = ({
             />
           ) : (
             <>
-              {Icon && <Icon className={`btn-icon ${colorIcon}`} />}
+              {Icon && <Icon className={`btn-icon  ${colorIcon}`} />}
               {children && <p className="p5">{children}</p>}
             </>
           )}

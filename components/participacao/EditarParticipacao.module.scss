@@ -1,41 +1,10 @@
 @import "/styles/partials/colors";
 @import "/styles/partials/layout";
 @import "/styles/partials/spacing";
-
-.orientador{
-    border: 1px solid $gray-50;
-    border-radius: $gap-1;
-    padding: $gap-2;
-    margin-top: $gap-2;
-    box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
-    position: relative;
-    h5{
-        font-size: 21px;
-        margin-bottom: $gap-2;
-    }
-    .label{
-        &:not(:last-child){
-            margin-bottom: $gap-2;
-        }
-        
-
-    }
-    .delete{
-        position: absolute;
-        background-color: $white-darken;
-        top: 0;
-        right: 0;
-        padding: $gap-1;
-        border-top-right-radius: $gap-1;
-        cursor: pointer;
-        transition: ease .3s;
-        color: $primary-dark;
-        &:hover{
-            opacity: 0.7;
-        }
-        
-    }
+.p-stepper{
+    border: 1px solid red;
 }
+
 
 .urlCvLattes{
     display: flex;
@@ -44,7 +13,6 @@
     transition: ease .3s;
     color: $primary-darken;
     &:hover{
-        transform: scale(1.01);
         a{
             color: $primary-darken;
         }
@@ -71,4 +39,487 @@
         padding: $gap-1 $gap-2;
         
     }
+}
+
+
+
+
+// Variáveis adicionais
+$border-radius-md: 12px;
+$border-radius-sm: 8px;
+$transition-default: all 0.3s ease;
+$shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+$shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+$shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+.curriculoStep {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-3;
+  padding: $gap-2;
+}
+
+// Card de informações do CV
+.cvCard {
+  background: linear-gradient(135deg, $primary-normal 0%, $primary-darken 100%);
+  border: none;
+  border-radius: $border-radius-md;
+  overflow: hidden;
+  
+  :global(.p-card-body) {
+    padding: $gap-3;
+  }
+}
+
+.cvHeader {
+  display: flex;
+  align-items: center;
+  gap: $gap-3;
+}
+
+.cvIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  backdrop-filter: blur(10px);
+  
+  svg {
+    color: white;
+  }
+}
+
+.cvInfo {
+  flex: 1;
+  
+  h3 {
+    color: white;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 $gap-1 0;
+  }
+  
+  .cvLink {
+    display: inline-flex;
+    align-items: left;
+    gap: $gap-1;
+    color: rgba(255, 255, 255, 0.95);
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: $transition-default;
+    svg{
+        width: 22px;
+    }
+    &:hover {
+      color: white;
+    }
+  }
+  
+  .noCvText {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.875rem;
+    margin: 0;
+  }
+}
+
+// Card do guia passo a passo
+.guideCard {
+  border: 1px solid $gray-50;
+  border-radius: $border-radius-md;
+  box-shadow: $shadow-sm;
+  transition: $transition-default;
+  
+  &:hover {
+    box-shadow: $shadow-md;
+  }
+  
+  :global(.p-card-body) {
+    padding: $gap-3;
+  }
+}
+
+.guideHeader {
+  margin-bottom: $gap-3;
+  padding-bottom: $gap-2;
+  border-bottom: 2px solid $gray-50;
+  
+  h4 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: $gray-600;
+    margin: 0 0 $gap-1 0;
+  }
+  
+  .guideSubtitle {
+    font-size: 0.875rem;
+    color: $gray-600;
+    margin: 0;
+  }
+}
+
+.stepsList {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-3;
+}
+
+.stepItem {
+  display: flex;
+  gap: $gap-3;
+  padding: $gap-2;
+  background: $white-light;
+  border-radius: $border-radius-sm;
+  transition: $transition-default;
+  
+  &:hover {
+    background: $gray-25;
+  }
+}
+
+.stepNumber {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  background: $primary-normal;
+  color: white;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba($primary-normal, 0.3);
+}
+
+.stepContent {
+  flex: 1;
+  
+  p {
+    margin: 0 0 $gap-2 0;
+    color: $gray-600;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  
+  .stepLink {
+    display: flex;
+    align-items: center;
+    gap: $gap-1;
+    color: $primary-normal;
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: $transition-default;
+    svg{
+        width: 20px;
+    }
+    &:hover {
+      color: $primary-darken;
+    }
+  }
+  
+  .stepLogo {
+    position: relative;
+    width: 30px;
+    height: 30px;
+    margin-right: $gap-1;
+    @include responsive(xs) {
+        display: none;
+    }
+    img{
+        object-fit: contain;
+        object-position: center center;
+    }
+    
+    
+  }
+  
+  .stepActions {
+    display: flex;
+    align-items: center;
+    gap: $gap-2;
+    flex-wrap: wrap;
+    
+    .stepSeparator {
+      color: $gray-400;
+      font-size: 0.75rem;
+    }
+  }
+  
+  .stepImage {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    height: 390px;
+    margin-top: $gap-2;
+    border: 1px solid $gray-50;
+    border-radius: $border-radius-sm;
+    overflow: hidden;
+    background: $gray-25;
+    
+    img {
+      object-fit: contain;
+      object-position: center;
+    }
+  }
+  
+  .fileFormatBadge {
+    display: inline-block;
+    padding: 4px 12px;
+    background: linear-gradient(135deg, $primary-normal 0%, $primary-darken 100%);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 20px;
+    margin-top: $gap-2;
+  }
+}
+
+// Card de upload
+.uploadCard {
+  border: 2px dashed $gray-50;
+  border-radius: $border-radius-md;
+  background: $gray-25;
+  transition: $transition-default;
+  
+  &:hover {
+    border-color: $primary-normal;
+    background: rgba($primary-normal, 0.02);
+  }
+  
+  :global(.p-card-body) {
+    padding: $gap-3;
+  }
+}
+
+.uploadArea {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $gap-2;
+  
+  :global(.file-input) {
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  .loadingWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $gap-2;
+    padding: $gap-2;
+    background: rgba($primary-normal, 0.1);
+    border-radius: $border-radius-sm;
+    
+    span {
+      color: $primary-normal;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+  }
+  
+  
+}
+.updateInfo {
+    display: flex;
+    align-items: center;
+    gap: $gap-1;
+    padding: $gap-1 $gap-2;
+    background: $gray-50;
+    border-radius: $border-radius-sm;
+    font-size: 0.75rem;
+    color: $gray-600;
+    
+    svg {
+      color: $success-normal;
+      width: 22px;
+    }
+  }
+// Footer do step
+.stepFooter {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: $gap-3;
+  margin-top: $gap-2;
+  border-top: 1px solid $gray-50;
+}
+
+// Responsividade
+@media (max-width: 768px) {
+  .curriculoStep {
+    padding: $gap-1;
+  }
+  
+  .stepItem {
+    flex-direction: column;
+  }
+  
+  .stepNumber {
+    align-self: flex-start;
+  }
+  
+  .stepContent {
+    .stepImage {
+      max-width: 100%;
+      height: 160px;
+    }
+  }
+  
+  .cvHeader {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+
+// --- Estilos para o Step de Avaliação (Ficha de Avaliação) ---
+.fichaAvaliacao {
+  padding: $gap-2;
+  
+  @media (max-width: 768px) {
+    padding: $gap-1;
+  }
+}
+
+.avaliacaoCard {
+  border: 1px solid $gray-50;
+  border-radius: $border-radius-md;
+  box-shadow: $shadow-sm;
+  transition: $transition-default;
+  overflow: hidden;
+  
+  &:hover {
+    box-shadow: $shadow-md;
+  }
+
+  :global(.p-card-body) {
+    padding: $gap-4; // Mais espaçamento interno para um ar clean
+    display: flex;
+    flex-direction: column;
+    gap: $gap-3;
+  }
+
+  :global(.p-card-content) {
+    padding: 0;
+  }
+}
+
+.avaliacaoHeader {
+  display: flex;
+  align-items: center;
+  gap: $gap-3;
+  padding-bottom: $gap-3;
+  border-bottom: 1px solid $gray-50;
+  
+  h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: $gray-600;
+    margin: 0 0 2px 0;
+  }
+  
+  .avaliacaoSubtitle {
+    font-size: 0.875rem;
+    color: $primary-normal;
+    font-weight: 500;
+    text-transform: capitalize;
+    margin: 0;
+  }
+}
+
+.avaliacaoIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: rgba($primary-normal, 0.1);
+  border-radius: 12px;
+  
+  svg {
+    color: $primary-normal;
+  }
+}
+
+.avaliacaoContent {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-3;
+  padding: $gap-1 0;
+}
+
+.avaliacaoDescription {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: $gray-600;
+  margin: 0;
+  
+  strong {
+    color: $gray-600;
+    font-weight: 600;
+  }
+}
+
+.avaliacaoInfoBox {
+  display: flex;
+  align-items: flex-start;
+  gap: $gap-2;
+  padding: $gap-3;
+  background: $gray-25;
+  border-radius: $border-radius-sm;
+  border-left: 4px solid $primary-normal;
+  font-size: 0.875rem;
+  color: $gray-600;
+  
+  .infoIcon {
+    font-size: 1.25rem;
+    line-height: 1;
+  }
+}
+
+.btnGerarFicha {
+  margin-top: $gap-2;
+  padding: $gap-2 $gap-4;
+  font-size: 1rem;
+  font-weight: 500;
+  background: $primary-normal;
+  border: none;
+  border-radius: $border-radius-sm;
+  transition: $transition-default;
+  width: fit-content; // Ajusta ao conteúdo
+  
+  &:hover {
+    background: $primary-darken;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba($primary-normal, 0.2);
+  }
+  
+  &:disabled {
+    background: $gray-400;
+    opacity: 0.7;
+  }
+  
+  :global(.p-button-icon) {
+    font-size: 1.1rem;
+  }
+}
+
+.avaliacaoFooter {
+  margin-top: $gap-2;
+  padding-top: $gap-3;
+  border-top: 1px solid $gray-50;
+  display: flex;
+  justify-content: flex-start;
+  
+  :global(.p-button-text) {
+    color: $gray-600;
+    padding-left: 0;
+    
+    &:hover {
+      color: $primary-normal;
+      background: transparent;
+    }
+  }
 }

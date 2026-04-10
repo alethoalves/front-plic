@@ -1,0 +1,113 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+.camposDinamicos {
+    display: flex;
+    flex-direction: column;
+    gap: $gap-2;
+}
+
+.fichaConteudo {
+    display: flex;
+    flex-direction: column;
+    gap: $gap-2;
+}
+
+.grupoItem {
+    margin-bottom: $gap-2;
+    
+    h6 {
+        margin-bottom: $gap-1;
+        font-weight: 600;
+        color: $black-dark;
+    }
+
+    &.level-0 h6 {
+        font-size: 16px;
+        margin-bottom: $gap-2;
+    }
+
+    &.level-1 h6 {
+        font-size: 15px;
+        color: $gray-400;
+    }
+
+    &.level-2 h6 {
+        font-size: 14px;
+        color: $gray-400;
+        font-style: italic;
+    }
+}
+
+.campos {
+    display: flex;
+    flex-direction: column;
+    gap: $gap-2;
+    margin-left: $gap-2;
+    margin-bottom: $gap-1;
+}
+
+.grupos {
+    display: flex;
+    flex-direction: column;
+    gap: $gap-2;
+    margin-top: $gap-1;
+}
+
+.orientador {
+    border: 1px solid $gray-50;
+    border-radius: $gap-1;
+    padding: $gap-2;
+    margin-top: $gap-2;
+    box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+    position: relative;
+
+    h5 {
+        font-size: 21px;
+        margin-bottom: $gap-2;
+    }
+
+    .label {
+        &:not(:last-child) {
+            margin-bottom: $gap-2;
+        }
+    }
+
+    .delete {
+        position: absolute;
+        background-color: $white-darken;
+        top: 0;
+        right: 0;
+        padding: $gap-1;
+        border-top-right-radius: $gap-1;
+        cursor: pointer;
+        transition: ease .3s;
+        color: $primary-dark;
+
+        &:hover {
+            opacity: 0.7;
+        }
+    }
+
+    .btnSubmit {
+        display: flex;
+        flex-direction: column;
+        gap: $gap-1;
+    }
+}
+
+.excluirParticipacao {
+    margin-top: $gap-2;
+}
+
+.errorMsg {
+    background-color: $error-light;
+    border-radius: 4px;
+    margin-top: $gap-1;
+
+    p {
+        color: $white-light;
+        padding: $gap-1 $gap-2;
+    }
+}

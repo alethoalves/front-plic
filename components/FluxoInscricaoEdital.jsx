@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import styles from "./FluxoInscricaoEdital.module.scss";
 import {
   RiAddCircleLine,
@@ -23,9 +23,11 @@ import NoData from "./NoData";
 import PlanoDeTrabalhoController from "./planoDeTrabalho/PlanoDeTrabalhoController";
 import { unlinkProjetoFromInscricao } from "@/app/api/client/projeto";
 import { deletePlanoDeTrabalho } from "@/app/api/client/planoDeTrabalho";
+import { deleteParticipacao } from "@/app/api/client/participacao";
 import Button from "./Button";
 import VerInscricao from "./VerInscricao";
 import { useRouter } from "next/navigation";
+import { Toast } from "primereact/toast";
 
 const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
   // ESTADOS
@@ -49,7 +51,18 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
   const [tipoParticipacao, setTipoParticipacao] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState([]);
+  const [deletingParticipacaoId, setDeletingParticipacaoId] = useState(null);
+  const toast = useRef(null);
   const router = useRouter();
+
+  const showError = (message) => {
+    toast.current.show({
+      severity: "error",
+      summary: "Erro",
+      detail: message,
+      life: 5000,
+    });
+  };
 
   const addProjetoVinculado = (projeto) => {
     setInscricao((prev) => ({
@@ -162,12 +175,12 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
   const handleUnlinkProjeto = async (projetoId) => {
     // Remove o item da listagem localmente imediatamente
     const projetoRemovido = inscricao.InscricaoProjeto.find(
-      (item) => item.projeto.id === projetoId
+      (item) => item.projeto.id === projetoId,
     );
     setInscricao((prev) => ({
       ...prev,
       InscricaoProjeto: prev.InscricaoProjeto.filter(
-        (item) => item.projeto.id !== projetoId
+        (item) => item.projeto.id !== projetoId,
       ),
     }));
     setErrorDelete(null);
@@ -192,12 +205,12 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
   const handleDeletePlanoDeTrabalho = async (planoId) => {
     // Remove o item da listagem localmente imediatamente
     const planoRemovido = inscricao.planosDeTrabalho.find(
-      (item) => item.id === planoId
+      (item) => item.id === planoId,
     );
     setInscricao((prev) => ({
       ...prev,
       planosDeTrabalho: prev.planosDeTrabalho.filter(
-        (item) => item.id !== planoId
+        (item) => item.id !== planoId,
       ),
     }));
     setErrorDelete(null);
@@ -218,10 +231,41 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
       }));
     }
   };
+
+  const handleDeleteParticipacao = async (participacaoId) => {
+    const confirmed = window.confirm(
+      "Tem certeza que deseja excluir esta participação?",
+    );
+    if (!confirmed) return;
+
+    setDeletingParticipacaoId(participacaoId);
+    setErrorDelete(null);
+
+    try {
+      // Chamada para excluir a participação
+      await deleteParticipacao(tenant, participacaoId);
+
+      // Remove o item da listagem apenas após sucesso
+      setInscricao((prev) => ({
+        ...prev,
+        participacoes: prev.participacoes.filter(
+          (item) => item.id !== participacaoId,
+        ),
+      }));
+    } catch (error) {
+      console.error("Erro ao excluir Participação:", error);
+      const errorMessage =
+        error.response?.data?.message || "Erro ao excluir a Participação.";
+      setErrorDelete(errorMessage);
+      showError(errorMessage);
+    } finally {
+      setDeletingParticipacaoId(null);
+    }
+  };
   const updatePlanoDeTrabalhoList = (updatedPlano) => {
     setInscricao((prev) => {
       const existingPlanoIndex = prev.planosDeTrabalho.findIndex(
-        (item) => item.id === updatedPlano.id
+        (item) => item.id === updatedPlano.id,
       );
 
       let updatedPlanosDeTrabalho;
@@ -259,6 +303,7 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
   );
   return (
     <>
+      <Toast ref={toast} position="top-right" />
       {renderModalParticipacao()}
       {renderModalProjeto()}
       {renderModalPlanoDeTrabalho()}
@@ -407,13 +452,39 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
                               <div className={styles.action}>
                                 <RiEyeLine />
                               </div>
+                              <div
+                                className={`${styles.action} ${styles.actionDanger}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteParticipacao(item.id);
+                                }}
+                                style={{
+                                  cursor:
+                                    deletingParticipacaoId === item.id
+                                      ? "not-allowed"
+                                      : "pointer",
+                                  color: "#dc3545",
+                                  opacity:
+                                    deletingParticipacaoId === item.id
+                                      ? 0.6
+                                      : 1,
+                                }}
+                              >
+                                {deletingParticipacaoId === item.id ? (
+                                  <span style={{ fontSize: "12px" }}>
+                                    Excluindo...
+                                  </span>
+                                ) : (
+                                  <RiDeleteBinLine />
+                                )}
+                              </div>
                             </div>
                           </div>
                         ))}
                     </div>
 
                     {inscricao.participacoes?.filter(
-                      (item) => item?.tipo === "orientador"
+                      (item) => item?.tipo === "orientador",
                     ).lenght === 0 && (
                       <div
                         className={styles.addItem}
@@ -487,7 +558,7 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
                                 {inscricao.planosDeTrabalho?.filter(
                                   (i) =>
                                     i.projetoId === item.projetoId ||
-                                    i.projetoId === item.id
+                                    i.projetoId === item.id,
                                 ).length === 0 && (
                                   <div
                                     className={styles.action}
@@ -507,7 +578,7 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
                               ?.filter(
                                 (i) =>
                                   i.projetoId === item.projetoId ||
-                                  i.projetoId === item.id
+                                  i.projetoId === item.id,
                               )
                               .sort((a, b) => a.id - b.id)
                               .map((element) => (
@@ -532,13 +603,14 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
                                       {inscricao.participacoes?.filter(
                                         (item) =>
                                           item?.tipo === "aluno" &&
-                                          item?.planoDeTrabalhoId === element.id
+                                          item?.planoDeTrabalhoId ===
+                                            element.id,
                                       ).length === 0 && (
                                         <div
-                                          className={styles.action}
+                                          className={`${styles.action} `}
                                           onClick={() =>
                                             handleDeletePlanoDeTrabalho(
-                                              element.id
+                                              element.id,
                                             )
                                           }
                                         >
@@ -555,7 +627,7 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
                                           (item) =>
                                             item?.tipo === "aluno" &&
                                             item?.planoDeTrabalhoId ===
-                                              element.id
+                                              element.id,
                                         )
                                         .sort((a, b) => a.id - b.id)
                                         .map((item) => (
@@ -607,7 +679,7 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
                                     {inscricao.participacoes?.filter(
                                       (item) =>
                                         item?.tipo === "aluno" &&
-                                        item?.planoDeTrabalhoId === element.id
+                                        item?.planoDeTrabalhoId === element.id,
                                     ).length <
                                       inscricao.edital.maxAlunosPorPlano && (
                                       <div

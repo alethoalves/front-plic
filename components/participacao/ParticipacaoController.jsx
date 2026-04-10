@@ -7,7 +7,13 @@ import EditarParticipacao from "./EditarParticipacao";
 import { validarParticipacao } from "@/app/api/client/participacao";
 import ParticipacaoFormAluno from "../Formularios/ParticipacaoFormAluno";
 import { getInscricaoUserById } from "@/app/api/client/inscricao";
-
+import styles from "./ParticipacaoController.module.scss";
+import {
+  RiUserLine,
+  RiUserStarLine,
+  RiUserSharedLine,
+  RiGraduationCapLine,
+} from "@remixicon/react";
 const ParticipacaoController = ({
   itemToEdit,
   tenant,
@@ -54,10 +60,35 @@ const ParticipacaoController = ({
     <>
       {participacaoInfo && (
         <>
-          <h4>Detalhes da participação</h4>
-          <div className="mt-2">
-            <p>Verifique se todos os campos estão preenchidos!</p>
+          <div className={styles.participacaoInfo} data-tipo={tipoParticipacao}>
+            <div className={styles.icon}>
+              <RiUserLine />
+            </div>
+
+            <div className={styles.content}>
+              <h4>{participacaoInfo?.user?.nome}</h4>
+
+              <p className={styles.cpf}>
+                CPF:{" "}
+                {participacaoInfo?.user?.cpf?.replace(
+                  /(\d{3})(\d{3})(\d{3})(\d{2})/,
+                  "$1.$2.$3-$4",
+                )}
+              </p>
+
+              <div className={styles.tipoBadge}>
+                {tipoParticipacao === "orientador" && <RiUserStarLine />}
+                {tipoParticipacao === "coorientador" && <RiUserSharedLine />}
+                {tipoParticipacao === "aluno" && <RiGraduationCapLine />}
+                <span>
+                  {tipoParticipacao === "orientador" && "Orientador"}
+                  {tipoParticipacao === "coorientador" && "Coorientador"}
+                  {tipoParticipacao === "aluno" && "Aluno"}
+                </span>
+              </div>
+            </div>
           </div>
+
           <EditarParticipacao
             participacaoInfo={participacaoInfo}
             tenant={tenant}

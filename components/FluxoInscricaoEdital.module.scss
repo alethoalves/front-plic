@@ -268,11 +268,17 @@
             flex: 1;
         }
         .actions{
-            
+            display: flex;
+            gap: $gap-2;
             svg{
                 width: 20px;
                 height: 20px;
                 color: $primary-darken;
+            }
+        }
+        .actionDanger{
+           svg{
+                color: $error-dark;
             }
         }
     }

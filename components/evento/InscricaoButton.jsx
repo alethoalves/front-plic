@@ -142,7 +142,7 @@ export const InscricaoButton = ({ params }) => {
       console.error("Erro ao enviar inscrição:", error);
       showError(
         error.response?.data?.message ||
-          "Erro ao realizar inscrição. Tente novamente."
+          "Erro ao realizar inscrição. Tente novamente.",
       );
     } finally {
       setSubmitting(false);
@@ -164,7 +164,7 @@ export const InscricaoButton = ({ params }) => {
       } catch (error) {
         console.error("Erro ao buscar instituições:", error);
         showError(
-          "Erro ao carregar lista de instituições. Tente novamente mais tarde."
+          "Erro ao carregar lista de instituições. Tente novamente mais tarde.",
         );
       }
     };
@@ -181,7 +181,7 @@ export const InscricaoButton = ({ params }) => {
       } catch (error) {
         console.error("Erro ao buscar dados do evento:", error);
         showError(
-          "Erro ao carregar informações do evento. Tente novamente mais tarde."
+          "Erro ao carregar informações do evento. Tente novamente mais tarde.",
         );
       }
     };
@@ -214,7 +214,7 @@ export const InscricaoButton = ({ params }) => {
       const planosData = await getPlanosOuProjetos(
         data.cpf,
         params.edicao,
-        selectedTenant.value
+        selectedTenant.value,
       );
       setPlanos(planosData.data);
       setType(planosData.type);
@@ -276,7 +276,7 @@ export const InscricaoButton = ({ params }) => {
 
       // Extrai palavras-chave se necessário (opcional)
       const palavrasChaveResposta = registroAtividade.respostas?.find(
-        (r) => r.campo?.label === "Palavras-chaves"
+        (r) => r.campo?.label === "Palavras-chaves",
       );
 
       if (palavrasChaveResposta) {
@@ -330,8 +330,8 @@ export const InscricaoButton = ({ params }) => {
           .filter(
             (p) =>
               !["RECUSADA", "SUBSTITUIDA", "CANCELADA", "INATIVA"].includes(
-                p.statusParticipacao
-              )
+                p.statusParticipacao,
+              ),
           )
           .filter((p) => p.tipo === "aluno")
           .forEach((participacao) => {
@@ -350,8 +350,8 @@ export const InscricaoButton = ({ params }) => {
           .filter(
             (p) =>
               !["RECUSADA", "SUBSTITUIDA", "CANCELADA", "INATIVA"].includes(
-                p.statusParticipacao
-              )
+                p.statusParticipacao,
+              ),
           )
           .filter((p) => p.tipo === "orientador")
           .forEach((participacao) => {
@@ -391,7 +391,6 @@ export const InscricaoButton = ({ params }) => {
       >
         <div className={styles.dialogEventoContent}>
           <h5 className="mb-4">Faça sua inscrição!</h5>
-
           <div className="card">
             <Stepper
               ref={stepperRef}

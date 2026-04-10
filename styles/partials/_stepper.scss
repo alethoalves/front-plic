@@ -18,3 +18,7 @@
     pointer-events: none;
     cursor: default;
   }
+
+.p-stepper-panel-active .p-stepper-number  {
+    background-color: $primary-normal !important;
+ }
