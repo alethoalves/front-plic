@@ -18,6 +18,7 @@ import FileInput from "../FileInput";
 import { deleteParticipacao } from "@/app/api/client/participacao";
 import { getInscricaoUserById } from "@/app/api/client/inscricao";
 import { getFormulario } from "@/app/api/client/formulario";
+import { gerarFichaAvaliacaoParticipacao } from "@/app/api/client/cvLattes";
 import { xmlLattes } from "@/app/api/clientReq";
 import { Stepper } from "primereact/stepper";
 import { StepperPanel } from "primereact/stepperpanel";
@@ -47,7 +48,16 @@ const EditarParticipacao = ({
   const [loadingForm, setLoadingForm] = useState(false);
   const [errorForm, setErrorForm] = useState("");
   const [activeStep, setActiveStep] = useState(0);
+  const [fichaAvaliacao, setFichaAvaliacao] = useState(null);
   const toast = useRef(null);
+
+  // Verifica se participacaoInfo já tem fichaAvaliacao ao carregar
+  useEffect(() => {
+    if (participacaoInfo?.fichaAvaliacao) {
+      setFichaAvaliacao(participacaoInfo.fichaAvaliacao);
+      setActiveStep(2);
+    }
+  }, [participacaoInfo?.fichaAvaliacao]);
 
   const showError = (message) => {
     toast.current.show({
@@ -115,6 +125,26 @@ const EditarParticipacao = ({
       console.error("Erro ao enviar o formulário:", error);
       setErrorForm(error.message || "Erro ao enviar o formulário.");
       showError(error.message || "Erro ao enviar o formulário.");
+    } finally {
+      setLoadingForm(false);
+    }
+  };
+
+  const handleGerarFichaAvaliacao = async () => {
+    setLoadingForm(true);
+    try {
+      const result = await gerarFichaAvaliacaoParticipacao(
+        tenant,
+        participacaoInfo.id,
+      );
+      setFichaAvaliacao(result.fichaAvaliacao);
+      showSuccess("Ficha de avaliação gerada com sucesso!");
+      setActiveStep((prev) => prev + 1);
+    } catch (error) {
+      console.error("Erro ao gerar ficha de avaliação:", error);
+      const errorMessage =
+        error.response?.data?.message || "Erro ao gerar ficha de avaliação.";
+      showError(errorMessage);
     } finally {
       setLoadingForm(false);
     }
@@ -258,7 +288,103 @@ const EditarParticipacao = ({
     },
     [setInscricao, tenant],
   );
+  // Componente recursivo para renderizar grupos de avaliação
+  const GrupoAvaliacao = ({ grupo, nivel = 0 }) => {
+    const [expanded, setExpanded] = useState(false);
 
+    const temItensComResposta =
+      grupo.respostaCampos?.length > 0 ||
+      grupo.grupos?.some(
+        (subGrupo) =>
+          subGrupo.respostaCampos?.length > 0 ||
+          subGrupo.grupos?.some((g) => g.respostaCampos?.length > 0),
+      );
+
+    const getNivelClass = () => {
+      switch (nivel) {
+        case 0:
+          return styles.grupoPrincipal;
+        case 1:
+          return styles.grupoSecundario;
+        default:
+          return styles.grupoTerciario;
+      }
+    };
+
+    return (
+      <div className={`${styles.grupoAvaliacao} ${getNivelClass()}`}>
+        {/* Cabeçalho do Grupo - Layout em Coluna */}
+        <div
+          className={`${styles.grupoHeader} ${temItensComResposta ? styles.clickable : ""}`}
+          onClick={() => temItensComResposta && setExpanded(!expanded)}
+        >
+          <div className={styles.grupoHeaderTop}>
+            {temItensComResposta && (
+              <i
+                className={`pi ${expanded ? "pi-chevron-down" : "pi-chevron-right"} ${styles.expandIcon}`}
+              />
+            )}
+            <h5 className={styles.grupoLabel}>{grupo.label}</h5>
+          </div>
+
+          <div className={styles.grupoHeaderBottom}>
+            <div className={styles.grupoNota}>
+              <span className={styles.notaObtida}>{grupo.nota || 0}</span>
+              <span className={styles.notaSeparador}>/</span>
+              <span className={styles.notaMaxima}>{grupo.notaMax || 0}</span>
+              <span className={styles.notaPontos}>pontos</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Itens com resposta (respostaCampos) */}
+        {expanded && grupo.respostaCampos?.length > 0 && (
+          <div className={styles.itensResposta}>
+            {grupo.respostaCampos.map((item, idx) => (
+              <div key={idx} className={styles.itemResposta}>
+                <div className={styles.itemHeader}>
+                  <span className={styles.itemIndex}>Item {idx + 1}</span>
+                  <span className={styles.itemNota}>
+                    +
+                    {grupo.notaPorItem ||
+                      (grupo.nota / grupo.respostaCampos.length).toFixed(1)}
+                  </span>
+                </div>
+                <div className={styles.itemCampos}>
+                  {item
+                    .filter(
+                      (campo) =>
+                        campo.value !== undefined &&
+                        campo.value !== null &&
+                        campo.value !== "",
+                    )
+                    .map((campo, campoIdx) => (
+                      <div key={campoIdx} className={styles.campoItem}>
+                        <span className={styles.campoLabel}>{campo.label}</span>
+                        <span className={styles.campoValor}>
+                          {typeof campo.value === "object"
+                            ? JSON.stringify(campo.value)
+                            : String(campo.value)}
+                        </span>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Subgrupos */}
+        {expanded && grupo.grupos?.length > 0 && (
+          <div className={styles.subgrupos}>
+            {grupo.grupos.map((subGrupo, idx) => (
+              <GrupoAvaliacao key={idx} grupo={subGrupo} nivel={nivel + 1} />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -302,7 +428,27 @@ const EditarParticipacao = ({
     };
     fetchData();
   }, [tenant, participacaoInfo, inscricaoSelected]);
+  // Adicione esta função junto com as outras funções do componente
+  const handleWhatsAppContact = () => {
+    const phoneNumber = "5561991651494"; // Formato internacional sem o +
+    const message = encodeURIComponent(
+      `Olá! Identifiquei um possível erro na leitura do meu currículo Lattes para a participação como ${tipoParticipacao}.\n\n` +
+        `ID da Participação: ${participacaoInfo?.id || "N/A"}\n` +
+        `CPF: ${participacaoInfo?.user?.cpf || "N/A"}\n` +
+        `Nome: ${participacaoInfo?.user?.nome || "N/A"}\n\n` +
+        `Por favor, descreva o erro identificado:`,
+    );
 
+    // Detecta se é mobile ou desktop
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+    // URL para WhatsApp (funciona tanto no app quanto no web)
+    const whatsappUrl = isMobile
+      ? `whatsapp://send?phone=${phoneNumber}&text=${message}`
+      : `https://web.whatsapp.com/send?phone=${phoneNumber}&text=${message}`;
+
+    window.open(whatsappUrl, "_blank");
+  };
   return (
     <>
       <Toast ref={toast} position="top-right" />
@@ -514,7 +660,7 @@ const EditarParticipacao = ({
                 />
               </div>
             </StepperPanel>
-            <StepperPanel header={`Avaliação do ${tipoParticipacao}`}>
+            <StepperPanel header={`Gerar Ficha do ${tipoParticipacao}`}>
               <div className={styles.fichaAvaliacao}>
                 <Card className={styles.avaliacaoCard}>
                   {/* Cabeçalho com ícone e título */}
@@ -559,9 +705,9 @@ const EditarParticipacao = ({
                           ? "Processando Currículo..."
                           : "Gerar Ficha de Avaliação"
                       }
-                      onClick={handleFormSubmit} // Certifique-se de que a ação de gerar está vinculada corretamente
+                      onClick={handleGerarFichaAvaliacao}
                       disabled={loadingForm}
-                      loading={loadingForm} // PrimeReact Button suporta prop "loading"
+                      loading={loadingForm}
                     />
                   </div>
 
@@ -573,6 +719,79 @@ const EditarParticipacao = ({
                       className="p-button-text p-button-plain"
                       onClick={() => setActiveStep(0)}
                     />
+                  </div>
+                </Card>
+              </div>
+            </StepperPanel>
+            <StepperPanel header={`Ficha do ${tipoParticipacao}`}>
+              <div className={styles.fichaAvaliacao}>
+                <Card className={styles.fichaCard}>
+                  {/* Cabeçalho com nota total */}
+                  <div className={styles.fichaHeader}>
+                    <div className={styles.fichaHeaderContent}>
+                      <div className={styles.fichaTitleSection}>
+                        <h4>{fichaAvaliacao?.label || "Ficha de Avaliação"}</h4>
+                        <p className={styles.fichaSubtitle}>
+                          {tipoParticipacao.charAt(0).toUpperCase() +
+                            tipoParticipacao.slice(1)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className={styles.notaTotal}>
+                      <span className={styles.notaLabel}>Nota Total</span>
+                      <span className={styles.notaValor}>
+                        {fichaAvaliacao?.nota || 0}
+                        <span className={styles.notaMaximo}>
+                          /{fichaAvaliacao?.notaMax || 0}
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Conteúdo - Grupos de avaliação */}
+                  <div className={styles.fichaContent}>
+                    {fichaAvaliacao?.grupos?.length > 0 ? (
+                      fichaAvaliacao.grupos.map((grupo, index) => (
+                        <GrupoAvaliacao key={index} grupo={grupo} nivel={0} />
+                      ))
+                    ) : (
+                      <div className={styles.fichaVazia}>
+                        <p>Nenhum item de avaliação encontrado</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Botão de Contato WhatsApp */}
+                  <div className={styles.whatsappContactSection}>
+                    <Button
+                      className={styles.whatsappButton}
+                      onClick={handleWhatsAppContact}
+                      icon="pi pi-whatsapp"
+                      label="Identificou algum erro na leitura do lattes? Entre em contato"
+                    />
+                    <p className={styles.whatsappHint}>
+                      Ao clicar, você será direcionado para o WhatsApp com uma
+                      mensagem pré-preenchida
+                    </p>
+                  </div>
+
+                  {/* Rodapé */}
+                  <div className={styles.fichaFooter}>
+                    <Button
+                      label="Atualizar Currículo"
+                      icon="pi pi-arrow-left"
+                      className="p-button-text p-button-plain"
+                      onClick={() => setActiveStep(0)}
+                    />
+                    {campos.length > 0 && (
+                      <Button
+                        label="Próximo"
+                        icon="pi pi-arrow-right"
+                        iconPos="right"
+                        className="btn-primary"
+                        onClick={() => setActiveStep((prev) => prev + 1)}
+                      />
+                    )}
                   </div>
                 </Card>
               </div>

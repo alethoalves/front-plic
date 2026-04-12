@@ -232,7 +232,9 @@ button[type="submit"]:disabled, button:disabled{
 }
 .p-button-icon{
     margin:0 ;//nao incluir nada
-    margin-right: $gap-1;
+}
+.p-button-label{
+    margin-left: $gap-1;
 }
 #popup_menu_left{
     .p-submenu-header{

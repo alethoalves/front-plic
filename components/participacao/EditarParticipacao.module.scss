@@ -5,7 +5,9 @@
     border: 1px solid red;
 }
 
-
+.editarParticipacao{
+    margin-bottom: 50px;
+}
 .urlCvLattes{
     display: flex;
     align-items: center;
@@ -375,13 +377,7 @@ $shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
 
 
 // --- Estilos para o Step de Avaliação (Ficha de Avaliação) ---
-.fichaAvaliacao {
-  padding: $gap-2;
-  
-  @media (max-width: 768px) {
-    padding: $gap-1;
-  }
-}
+
 
 .avaliacaoCard {
   border: 1px solid $gray-50;
@@ -441,6 +437,9 @@ $shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
   svg {
     color: $primary-normal;
   }
+  @include responsive(xs) {
+        display: none;
+    }
 }
 
 .avaliacaoContent {
@@ -476,6 +475,9 @@ $shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
   .infoIcon {
     font-size: 1.25rem;
     line-height: 1;
+    @include responsive(xs){
+        display: none;
+    }
   }
 }
 
@@ -521,5 +523,474 @@ $shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
       color: $primary-normal;
       background: transparent;
     }
+  }
+}
+// --- Estilos para a Ficha de Avaliação (Layout em Coluna) ---
+.fichaCard {
+  border: 1px solid $gray-50;
+  border-radius: $border-radius-md;
+  box-shadow: $shadow-sm;
+  transition: $transition-default;
+  overflow: hidden;
+  width: 100%;
+  
+  &:hover {
+    box-shadow: $shadow-md;
+  }
+
+  :global(.p-card-body) {
+    padding: 0;
+  }
+
+  :global(.p-card-content) {
+    padding: 0;
+  }
+}
+
+.fichaHeader {
+  display: flex;
+  flex-direction: column;
+  padding: $gap-3 $gap-4;
+  background: linear-gradient(135deg, $gray-25 0%, $white-light 100%);
+  border-bottom: 2px solid $gray-50;
+  gap: $gap-2;
+}
+
+.fichaHeaderContent {
+  display: flex;
+  align-items: center;
+  gap: $gap-3;
+}
+
+.fichaIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba($primary-normal, 0.1);
+  border-radius: 10px;
+  flex-shrink: 0;
+  
+  svg {
+    color: $primary-normal;
+  }
+  
+  @include responsive(xs) {
+    display: none;
+  }
+}
+
+.fichaTitleSection {
+  flex: 1;
+  
+  h4 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: $gray-700;
+    margin: 0 0 2px 0;
+    line-height: 1.3;
+  }
+  
+  .fichaSubtitle {
+    font-size: 0.8125rem;
+    color: $primary-normal;
+    font-weight: 500;
+    text-transform: capitalize;
+    margin: 0;
+  }
+}
+
+.notaTotal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: $gap-2;
+  border-top: 1px solid rgba($gray-300, 0.3);
+  
+  .notaLabel {
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: $gray-500;
+  }
+  
+  .notaValor {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: $primary-normal;
+    line-height: 1;
+    
+    .notaMaximo {
+      font-size: 1rem;
+      font-weight: 400;
+      color: $gray-400;
+    }
+  }
+}
+
+.fichaContent {
+  padding: $gap-1;
+  max-height: 450px;
+  overflow-y: auto;
+  
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: $gray-25;
+    border-radius: 2px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: $gray-300;
+    border-radius: 2px;
+    
+    &:hover {
+      background: $gray-400;
+    }
+  }
+}
+
+// Grupos de Avaliação - Layout em Coluna
+.grupoAvaliacao {
+  margin-bottom: $gap-1;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.grupoPrincipal {
+  border: 1px solid $gray-50;
+  border-radius: $border-radius-sm;
+  background: $white-light;
+  overflow: hidden;
+  
+  > .grupoHeader {
+    background: $gray-25;
+    padding: $gap-2 $gap-3;
+    border-bottom: 1px solid $gray-50;
+  }
+}
+
+.grupoSecundario {
+ 
+  
+  > .grupoHeader {
+    padding: $gap-1 $gap-1;
+    background: transparent;
+    border-bottom: none;
+  }
+}
+
+.grupoTerciario {
+  margin-left: $gap-2;
+  padding-left: $gap-2;
+  border-left: 1px dashed $gray-200;
+  
+  > .grupoHeader {
+    padding: $gap-1 $gap-1;
+  }
+}
+
+.grupoHeader {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-1;
+  transition: $transition-default;
+  
+  &.clickable {
+    cursor: pointer;
+    
+    &:hover {
+      background: rgba($primary-normal, 0.02);
+    }
+  }
+}
+
+.grupoHeaderTop {
+  display: flex;
+  align-items: flex-start;
+  gap: $gap-1;
+  
+  .expandIcon {
+    color: $gray-500;
+    font-size: 0.75rem;
+    margin-top: 3px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+  }
+  
+  .grupoLabel {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: $gray-700;
+    margin: 0;
+    line-height: 1.4;
+    flex: 1;
+    
+    .grupoSecundario & {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: $gray-600;
+    }
+    
+    .grupoTerciario & {
+      font-size: 0.8125rem;
+      font-weight: 400;
+      color: $gray-600;
+    }
+  }
+}
+
+.grupoHeaderBottom {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.grupoNota {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  padding: 2px 10px;
+  background: rgba($primary-normal, 0.06);
+  border-radius: 16px;
+  
+  .notaObtida {
+    font-size: 1rem;
+    font-weight: 600;
+    color: $primary-normal;
+  }
+  
+  .notaSeparador {
+    font-size: 0.75rem;
+    color: $gray-400;
+    margin: 0 1px;
+  }
+  
+  .notaMaxima {
+    font-size: 0.75rem;
+    color: $gray-500;
+  }
+  
+  .notaPontos {
+    font-size: 0.6875rem;
+    color: $gray-400;
+    margin-left: 3px;
+  }
+}
+
+// Itens com resposta - Layout em Coluna
+.itensResposta {
+  padding: $gap-1;
+  background: $gray-25;
+  border-radius: $border-radius-sm;
+}
+
+.itemResposta {
+  background: $white-light;
+  border-radius: $border-radius-sm;
+  padding: $gap-2;
+  margin-bottom: $gap-1;
+  border: 1px solid $gray-50;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.itemHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $gap-1;
+  padding-bottom: $gap-1;
+  border-bottom: 1px solid $gray-50;
+  
+  .itemIndex {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: $gray-500;
+  }
+  
+  .itemNota {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: $success-normal;
+    background: rgba($success-normal, 0.08);
+    padding: 2px 6px;
+    border-radius: 10px;
+  }
+}
+
+.itemCampos {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-1;
+}
+
+.campoItem {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  
+  .campoLabel {
+    font-weight: 500;
+    color: $gray-600;
+    margin-bottom: 1px;
+  }
+  
+  .campoValor {
+    color: $gray-800;
+    word-break: break-word;
+    padding-left: 0;
+  }
+}
+
+.subgrupos {
+  padding: 0 $gap-1 $gap-1;
+}
+
+.fichaFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $gap-2 $gap-3;
+  border-top: 1px solid $gray-50;
+  background: $gray-25;
+  
+  :global(.p-button-text) {
+    color: $gray-600;
+    font-size: 0.875rem;
+    
+    &:hover {
+      color: $primary-normal;
+      background: transparent;
+    }
+  }
+}
+
+// Estado vazio
+.fichaVazia {
+  padding: $gap-6;
+  text-align: center;
+  color: $gray-500;
+  
+  p {
+    margin: 0;
+    font-size: 0.9375rem;
+  }
+}
+
+// Responsividade
+@media (max-width: 768px) {
+  .fichaHeader {
+    padding: $gap-2 $gap-3;
+  }
+  
+  .fichaContent {
+    padding: $gap-2;
+    max-height: 400px;
+  }
+  
+  .grupoPrincipal > .grupoHeader {
+    padding: $gap-1 $gap-2;
+  }
+  
+  .grupoSecundario {
+    //margin-left: $gap-1;
+   // padding-left: $gap-1;
+  }
+  
+  .grupoHeaderTop .grupoLabel {
+    font-size: 0.875rem;
+  }
+  
+  .notaTotal .notaValor {
+    font-size: 1.5rem;
+  }
+  
+  .itemResposta {
+    padding: $gap-1;
+  }
+}
+
+// --- Seção de Contato WhatsApp ---
+.whatsappContactSection {
+  padding: $gap-3 $gap-4;
+  background: linear-gradient(135deg, #e7f5e8 0%, #d4ebd6 100%);
+  border-top: 1px solid rgba(#25d366, 0.2);
+  border-bottom: 1px solid rgba(#25d366, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: $gap-2;
+}
+
+.whatsappButton {
+  background: #25d366 !important;
+  border: none !important;
+  padding: $gap-2 $gap-4 !important;
+  font-size: 0.9375rem !important;
+  font-weight: 500 !important;
+  border-radius: $border-radius-sm !important;
+  transition: $transition-default !important;
+  width: 100%;
+  max-width: 500px;
+  
+  &:hover {
+    background: #1ea952 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(#25d366, 0.3) !important;
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  :global(.p-button-icon) {
+    font-size: 1.25rem !important;
+    margin-right: $gap-2 !important;
+  }
+  
+  :global(.p-button-label) {
+    color: white !important;
+  }
+}
+
+.whatsappHint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: rgba(#1ea952, 0.8);
+  font-style: italic;
+}
+
+// Ajuste para o footer quando há seção de WhatsApp
+.fichaCard {
+  .fichaFooter {
+    border-top: none;
+  }
+}
+
+// Responsividade para o botão WhatsApp
+@media (max-width: 768px) {
+  .whatsappContactSection {
+    padding: $gap-2 $gap-3;
+  }
+  
+  .whatsappButton {
+    font-size: 0.875rem !important;
+    padding: $gap-1 $gap-3 !important;
+  }
+  
+  .whatsappHint {
+    font-size: 0.6875rem;
   }
 }

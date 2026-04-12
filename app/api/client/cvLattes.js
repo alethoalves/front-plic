@@ -2,7 +2,20 @@ import { getAuthHeadersClient } from "@/lib/headers.js";
 import { req } from "./../axios.js";
 import { getCookie } from 'cookies-next';
 
+export const gerarFichaAvaliacaoParticipacao = async (tenantSlug, idParticipacao) => {
+    try {
+      const headers = getAuthHeadersClient();
+    if (!headers) return false;
+    const response = await req.post(`/private/${tenantSlug}/gerar-ficha-avaliacao-participacao/${idParticipacao}`, {}, {headers});
+    return response.data;
 
+
+    } catch (error) {
+      console.error("Erro ao criar CV Lattes:", error);
+      throw error;
+    }
+  };
+  
 /**************************
  * CV LATTES
  **************************/
