@@ -5,6 +5,10 @@ import {
   RiExternalLinkLine,
   RiEyeLine,
   RiSave2Line,
+  RiYoutubeLine, // Adicione este
+  RiFlaskLine, // Para Iniciação Científica
+  RiUserStarLine, // Para Monitoria
+  RiCommunityLine, // Para Extensão
 } from "@remixicon/react";
 import styles from "./EditarParticipacao.module.scss";
 import { useCallback, useEffect, useState, useMemo, useRef } from "react";
@@ -15,7 +19,10 @@ import { createDynamicSchema } from "@/lib/createDynamicSchema";
 import { renderDynamicFields } from "@/lib/renderDynamicFields";
 import generateLattesText from "@/lib/generateLattesText";
 import FileInput from "../FileInput";
-import { deleteParticipacao } from "@/app/api/client/participacao";
+import {
+  deleteParticipacao,
+  upsertRespostasParticipacao,
+} from "@/app/api/client/participacao";
 import { getInscricaoUserById } from "@/app/api/client/inscricao";
 import { getFormulario } from "@/app/api/client/formulario";
 import { gerarFichaAvaliacaoParticipacao } from "@/app/api/client/cvLattes";
@@ -103,7 +110,7 @@ const EditarParticipacao = ({
   const {
     register,
     control,
-    formState: { errors },
+    formState: { errors, isDirty },
     handleSubmit,
     setValue,
     reset,
@@ -113,18 +120,48 @@ const EditarParticipacao = ({
     defaultValues: {},
   });
 
+  const lastHydratedSignatureRef = useRef("");
+
   const handleFormSubmit = async (data) => {
     setLoadingForm(true);
     setErrorForm("");
     try {
-      console.log("Dados do formulário:", data);
-      alert("Formulário enviado com sucesso (fake)!");
+      const response = await upsertRespostasParticipacao(
+        tenant,
+        data,
+        participacaoInfo.id,
+      );
+
+      if (response?.participacao) {
+        setParticipacaoInfo((prev) => ({
+          ...prev,
+          ...response.participacao,
+        }));
+
+        setInscricao((prevState) => {
+          if (!prevState?.participacoes) return prevState;
+
+          return {
+            ...prevState,
+            participacoes: prevState.participacoes.map((participacao) =>
+              participacao.id === response.participacao.id
+                ? { ...participacao, ...response.participacao }
+                : participacao,
+            ),
+          };
+        });
+      }
+
       showSuccess("Formulário salvo com sucesso!");
-      setActiveStep((prev) => prev + 1);
+      closeModalAndResetData();
     } catch (error) {
       console.error("Erro ao enviar o formulário:", error);
-      setErrorForm(error.message || "Erro ao enviar o formulário.");
-      showError(error.message || "Erro ao enviar o formulário.");
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Erro ao enviar o formulário.";
+      setErrorForm(errorMessage);
+      showError(errorMessage);
     } finally {
       setLoadingForm(false);
     }
@@ -288,6 +325,57 @@ const EditarParticipacao = ({
     },
     [setInscricao, tenant],
   );
+
+  useEffect(() => {
+    if (!campos?.length) return;
+    if (isDirty) return;
+
+    const respostas = participacaoInfo?.respostas || [];
+    const respostasSignature = `${participacaoInfo?.id || ""}-${respostas
+      .map((resposta) => `${resposta.id}:${resposta.campoId}:${resposta.value}`)
+      .join("|")}`;
+
+    if (lastHydratedSignatureRef.current === respostasSignature) return;
+
+    const camposDinamicos = {};
+
+    respostas.forEach((resposta) => {
+      if (!resposta?.campoId) return;
+
+      const campoRelacionado = campos.find(
+        (campo) => campo.id === resposta.campoId,
+      );
+      if (!campoRelacionado) return;
+
+      let value = resposta.value;
+
+      if (
+        campoRelacionado.tipo === "multiselect" &&
+        typeof resposta.value === "string"
+      ) {
+        try {
+          const parsed = JSON.parse(resposta.value);
+          if (Array.isArray(parsed)) {
+            value = parsed;
+          }
+        } catch {
+          value = [];
+        }
+      }
+
+      camposDinamicos[`campo_${resposta.campoId}`] = value;
+    });
+
+    reset({ camposDinamicos });
+    lastHydratedSignatureRef.current = respostasSignature;
+  }, [
+    campos,
+    isDirty,
+    participacaoInfo?.id,
+    participacaoInfo?.respostas,
+    reset,
+  ]);
+
   // Componente recursivo para renderizar grupos de avaliação
   const GrupoAvaliacao = ({ grupo, nivel = 0 }) => {
     const [expanded, setExpanded] = useState(false);
@@ -648,6 +736,95 @@ const EditarParticipacao = ({
                     </div>
                   </div>
                 </Card>
+                {tipoParticipacao === "aluno" && (
+                  <Card className={styles.tutoriaisCard}>
+                    <div className={styles.tutoriaisHeader}>
+                      <div className={styles.tutoriaisIcon}>
+                        <RiYoutubeLine size={20} />
+                      </div>
+                      <div>
+                        <h4>Vídeos Tutoriais</h4>
+                        <p className={styles.tutoriaisSubtitle}>
+                          Aprenda como cadastrar atividades no seu Currículo
+                          Lattes
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className={styles.tutoriaisList}>
+                      {/* Iniciação Científica */}
+                      <a
+                        href="https://www.youtube.com/watch?v=gTfFHQXoRQQ"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.tutorialItem}
+                      >
+                        <div className={styles.tutorialIconWrapper}>
+                          <RiFlaskLine size={18} />
+                        </div>
+                        <div className={styles.tutorialContent}>
+                          <span className={styles.tutorialTitle}>
+                            Como inserir Iniciação Científica no Lattes
+                          </span>
+                          <span className={styles.tutorialPlatform}>
+                            YouTube
+                            <RiExternalLinkLine size={12} />
+                          </span>
+                        </div>
+                      </a>
+
+                      {/* Monitoria */}
+                      <a
+                        href="https://www.youtube.com/watch?v=7Ir-Ee1GPDc"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.tutorialItem}
+                      >
+                        <div className={styles.tutorialIconWrapper}>
+                          <RiUserStarLine size={18} />
+                        </div>
+                        <div className={styles.tutorialContent}>
+                          <span className={styles.tutorialTitle}>
+                            Como inserir Monitoria no Lattes
+                          </span>
+                          <span className={styles.tutorialPlatform}>
+                            YouTube
+                            <RiExternalLinkLine size={12} />
+                          </span>
+                        </div>
+                      </a>
+
+                      {/* Projetos de Extensão */}
+                      <a
+                        href="https://www.youtube.com/watch?v=BmMuhb_wm-Q"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.tutorialItem}
+                      >
+                        <div className={styles.tutorialIconWrapper}>
+                          <RiCommunityLine size={18} />
+                        </div>
+                        <div className={styles.tutorialContent}>
+                          <span className={styles.tutorialTitle}>
+                            Como inserir projetos de extensão no Lattes
+                          </span>
+                          <span className={styles.tutorialPlatform}>
+                            YouTube
+                            <RiExternalLinkLine size={12} />
+                          </span>
+                        </div>
+                      </a>
+                    </div>
+
+                    <div className={styles.tutoriaisFooter}>
+                      <RiYoutubeLine size={14} />
+                      <span>
+                        Clique nos links acima para abrir os tutoriais no
+                        YouTube
+                      </span>
+                    </div>
+                  </Card>
+                )}
               </div>
 
               <div className={styles.stepFooter}>
@@ -797,18 +974,43 @@ const EditarParticipacao = ({
               </div>
             </StepperPanel>
             {/* Step: Campos Dinâmicos (Formulário) */}
+            {/* Step: Campos Dinâmicos (Formulário) */}
             {campos.length > 0 && (
               <StepperPanel
                 header={`Formulário - ${tipoParticipacao.toUpperCase()}`}
               >
-                <Card>
-                  <div className={styles.label}>
-                    <h6>
-                      Preencha os campos abaixo para o tipo:{" "}
-                      {tipoParticipacao.toUpperCase()}
-                    </h6>
-                    <form onSubmit={handleSubmit(handleFormSubmit)}>
-                      <div className={`${styles.camposDinamicos} mt-2`}>
+                <div className={styles.formularioStep}>
+                  <Card className={styles.formularioCard}>
+                    {/* Cabeçalho do Formulário */}
+                    <div className={styles.formularioHeader}>
+                      <div className={styles.formularioIcon}>
+                        <RiSave2Line size={20} />
+                      </div>
+                      <div className={styles.formularioTitleSection}>
+                        <h4>Formulário Complementar</h4>
+                        <p className={styles.formularioSubtitle}>
+                          {tipoParticipacao.charAt(0).toUpperCase() +
+                            tipoParticipacao.slice(1)}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Descrição */}
+                    <div className={styles.formularioDescription}>
+                      <p>
+                        Preencha os campos abaixo com informações complementares
+                        para a categoria de <strong>{tipoParticipacao}</strong>.
+                        Estes dados serão utilizados para complementar sua
+                        avaliação.
+                      </p>
+                    </div>
+
+                    {/* Formulário */}
+                    <form
+                      onSubmit={handleSubmit(handleFormSubmit)}
+                      className={styles.formularioForm}
+                    >
+                      <div className={styles.camposDinamicos}>
                         {renderDynamicFields(
                           { campos: campos },
                           control,
@@ -818,34 +1020,39 @@ const EditarParticipacao = ({
                           watch,
                         )}
                       </div>
-                      <div className={`${styles.btnSubmit} mt-2`}>
+
+                      {/* Mensagem de Erro */}
+                      {errorForm && (
+                        <div className={styles.formularioError}>
+                          <i className="pi pi-exclamation-triangle" />
+                          <span>{errorForm}</span>
+                        </div>
+                      )}
+
+                      {/* Ações do Formulário */}
+                      <div className={styles.formularioActions}>
                         <Button
-                          icon={RiSave2Line}
+                          label="Voltar"
+                          icon="pi pi-arrow-left"
+                          className="p-button-outlined p-button-secondary"
+                          onClick={() => setActiveStep(2)}
+                          type="button"
+                        />
+                        <Button
+                          icon={
+                            loadingForm ? "pi pi-spin pi-spinner" : "pi pi-save"
+                          }
                           className="btn-primary"
                           type="submit"
                           disabled={loadingForm}
-                        >
-                          {loadingForm ? "Carregando..." : "Salvar"}
-                        </Button>
-                        {errorForm && (
-                          <div
-                            className={`notification notification-error mt-2`}
-                          >
-                            <p className="p5">{errorForm}</p>
-                          </div>
-                        )}
+                          label={
+                            loadingForm ? "Salvando..." : "Salvar Formulário"
+                          }
+                        />
                       </div>
                     </form>
-                  </div>
-                  <div className="flex pt-3 gap-1">
-                    <Button
-                      label="Voltar"
-                      severity="secondary"
-                      icon="pi pi-arrow-left"
-                      onClick={() => setActiveStep(0)}
-                    />
-                  </div>
-                </Card>
+                  </Card>
+                </div>
               </StepperPanel>
             )}
           </Stepper>

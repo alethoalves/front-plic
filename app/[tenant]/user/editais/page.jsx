@@ -1,63 +1,45 @@
 "use client";
 import {
-  RiAlertLine,
-  RiArrowLeftLine,
-  RiArrowRightLine,
   RiArrowRightSLine,
   RiCalendarEventFill,
-  RiCheckDoubleLine,
-  RiDraftLine,
-  RiEditLine,
-  RiFolder2Line,
-  RiFoldersLine,
-  RiGroupLine,
-  RiMenuLine,
   RiSurveyLine,
-  RiUser2Line,
+  RiTimeLine,
+  RiCheckboxCircleLine,
+  RiErrorWarningLine,
+  RiTimerLine,
+  RiCalendarEventLine,
 } from "@remixicon/react";
 import styles from "./page.module.scss";
-import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import Modal from "@/components/Modal";
+import { useEffect, useState } from "react";
 import Button from "@/components/Button";
 import {
-  getRegistroAtividadesByCPF,
-  getRegistroAtividadesByCpfEditaisVigentes,
-  updateRegistroAtividade,
-} from "@/app/api/client/registroAtividade";
-import Campo from "@/components/Campo";
-import { startSubmission } from "@/app/api/client/resposta";
-import FormArea from "@/components/Formularios/FormArea";
-import NoData from "@/components/NoData";
-import { getEditais, getEditaisByUser } from "@/app/api/client/edital";
-import { formatarData } from "@/lib/formatarDatas";
-import FluxoInscricaoEdital from "@/components/FluxoInscricaoEdital";
-import {
   createInscricaoByUser,
-  getInscricoesByUser,
   getMinhasInscricoes,
 } from "@/app/api/client/inscricao";
+import { formatarData } from "@/lib/formatarDatas";
+import NoData from "@/components/NoData";
 import Link from "next/link";
+import { Card } from "primereact/card";
+import { Badge } from "@/components/Badge"; // Se tiver componente Badge, senão criamos
+import { getEditais } from "@/app/api/client/edital";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editais, setEditais] = useState([]);
   const [inscricoes, setInscricoes] = useState([]);
-
-  const [inscricaoSelected, setInscricaoSelected] = useState(null);
-  const [errorMessages, setErrorMessages] = useState({}); // Alterado para armazenar erros por edital
-
-  const router = useRouter();
+  const [errorMessages, setErrorMessages] = useState({});
+  const [inscribingId, setInscribingId] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const editais = await getEditais(params.tenant);
-        setEditais(editais);
-        const minhasInscricoes = await getMinhasInscricoes(params.tenant);
-        setInscricoes(minhasInscricoes);
+        const [editaisData, inscricoesData] = await Promise.all([
+          getEditais(params.tenant),
+          getMinhasInscricoes(params.tenant),
+        ]);
+        setEditais(editaisData);
+        setInscricoes(inscricoesData);
       } catch (error) {
         console.error("Erro ao buscar dados:", error);
       } finally {
@@ -67,193 +49,226 @@ const Page = ({ params }) => {
     fetchData();
   }, [params.tenant]);
 
-  const closeModalAndResetData = () => {
-    setIsModalOpen(false);
-    setInscricaoSelected(null);
-  };
-
-  const renderModalContent = () => {
-    return (
-      <Modal size="large" isOpen={isModalOpen} onClose={closeModalAndResetData}>
-        <FluxoInscricaoEdital
-          tenant={params.tenant}
-          inscricaoSelected={inscricaoSelected}
-        />
-      </Modal>
-    );
-  };
-
   const createNewInscricao = async (editalId) => {
-    setLoading(true);
-    setErrorMessages((prev) => ({ ...prev, [editalId]: "" })); // Limpar erro anterior para o edital específico
+    setInscribingId(editalId);
+    setErrorMessages((prev) => ({ ...prev, [editalId]: "" }));
 
     try {
-      // Chamada à API para criar a inscrição
       const response = await createInscricaoByUser(params.tenant, { editalId });
-
       if (response) {
-        // Atualiza a listagem de inscrições
         const minhasInscricoes = await getMinhasInscricoes(params.tenant);
         setInscricoes(minhasInscricoes);
       }
     } catch (error) {
       console.error("Error:", error);
-
-      // Configura a mensagem de erro para o edital específico
       setErrorMessages((prev) => ({
         ...prev,
         [editalId]:
           error.response?.data?.message ?? "Erro na conexão com o servidor.",
       }));
     } finally {
-      setLoading(false);
+      setInscribingId(null);
     }
   };
 
-  const openModalAndSetData = async (data) => {
-    setInscricaoSelected(data);
-    setIsModalOpen(true);
+  const getStatusInfo = (edital) => {
+    const hoje = new Date();
+    const inicio = edital.inicioInscricao
+      ? new Date(edital.inicioInscricao)
+      : null;
+    const fim = edital.fimInscricao ? new Date(edital.fimInscricao) : null;
+
+    if (!inicio || !fim) {
+      return {
+        label: "Período não definido",
+        icon: RiTimeLine,
+        variant: "neutral",
+      };
+    }
+
+    if (hoje < inicio) {
+      return {
+        label: "Em breve",
+        icon: RiTimerLine,
+        variant: "warning",
+      };
+    }
+
+    if (hoje > fim) {
+      return {
+        label: "Encerrado",
+        icon: RiErrorWarningLine,
+        variant: "error",
+      };
+    }
+
+    return {
+      label: "Inscrições Abertas",
+      icon: RiCheckboxCircleLine,
+      variant: "success",
+    };
+  };
+
+  const getInscricaoStatusVariant = (status) => {
+    switch (status) {
+      case "pendente":
+        return "warning";
+      case "aprovado":
+        return "success";
+      case "reprovado":
+        return "error";
+      default:
+        return "neutral";
+    }
   };
 
   return (
-    <>
-      {renderModalContent()}
-      <div className={styles.navContent}>
-        <div className={styles.content}>
-          <div className={styles.header}>
-            <h4>Editais</h4>
-            <p className="mt-1">Inscreva-se nos editais abaixo.</p>
+    <div className={styles.pageContainer}>
+      <div className={styles.contentWrapper}>
+        {/* Header */}
+        <div className={styles.pageHeader}>
+          <div className={styles.headerContent}>
+            <h3 className={styles.pageTitle}>Editais Disponíveis</h3>
+            <p className={styles.pageDescription}>
+              Inscreva-se nos programas e editais disponíveis para sua
+              participação
+            </p>
           </div>
-          {editais?.length > 0 ? (
-            <>
-              <div className={styles.editais}>
-                {editais.map((item) => {
-                  const hoje = new Date();
-                  const inicio = item.inicioInscricao
-                    ? new Date(item.inicioInscricao)
-                    : null;
-                  const fim = item.fimInscricao
-                    ? new Date(item.fimInscricao)
-                    : null;
+        </div>
 
-                  let statusMensagem = "";
-                  let statusClasse = ""; // Classe CSS condicional
-                  if (inicio && fim) {
-                    if (hoje < inicio) {
-                      statusMensagem = "Inscrições em breve";
-                      statusClasse = styles.statusWarning; // Classe para inscrições em breve
-                    } else if (hoje > fim) {
-                      statusMensagem = "Inscrições encerradas";
-                      statusClasse = styles.statusError; // Classe para inscrições encerradas
-                    } else {
-                      statusMensagem = "Inscrições abertas";
-                    }
-                  }
+        {/* Lista de Editais */}
+        {loading ? (
+          <div className={styles.loadingState}>
+            <div className={styles.loadingSpinner} />
+            <p>Carregando editais...</p>
+          </div>
+        ) : editais?.length > 0 ? (
+          <div className={styles.editaisGrid}>
+            {editais.map((edital) => {
+              const statusInfo = getStatusInfo(edital);
+              const StatusIcon = statusInfo.icon;
+              const inscricoesDoEdital = inscricoes.filter(
+                (insc) => insc.edital.id === edital.id,
+              );
+              const temInscricao = inscricoesDoEdital.length > 0;
+              const isOpen = statusInfo.label === "Inscrições Abertas";
 
-                  return (
-                    <div key={item.id} className={styles.edital}>
-                      <h6>
-                        {item.ano} - {item.titulo}
-                      </h6>
-                      {inicio && fim ? (
-                        <>
-                          <p>Período de inscrição:</p>
-                          <p>
-                            <strong>
-                              de {formatarData(item.inicioInscricao)}
-                            </strong>{" "}
-                            a <strong>{formatarData(item.fimInscricao)}</strong>
-                          </p>
-                        </>
-                      ) : (
-                        <p>Período de inscrição não disponível.</p>
+              return (
+                <Card key={edital.id} className={styles.editalCard}>
+                  {/* Status Badge */}
+                  <div className={styles.cardStatus}>
+                    <Badge variant={statusInfo.variant}>
+                      <StatusIcon size={14} />
+                      {statusInfo.label}
+                    </Badge>
+                  </div>
+
+                  {/* Conteúdo Principal */}
+                  <div className={styles.cardContent}>
+                    <div className={styles.editalInfo}>
+                      <span className={styles.editalAno}>{edital.ano}</span>
+                      <h4 className={styles.editalTitulo}>{edital.titulo}</h4>
+                    </div>
+
+                    {/* Período de Inscrição */}
+                    {edital.inicioInscricao && edital.fimInscricao && (
+                      <div className={styles.periodoInfo}>
+                        <RiCalendarEventLine size={16} />
+                        <span>
+                          {formatarData(edital.inicioInscricao)} até{" "}
+                          {formatarData(edital.fimInscricao)}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Descrição (se existir) */}
+                    {edital.descricao && (
+                      <p className={styles.editalDescricao}>
+                        {edital.descricao.length > 120
+                          ? edital.descricao.substring(0, 120) + "..."
+                          : edital.descricao}
+                      </p>
+                    )}
+
+                    {/* Ações ou Inscrições */}
+                    <div className={styles.cardActions}>
+                      {!temInscricao && isOpen && (
+                        <Button
+                          className={styles.inscreverButton}
+                          icon={RiSurveyLine}
+                          onClick={() => createNewInscricao(edital.id)}
+                          loading={inscribingId === edital.id}
+                          disabled={inscribingId === edital.id}
+                        >
+                          {inscribingId === edital.id
+                            ? "Processando..."
+                            : "Fazer inscrição"}
+                        </Button>
                       )}
-                      {statusMensagem &&
-                        statusMensagem !== "Inscrições abertas" && (
-                          <div
-                            className={`${styles.statusMensagem} ${statusClasse} mt-1`}
-                          >
-                            <p>{statusMensagem}</p>
-                          </div>
-                        )}
-                      {statusMensagem === "Inscrições abertas" &&
-                        inscricoes.filter(
-                          (inscricao) => inscricao.edital.id === item.id
-                        ).length === 0 && (
-                          <Button
-                            className="btn-secondary mt-2"
-                            icon={RiSurveyLine}
-                            type="button"
-                            disabled={loading}
-                            onClick={() => createNewInscricao(item.id)}
-                          >
-                            {loading && "Aguarde..."}
-                            {!loading && "Fazer inscrição"}
-                          </Button>
-                        )}
-                      {inscricoes.filter(
-                        (inscricao) => inscricao.edital.id === item.id
-                      ).length > 0 && (
-                        <div className={`${styles.minhasInscricoes}`}>
-                          <h6>Minhas Inscrições</h6>
-                          {inscricoes
-                            .filter(
-                              (inscricao) => inscricao.edital.id === item.id
-                            )
-                            .map((inscricaoFiltered) => {
-                              let href;
-                              if (inscricaoFiltered.status === "pendente") {
-                                href = `/${params.tenant}/user/editais/inscricoes/${inscricaoFiltered.id}`;
-                              } else {
-                                href = `/${params.tenant}/user/editais/inscricoes/${inscricaoFiltered.id}/acompanhamento`;
-                              }
 
-                              return (
-                                <Link
-                                  className={styles.itens}
-                                  key={inscricaoFiltered.id}
-                                  href={href}
-                                >
-                                  <div
-                                    key={inscricaoFiltered.id}
-                                    className={`${styles.inscricaoItem}`}
-                                  >
-                                    <p>Inscrição nº {inscricaoFiltered.id}</p>
-                                    <div className={styles.rightSide}>
-                                      {inscricaoFiltered.status ===
-                                        "pendente" && (
-                                        <p
-                                          className={`${styles.status} ${styles.statusError}`}
-                                        >
-                                          {inscricaoFiltered.status}
-                                        </p>
+                      {temInscricao && (
+                        <div className={styles.inscricoesList}>
+                          {inscricoesDoEdital.map((inscricao) => {
+                            const href =
+                              inscricao.status === "pendente"
+                                ? `/${params.tenant}/user/editais/inscricoes/${inscricao.id}`
+                                : `/${params.tenant}/user/editais/inscricoes/${inscricao.id}/acompanhamento`;
+
+                            return (
+                              <Link
+                                key={inscricao.id}
+                                href={href}
+                                className={styles.inscricaoLink}
+                              >
+                                <div className={styles.inscricaoItem}>
+                                  <div className={styles.inscricaoInfo}>
+                                    <span className={styles.inscricaoNumero}>
+                                      Inscrição #{inscricao.id}
+                                    </span>
+                                    <Badge
+                                      variant={getInscricaoStatusVariant(
+                                        inscricao.status,
                                       )}
-                                      <RiArrowRightSLine />
-                                    </div>
+                                      size="small"
+                                    >
+                                      {inscricao.status}
+                                    </Badge>
                                   </div>
-                                </Link>
-                              );
-                            })}
+                                  <RiArrowRightSLine size={20} />
+                                </div>
+                              </Link>
+                            );
+                          })}
                         </div>
                       )}
-                      {errorMessages[item.id] && ( // Mostrar erro apenas no edital correspondente
-                        <div className={`${styles.errorMsg} `}>
-                          <p>{errorMessages[item.id]}</p>
+
+                      {!temInscricao && !isOpen && (
+                        <div className={styles.inscricoesIndisponivel}>
+                          <RiErrorWarningLine size={16} />
+                          <span>Inscrições indisponíveis no momento</span>
                         </div>
                       )}
                     </div>
-                  );
-                })}
-              </div>
-            </>
-          ) : (
-            <>
-              <NoData description="Não há editais cadastrados." />
-            </>
-          )}
-        </div>
+
+                    {/* Mensagem de Erro */}
+                    {errorMessages[edital.id] && (
+                      <div className={styles.errorMessage}>
+                        <RiErrorWarningLine size={16} />
+                        <span>{errorMessages[edital.id]}</span>
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        ) : (
+          <div className={styles.emptyState}>
+            <NoData description="Não há editais disponíveis no momento." />
+          </div>
+        )}
       </div>
-    </>
+    </div>
   );
 };
 

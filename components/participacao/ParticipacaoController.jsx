@@ -23,6 +23,7 @@ const ParticipacaoController = ({
   closeModalAndResetData,
   tipoParticipacao,
   planoDeTrabalhoDetalhes,
+  atingiuLimiteBolsa,
 }) => {
   const [participacaoInfo, setParticipacaoInfo] = useState(itemToEdit || null); // Inicializa com itemToEdit
   const [verifiedData, setVerifiedData] = useState(null);
@@ -132,6 +133,7 @@ const ParticipacaoController = ({
           onSuccess={handleCreateOrEditSuccess}
           showLabelInicio={false}
           tipoParticipacao={tipoParticipacao}
+          atingiuLimiteBolsa={atingiuLimiteBolsa}
         />
       )}
     </>

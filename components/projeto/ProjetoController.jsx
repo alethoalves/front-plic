@@ -40,7 +40,7 @@ const ProjetoController = ({
       setLoading(true); // Mostra o estado de carregamento
       const response = await getProjetosDoUsuario(
         tenant,
-        inscricao.proponenteId
+        inscricao.proponenteId,
       );
 
       // Ordena os projetos por ID decrescente
@@ -64,7 +64,7 @@ const ProjetoController = ({
   const handleCreateOrEditProjetoSuccess = (projetoAtualizado) => {
     setMeusProjetos((prevProjetos) => {
       const index = prevProjetos.findIndex(
-        (p) => p.id === projetoAtualizado.id
+        (p) => p.id === projetoAtualizado.id,
       );
       if (index !== -1) {
         // Atualizar projeto existente
@@ -113,7 +113,7 @@ const ProjetoController = ({
       const projetoAtualizado = await updateProjetoById(
         tenant,
         projetoId,
-        projetoData
+        projetoData,
       );
       handleCreateOrEditProjetoSuccess(projetoAtualizado); // Atualiza o estado local
       setModalView("view"); // Retorna para a visualização
@@ -131,12 +131,12 @@ const ProjetoController = ({
       setLoading(true); // Ativa o estado de carregamento
       const isLinked = await isProjetoLinkedToInscricao(
         tenant,
-        idProjeto || selectedProjeto.id
+        idProjeto || selectedProjeto.id,
       );
 
       if (isLinked) {
         setError(
-          "Este projeto foi adicionado a alguma inscrição, só é possível editá-lo desvinculando-o de todoas as incrições. Caso isso não seja viável, crie um novo projeto."
+          "Este projeto foi adicionado a alguma inscrição, só é possível editá-lo desvinculando-o de todoas as incrições. Caso isso não seja viável, crie um novo projeto.",
         );
         return; // Impede a mudança para o modo de edição
       }
@@ -145,7 +145,7 @@ const ProjetoController = ({
     } catch (error) {
       console.error("Erro ao verificar vínculo do projeto:", error);
       setError(
-        "Erro ao verificar vínculo do projeto. Tente novamente mais tarde."
+        "Erro ao verificar vínculo do projeto. Tente novamente mais tarde.",
       );
     } finally {
       setLoading(false); // Desativa o estado de carregamento

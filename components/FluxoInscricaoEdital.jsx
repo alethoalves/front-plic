@@ -1,8 +1,7 @@
 "use client";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import styles from "./FluxoInscricaoEdital.module.scss";
 import {
-  RiAddCircleLine,
   RiAlertLine,
   RiArticleLine,
   RiCheckboxCircleLine,
@@ -13,12 +12,17 @@ import {
   RiLinkUnlink,
   RiSendPlaneLine,
   RiUserAddLine,
+  RiArrowRightSLine,
+  RiUserSettingsLine,
+  RiProjectorLine,
 } from "@remixicon/react";
-import { getInscricaoUserById } from "@/app/api/client/inscricao";
+import {
+  getInscricaoUserById,
+  submissaoInscricao,
+} from "@/app/api/client/inscricao";
 import Modal from "@/components/Modal";
 import ProjetoController from "./projeto/ProjetoController";
 import ParticipacaoController from "./participacao/ParticipacaoController";
-import EditarParticipacao from "./participacao/EditarParticipacao";
 import NoData from "./NoData";
 import PlanoDeTrabalhoController from "./planoDeTrabalho/PlanoDeTrabalhoController";
 import { unlinkProjetoFromInscricao } from "@/app/api/client/projeto";
@@ -26,23 +30,22 @@ import { deletePlanoDeTrabalho } from "@/app/api/client/planoDeTrabalho";
 import { deleteParticipacao } from "@/app/api/client/participacao";
 import Button from "./Button";
 import VerInscricao from "./VerInscricao";
-import { useRouter } from "next/navigation";
 import { Toast } from "primereact/toast";
+import { Card } from "primereact/card";
+import { ProgressSpinner } from "primereact/progressspinner";
+import { Router } from "next/router";
 
 const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
   // ESTADOS
   const [inscricao, setInscricao] = useState();
-  const [activeStep, setActiveStep] = useState("orientador"); // Estado para a etapa ativa
+  const [activeStep, setActiveStep] = useState("orientador");
   const [errorDelete, setErrorDelete] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalOpenProjeto, setIsModalOpenProjeto] = useState(false);
   const [isModalOpenPlanoDeTrabalho, setIsModalOpenPlanoDeTrabalho] =
     useState(false);
   const [isModalOpenInscricao, setIsModalOpenInscricao] = useState(false);
-
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [itemToEdit, setItemToEdit] = useState(null);
-  const [verifiedData, setVerifiedData] = useState(null);
   const [editalInfo, setEditalInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [selectedProjetoId, setSelectedProjetoId] = useState(null);
@@ -53,8 +56,7 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
   const [errors, setErrors] = useState([]);
   const [deletingParticipacaoId, setDeletingParticipacaoId] = useState(null);
   const toast = useRef(null);
-  const router = useRouter();
-
+  console.log("Inscrição:", inscricao);
   const showError = (message) => {
     toast.current.show({
       severity: "error",
@@ -64,15 +66,48 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
     });
   };
 
+  const showSuccess = (message) => {
+    toast.current.show({
+      severity: "success",
+      summary: "Sucesso",
+      detail: message,
+      life: 5000,
+    });
+  };
+
+  const handleFinalizarInscricao = async () => {
+    setSubmitting(true);
+    setErrors([]);
+
+    try {
+      await submissaoInscricao(tenant, inscricaoSelected);
+      showSuccess("Inscrição enviada com sucesso!");
+      Router.push(
+        `/${tenant}/user/editais/inscricoes/${inscricaoSelected}/acompanhamento`,
+      );
+    } catch (error) {
+      console.error("Erro ao enviar a inscrição:", error);
+
+      if (Array.isArray(error.response?.data?.errors)) {
+        setErrors(error.response.data.errors);
+      } else {
+        showError(
+          error.message ||
+            "Ocorreu um erro inesperado ao enviar sua inscrição. Tente novamente.",
+        );
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const addProjetoVinculado = (projeto) => {
     setInscricao((prev) => ({
       ...prev,
-      InscricaoProjeto: [
-        ...prev.InscricaoProjeto,
-        { id: projeto.id, projeto }, // Adiciona o novo projeto
-      ],
+      InscricaoProjeto: [...prev.InscricaoProjeto, { id: projeto.id, projeto }],
     }));
   };
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -90,20 +125,16 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
     fetchData();
   }, [tenant, inscricaoSelected]);
 
-  useEffect(() => {}, [inscricao]);
-
   const openModalAndSetData = (data) => {
     setIsModalOpen(true);
     setItemToEdit(data);
-    setVerifiedData(data);
     setPlanoDeTrabalhoSelected(data);
     setErrors([]);
   };
+
   const closeModalAndResetData = () => {
     setIsModalOpen(false);
     setItemToEdit(null);
-    setVerifiedData(false);
-    setDeleteModalOpen(false);
     setErrorDelete("");
     setIsModalOpenProjeto(false);
     setSelectedProjetoId(null);
@@ -111,69 +142,13 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
     setPlanoDeTrabalhoSelected(null);
     setIsModalOpenInscricao(false);
   };
-  const renderModalParticipacao = () => (
-    <Modal isOpen={isModalOpen} onClose={closeModalAndResetData}>
-      <div className={`${styles.icon} mb-2`}>
-        <RiEditLine />
-      </div>
-      <ParticipacaoController
-        itemToEdit={itemToEdit} //é a participacao
-        tenant={tenant}
-        inscricaoSelected={inscricaoSelected} //é o id da inscrição
-        setInscricao={setInscricao} //é a inscricao a ser atualizada
-        closeModalAndResetData={closeModalAndResetData}
-        planoDeTrabalhoDetalhes={planoDeTrabalhoSelected} //é objeto do plano de trabalho que deve ter o id do plano de trabalho
-        tipoParticipacao={tipoParticipacao}
-      />
-    </Modal>
-  );
 
   const openProjetoModal = (projetoId) => {
-    setSelectedProjetoId(projetoId); // Define o ID do projeto
-    setIsModalOpenProjeto(true); // Abre o modal
+    setSelectedProjetoId(projetoId);
+    setIsModalOpenProjeto(true);
   };
-  const renderModalProjeto = () => (
-    <Modal
-      size={"large"}
-      isOpen={isModalOpenProjeto}
-      onClose={closeModalAndResetData}
-    >
-      <div className={`${styles.icon} mb-2`}>
-        <RiEditLine />
-      </div>
-      <ProjetoController
-        tenant={tenant}
-        inscricaoSelected={inscricaoSelected}
-        idProjeto={selectedProjetoId}
-        closeModal={closeModalAndResetData}
-        onProjetoVinculado={addProjetoVinculado} // Callback para atualizar a listagem
-        editalFormularioId={editalInfo?.formProjetoId}
-      />
-    </Modal>
-  );
 
-  const renderModalPlanoDeTrabalho = () => (
-    <Modal
-      size={"large"}
-      isOpen={isModalOpenPlanoDeTrabalho}
-      onClose={closeModalAndResetData}
-    >
-      <div className={`${styles.icon} mb-2`}>
-        <RiEditLine />
-      </div>
-      <PlanoDeTrabalhoController
-        tenantSlug={tenant}
-        idInscricao={inscricaoSelected}
-        idProjeto={selectedProjetoId}
-        onClose={closeModalAndResetData}
-        planoDeTrabalhoDetalhes={planoDeTrabalhoSelected}
-        onUpdatePlanoDeTrabalho={updatePlanoDeTrabalhoList}
-        editalFormularioId={editalInfo?.formPlanoDeTrabalhoId}
-      />
-    </Modal>
-  );
   const handleUnlinkProjeto = async (projetoId) => {
-    // Remove o item da listagem localmente imediatamente
     const projetoRemovido = inscricao.InscricaoProjeto.find(
       (item) => item.projeto.id === projetoId,
     );
@@ -186,24 +161,22 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
     setErrorDelete(null);
 
     try {
-      // Chamada para desvincular o projeto
       await unlinkProjetoFromInscricao(tenant, inscricaoSelected, projetoId);
+      showSuccess("Projeto desvinculado com sucesso!");
     } catch (error) {
       console.error("Erro ao desvincular projeto:", error);
       const errorMessage =
         error.response?.data?.message || "Erro ao desvincular o projeto.";
       setErrorDelete(errorMessage);
-
-      // Reverte a remoção local caso a API falhe
       setInscricao((prev) => ({
         ...prev,
         InscricaoProjeto: [...prev.InscricaoProjeto, projetoRemovido],
       }));
+      showError(errorMessage);
     }
   };
 
   const handleDeletePlanoDeTrabalho = async (planoId) => {
-    // Remove o item da listagem localmente imediatamente
     const planoRemovido = inscricao.planosDeTrabalho.find(
       (item) => item.id === planoId,
     );
@@ -216,25 +189,24 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
     setErrorDelete(null);
 
     try {
-      // Chamada para excluir o plano de trabalho
       await deletePlanoDeTrabalho(tenant, inscricaoSelected, planoId);
+      showSuccess("Plano de trabalho excluído com sucesso!");
     } catch (error) {
       console.error("Erro ao excluir Plano de Trabalho:", error);
       const errorMessage =
         error.response?.data?.message || "Erro ao excluir o Plano de Trabalho.";
       setErrorDelete(errorMessage);
-
-      // Reverte a remoção local caso a API falhe
       setInscricao((prev) => ({
         ...prev,
         planosDeTrabalho: [...prev.planosDeTrabalho, planoRemovido],
       }));
+      showError(errorMessage);
     }
   };
 
   const handleDeleteParticipacao = async (participacaoId) => {
     const confirmed = window.confirm(
-      "Tem certeza que deseja excluir esta participação?",
+      "Tem certeza que deseja excluir esta participação? Esta ação não pode ser desfeita.",
     );
     if (!confirmed) return;
 
@@ -242,16 +214,14 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
     setErrorDelete(null);
 
     try {
-      // Chamada para excluir a participação
       await deleteParticipacao(tenant, participacaoId);
-
-      // Remove o item da listagem apenas após sucesso
       setInscricao((prev) => ({
         ...prev,
         participacoes: prev.participacoes.filter(
           (item) => item.id !== participacaoId,
         ),
       }));
+      showSuccess("Participação excluída com sucesso!");
     } catch (error) {
       console.error("Erro ao excluir Participação:", error);
       const errorMessage =
@@ -262,6 +232,7 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
       setDeletingParticipacaoId(null);
     }
   };
+
   const updatePlanoDeTrabalhoList = (updatedPlano) => {
     setInscricao((prev) => {
       const existingPlanoIndex = prev.planosDeTrabalho.findIndex(
@@ -270,11 +241,9 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
 
       let updatedPlanosDeTrabalho;
       if (existingPlanoIndex !== -1) {
-        // Atualiza o plano existente
         updatedPlanosDeTrabalho = [...prev.planosDeTrabalho];
         updatedPlanosDeTrabalho[existingPlanoIndex] = updatedPlano;
       } else {
-        // Adiciona um novo plano
         updatedPlanosDeTrabalho = [...prev.planosDeTrabalho, updatedPlano];
       }
 
@@ -284,463 +253,574 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
       };
     });
   };
-  const renderModalInscricao = () => (
-    <Modal
-      size={"large"}
-      isOpen={isModalOpenInscricao}
-      onClose={closeModalAndResetData}
-    >
-      <div className={`${styles.icon} mb-2`}>
-        <RiEditLine />
+
+  const getStepIcon = (step) => {
+    switch (step) {
+      case "orientador":
+        return RiUserSettingsLine;
+      case "projetos":
+        return RiProjectorLine;
+      default:
+        return RiUserSettingsLine;
+    }
+  };
+
+  // Função para contar solicitações de bolsa
+  const countBolsaSolicitadas = () => {
+    if (!inscricao?.participacoes) return 0;
+    return inscricao.participacoes.filter(
+      (participacao) =>
+        participacao.tipo === "aluno" && participacao.solicitarBolsa === true,
+    ).length;
+  };
+
+  // Função para verificar se atingiu o limite de planos
+  const atingiuLimitePlanos = () => {
+    if (!inscricao?.planosDeTrabalho || !editalInfo?.maxPlanos) return false;
+    return inscricao.planosDeTrabalho.length >= editalInfo.maxPlanos;
+  };
+
+  // Função para verificar se atingiu o limite de bolsas
+  const atingiuLimiteBolsa = () => {
+    const bolsasSolicitadas = countBolsaSolicitadas();
+    return bolsasSolicitadas >= (editalInfo?.maxSolicitacaoBolsa || 0);
+  };
+
+  // Função para verificar se pode adicionar mais alunos ao plano
+  const podeAdicionarAluno = (planoId) => {
+    const alunosNoPlano =
+      inscricao.participacoes?.filter(
+        (p) => p?.tipo === "aluno" && p?.planoDeTrabalhoId === planoId,
+      ).length || 0;
+    return alunosNoPlano < (inscricao.edital?.maxAlunosPorPlano || 0);
+  };
+  if (loading) {
+    return (
+      <div className={styles.loadingContainer}>
+        <ProgressSpinner style={{ width: "40px", height: "40px" }} />
+        <p>Carregando inscrição...</p>
       </div>
-      <VerInscricao
-        inscricaoSelected={inscricaoSelected}
-        tenant={tenant}
-        setErrors={setErrors}
-        onClose={closeModalAndResetData}
-      />
-    </Modal>
-  );
+    );
+  }
+
+  if (notFound) {
+    return <NoData description="Inscrição não encontrada :/" />;
+  }
+
   return (
     <>
       <Toast ref={toast} position="top-right" />
-      {renderModalParticipacao()}
-      {renderModalProjeto()}
-      {renderModalPlanoDeTrabalho()}
-      {renderModalInscricao()}
-      {loading && <p>Carregando...</p>}
-      {!loading && inscricao && (
-        <div className={styles.inscricao}>
-          {notFound && <NoData description="Inscrição não encontrada :/" />}
-          {!notFound && (
-            <div className={styles.header}>
-              <h4>Formulário de Inscrição</h4>
-              {/* INFORMAÇÕES */}
-              <div className={styles.info}>
-                <p>
-                  EDITAL: <strong>{inscricao.edital?.titulo}</strong>
-                </p>
-                <p>
-                  ANO: <strong>{inscricao.edital?.ano}</strong>
-                </p>
-                <p>
-                  TERMO:{" "}
-                  <strong>
-                    Ao fazer a inscrição neste edital, você concorda com os
-                    termos estabelecidos no edital.
-                  </strong>
+
+      {/* Modais */}
+      <Modal isOpen={isModalOpen} onClose={closeModalAndResetData}>
+        <div className={styles.modalIcon}>
+          <RiEditLine />
+        </div>
+        <ParticipacaoController
+          itemToEdit={itemToEdit}
+          tenant={tenant}
+          inscricaoSelected={inscricaoSelected}
+          setInscricao={setInscricao}
+          closeModalAndResetData={closeModalAndResetData}
+          planoDeTrabalhoDetalhes={planoDeTrabalhoSelected}
+          tipoParticipacao={tipoParticipacao}
+          atingiuLimiteBolsa={atingiuLimiteBolsa()}
+        />
+      </Modal>
+
+      <Modal
+        size={"large"}
+        isOpen={isModalOpenProjeto}
+        onClose={closeModalAndResetData}
+      >
+        <div className={styles.modalIcon}>
+          <RiEditLine />
+        </div>
+        <ProjetoController
+          tenant={tenant}
+          inscricaoSelected={inscricaoSelected}
+          idProjeto={selectedProjetoId}
+          closeModal={closeModalAndResetData}
+          onProjetoVinculado={addProjetoVinculado}
+          editalFormularioId={editalInfo?.formProjetoId}
+          inscricao={inscricao}
+        />
+      </Modal>
+
+      <Modal
+        size={"large"}
+        isOpen={isModalOpenPlanoDeTrabalho}
+        onClose={closeModalAndResetData}
+      >
+        <div className={styles.modalIcon}>
+          <RiEditLine />
+        </div>
+        <PlanoDeTrabalhoController
+          tenantSlug={tenant}
+          idInscricao={inscricaoSelected}
+          idProjeto={selectedProjetoId}
+          onClose={closeModalAndResetData}
+          planoDeTrabalhoDetalhes={planoDeTrabalhoSelected}
+          onUpdatePlanoDeTrabalho={updatePlanoDeTrabalhoList}
+          editalFormularioId={editalInfo?.formPlanoDeTrabalhoId}
+        />
+      </Modal>
+
+      <Modal
+        size={"large"}
+        isOpen={isModalOpenInscricao}
+        onClose={closeModalAndResetData}
+      >
+        <div className={styles.modalIcon}>
+          <RiEditLine />
+        </div>
+        <VerInscricao
+          inscricaoSelected={inscricaoSelected}
+          tenant={tenant}
+          setErrors={setErrors}
+          onClose={closeModalAndResetData}
+        />
+      </Modal>
+
+      {/* Conteúdo Principal */}
+      {inscricao && (
+        <div className={styles.container}>
+          {/* Header */}
+          <Card className={styles.headerCard}>
+            <div className={styles.headerContent}>
+              <div className={styles.headerTitle}>
+                <h4>Formulário de Inscrição</h4>
+                <p className={styles.headerSubtitle}>
+                  Complete as etapas abaixo para finalizar sua inscrição
                 </p>
               </div>
-              {/* FLAG */}
+              <div className={styles.editalInfo}>
+                <div className={styles.editalBadge}>
+                  <span className={styles.editalAno}>
+                    {inscricao.edital?.ano}
+                  </span>
+                </div>
+                <p className={styles.editalTitulo}>
+                  {inscricao.edital?.titulo}
+                </p>
+              </div>
+            </div>
+          </Card>
+
+          {/* Alertas de Erro */}
+          {errors.length > 0 && (
+            <div className={styles.errorsContainer}>
               {errors.map((error, index) => (
-                <div key={index} className={`${styles.pendente} mb-1`}>
-                  <RiAlertLine />
-                  <p>{error}</p>
+                <div key={index} className={styles.errorAlert}>
+                  <RiAlertLine size={18} />
+                  <span>{error}</span>
                 </div>
               ))}
-              <div>
-                <Button
-                  className={"btn-primary "}
-                  type="button"
-                  disabled={submitting}
-                  icon={RiSendPlaneLine}
-                  onClick={() => setIsModalOpenInscricao(true)}
-                >
-                  {submitting
-                    ? "Enviando..." // Mostra o loading apenas no item sendo deletado
-                    : "Finalizar e enviar inscrição"}
-                </Button>
-              </div>
-              {/* ITENS DO MENU */}
-              <div className={styles.stepsMenu}>
-                <div
-                  className={`${styles.stepItemMenu} ${
-                    activeStep === "orientador" ? styles.selected : ""
-                  }`}
-                  onClick={() => setActiveStep("orientador")}
-                >
-                  {false && (
-                    <div className={`${styles.icon} ${styles.statusWarning}`}>
-                      <RiAlertLine />
-                    </div>
-                  )}
-                  <p>Orientador</p>
-                </div>
-                {false && (
-                  <div
-                    className={`${styles.stepItemMenu} ${
-                      activeStep === "coorientador" ? styles.selected : ""
-                    }`}
-                    onClick={() => setActiveStep("coorientador")}
-                  >
-                    <div className={`${styles.icon} ${styles.statusWarning}`}>
-                      <RiAlertLine />
-                    </div>
-                    <p>Coorientador</p>
-                  </div>
-                )}
-                <div
-                  className={`${styles.stepItemMenu} ${
-                    activeStep === "projetos" ? styles.selected : ""
-                  }`}
-                  onClick={() => setActiveStep("projetos")}
-                >
-                  {false && (
-                    <div className={`${styles.icon} ${styles.statusWarning}`}>
-                      <RiAlertLine />
-                    </div>
-                  )}
-                  <p>Projetos</p>
-                </div>
-                {false && (
-                  <div
-                    className={`${styles.stepItemMenu} ${
-                      activeStep === "planosDeTrabalho" ? styles.selected : ""
-                    }`}
-                    onClick={() => setActiveStep("planosDeTrabalho")}
-                  >
-                    <div className={`${styles.icon} ${styles.statusWarning}`}>
-                      <RiAlertLine />
-                    </div>
-                    <p>Planos de Trabalho</p>
-                  </div>
-                )}
-              </div>
-              {/* CONTEUDO DINAMICO CORRESPONDENTE A CADA ITEM DO MENU */}
-              <div>
-                {/* ORIENTADORES */}
-                {activeStep === "orientador" && (
-                  <>
-                    <div className={styles.lista}>
-                      {inscricao.participacoes
-                        ?.filter((item) => item?.tipo === "orientador")
-                        .sort((a, b) => a.id - b.id)
-                        .map((item) => (
-                          <div
-                            onClick={() => {
-                              openModalAndSetData(item);
-                              setTipoParticipacao("orientador");
-                            }}
-                            className={styles.itemLista}
-                            key={item.id}
-                          >
-                            <div className={styles.infoLista}>
-                              <div
-                                className={`${styles.status} ${
-                                  item.status === "incompleto"
-                                    ? styles.pendente
-                                    : styles.completo
-                                }`}
-                              >
-                                {item.status === "incompleto" && (
-                                  <RiAlertLine />
-                                )}
-                                {item.status === "completo" && (
-                                  <RiCheckboxCircleLine />
-                                )}
-                                {item.status === "incompleto" && (
-                                  <p>{item.status}</p>
-                                )}
-                              </div>
-                              <div>
-                                <h6>Orientador</h6>
-                                <p>{item.user.nome.toUpperCase()}</p>
-                              </div>
-                            </div>
+            </div>
+          )}
 
-                            <div className={styles.actions}>
-                              <div className={styles.action}>
-                                <RiEyeLine />
-                              </div>
-                              <div
-                                className={`${styles.action} ${styles.actionDanger}`}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteParticipacao(item.id);
-                                }}
-                                style={{
-                                  cursor:
-                                    deletingParticipacaoId === item.id
-                                      ? "not-allowed"
-                                      : "pointer",
-                                  color: "#dc3545",
-                                  opacity:
-                                    deletingParticipacaoId === item.id
-                                      ? 0.6
-                                      : 1,
-                                }}
-                              >
-                                {deletingParticipacaoId === item.id ? (
-                                  <span style={{ fontSize: "12px" }}>
-                                    Excluindo...
-                                  </span>
-                                ) : (
-                                  <RiDeleteBinLine />
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                    </div>
+          {/* Botão de Envio */}
+          <div className={styles.submitSection}>
+            <Button
+              className={styles.submitButton}
+              type="button"
+              disabled={submitting}
+              icon={RiSendPlaneLine}
+              onClick={handleFinalizarInscricao}
+            >
+              {submitting ? "Enviando..." : "Finalizar e enviar inscrição"}
+            </Button>
+            <p className={styles.termoText}>
+              Ao enviar a inscrição, você concorda com os termos estabelecidos
+              no edital.
+            </p>
+          </div>
 
-                    {inscricao.participacoes?.filter(
+          {/* Steps Menu */}
+          <div className={styles.stepsContainer}>
+            <button
+              className={`${styles.stepTab} ${activeStep === "orientador" ? styles.active : ""}`}
+              onClick={() => setActiveStep("orientador")}
+            >
+              <RiUserSettingsLine size={20} />
+              <span>Orientador</span>
+              {inscricao.participacoes?.filter(
+                (item) => item?.tipo === "orientador",
+              ).length > 0 && (
+                <span className={styles.stepCount}>
+                  {
+                    inscricao.participacoes.filter(
                       (item) => item?.tipo === "orientador",
-                    ).lenght === 0 && (
+                    ).length
+                  }
+                </span>
+              )}
+            </button>
+
+            <button
+              className={`${styles.stepTab} ${activeStep === "projetos" ? styles.active : ""}`}
+              onClick={() => setActiveStep("projetos")}
+            >
+              <RiProjectorLine size={20} />
+              <span>Projetos</span>
+              {inscricao.InscricaoProjeto?.length > 0 && (
+                <span className={styles.stepCount}>
+                  {inscricao.InscricaoProjeto.length}
+                </span>
+              )}
+            </button>
+          </div>
+
+          {/* Conteúdo Dinâmico */}
+          <Card className={styles.contentCard}>
+            {/* ORIENTADOR */}
+            {activeStep === "orientador" && (
+              <div className={styles.section}>
+                <div className={styles.sectionHeader}>
+                  <h5>Orientação</h5>
+                  <p className={styles.sectionDescription}>
+                    Adicione o orientador responsável por esta inscrição
+                  </p>
+                </div>
+
+                {inscricao.participacoes
+                  ?.filter((item) => item?.tipo === "orientador")
+                  .sort((a, b) => a.id - b.id)
+                  .map((item) => (
+                    <div className={styles.participacaoItem} key={item.id}>
                       <div
-                        className={styles.addItem}
+                        className={styles.participacaoInfoClickable}
                         onClick={() => {
+                          openModalAndSetData(item);
                           setTipoParticipacao("orientador");
-                          openModalAndSetData(null);
                         }}
                       >
-                        <div className={styles.icon}>
-                          <RiUserAddLine />
+                        <div className={styles.participacaoInfo}>
+                          <div
+                            className={`${styles.statusBadge} ${item.status === "incompleto" ? styles.incompleto : styles.completo}`}
+                          >
+                            {item.status === "incompleto" ? (
+                              <RiAlertLine size={14} />
+                            ) : (
+                              <RiCheckboxCircleLine size={14} />
+                            )}
+                            <span>
+                              {item.status === "incompleto"
+                                ? "Incompleto"
+                                : "Completo"}
+                            </span>
+                          </div>
+                          <div className={styles.participacaoDetails}>
+                            <span className={styles.participacaoTipo}>
+                              Orientador
+                            </span>
+                            <span className={styles.participacaoNome}>
+                              {item.user.nome.toUpperCase()}
+                            </span>
+                          </div>
                         </div>
-                        <p>Add orientador</p>
+                      </div>
+
+                      <div className={styles.participacaoActions}>
+                        {/* Botão de Excluir Participação (Orientador) */}
+                        <button
+                          className={`${styles.iconButton} ${styles.danger}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteParticipacao(item.id);
+                          }}
+                          disabled={deletingParticipacaoId === item.id}
+                          title="Remover orientador"
+                        >
+                          {deletingParticipacaoId === item.id ? (
+                            <span className={styles.deletingText}>...</span>
+                          ) : (
+                            <RiDeleteBinLine size={18} />
+                          )}
+                        </button>
+                      </div>
+                      <RiArrowRightSLine size={18} />
+                    </div>
+                  ))}
+
+                {editalInfo.maxOrientadores <
+                  inscricao.participacoes.filter(
+                    (item) => item?.tipo === "orientador",
+                  ).length && (
+                  <button
+                    className={styles.addButton}
+                    onClick={() => {
+                      setTipoParticipacao("orientador");
+                      openModalAndSetData(null);
+                    }}
+                  >
+                    <RiUserAddLine size={20} />
+                    <span>Adicionar orientador</span>
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* PROJETOS */}
+            {activeStep === "projetos" && (
+              <div className={styles.section}>
+                {/* Contadores */}
+                <div className={styles.countersContainer}>
+                  <div className={styles.counterCard}>
+                    <div className={styles.counterHeader}>
+                      <RiArticleLine size={18} />
+                      <span>Planos de Trabalho</span>
+                    </div>
+                    <div className={styles.counterValue}>
+                      {inscricao.planosDeTrabalho?.length || 0} /{" "}
+                      {editalInfo?.maxPlanos || 0}
+                    </div>
+                  </div>
+                  <div className={styles.counterCard}>
+                    <div className={styles.counterHeader}>
+                      <RiUserAddLine size={18} />
+                      <span>Solicitações de Bolsa</span>
+                    </div>
+                    <div className={styles.counterValue}>
+                      {countBolsaSolicitadas()} /{" "}
+                      {editalInfo?.maxSolicitacaoBolsa || 0}
+                    </div>
+                    {atingiuLimiteBolsa() && (
+                      <div className={styles.counterWarning}>
+                        <RiAlertLine size={14} />
+                        <span>Limite de bolsas atingido</span>
                       </div>
                     )}
-                  </>
-                )}
-                {/* COORIENTADORES */}
-                {false && activeStep === "coorientador" && (
-                  <>
-                    <div className={styles.orientadores}>
-                      {inscricao.participacoes
-                        ?.filter((item) => item.tipo === "coorientador")
-                        .map((item) => (
-                          <div key={item.id}>
-                            <EditarParticipacao
-                              participacaoInfo={item}
-                              tenant={tenant}
-                              inscricaoSelected={inscricaoSelected}
-                              setInscricao={setInscricao}
-                              editalInfo={editalInfo}
-                            />
-                          </div>
-                        ))}
-                    </div>
-                    <div
-                      className={styles.addItem}
-                      onClick={() => {
-                        setTipoParticipacao("coorientador");
-                        openModalAndSetData(null);
-                      }}
-                    >
-                      <div className={styles.icon}>
-                        <RiAddCircleLine />
+                  </div>
+                </div>
+                <div className={styles.sectionHeader}>
+                  <h5>Projetos e Planos de Trabalho</h5>
+                  <p className={styles.sectionDescription}>
+                    Vincule projetos e adicione planos de trabalho com seus
+                    respectivos alunos
+                  </p>
+                </div>
+
+                {inscricao.InscricaoProjeto?.map((item) => (
+                  <div key={item.id} className={styles.projetoCard}>
+                    <div className={styles.projetoHeader}>
+                      <div className={styles.projetoInfo}>
+                        <RiFolder5Line size={20} />
+                        <div>
+                          <span className={styles.projetoLabel}>Projeto</span>
+                          <h6 className={styles.projetoTitulo}>
+                            {item.projeto.titulo}
+                          </h6>
+                        </div>
                       </div>
-                      <p>Add {activeStep}</p>
+                      <div className={styles.projetoActions}>
+                        <button
+                          className={styles.iconButton}
+                          onClick={() => openProjetoModal(item.projeto.id)}
+                          title="Ver projeto"
+                        >
+                          <RiEyeLine size={18} />
+                        </button>
+                        <button
+                          className={`${styles.iconButton} ${styles.warning}`}
+                          onClick={() => handleUnlinkProjeto(item.projeto.id)}
+                          title="Desvincular projeto"
+                        >
+                          <RiLinkUnlink size={18} />
+                        </button>
+                      </div>
                     </div>
-                  </>
-                )}
-                {/* PROJETOS */}
-                {activeStep === "projetos" && (
-                  <>
-                    <div className={styles.projetos}>
-                      {inscricao.InscricaoProjeto?.map((item) => {
-                        return (
-                          <div key={item.id} className={styles.card}>
-                            <div className={styles.label}>
+
+                    {/* Planos de Trabalho */}
+                    {inscricao.planosDeTrabalho
+                      ?.filter(
+                        (i) =>
+                          i.projetoId === item.projetoId ||
+                          i.projetoId === item.id,
+                      )
+                      .sort((a, b) => a.id - b.id)
+                      .map((element) => (
+                        <div key={element.id} className={styles.planoCard}>
+                          <div className={styles.planoHeader}>
+                            <div className={styles.planoInfo}>
+                              <RiArticleLine size={18} />
                               <div>
-                                <h6>Projeto:</h6>
-                                <p>{item.projeto.titulo}</p>
-                              </div>
-                              <div className={styles.actions}>
-                                <div
-                                  className={styles.action}
-                                  onClick={() =>
-                                    openProjetoModal(item.projeto.id)
-                                  }
-                                >
-                                  <RiEyeLine />
-                                  <p>Ver Projeto</p>
-                                </div>
-                                {inscricao.planosDeTrabalho?.filter(
-                                  (i) =>
-                                    i.projetoId === item.projetoId ||
-                                    i.projetoId === item.id,
-                                ).length === 0 && (
-                                  <div
-                                    className={styles.action}
-                                    onClick={() =>
-                                      handleUnlinkProjeto(item.projeto.id)
-                                    }
-                                  >
-                                    <RiLinkUnlink />
-                                    <p>Desvincular</p>
-                                  </div>
-                                )}
+                                <span className={styles.planoLabel}>
+                                  Plano de Trabalho
+                                </span>
+                                <h6 className={styles.planoTitulo}>
+                                  {element.titulo}
+                                </h6>
                               </div>
                             </div>
+                            <div className={styles.planoActions}>
+                              <button
+                                className={styles.iconButton}
+                                onClick={() => {
+                                  setSelectedProjetoId(item.projeto.id);
+                                  setPlanoDeTrabalhoSelected(element);
+                                  setIsModalOpenPlanoDeTrabalho(true);
+                                }}
+                                title="Ver plano"
+                              >
+                                <RiEyeLine size={18} />
+                              </button>
+                              <button
+                                className={`${styles.iconButton} ${styles.danger}`}
+                                onClick={() =>
+                                  handleDeletePlanoDeTrabalho(element.id)
+                                }
+                                title="Excluir plano de trabalho"
+                              >
+                                <RiDeleteBinLine size={18} />
+                              </button>
+                            </div>
+                          </div>
 
-                            {/* Renderizar Planos de Trabalho Vinculados */}
-                            {inscricao.planosDeTrabalho
+                          {/* Alunos do Plano */}
+                          <div className={styles.alunosSection}>
+                            <div className={styles.alunosHeader}>
+                              <span className={styles.alunosLabel}>
+                                Alunos vinculados
+                              </span>
+                              <span className={styles.alunosCount}>
+                                {
+                                  inscricao.participacoes?.filter(
+                                    (p) =>
+                                      p?.tipo === "aluno" &&
+                                      p?.planoDeTrabalhoId === element.id,
+                                  ).length
+                                }{" "}
+                                / {inscricao.edital.maxAlunosPorPlano}
+                              </span>
+                            </div>
+
+                            {inscricao.participacoes
                               ?.filter(
-                                (i) =>
-                                  i.projetoId === item.projetoId ||
-                                  i.projetoId === item.id,
+                                (p) =>
+                                  p?.tipo === "aluno" &&
+                                  p?.planoDeTrabalhoId === element.id,
                               )
                               .sort((a, b) => a.id - b.id)
-                              .map((element) => (
-                                <div key={element.id} className={styles.card}>
-                                  <div className={styles.label}>
-                                    <div>
-                                      <h6>Plano de Trabalho:</h6>
-                                      <p>{element.titulo}</p>
-                                    </div>
-                                    <div className={styles.actions}>
+                              .map((aluno) => (
+                                <div
+                                  key={aluno.id}
+                                  className={styles.alunoItem}
+                                >
+                                  <div
+                                    className={styles.alunoInfoClickable}
+                                    onClick={() => {
+                                      openModalAndSetData(aluno);
+                                      setTipoParticipacao("aluno");
+                                    }}
+                                  >
+                                    <div className={styles.alunoInfo}>
                                       <div
-                                        className={styles.action}
-                                        onClick={() => {
-                                          setSelectedProjetoId(item.projeto.id);
-                                          setPlanoDeTrabalhoSelected(element);
-                                          setIsModalOpenPlanoDeTrabalho(true);
-                                        }}
-                                      >
-                                        <RiEyeLine />
-                                        <p>Ver Plano</p>
-                                      </div>
-                                      {inscricao.participacoes?.filter(
-                                        (item) =>
-                                          item?.tipo === "aluno" &&
-                                          item?.planoDeTrabalhoId ===
-                                            element.id,
-                                      ).length === 0 && (
-                                        <div
-                                          className={`${styles.action} `}
-                                          onClick={() =>
-                                            handleDeletePlanoDeTrabalho(
-                                              element.id,
-                                            )
-                                          }
-                                        >
-                                          <RiDeleteBinLine />
-                                          <p>Excluir</p>
-                                        </div>
+                                        className={`${styles.statusDot} ${aluno.status === "incompleto" ? styles.incompleto : styles.completo}`}
+                                      />
+                                      <span className={styles.alunoNome}>
+                                        {aluno.user.nome.toUpperCase()}
+                                      </span>
+                                      {aluno.solicitarBolsa && (
+                                        <span className={styles.bolsaBadge}>
+                                          <RiUserAddLine size={12} />
+                                          Bolsa
+                                        </span>
                                       )}
                                     </div>
                                   </div>
-                                  <>
-                                    <div className={styles.lista}>
-                                      {inscricao.participacoes
-                                        ?.filter(
-                                          (item) =>
-                                            item?.tipo === "aluno" &&
-                                            item?.planoDeTrabalhoId ===
-                                              element.id,
-                                        )
-                                        .sort((a, b) => a.id - b.id)
-                                        .map((item) => (
-                                          <div
-                                            onClick={() => {
-                                              openModalAndSetData(item);
-                                              setTipoParticipacao("aluno");
-                                            }}
-                                            className={styles.itemLista}
-                                            key={item.id}
-                                          >
-                                            <div className={styles.infoLista}>
-                                              <div
-                                                className={`${styles.status} ${
-                                                  item.status === "incompleto"
-                                                    ? styles.pendente
-                                                    : styles.completo
-                                                }`}
-                                              >
-                                                {item.status ===
-                                                  "incompleto" && (
-                                                  <RiAlertLine />
-                                                )}
-                                                {item.status === "completo" && (
-                                                  <RiCheckboxCircleLine />
-                                                )}
-                                                {item.status ===
-                                                  "incompleto" && (
-                                                  <p>{item.status}</p>
-                                                )}
-                                              </div>
-                                              <div>
-                                                <h6>Aluno</h6>
-                                                <p>
-                                                  {item.user.nome.toUpperCase()}
-                                                </p>
-                                              </div>
-                                            </div>
-
-                                            <div className={styles.actions}>
-                                              <div className={styles.action}>
-                                                <RiEyeLine />
-                                              </div>
-                                            </div>
-                                          </div>
-                                        ))}
-                                    </div>
-
-                                    {inscricao.participacoes?.filter(
-                                      (item) =>
-                                        item?.tipo === "aluno" &&
-                                        item?.planoDeTrabalhoId === element.id,
-                                    ).length <
-                                      inscricao.edital.maxAlunosPorPlano && (
-                                      <div
-                                        className={styles.addItem}
-                                        onClick={() => {
-                                          setTipoParticipacao("aluno");
-                                          openModalAndSetData(null);
-                                          setPlanoDeTrabalhoSelected(element);
-                                        }}
-                                      >
-                                        <div className={styles.icon}>
-                                          <RiUserAddLine />
-                                        </div>
-                                        <p>Add aluno</p>
-                                      </div>
+                                  <button
+                                    className={`${styles.iconButton} ${styles.danger}`}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteParticipacao(aluno.id);
+                                    }}
+                                    disabled={
+                                      deletingParticipacaoId === aluno.id
+                                    }
+                                    title="Remover aluno"
+                                  >
+                                    {deletingParticipacaoId === aluno.id ? (
+                                      <span className={styles.deletingText}>
+                                        ...
+                                      </span>
+                                    ) : (
+                                      <RiDeleteBinLine size={16} />
                                     )}
-                                  </>
+                                  </button>
+                                  <RiArrowRightSLine size={18} />
                                 </div>
                               ))}
 
-                            {inscricao.planosDeTrabalho.length <
-                              editalInfo.maxPlanos && (
-                              <div
-                                className={styles.addItem}
+                            {podeAdicionarAluno(element.id) && (
+                              <button
+                                className={styles.addAlunoButton}
                                 onClick={() => {
-                                  setPlanoDeTrabalhoSelected(null);
-                                  setSelectedProjetoId(item.projeto.id);
-                                  setIsModalOpenPlanoDeTrabalho(true);
+                                  setTipoParticipacao("aluno");
+                                  openModalAndSetData(null);
+                                  setPlanoDeTrabalhoSelected(element);
                                 }}
                               >
-                                <div className={styles.icon}>
-                                  <RiArticleLine />
-                                </div>
-                                <p>Add Plano de Trabalho</p>
-                              </div>
+                                <RiUserAddLine size={16} />
+                                <span>Adicionar aluno</span>
+                              </button>
                             )}
+
+                            {podeAdicionarAluno(element.id) &&
+                              atingiuLimiteBolsa() && (
+                                <div className={styles.limitWarning}>
+                                  <RiAlertLine size={14} />
+                                  <span>
+                                    Limite máximo de bolsas atingido. Não é
+                                    possível adicionar mais alunos com bolsa.
+                                  </span>
+                                </div>
+                              )}
                           </div>
-                        );
-                      })}
-                    </div>
-                    {inscricao.planosDeTrabalho.length <
-                      editalInfo.maxPlanos && (
-                      <div
-                        className={styles.addItem}
-                        onClick={() => setIsModalOpenProjeto(true)}
-                      >
-                        <div className={styles.icon}>
-                          <RiFolder5Line />
                         </div>
-                        <p>Add Projeto</p>
+                      ))}
+
+                    {/* Botão Adicionar Plano de Trabalho - só aparece se não atingiu o limite */}
+                    {!atingiuLimitePlanos() && (
+                      <button
+                        className={styles.addPlanoButton}
+                        onClick={() => {
+                          setPlanoDeTrabalhoSelected(null);
+                          setSelectedProjetoId(item.projeto.id);
+                          setIsModalOpenPlanoDeTrabalho(true);
+                        }}
+                      >
+                        <RiArticleLine size={18} />
+                        <span>Adicionar Plano de Trabalho</span>
+                      </button>
+                    )}
+
+                    {atingiuLimitePlanos() && (
+                      <div className={styles.limitWarning}>
+                        <RiAlertLine size={14} />
+                        <span>
+                          Limite máximo de {editalInfo?.maxPlanos} planos de
+                          trabalho atingido
+                        </span>
                       </div>
                     )}
-                  </>
-                )}
-                {/* PLANOS DE TRABALHO */}
-                {false && activeStep === "planosDeTrabalho" && (
-                  <div className={styles.planosDeTrabalho}></div>
+                  </div>
+                ))}
+
+                {/* Botão Vincular novo projeto - CORRIGIDO: sempre visível quando existem projetos ou não */}
+                {(!inscricao.InscricaoProjeto?.length ||
+                  inscricao.InscricaoProjeto?.length > 0) && (
+                  <button
+                    className={styles.addProjetoButton}
+                    onClick={() => setIsModalOpenProjeto(true)}
+                  >
+                    <RiFolder5Line size={20} />
+                    <span>Vincular novo projeto</span>
+                  </button>
                 )}
               </div>
-            </div>
-          )}
+            )}
+          </Card>
         </div>
       )}
     </>

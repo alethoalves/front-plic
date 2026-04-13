@@ -1,285 +1,1029 @@
 @import "/styles/partials/colors";
 @import "/styles/partials/layout";
 @import "/styles/partials/spacing";
-.icon{
-    width: 24px;
+
+// Variáveis
+$border-radius-card: 16px;
+$border-radius-item: 12px;
+$transition-default: all 0.2s ease;
+$shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+$shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+
+// Loading
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $gap-6;
+  gap: $gap-3;
+  
+  p {
+    color: $gray-500;
+    font-size: 0.9375rem;
+  }
+}
+
+// Modal Icon
+.modalIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: $gap-3;
+  background: rgba($primary-normal, 0.1);
+  border-radius: 12px;
+  
+  svg {
     color: $primary-normal;
+    width: 24px;
+    height: 24px;
+  }
 }
-.inscricao{
+
+// Container Principal
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-3;
+  svg{
+    width: 24px;
+  }
+}
+
+// Header Card
+.headerCard {
+  border: 1px solid $gray-50 !important;
+  border-radius: $border-radius-card !important;
+  box-shadow: $shadow-sm !important;
+  background: $white-light !important;
+  
+  :global(.p-card-body) {
+    padding: $gap-3 $gap-4 !important;
+  }
+}
+
+.headerContent {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: $gap-4;
+  
+  @include responsive(s) {
+    flex-direction: column;
+    gap: $gap-3;
+  }
+}
+
+.headerTitle {
+  h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: $gray-800;
+    margin: 0 0 4px 0;
+  }
+  
+  .headerSubtitle {
+    font-size: 0.875rem;
+    color: $gray-500;
+    margin: 0;
+  }
+}
+
+.editalInfo {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+  
+  .editalBadge {
+    padding: 4px 10px;
+    background: $primary-normal;
+    border-radius: 20px;
     
-    margin-top: $gap-2;
+    .editalAno {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: $white-light;
+    }
+  }
+  
+  .editalTitulo {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: $gray-700;
+    margin: 0;
+  }
+}
+
+// Errors Container
+.errorsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-1;
+}
+
+.errorAlert {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+  padding: $gap-2 $gap-3;
+  background: rgba($error-normal, 0.06);
+  border-left: 3px solid $error-normal;
+  border-radius: 8px;
+  
+  svg {
+    color: $error-normal;
+    flex-shrink: 0;
+  }
+  
+  span {
+    color: $error-dark;
+    font-size: 0.875rem;
+  }
+}
+
+// Submit Section
+.submitSection {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-1;
+}
+
+.submitButton {
+  width: 100%;
+  background: $primary-normal !important;
+  border: none !important;
+  border-radius: 12px !important;
+  padding: $gap-3 $gap-4 !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  transition: $transition-default !important;
+  p, svg{
+    color: $white-light !important;
+  }
+  &:hover:not(:disabled) {
+    background: $primary-dark !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba($success-normal, 0.2) !important;
+  }
+  
+  &:disabled {
+    opacity: 0.7;
+  }
+  
+  :global(.p-button-icon) {
+    margin-right: $gap-2;
+    font-size: 1.25rem;
+  }
+}
+
+.termoText {
+  font-size: 0.75rem;
+  color: $gray-500;
+  text-align: center;
+  margin: 0;
+}
+
+// Steps Tabs
+.stepsContainer {
+  display: flex;
+  gap: $gap-1;
+  padding: 4px;
+  background: $gray-25;
+  border-radius: 14px;
+}
+
+.stepTab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $gap-2;
+  flex: 1;
+  padding: $gap-2 $gap-3;
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: $gray-600;
+  cursor: pointer;
+  transition: $transition-default;
+  @include responsive(xs) {
+    padding: $gap-1 $gap-2;
+  }
+  svg {
+    color: $gray-500;
+  }
+  
+  &:hover {
+    background: $white-light;
+    color: $gray-700;
     
-}
-.errorMsg{
-    background-color: $error-light;
-    border-radius: 4px;
-    margin-top: $gap-1;
-    p{
-        color: $white-light;
-        padding: $gap-1 $gap-2;
-        
+    svg {
+      color: $gray-600;
     }
-}
-
-
-.info{
-    margin-top: $gap-2;
-    margin-bottom: $gap-2;
-    p:not(:last-child){
-        margin-bottom: 6px;
+  }
+  
+  &.active {
+    background: $white-light;
+    color: $primary-normal;
+    box-shadow: $shadow-sm;
+    
+    svg {
+      color: $primary-normal;
     }
-}
-
-.addItem{
-    padding: $gap-2;
+  }
+  
+  .stepCount {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: $gap-2;
-    p{
-        margin-left: $gap-1;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    background: $primary-normal;
+    border-radius: 10px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: $white-light;
+  }
+  
+  @include responsive(xs) {
+    span:not(.stepCount) {
+      display: none;
     }
-    
-    border-radius: $gap-1;
-    cursor: pointer;
-    border: 1px dashed  $primary-normal;
-    background-color: $white-light;
-    &:hover{
-        background-color: $white-normal;
-    }
-    
-    .icon {
-        width: 30px;
-        height: 30px;
-        color: $primary-normal;
-        svg{
-            width: 100%;
-            height: 100%;
-        }
-        }
+  }
 }
-.completo{
-    color: $success-dark;
 
+// Content Card
+.contentCard {
+  border: 1px solid $gray-50 !important;
+  border-radius: $border-radius-card !important;
+  box-shadow: $shadow-sm !important;
+  background: $white-light !important;
+  overflow: hidden;
+  
+  :global(.p-card-body) {
+    padding: 0 !important;
+  }
 }
-.pendente{
-    border: 1px solid $error-dark;
-    background-color: $error-lighten;
-    padding: $gap-1 $gap-2;
-    border-radius: $gap-1;
+
+
+
+.sectionHeader {
+  margin-bottom: $gap-3;
+  
+  h5 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: $gray-800;
+    margin: 0 0 4px 0;
+  }
+  
+  .sectionDescription {
+    font-size: 0.875rem;
+    color: $gray-500;
+    margin: 0;
+  }
+}
+
+// Participacao Item
+.participacaoItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $gap-3;
+  background: $gray-25;
+  border: 1px solid $gray-50;
+  border-radius: $border-radius-item;
+  margin-bottom: $gap-2;
+  cursor: pointer;
+  transition: $transition-default;
+  
+  &:hover {
+    background: $white-light;
+    border-color: $primary-lighten;
+    box-shadow: $shadow-sm;
+  }
+  
+  &:last-of-type {
+    margin-bottom: $gap-3;
+  }
+}
+
+.participacaoInfo {
+  display: flex;
+  
+  gap: $gap-3;
+  @include responsive(xs) {
+    flex-direction: column;
+     }
+}
+
+.statusBadge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  
+  &.incompleto {
+    background: rgba($warning-normal, 0.15);
+    color: $warning-darken;
+  }
+  
+  &.completo {
+    background: rgba($success-normal, 0.1);
+    color: $success-dark;
+  }
+  
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.participacaoDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  
+  .participacaoTipo {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: $gray-500;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  
+  .participacaoNome {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: $gray-800;
+  }
+}
+
+.participacaoActions {
+  display: flex;
+  align-items: center;
+  gap: $gap-1;
+}
+
+// Icon Button
+.iconButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: $gray-500;
+  cursor: pointer;
+  transition: $transition-default;
+  
+  &:hover:not(:disabled) {
+    background: $gray-100;
+    color: $gray-700;
+  }
+  
+  &.danger:hover:not(:disabled) {
+    background: rgba($error-normal, 0.1);
+    color: $error-normal;
+  }
+  
+  &.warning:hover:not(:disabled) {
+    background: rgba($warning-normal, 0.1);
+    color: $warning-darken;
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .deletingText {
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+}
+
+// Add Button
+.addButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $gap-2;
+  width: 100%;
+  padding: $gap-3;
+  background: transparent;
+  border: 1.5px dashed $gray-200;
+  border-radius: $border-radius-item;
+  color: $gray-600;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: $transition-default;
+  
+  &:hover {
+    border-color: $primary-normal;
+    background: rgba($primary-normal, 0.02);
+    color: $primary-normal;
+  }
+  
+  svg {
+    color: inherit;
+  }
+}
+
+// Projeto Card
+.projetoCard {
+  background: $gray-25;
+  border: 1px solid $gray-50;
+  border-radius: $border-radius-item;
+  padding: $gap-3;
+  margin-bottom: $gap-3;
+  @include responsive(xs) {
+    padding: $gap-2;
+    margin-bottom: $gap-1;
+  }
+  &:last-of-type {
+    margin-bottom: $gap-3;
+  }
+}
+
+.projetoHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: $gap-3;
+}
+
+.projetoInfo {
+  display: flex;
+  align-items: flex-start;
+  gap: $gap-2;
+  @include responsive(xs){
+    flex-direction: column;
+    gap: $gap-1;
+  }
+  svg {
+    color: $primary-normal;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  
+  .projetoLabel {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: $gray-500;
+  }
+  
+  .projetoTitulo {
+    font-size: 1rem;
+    font-weight: 600;
+    color: $gray-800;
+    margin: 2px 0 0 0;
+    line-height: 1.4;
+  }
+}
+
+.projetoActions {
+  display: flex;
+  align-items: center;
+  gap: $gap-1;
+}
+
+
+
+.planoHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: $gap-3;
+  padding-bottom: $gap-3;
+  border-bottom: 1px solid $gray-50;
+}
+
+.planoInfo {
+  display: flex;
+  align-items: flex-start;
+  gap: $gap-2;
+  @include responsive(xs){
+    flex-direction: column;
+    gap: $gap-1;
+  }
+  svg {
+    color: $success-normal;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  
+  .planoLabel {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: $gray-500;
+  }
+  
+  .planoTitulo {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: $gray-700;
+    margin: 2px 0 0 0;
+    line-height: 1.4;
+  }
+}
+
+.planoActions {
+  display: flex;
+  align-items: center;
+  gap: $gap-1;
+}
+
+// Alunos Section
+.alunosSection {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-1;
+}
+
+.alunoItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $gap-2 $gap-3;
+  background: $gray-25;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: $transition-default;
+  
+  &:hover {
+    background: $white-light;
+    box-shadow: $shadow-sm;
+  }
+}
+
+.alunoInfo {
+  display: flex;
+  align-items: flex-start;
+  gap: $gap-2;
+  
+  .statusDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+   
+    &.incompleto {
+      background: $warning-normal;
+    }
+    
+    &.completo {
+      background: $success-normal;
+    }
+  }
+  
+  .alunoNome {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $gray-700;
+  }
+}
+
+// Add Aluno Button
+.addAlunoButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $gap-2;
+  padding: $gap-2;
+  margin-top: $gap-1;
+  background: transparent;
+  border: 1px dashed $gray-200;
+  border-radius: 8px;
+  color: $gray-600;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: $transition-default;
+  
+  &:hover {
+    border-color: $primary-normal;
+    color: $primary-normal;
+  }
+}
+
+// Add Plano Button
+.addPlanoButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $gap-2;
+  width: 100%;
+  padding: $gap-2;
+  margin-top: $gap-2;
+  background: transparent;
+  border: 1.5px dashed $success-normal;
+  border-radius: 8px;
+  color: $success-dark;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: $transition-default;
+  
+  &:hover {
+    background: rgba($success-normal, 0.05);
+  }
+}
+
+// Add Projeto Button
+.addProjetoButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $gap-2;
+  width: 100%;
+  padding: $gap-3;
+  background: transparent;
+  border: 2px dashed $primary-lighten;
+  border-radius: $border-radius-item;
+  color: $primary-normal;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: $transition-default;
+  
+  &:hover {
+    background: rgba($primary-normal, 0.05);
+    border-color: $primary-normal;
+  }
+}
+
+// Global Error
+.globalError {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+  padding: $gap-3;
+  background: rgba($error-normal, 0.08);
+  border: 1px solid rgba($error-normal, 0.2);
+  border-radius: 12px;
+  
+  svg {
+    color: $error-normal;
+    flex-shrink: 0;
+  }
+  
+  span {
+    color: $error-dark;
+    font-size: 0.875rem;
+  }
+}
+
+// Responsividade
+@media (max-width: 768px) {
+  .section {
+    padding: $gap-3;
+  }
+  
+  .participacaoItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: $gap-2;
+  }
+  
+  .participacaoActions {
+    align-self: flex-end;
+  }
+  
+  .projetoHeader {
+    flex-direction: column;
+    gap: $gap-2;
+  }
+  
+  .projetoActions {
+    align-self: flex-end;
+  }
+  
+  .planoHeader {
+    flex-direction: column;
+    gap: $gap-2;
+  }
+  
+  .planoActions {
+    align-self: flex-end;
+  }
+}
+
+
+// Section
+.section {
+  padding: $gap-4;
+  @include responsive(xs) {
+    padding: $gap-2;
+  }
+}
+
+// Plano Card
+.planoCard {
+  background: $white-light;
+  border: 1px solid $gray-50;
+  border-radius: 10px;
+  padding: $gap-3;
+  margin-bottom: $gap-2;
+  @include responsive(xs) {
+    padding: $gap-2;
+    margin-bottom: $gap-1;
+  }
+  &:last-of-type {
+    margin-bottom: $gap-2;
+  }
+}
+
+// Alunos Header
+.alunosHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $gap-2;
+  padding: 0 $gap-1;
+  
+  .alunosLabel {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: $gray-500;
+  }
+  
+  .alunosCount {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: $gray-500;
+  }
+}
+
+// Aluno Item atualizado
+.alunoItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $gap-2 $gap-3;
+  background: $gray-25;
+  border-radius: 8px;
+  margin-bottom: $gap-1;
+  transition: $transition-default;
+  
+  &:hover {
+    background: $white-light;
+    box-shadow: $shadow-sm;
+  }
+  
+  &:last-of-type {
+    margin-bottom: $gap-2;
+  }
+}
+
+.alunoInfoClickable {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  cursor: pointer;
+  padding: $gap-1 0;
+  
+  &:hover {
+    .alunoNome {
+      color: $primary-normal;
+    }
+  }
+}
+
+.alunoInfo {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+  @include responsive(xs) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: $gap-1;
+  }
+  .statusDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    
+    &.incompleto {
+      background: $warning-normal;
+    }
+    
+    &.completo {
+      background: $success-normal;
+    }
+  }
+  
+  .alunoNome {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $gray-700;
+    transition: color 0.2s ease;
+  }
+}
+
+
+// Participacao Item atualizado
+.participacaoItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $gap-3;
+  background: $gray-25;
+  border: 1px solid $gray-50;
+  border-radius: $border-radius-item;
+  margin-bottom: $gap-2;
+  transition: $transition-default;
+  
+  &:hover {
+    background: $white-light;
+    border-color: $primary-lighten;
+    box-shadow: $shadow-sm;
+  }
+  
+  &:last-of-type {
+    margin-bottom: $gap-3;
+  }
+}
+
+.participacaoInfoClickable {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  cursor: pointer;
+  padding-right: $gap-3;
+  
+  &:hover {
+    .participacaoNome {
+      color: $primary-normal;
+    }
+  }
+}
+
+.participacaoInfo {
+  display: flex;
+  align-items: center;
+  gap: $gap-3;
+}
+
+.participacaoActions {
+  display: flex;
+  align-items: center;
+  gap: $gap-1;
+  flex-shrink: 0;
+}
+
+// Contadores
+.countersContainer {
+  display: flex;
+  gap: $gap-3;
+  margin-bottom: $gap-4;
+  
+  @include responsive(s) {
+    flex-direction: column;
+  }
+}
+
+.counterCard {
+  flex: 1;
+  padding: $gap-3;
+  background: $gray-25;
+  border: 1px solid $gray-50;
+  border-radius: $border-radius-item;
+  
+  .counterHeader {
     display: flex;
     align-items: center;
-    svg{
-        width: 40px;
-        color: $error-dark;
+    gap: $gap-2;
+    margin-bottom: $gap-2;
+    
+    svg {
+      color: $primary-normal;
     }
-    p{
-        color: $error-dark;
-        margin: 0;
-        margin-left: $gap-1;
-        flex: 1;
+    
+    span {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: $gray-600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
     }
-}
-.button{
-    width: auto;
-}
-.stepsMenu{
+  }
+  
+  .counterValue {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: $gray-800;
+  }
+  
+  .counterWarning {
     display: flex;
-    @include responsive(xs){
-        flex-direction: column;
-    }
+    align-items: center;
     gap: $gap-1;
     margin-top: $gap-2;
-    .stepItemMenu{
-        border: 1px solid $white-darken;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        justify-content: center;
-        border-radius: $gap-1;
-        background-color: $white-dark;
-        padding: $gap-1;
-        padding: $gap-2;
-        cursor: pointer;
-        transition: ease .3s;
-        &:hover{
-            transform: scale(1.03);
-        }
-        .statusWarning{
-            svg{
-                color:$error-dark;
-            }
-        }
-        .statusSuccess{
-            svg{
-                color:$success-dark;
-            }
-        }
-        
-        
-        p{
-            text-align: center;
-            color:$primary-dark;
-        }
-    }
-    .selected{
-        background-color: $white-darken;
-        box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
-        border-bottom: 2px solid $primary-normal;
-    }
-}
-.menu{
-    flex: 1;
-    margin-top: $gap-2;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: $gap-2;
-    .itemMenu{
-        cursor: pointer;
-        transition: ease .3s;
-        flex: 1;
-        text-align: center;
-        padding: $gap-2 $gap-2;
-        background-color: $white-darken;
-        &:first-child{
-            border-top-left-radius: $gap-1;
-            border-bottom-left-radius: $gap-1;
-        }
-        &:last-child{
-            border-top-right-radius: $gap-1;
-            border-bottom-right-radius: $gap-1;
-        }
-        p{
-            color: $primary-darken;
-        }
+    padding: $gap-1 $gap-2;
+    background: rgba($warning-normal, 0.1);
+    border-radius: 6px;
+    
+    svg {
+      color: $warning-normal;
     }
     
-    .itemMenuSelected{
-        p{
-            color: $white-dark;
-        }
-        background-color: $primary-dark;
+    span {
+      font-size: 0.6875rem;
+      color: $warning-darken;
     }
-}
-.delete{
-    position: absolute;
-    background-color: $white-darken;
-    top: 0;
-    right: 0;
-    padding: $gap-1;
-    border-top-right-radius: $gap-1;
-    border-bottom-left-radius: $gap-1;
-    cursor: pointer;
-    transition: ease .3s;
-    color: $primary-dark;
-    &:hover{
-        opacity: 0.7;
-    }
-    
-}
-.projetos{
-    margin-top: $gap-1;
-    .card{
-        display: flex;
-        flex-direction: column;
-        gap: $gap-2;
-        &:not(:last-child){
-            margin-bottom: $gap-1;
-        }
-        align-items: left;
-        justify-content: space-between;
-        transition: ease .3s;
-        border: 1px solid $gray-50;
-        border-radius: $gap-1;
-        padding: $gap-2;
-        
-        &:hover{
-            transform: scale(1.01);
-            box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
-        }
-        h6{
-            flex: 1;
-        }
-        .label{
-            display: flex;
-            justify-content: space-between;
-        }
-        .actions{
-            display: flex;
-            gap: $gap-1;
-            .action{
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                cursor: pointer;
-                transition: ease .3s;
-                &:hover{
-                    opacity: 0.5;
-                }
-            }
-            p{
-                font-size: 10px;
-                color: $primary-darken;
-                text-align: center;
-                line-height: 10px;
-                white-space: nowrap;
-            }
-            svg{
-                color: $primary-darken;
-                width: 18px;
-                height: 18px;
-            }
-        }
-    }
+  }
 }
 
-.lista{
-    margin-top: $gap-1;
-    .itemLista{
-        display: flex;
-        &:not(:last-child){
-            margin-bottom: $gap-1;
-        }
-        align-items: center;
-        justify-content: space-between;
-        transition: ease .3s;
-        border: 1px solid $gray-50;
-        border-radius: $gap-1;
-        padding: $gap-2;
-        cursor: pointer;
-        &:hover{
-            transform: scale(1.01);
-            box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
-        }
-        .infoLista{
-            display: flex;
-            align-items: center;
-        }
-        .status{
-           
-            margin-right: $gap-1;
-            
-        }
-        
-        h6{
-            flex: 1;
-        }
-        .actions{
-            display: flex;
-            gap: $gap-2;
-            svg{
-                width: 20px;
-                height: 20px;
-                color: $primary-darken;
-            }
-        }
-        .actionDanger{
-           svg{
-                color: $error-dark;
-            }
-        }
+// Bolsa Badge
+.bolsaBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: rgba($success-normal, 0.1);
+  border-radius: 12px;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: $success-dark;
+  margin-left: $gap-2;
+  @include responsive(xs) {
+    margin-left: 0;
+  }
+  svg {
+    color: $success-normal;
+  }
+}
+
+// Limit Warning
+.limitWarning {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+  padding: $gap-2 $gap-3;
+  margin-top: $gap-2;
+  background: rgba($warning-normal, 0.08);
+  border: 1px solid rgba($warning-normal, 0.2);
+  border-radius: 8px;
+  
+  svg {
+    color: $warning-normal;
+    flex-shrink: 0;
+  }
+  
+  span {
+    font-size: 0.75rem;
+    color: $warning-darken;
+  }
+}
+
+// Ajuste no addAlunoButton para quando está desabilitado por limite de bolsa
+.addAlunoButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $gap-2;
+  padding: $gap-2;
+  margin-top: $gap-1;
+  background: transparent;
+  border: 1px dashed $gray-200;
+  border-radius: 8px;
+  color: $gray-600;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: $transition-default;
+  
+  &:hover {
+    border-color: $primary-normal;
+    color: $primary-normal;
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    
+    &:hover {
+      border-color: $gray-200;
+      color: $gray-600;
     }
+  }
 }

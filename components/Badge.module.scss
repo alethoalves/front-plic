@@ -1,0 +1,57 @@
+@import "/styles/partials/colors";
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+  border-radius: 20px;
+  white-space: nowrap;
+  
+  .icon {
+    display: flex;
+    align-items: center;
+  }
+  
+  // Variants
+  &.success {
+    background: rgba($success-normal, 0.1);
+    color: $success-dark;
+  }
+  
+  &.warning {
+    background: rgba($warning-normal, 0.15);
+    color: $warning-darken;
+  }
+  
+  &.error {
+    background: rgba($error-normal, 0.1);
+    color: $error-dark;
+  }
+  
+  &.neutral {
+    background: $gray-100;
+    color: $gray-600;
+  }
+  
+  &.info {
+    background: rgba($primary-normal, 0.1);
+    color: $primary-darken;
+  }
+  
+  // Sizes
+  &.small {
+    padding: 2px 8px;
+    font-size: 11px;
+  }
+  
+  &.medium {
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+  
+  &.large {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+}

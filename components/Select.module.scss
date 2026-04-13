@@ -6,9 +6,38 @@
     position: relative;
     display: inline-block;
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
     cursor: pointer;
     
    
+}
+
+.select {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.selectContainer :global(.p-dropdown) {
+    width: 100%;
+    max-width: 354px;
+    min-width: 20px;
+    
+}
+
+.selectContainer :global(.p-dropdown .p-dropdown-label) {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    
+}
+
+.selectContainer :global(.p-dropdown-panel .p-dropdown-items .p-dropdown-item) {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .select .label{

@@ -16,6 +16,7 @@ const ParticipacaoForm = ({
   onClose,
   tipoParticipacao,
   showLabelInicio = true,
+  atingiuLimiteBolsa,
 }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -66,7 +67,7 @@ const ParticipacaoForm = ({
     } catch (error) {
       console.error("Error:", error);
       setError(
-        error.response?.data?.message ?? "Erro na conexão com o servidor."
+        error.response?.data?.message ?? "Erro na conexão com o servidor.",
       );
     } finally {
       setLoading(false);
@@ -105,13 +106,21 @@ const ParticipacaoForm = ({
         />
       )}
       {showBolsaField && (
-        <Input
-          control={control}
-          name="solicitarBolsa"
-          label="Solicitar bolsa"
-          inputType="checkbox"
-          disabled={loading}
-        />
+        <div>
+          <Input
+            control={control}
+            name="solicitarBolsa"
+            label="Solicitar bolsa"
+            inputType="checkbox"
+            disabled={loading || atingiuLimiteBolsa} // <-- MODIFIQUE AQUI
+          />
+          {atingiuLimiteBolsa && (
+            <p className={styles.limitWarning}>
+              ⚠️ Limite de solicitação de bolsas atingido. Aluno será
+              voluntário.
+            </p>
+          )}
+        </div>
       )}
       <Button className="btn-primary" type="submit">
         {loading ? "Aguarde..." : "Salvar"}

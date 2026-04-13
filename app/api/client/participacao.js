@@ -2,6 +2,33 @@ import { getAuthHeadersClient } from "@/lib/headers.js";
 import { req } from "./../axios.js";
 import { getCookie } from 'cookies-next';
 
+const convertToFormData = (data) => {
+  const formData = new FormData();
+
+  if (data?.camposDinamicos) {
+    Object.keys(data.camposDinamicos).forEach((key) => {
+      const value = data.camposDinamicos[key];
+      const fullKey = `camposDinamicos.${key}`;
+
+      if (value instanceof FileList && value.length > 0) {
+        formData.append(fullKey, value[0]);
+        return;
+      }
+
+      if (Array.isArray(value)) {
+        formData.append(fullKey, JSON.stringify(value));
+        return;
+      }
+
+      if (value !== undefined && value !== null) {
+        formData.append(fullKey, String(value));
+      }
+    });
+  }
+
+  return formData;
+};
+
 /**************************
  * PARTICIPACAO
  **************************/
@@ -425,5 +452,35 @@ export const ativarOuPendenteParticipacao = async (
     // Tratamento para outros erros
     console.error("Erro ao alterar status da participação:", error);
     throw new Error(error.response?.data?.message || 'Erro ao alterar status da participação');
+  }
+};
+
+export const upsertRespostasParticipacao = async (
+  tenantSlug,
+  payload,
+  idParticipacao
+) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    
+    const token = getCookie("authToken"); 
+    const formData = convertToFormData(payload);
+    const response = await req.put(
+      `/private/${tenantSlug}/participacoes/${idParticipacao}/respostas`,
+      formData,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro:", error);
+    throw error;
   }
 };

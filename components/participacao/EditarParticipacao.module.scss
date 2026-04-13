@@ -994,3 +994,557 @@ $shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
     font-size: 0.6875rem;
   }
 }
+
+// --- Estilos para o Step de Formulário ---
+
+
+.formularioCard {
+  border: 1px solid $gray-50;
+  border-radius: $border-radius-md;
+  box-shadow: $shadow-sm;
+  transition: $transition-default;
+  overflow: hidden;
+  
+  &:hover {
+    box-shadow: $shadow-md;
+  }
+
+  :global(.p-card-body) {
+    padding: 0;
+  }
+
+  :global(.p-card-content) {
+    padding: 0;
+  }
+}
+
+.formularioHeader {
+  display: flex;
+  align-items: center;
+  gap: $gap-3;
+  padding: $gap-4 $gap-4 $gap-3;
+  background: linear-gradient(135deg, $gray-25 0%, $white-light 100%);
+  border-bottom: 2px solid $gray-50;
+  
+  @media (max-width: 768px) {
+    padding: $gap-3;
+  }
+}
+
+.formularioIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba($primary-normal, 0.1);
+  border-radius: 10px;
+  flex-shrink: 0;
+  
+  svg {
+    color: $primary-normal;
+  }
+  
+  @include responsive(xs) {
+    display: none;
+  }
+}
+
+.formularioTitleSection {
+  flex: 1;
+  
+  h4 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: $gray-700;
+    margin: 0 0 2px 0;
+    line-height: 1.3;
+  }
+  
+  .formularioSubtitle {
+    font-size: 0.8125rem;
+    color: $primary-normal;
+    font-weight: 500;
+    text-transform: capitalize;
+    margin: 0;
+  }
+}
+
+.formularioDescription {
+  padding: $gap-3 $gap-4;
+  background: $white-light;
+  border-bottom: 1px solid $gray-50;
+  
+  p {
+    margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: $gray-600;
+    
+    strong {
+      color: $gray-700;
+      font-weight: 600;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    padding: $gap-2 $gap-3;
+    
+    p {
+      font-size: 0.875rem;
+    }
+  }
+}
+
+.formularioForm {
+  padding: $gap-4;
+  
+  @media (max-width: 768px) {
+    padding: $gap-3;
+  }
+}
+
+.camposDinamicos {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-4;
+  min-width: 0;
+  
+  // Estilização para os campos dinâmicos
+  :global {
+    .field {
+      margin-bottom: 0;
+      min-width: 0;
+      width: 100%;
+      overflow: hidden;
+      
+      label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: $gray-600;
+        margin-bottom: $gap-1;
+      }
+      
+      input, 
+      textarea, 
+      select,
+      .p-dropdown,
+      .p-inputnumber,
+      .p-calendar {
+        width: 100%;
+        border-radius: $border-radius-sm;
+        border: 1px solid $gray-200;
+        transition: $transition-default;
+        
+        &:hover {
+          border-color: $primary-normal;
+        }
+        
+        &:focus,
+        &.p-focus {
+          border-color: $primary-normal;
+          box-shadow: 0 0 0 2px rgba($primary-normal, 0.1);
+        }
+      }
+      
+      .p-inputtext,
+      .p-dropdown-label,
+      .p-inputnumber-input {
+        padding: $gap-2 $gap-3;
+        font-size: 0.9375rem;
+      }
+
+      .p-dropdown {
+        max-width: 100%;
+        min-width: 0;
+        overflow: hidden;
+      }
+
+      .p-dropdown-label {
+        display: block;
+        max-width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .p-dropdown-trigger {
+        flex-shrink: 0;
+      }
+      
+      textarea {
+        min-height: 100px;
+        resize: vertical;
+      }
+    }
+    
+    // Mensagens de erro
+    .p-error {
+      font-size: 0.75rem;
+      margin-top: $gap-1;
+      display: flex;
+      align-items: center;
+      gap: $gap-1;
+      color: $error-normal;
+      
+      &::before {
+        content: "⚠";
+        font-size: 0.875rem;
+      }
+    }
+    
+    // Radio buttons e Checkboxes
+    .field-radiobutton,
+    .field-checkbox {
+      display: flex;
+      align-items: center;
+      gap: $gap-2;
+      
+      label {
+        margin-bottom: 0;
+        cursor: pointer;
+      }
+      
+      .p-radiobutton,
+      .p-checkbox {
+        .p-radiobutton-box,
+        .p-checkbox-box {
+          border: 2px solid $gray-300;
+          transition: $transition-default;
+          
+          &:hover {
+            border-color: $primary-normal;
+          }
+          
+          &.p-highlight {
+            background: $primary-normal;
+            border-color: $primary-normal;
+          }
+        }
+      }
+    }
+  }
+}
+
+.formularioError {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+  margin-top: $gap-3;
+  padding: $gap-2 $gap-3;
+  background: rgba($error-normal, 0.08);
+  border-left: 3px solid $error-normal;
+  border-radius: $border-radius-sm;
+  
+  i {
+    color: $error-normal;
+    font-size: 1rem;
+  }
+  
+  span {
+    color: $error-normal;
+    font-size: 0.875rem;
+    flex: 1;
+  }
+}
+
+.formularioActions {
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  gap: $gap-3;
+  margin-top: $gap-4;
+  padding-top: $gap-4;
+  border-top: 1px solid $gray-50;
+  
+  @media (max-width: 768px) {
+    flex-direction: column-reverse;
+    gap: $gap-2;
+    
+    :global(.p-button) {
+      width: 100%;
+    }
+  }
+  
+  :global(.p-button-outlined) {
+    border-color: $gray-300;
+    color: $gray-600;
+    
+    &:hover {
+      background: $gray-25;
+      border-color: $gray-400;
+      color: $gray-700;
+    }
+  }
+  
+  :global(.btn-primary) {
+    padding: $gap-2 $gap-4;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    background: $primary-normal;
+    border: none;
+    border-radius: $border-radius-sm;
+    transition: $transition-default;
+    
+    &:hover:not(:disabled) {
+      background: $primary-darken;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba($primary-normal, 0.2);
+    }
+    
+    &:disabled {
+      background: $gray-400;
+      opacity: 0.7;
+    }
+  }
+}
+
+// Estado de Loading no Formulário
+.formularioForm {
+  :global {
+    .p-disabled,
+    .p-component:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    max-width: 450px;
+    
+  }
+  @include responsive (xs){
+        max-width: 260px;
+    }
+}
+
+// Animações suaves para transições
+.formularioCard {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsividade adicional
+@media (max-width: 768px) {
+  .formularioHeader {
+    gap: $gap-2;
+  }
+  
+  .camposDinamicos {
+    gap: $gap-3;
+  }
+  
+  .formularioActions {
+    margin-top: $gap-3;
+    padding-top: $gap-3;
+  }
+}
+
+
+// --- Seção de Vídeos Tutoriais ---
+.tutoriaisCard {
+  border: 1px solid $gray-50;
+  border-radius: $border-radius-md;
+  box-shadow: $shadow-sm;
+  transition: $transition-default;
+  overflow: hidden;
+  background: $white-light;
+  svg{
+    width: 22px;
+  }
+  &:hover {
+    box-shadow: $shadow-md;
+  }
+  
+  :global(.p-card-body) {
+    padding: 0;
+  }
+  
+  :global(.p-card-content) {
+    padding: 0;
+  }
+}
+
+.tutoriaisHeader {
+  display: flex;
+  align-items: center;
+  gap: $gap-3;
+  padding: $gap-3 $gap-4;
+  background: linear-gradient(135deg, #fff0f0 0%, #ffe6e6 100%);
+  border-bottom: 1px solid rgba(#ff0000, 0.1);
+  
+  h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: $gray-700;
+    margin: 0 0 2px 0;
+  }
+  
+  .tutoriaisSubtitle {
+    font-size: 0.75rem;
+    color: $gray-500;
+    margin: 0;
+  }
+}
+
+.tutoriaisIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(#ff0000, 0.1);
+  border-radius: 10px;
+  flex-shrink: 0;
+  
+  svg {
+    color: #ff0000;
+  }
+  
+  @include responsive(xs) {
+    display: none;
+  }
+}
+
+.tutoriaisList {
+  display: flex;
+  flex-direction: column;
+  padding: $gap-1;
+}
+
+.tutorialItem {
+  display: flex;
+  align-items: center;
+  gap: $gap-3;
+  padding: $gap-2 $gap-3;
+  text-decoration: none;
+  border-radius: $border-radius-sm;
+  transition: $transition-default;
+  
+  &:hover {
+    background: $gray-25;
+    
+    .tutorialIconWrapper {
+      background: rgba(#ff0000, 0.15);
+      transform: scale(1.05);
+    }
+    
+    .tutorialTitle {
+      color: $primary-darken;
+    }
+    
+    .tutorialPlatform {
+      color: $primary-normal;
+    }
+  }
+}
+
+.tutorialIconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: $gray-25;
+  border-radius: 8px;
+  flex-shrink: 0;
+  transition: $transition-default;
+  
+  svg {
+    color: $gray-600;
+  }
+}
+
+.tutorialContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  
+  .tutorialTitle {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $gray-700;
+    line-height: 1.4;
+    transition: color 0.2s ease;
+  }
+  
+  .tutorialPlatform {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.6875rem;
+    color: $gray-500;
+    transition: color 0.2s ease;
+    
+    svg {
+      opacity: 0.7;
+    }
+  }
+}
+
+.tutoriaisFooter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $gap-1;
+  padding: $gap-2 $gap-3;
+  background: $gray-25;
+  border-top: 1px solid $gray-50;
+  
+  svg {
+    color: #ff0000;
+  }
+  
+  span {
+    font-size: 0.6875rem;
+    color: $gray-500;
+  }
+}
+
+// Responsividade para os tutoriais
+@media (max-width: 768px) {
+  .tutoriaisHeader {
+    padding: $gap-2 $gap-3;
+  }
+  
+  .tutorialItem {
+    padding: $gap-2;
+  }
+  
+  .tutorialContent .tutorialTitle {
+    font-size: 0.8125rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .tutoriaisHeader {
+    h4 {
+      font-size: 0.9375rem;
+    }
+    
+    .tutoriaisSubtitle {
+      font-size: 0.6875rem;
+    }
+  }
+  
+  .tutorialItem {
+    gap: $gap-2;
+  }
+  
+  .tutorialIconWrapper {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .tutoriaisFooter span {
+    font-size: 0.625rem;
+  }
+}

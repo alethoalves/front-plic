@@ -76,13 +76,13 @@
 
 .participacaoInfo {
   .icon {
-      background: rgba($success-normal, 0.1);
-      svg { color: $success-normal; }
+      background: $white-darken;
+      svg { color: $primary-normal; }
     }
     
     .tipoBadge {
-      background: rgba($success-normal, 0.1);
-      color: $success-dark;
+      background: $white-darken;
+      color: $primary-dark;
     }
   
     

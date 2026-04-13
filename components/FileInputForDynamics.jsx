@@ -22,6 +22,9 @@ const FileInput = ({
 
   // Utiliza o watch para observar o valor do campo de arquivo
   const watchedFile = watch(`camposDinamicos.campo_${campo.id}`);
+  const hasValue =
+    (typeof watchedFile === "string" && watchedFile.length > 0) ||
+    (watchedFile instanceof FileList && watchedFile.length > 0);
 
   // Função para extrair o nome do arquivo
   const extractFileName = (url) => {
@@ -52,14 +55,17 @@ const FileInput = ({
             {errors.camposDinamicos[`campo_${campo.id}`].message}
           </p>
         )}
-        {watchedFile && watchedFile.length > 0 && (
+        {hasValue && (
           <>
             <p className={styles.fileName}>
               {typeof watchedFile === "string" &&
               watchedFile?.startsWith("https")
                 ? "Veja o arquivo anexado"
                 : "Arquivo selecionado"}
-              : {watchedFile[0].name}
+              :{" "}
+              {typeof watchedFile === "string"
+                ? extractFileName(watchedFile)
+                : watchedFile[0]?.name}
             </p>
             {typeof watchedFile === "string" &&
               watchedFile?.startsWith("https") && (
