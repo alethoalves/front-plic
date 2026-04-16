@@ -1,50 +1,26 @@
 import Image from "next/image";
 import styles from "./page.module.scss";
 import { getTenants } from "./api/server/getTenant";
-import Link from "next/link";
+import ClientSelect from "@/components/ClientSelect";
 
 const Page = async () => {
   let tenants;
   try {
-    tenants = await getTenants(); // Chama a função que faz a requisição
+    tenants = await getTenants();
   } catch (error) {
     console.error("Erro ao carregar tenants:", error);
   }
+
   return (
     <main className={styles.main}>
-      <div className={styles.description}>
-        <h4>Selecione a sua instituição</h4>
-        {tenants ? (
-          tenants.map((item) => (
-            <Link key={item.id} href={`/${item.slug}`}>
-              <div className={styles.boxButton}>
-                <div className={styles.logo}>
-                  <Image
-                    priority
-                    fill
-                    src={`/image/${item.pathLogo}`}
-                    alt="logo"
-                    sizes="300 500 700"
-                  />
-                </div>
-              </div>
-            </Link>
-          ))
-        ) : (
-          <div className={styles.noData}>
-            <div className={styles.logo}>
-              <Image
-                priority
-                fill
-                src={`/image/noData.svg`}
-                alt="logo"
-                sizes="300 500 700"
-              />
-            </div>
-          </div>
-        )}
+      <div className={styles.container}>
+        <div className={styles.card}>
+          <h1 className={styles.title}>Selecione sua instituição</h1>
+          <ClientSelect tenants={tenants || []} />
+        </div>
       </div>
     </main>
   );
 };
+
 export default Page;
