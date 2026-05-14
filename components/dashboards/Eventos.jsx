@@ -52,12 +52,12 @@ const Inscricoes = ({ tenantSlug }) => {
     try {
       const data = await getEventosDashboard(tenantSlug);
       const eventosOrdenados = data.sort(
-        (a, b) => b.data.evento.id - a.data.evento.id
+        (a, b) => b.data.evento.id - a.data.evento.id,
       );
       setEventos(eventosOrdenados);
     } catch (error) {
       setError(
-        error.response?.data?.message ?? "Erro na conexão com o servidor."
+        error.response?.data?.message ?? "Erro na conexão com o servidor.",
       );
     } finally {
       setLoading(false);
@@ -97,7 +97,7 @@ const Inscricoes = ({ tenantSlug }) => {
       const submissaoData = await getSubmissaoByEvento(
         evento.slug,
         evento.id,
-        tenantSigla
+        tenantSigla,
       );
 
       // Criação do conteúdo HTML
@@ -138,7 +138,7 @@ const Inscricoes = ({ tenantSlug }) => {
             (p) =>
               `${sanitizeText(p.user?.nome || "Nome não disponível")} (${
                 p.tipo
-              })`
+              })`,
           )
           .join(", ");
 
@@ -175,7 +175,7 @@ const Inscricoes = ({ tenantSlug }) => {
             htmlContent += `
               <h3>${sanitizeText(resposta.campo?.label || "Seção")}</h3>
               <p>${sanitizeText(
-                resposta.value || "Conteúdo não disponível"
+                resposta.value || "Conteúdo não disponível",
               )}</p>
             `;
           });
@@ -215,7 +215,7 @@ const Inscricoes = ({ tenantSlug }) => {
       const submissaoData = await getSubmissaoByEvento(
         evento.slug,
         evento.id,
-        tenantSigla
+        tenantSigla,
       );
       submissaoData.sort((a, b) => a.id - b.id);
 
@@ -282,7 +282,7 @@ const Inscricoes = ({ tenantSlug }) => {
               htmlContent += `
               <h3>${sanitizeText(resposta.campo?.label || "Seção")}</h3>
               <p>${sanitizeText(
-                resposta.value || "Conteúdo não disponível"
+                resposta.value || "Conteúdo não disponível",
               )}</p>
             `;
             });
@@ -318,7 +318,7 @@ const Inscricoes = ({ tenantSlug }) => {
   const totalSubmissoesGeral = eventos
     ? eventos[currentEventIndex]?.info?.tenantsTotais.reduce(
         (total, tenant) => total + tenant.quantidadeSubmissoesTotal,
-        0
+        0,
       )
     : 0;
   const closeModalAndResetData = () => {
@@ -335,7 +335,7 @@ const Inscricoes = ({ tenantSlug }) => {
       const submissaoData = await getSubmissaoByEvento(
         evento.slug,
         evento.id,
-        tenantSigla
+        tenantSigla,
       );
 
       const submissoesArray = submissaoData.map((sub) => {
@@ -404,7 +404,7 @@ const Inscricoes = ({ tenantSlug }) => {
       const submissaoData = await getSubmissaoByEvento(
         evento.slug,
         evento.id,
-        tenantSigla
+        tenantSigla,
       );
 
       const participacoesArray = submissaoData.flatMap((sub) => {

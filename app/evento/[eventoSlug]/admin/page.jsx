@@ -72,7 +72,7 @@ const Page = ({ params }) => {
       const submissaoData = await getSubmissaoByEvento(
         params.eventoSlug,
         evento.evento.id,
-        tenantSigla
+        tenantSigla,
       );
 
       const workbook = new ExcelJS.Workbook();
@@ -150,7 +150,7 @@ const Page = ({ params }) => {
           titulo: sanitizeText(resumo.titulo || "Sem título"),
           area: sanitizeText(area.area || "Sem área"),
           grandeArea: sanitizeText(
-            area.grandeArea?.grandeArea || "Sem grande área"
+            area.grandeArea?.grandeArea || "Sem grande área",
           ),
           categoria: sanitizeText(submissao.categoria || "Sem categoria"),
           siglaTenant: sanitizeText(submissao.tenant?.sigla || "Sem sigla"),
@@ -204,7 +204,7 @@ const Page = ({ params }) => {
         blob,
         `submissoes_${evento.evento.slug}${
           tenantSigla ? `_${tenantSigla}` : ""
-        }.xlsx`
+        }.xlsx`,
       );
     } catch (error) {
       console.error("Erro ao gerar relatório de submissões:", error);
@@ -221,72 +221,54 @@ const Page = ({ params }) => {
       const submissaoData = await getSubmissaoByEvento(
         params.eventoSlug,
         evento.evento.id,
-        selectedTenant?.tenant
+        selectedTenant?.tenant,
       );
       console.log(submissaoData);
-      // Criação do documento
+      // Função auxiliar para limpar texto para o Word (sem converter para entidades HTML)
+      const cleanText = (text) => {
+        if (typeof text !== "string") return String(text || "");
+        return text.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, ""); // Remove caracteres de controle inválidos
+      };
+
       const doc = new Document({
         styles: {
           paragraphStyles: [
             {
               id: "normal",
               name: "Normal",
-              run: {
-                size: 24, // 12pt (24 half-points)
-                font: "Arial",
-              },
-              paragraph: {
-                spacing: {
-                  line: 276, // 1.15 line spacing (240 = single, 480 = double)
-                },
-              },
+              run: { size: 24, font: "Arial" },
+              paragraph: { spacing: { line: 276, after: 200 } },
             },
           ],
         },
         sections: [
           {
-            properties: {},
             children: [
-              // Título principal
               new Paragraph({
                 text: `Anais do Evento - ${evento.evento.nomeEvento}`,
                 heading: HeadingLevel.HEADING_1,
                 alignment: "center",
                 spacing: { after: 400 },
               }),
-
-              // Informações gerais
               new Paragraph({
                 children: [
-                  new TextRun({
-                    text: "Total de trabalhos: ",
-                    bold: true,
-                  }),
-                  new TextRun({
-                    text: `${submissaoData.length}`,
-                  }),
+                  new TextRun({ text: "Total de trabalhos: ", bold: true }),
+                  new TextRun({ text: `${submissaoData.length}` }),
                 ],
                 spacing: { after: 200 },
               }),
-
               ...(selectedTenant
                 ? [
                     new Paragraph({
                       children: [
-                        new TextRun({
-                          text: "Instituição: ",
-                          bold: true,
-                        }),
-                        new TextRun({
-                          text: selectedTenant.tenant,
-                        }),
+                        new TextRun({ text: "Instituição: ", bold: true }),
+                        new TextRun({ text: selectedTenant.tenant }),
                       ],
                       spacing: { after: 200 },
                     }),
                   ]
                 : []),
 
-              // Adicionar cada submissão
               ...submissaoData.flatMap((submissao, index) => {
                 const resumo = submissao.Resumo || {};
                 const area = resumo.area || {};
@@ -294,8 +276,8 @@ const Page = ({ params }) => {
                 const palavrasChave =
                   resumo.PalavraChave?.map((p) => p.palavra).join(", ") ||
                   "Sem palavras-chave";
+                const secoesConteudo = resumo.conteudo || [];
 
-                // Organizar participantes por cargo
                 const participantesPorCargo = {
                   AUTOR: [],
                   COAUTOR: [],
@@ -311,34 +293,42 @@ const Page = ({ params }) => {
                   }
                 });
 
-                return [
-                  // Título do trabalho
+                // Mapeamento das seções do resumo (Introdução, Metodologia, etc.)
+                const blocosConteudo = secoesConteudo.flatMap((secao) => [
                   new Paragraph({
-                    text: `${sanitizeText(resumo.titulo || "Sem título")}`,
+                    children: [
+                      new TextRun({ text: cleanText(secao.nome), bold: true }),
+                    ],
+                    spacing: { before: 200, after: 100 },
+                  }),
+                  new Paragraph({
+                    text: cleanText(secao.conteudo),
+                    alignment: "both",
+                    spacing: { after: 200 },
+                  }),
+                ]);
+
+                return [
+                  new Paragraph({
+                    text: cleanText(resumo.titulo || "Sem título"),
                     heading: HeadingLevel.HEADING_2,
                     spacing: { before: 600, after: 200 },
-                    border: {
-                      bottom: { size: 4, color: "DDDDDD", style: "single" },
-                    },
                   }),
 
-                  // Autores
                   ...Object.entries(participantesPorCargo)
                     .filter(([_, nomes]) => nomes.length > 0)
                     .map(([cargo, nomes]) => {
-                      const cargoLabel =
-                        {
-                          AUTOR: "Autores",
-                          COAUTOR: "Coautores",
-                          ORIENTADOR: "Orientador(es)",
-                          COORIENTADOR: "Coorientador(es)",
-                          COLABORADOR: "Colaborador(es)",
-                        }[cargo] || cargo;
-
+                      const labels = {
+                        AUTOR: "Autores",
+                        COAUTOR: "Coautores",
+                        ORIENTADOR: "Orientador(es)",
+                        COORIENTADOR: "Coorientador(es)",
+                        COLABORADOR: "Colaborador(es)",
+                      };
                       return new Paragraph({
                         children: [
                           new TextRun({
-                            text: `${cargoLabel}: `,
+                            text: `${labels[cargo] || cargo}: `,
                             bold: true,
                           }),
                           new TextRun({
@@ -350,7 +340,6 @@ const Page = ({ params }) => {
                       });
                     }),
 
-                  // Detalhes (Área, Grande Área, Categoria)
                   new Paragraph({
                     children: [
                       new TextRun({
@@ -358,55 +347,40 @@ const Page = ({ params }) => {
                         size: 20,
                       }),
                       new TextRun({
-                        text: "\tGrande Área: ",
+                        text: `\tGrande Área: ${area.grandeArea?.grandeArea || "Sem grande área"}`,
                         size: 20,
                       }),
                       new TextRun({
-                        text: area.grandeArea?.grandeArea || "Sem grande área",
-                        size: 20,
-                      }),
-                      new TextRun({
-                        text: "\tCategoria: ",
-                        size: 20,
-                      }),
-                      new TextRun({
-                        text: submissao.categoria || "Sem categoria",
+                        text: `\tCategoria: ${submissao.categoria || "Sem categoria"}`,
                         size: 20,
                       }),
                     ],
                     spacing: { after: 100 },
                   }),
 
-                  // Palavras-chave
                   new Paragraph({
                     children: [
+                      new TextRun({ text: "Palavras-chave: ", bold: true }),
                       new TextRun({
-                        text: "Palavras-chave: ",
-                        bold: true,
-                      }),
-                      new TextRun({
-                        text: palavrasChave,
+                        text: cleanText(palavrasChave),
                         italics: true,
                       }),
                     ],
                     spacing: { after: 100 },
                   }),
 
-                  // Seção Resumo
-                  new Paragraph({
-                    text: "Resumo",
-                    heading: HeadingLevel.HEADING_3,
-                    spacing: { before: 300, after: 100 },
-                  }),
+                  // Se não houver seções detalhadas, tenta usar o conteudoFormatado
+                  ...(blocosConteudo.length > 0
+                    ? blocosConteudo
+                    : [
+                        new Paragraph({
+                          text: cleanText(
+                            resumo.conteudoFormatado || "Sem resumo disponível",
+                          ),
+                          alignment: "both",
+                        }),
+                      ]),
 
-                  // Conteúdo do resumo
-                  new Paragraph({
-                    text: resumo.conteudoFormatado || "Sem resumo disponível",
-                    spacing: { after: 100 },
-                    alignment: "both", // Justificado
-                  }),
-
-                  // Detalhes adicionais (Prêmios)
                   ...(submissao.premio || submissao.mencaoHonrosa
                     ? [
                         new Paragraph({
@@ -417,9 +391,7 @@ const Page = ({ params }) => {
                                     text: "Premiado: Sim",
                                     size: 20,
                                   }),
-                                  new TextRun({
-                                    text: "\t",
-                                  }),
+                                  new TextRun({ text: "\t" }),
                                 ]
                               : []),
                             ...(submissao.mencaoHonrosa
@@ -431,19 +403,13 @@ const Page = ({ params }) => {
                                 ]
                               : []),
                           ],
-                          spacing: { after: 100 },
+                          spacing: { before: 200 },
                         }),
                       ]
                     : []),
 
-                  // Quebra de página (exceto para o último item)
                   ...(index < submissaoData.length - 1
-                    ? [
-                        new Paragraph({
-                          children: [new TextRun("")],
-                          pageBreakBefore: true,
-                        }),
-                      ]
+                    ? [new Paragraph({ text: "", pageBreakBefore: true })]
                     : []),
                 ];
               }),
@@ -452,16 +418,11 @@ const Page = ({ params }) => {
         ],
       });
 
-      // Gerar o blob e fazer download
       const blob = await Packer.toBlob(doc);
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = `anais_${evento.evento.slug}${
-        selectedTenant ? `_${selectedTenant.tenant}` : ""
-      }.docx`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      saveAs(
+        blob,
+        `anais_${evento.evento.slug}${selectedTenant ? `_${selectedTenant.tenant}` : ""}.docx`,
+      );
     } catch (error) {
       console.error("Erro ao gerar documento Word:", error);
     } finally {
@@ -700,7 +661,7 @@ const Page = ({ params }) => {
             : ""
         }
         <p><strong>Data de geração:</strong> ${new Date().toLocaleDateString(
-          "pt-BR"
+          "pt-BR",
         )} ${new Date().toLocaleTimeString("pt-BR")}</p>
     </div>
 
@@ -730,8 +691,8 @@ const Page = ({ params }) => {
               return `
         <div class="trabalho">
             <h2 class="titulo-trabalho">${index + 1}. ${sanitizeText(
-                resumo.titulo || "Sem título"
-              )}</h2>
+              resumo.titulo || "Sem título",
+            )}</h2>
             
             <div class="info-basica">
                 <span><strong>ID:</strong> ${submissao.id}</span>
@@ -760,7 +721,7 @@ const Page = ({ params }) => {
                       }[cargo] || cargo;
 
                     return `<div class="cargo"><strong>${cargoLabel}:</strong> ${nomes.join(
-                      ", "
+                      ", ",
                     )}</div>`;
                   })
                   .join("")}
@@ -787,10 +748,10 @@ const Page = ({ params }) => {
                       <div style="margin: 20px 0;">
                           <h4 style="color: #2c3e50; margin-bottom: 10px; font-size: 16px;">${secao.nome.toUpperCase()}</h4>
                           <div class="conteudo-resumo">${sanitizeText(
-                            secao.conteudo
+                            secao.conteudo,
                           )}</div>
                       </div>
-                    `
+                    `,
                         )
                         .join("")
                     : '<div class="sem-dados">Resumo não disponível</div>'
@@ -805,7 +766,7 @@ const Page = ({ params }) => {
                         .map((avaliacao, avIndex) => {
                           const dataAvaliacao = avaliacao.createdAt
                             ? new Date(avaliacao.createdAt).toLocaleDateString(
-                                "pt-BR"
+                                "pt-BR",
                               )
                             : "Data não disponível";
 
@@ -854,7 +815,7 @@ const Page = ({ params }) => {
                               <div class="observacao-ia">
                                   <strong>Observação Depurada (IA):</strong><br>
                                   ${sanitizeText(
-                                    avaliacao.observacaoDepuradaIA
+                                    avaliacao.observacaoDepuradaIA,
                                   )}
                               </div>
                             `
@@ -874,7 +835,7 @@ const Page = ({ params }) => {
                                         <span>${registro.titulo}</span>
                                         <strong>Nota: ${registro.nota}</strong>
                                     </div>
-                                  `
+                                  `,
                                     )
                                     .join("")}
                               </div>
@@ -1034,7 +995,7 @@ const Page = ({ params }) => {
               {evento
                 ? evento.info?.tenantsTotais.reduce(
                     (total, tenant) => total + tenant.quantidadeSubmissoesTotal,
-                    0
+                    0,
                   )
                 : 0}
             </p>
