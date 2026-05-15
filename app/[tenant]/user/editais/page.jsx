@@ -121,7 +121,11 @@ const Page = ({ params }) => {
         return "neutral";
     }
   };
-
+  const anoAtual = new Date().getFullYear();
+  const editaisDoAno = editais.filter(
+    (edital) => Number(edital.ano) === anoAtual,
+  );
+  const editaisOrdenados = editaisDoAno.sort((a, b) => a.id - b.id);
   return (
     <div className={styles.pageContainer}>
       <div className={styles.contentWrapper}>
@@ -144,7 +148,7 @@ const Page = ({ params }) => {
           </div>
         ) : editais?.length > 0 ? (
           <div className={styles.editaisGrid}>
-            {editais.map((edital) => {
+            {editaisOrdenados.map((edital) => {
               const statusInfo = getStatusInfo(edital);
               const StatusIcon = statusInfo.icon;
               const inscricoesDoEdital = inscricoes.filter(

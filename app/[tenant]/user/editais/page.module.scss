@@ -170,7 +170,9 @@ $shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04
   padding: $gap-2 $gap-3 !important;
   font-weight: 500 !important;
   transition: $transition-default !important;
-  
+  p, svg{
+    color: $white-light !important;
+  }
   &:hover:not(:disabled) {
     background: $primary-darken !important;
     transform: translateY(-1px);

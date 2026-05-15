@@ -723,6 +723,7 @@ const EditarParticipacao = ({
                         </p>
                         <div className={styles.fileFormatBadge}>
                           Será feito o download de uma pasta com o formato: .ZIP
+                          ou um arquivo no formato .XML.
                         </div>
                       </div>
                     </div>
@@ -731,7 +732,7 @@ const EditarParticipacao = ({
                     <div className={styles.stepItem}>
                       <div className={styles.stepNumber}>5</div>
                       <div className={styles.stepContent}>
-                        <p>Faça o upload da pasta .ZIP </p>
+                        <p>Faça o upload da pasta .ZIP ou do arquivo .XML</p>
                       </div>
                     </div>
                   </div>

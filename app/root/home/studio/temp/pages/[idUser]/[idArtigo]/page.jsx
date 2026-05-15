@@ -2,7 +2,6 @@ import Header from "@/components/Header";
 import styles from "./page.module.scss";
 import Image from "next/image";
 import Link from "next/link";
-import Head from "next/head";
 
 const Page = () => {
   return (

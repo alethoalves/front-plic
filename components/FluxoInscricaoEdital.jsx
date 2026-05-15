@@ -65,6 +65,11 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
       life: 5000,
     });
   };
+  // Função para verificar se atingiu o limite de projetos
+  const atingiuLimiteProjetos = () => {
+    if (!inscricao?.InscricaoProjeto || !editalInfo?.maxProjetos) return false;
+    return inscricao.InscricaoProjeto.length >= editalInfo.maxProjetos;
+  };
 
   const showSuccess = (message) => {
     toast.current.show({
@@ -566,6 +571,16 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
               <div className={styles.section}>
                 {/* Contadores */}
                 <div className={styles.countersContainer}>
+                  <div className={styles.counterCard}>
+                    <div className={styles.counterHeader}>
+                      <RiFolder5Line size={18} />
+                      <span>Projetos</span>
+                    </div>
+                    <div className={styles.counterValue}>
+                      {inscricao.InscricaoProjeto?.length || 0} /{" "}
+                      {editalInfo?.maxProjetos || 0}
+                    </div>
+                  </div>
                   <div className={styles.counterCard}>
                     <div className={styles.counterHeader}>
                       <RiArticleLine size={18} />

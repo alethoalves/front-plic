@@ -61,7 +61,7 @@ const FormProjetoCreateOrEdit = ({
           nome: z.string().min(1, "Nome da atividade é obrigatório!"),
           inicio: z.string(),
           fim: z.string(),
-        })
+        }),
       )
       .optional(),
     camposDinamicos: createDynamicSchema(formularioEdital?.campos || []), // Adiciona campos dinâmicos ao schema
@@ -95,7 +95,7 @@ const FormProjetoCreateOrEdit = ({
         setAreas(transformedArray(response));
       } catch (error) {
         setErrorDelete(
-          error.response?.data?.message ?? "Erro na conexão com o servidor."
+          error.response?.data?.message ?? "Erro na conexão com o servidor.",
         );
       } finally {
         setLoading(false);
@@ -176,7 +176,7 @@ const FormProjetoCreateOrEdit = ({
         planoDeTrabalho = await updateProjetoById(
           tenantSlug,
           initialData.id,
-          payload
+          payload,
         );
         if (onUpdateProjeto) {
           onUpdateProjeto(planoDeTrabalho);
@@ -282,12 +282,12 @@ const FormProjetoCreateOrEdit = ({
               loading,
               register,
               errors,
-              watch
+              watch,
             )}
           </div>
         </div>
       )}
-      {activeTab === "conteudo" && (
+      {false && activeTab === "conteudo" && (
         <div className={styles.divCronograma}>
           <h6 className="mb-2">Cronograma de Atividades</h6>
           <Atividades cronograma={cronograma} setCronograma={setCronograma} />

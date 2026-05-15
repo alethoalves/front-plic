@@ -40,18 +40,18 @@ const Page = ({ params }) => {
       try {
         const atividadesNaoEntregues =
           await countRegistroAtividadesWithStatusNaoEntregueByCPF(
-            params.tenant
+            params.tenant,
           );
         setAtividadesNaoEntregues(atividadesNaoEntregues);
         //
         const registroAtividades =
           await getRegistroAtividadesByCpfEditaisVigentes(
             params.tenant,
-            perfil
+            perfil,
           );
         const eventos = await getEventosByTenant(params.tenant);
         setRegistroAtividadesNaoInscritos(
-          contarTotalPlanosNaoInscritos(registroAtividades, eventos)
+          contarTotalPlanosNaoInscritos(registroAtividades, eventos),
         );
       } catch (error) {
         console.error("Erro ao buscar dados:", error);
@@ -84,22 +84,25 @@ const Page = ({ params }) => {
     <>
       <div className={styles.navContent}>
         <div className={styles.content}>
-          <h6>Bem-vindo(a) à </h6>
+          <h6>Bem-vindo(a) à</h6>
           <h4>Iniciação Científica</h4>
-          <Link href={`/${params.tenant}/user/editais`}>
-            <div className={styles.infoBox}>
-              <div className={styles.icon}>
-                <RiFileList3Line />
+          {/* InfoBox Editais só para orientador */}
+          {perfil === "orientador" && (
+            <Link href={`/${params.tenant}/user/editais`}>
+              <div className={styles.infoBox}>
+                <div className={styles.icon}>
+                  <RiFileList3Line />
+                </div>
+                <div className={styles.infoBoxContent}>
+                  <h6>Editais</h6>
+                  <p>
+                    Inscreva-se nos editais de iniciação científica ou acompanhe
+                    suas inscrições!
+                  </p>
+                </div>
               </div>
-              <div className={styles.infoBoxContent}>
-                <h6>Editais</h6>
-                <p>
-                  Inscreva-se nos editais de iniciação científica ou acompanhe
-                  suas inscrições!
-                </p>
-              </div>
-            </div>
-          </Link>
+            </Link>
+          )}
           <Link href={`/${params.tenant}/user/planos`}>
             <div className={styles.infoBox}>
               <div className={styles.icon}>

@@ -6,7 +6,7 @@
 } 
 .p-dialog-footer{
     display: flex;
-    justify-content: end;
+    justify-content: flex-end;
     gap: $gap-2;
     div{
         button{

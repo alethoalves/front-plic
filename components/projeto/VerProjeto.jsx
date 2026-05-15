@@ -27,7 +27,30 @@ const VerProjeto = ({
   const [activeTab, setActiveTab] = useState("conteudo");
   const [isLinking, setIsLinking] = useState(false); // Estado de carregamento da operação de link
   const [error, setError] = useState(null); // Estado de erro
+  console.log("Detalhes do projeto recebidos em VerProjeto:", projetoDetalhes); // Log para verificar os detalhes do projeto
 
+  // Lógica para esconder campos condicionais
+  let respostasVisiveis = projetoDetalhes.Resposta;
+  try {
+    // Monta array de campos e objeto de valores
+    const campos = projetoDetalhes.Resposta.map((r) => r.campo);
+    const camposDinamicosValues = {};
+    projetoDetalhes.Resposta.forEach((resp) => {
+      camposDinamicosValues[`campo_${resp.campo.id}`] = resp.value;
+    });
+    // Importa a função de regras
+    const { applyConditionalRules } = require("@/lib/applyConditionalRules");
+    const visibleFieldIds = applyConditionalRules(
+      campos,
+      camposDinamicosValues,
+    );
+    respostasVisiveis = projetoDetalhes.Resposta.filter((item) =>
+      visibleFieldIds.includes(item.campo.id),
+    );
+  } catch (e) {
+    // fallback: mostra tudo se der erro
+    respostasVisiveis = projetoDetalhes.Resposta;
+  }
   const handleTabChange = (tab) => {
     setActiveTab(tab);
   };
@@ -43,7 +66,7 @@ const VerProjeto = ({
       const response = await linkProjetoToInscricao(
         tenantSlug,
         idInscricao,
-        idProjeto
+        idProjeto,
       );
 
       // Chama o callback para atualizar a listagem no FluxoInscricaoEdital
@@ -86,12 +109,12 @@ const VerProjeto = ({
                 projetoDetalhes.envolveAnimais && projetoDetalhes.envolveHumanos
                   ? "Este projeto envolve pesquisa com animais e com seres humanos."
                   : projetoDetalhes.envolveAnimais &&
-                    !projetoDetalhes.envolveHumanos
-                  ? "Este projeto envolve pesquisa apenas com animais"
-                  : !projetoDetalhes.envolveAnimais &&
-                    projetoDetalhes.envolveHumanos
-                  ? "Este projeto envolve pesquisa apenas com seres humanos"
-                  : "Este projeto não envolve pesquisa com seres humanos ou animais."
+                      !projetoDetalhes.envolveHumanos
+                    ? "Este projeto envolve pesquisa apenas com animais"
+                    : !projetoDetalhes.envolveAnimais &&
+                        projetoDetalhes.envolveHumanos
+                      ? "Este projeto envolve pesquisa apenas com seres humanos"
+                      : "Este projeto não envolve pesquisa com seres humanos ou animais."
               }`}
             </p>
           </div>
@@ -107,70 +130,72 @@ const VerProjeto = ({
         >
           {isLinking ? "Vinculando..." : "Vincular projeto à inscrição"}
         </Button>
-        <div className={`${styles.nav}`}>
-          <div className={`${styles.menu}`}>
-            <div
-              className={`${styles.itemMenu} ${
-                activeTab === "conteudo" ? styles.itemMenuSelected : ""
-              }`}
-              onClick={() => handleTabChange("conteudo")}
-            >
-              <p>Conteúdo</p>
-            </div>
-            <div
-              className={`${styles.itemMenu} ${
-                activeTab === "cronograma" ? styles.itemMenuSelected : ""
-              }`}
-              onClick={() => handleTabChange("cronograma")}
-            >
-              <p>Cronograma</p>
-            </div>
-            {false && (
+        {false && (
+          <div className={`${styles.nav}`}>
+            <div className={`${styles.menu}`}>
               <div
                 className={`${styles.itemMenu} ${
-                  activeTab === "anexos" ? styles.itemMenuSelected : ""
+                  activeTab === "conteudo" ? styles.itemMenuSelected : ""
                 }`}
-                onClick={() => handleTabChange("anexos")}
+                onClick={() => handleTabChange("conteudo")}
               >
-                <p>Anexos</p>
+                <p>Conteúdo</p>
               </div>
-            )}
+              <div
+                className={`${styles.itemMenu} ${
+                  activeTab === "cronograma" ? styles.itemMenuSelected : ""
+                }`}
+                onClick={() => handleTabChange("cronograma")}
+              >
+                <p>Cronograma</p>
+              </div>
+              {false && (
+                <div
+                  className={`${styles.itemMenu} ${
+                    activeTab === "anexos" ? styles.itemMenuSelected : ""
+                  }`}
+                  onClick={() => handleTabChange("anexos")}
+                >
+                  <p>Anexos</p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
         {activeTab === "conteudo" && (
           <div className={`${styles.conteudo}`}>
-            {projetoDetalhes.Resposta.sort(
-              (a, b) => a.campo.ordem - b.campo.ordem
-            ).map((item) => {
-              // Função para extrair o nome do arquivo da URL
-              const extractFileName = (url) => {
-                const parts = url.split("/");
-                const lastPart = parts[parts.length - 1];
-                return lastPart.split("_")[1] || lastPart; // Remove o timestamp inicial
-              };
+            {respostasVisiveis
+              .sort((a, b) => a.campo.ordem - b.campo.ordem)
+              .map((item) => {
+                // Função para extrair o nome do arquivo da URL
+                const extractFileName = (url) => {
+                  const parts = url.split("/");
+                  const lastPart = parts[parts.length - 1];
+                  return lastPart.split("_")[1] || lastPart; // Remove o timestamp inicial
+                };
 
-              return (
-                <div className={`${styles.card}`} key={item.id}>
-                  <h6 className={`${styles.label}`}>{item.campo.label}</h6>
-                  <div className={`${styles.value}`}>
-                    {["link", "arquivo"].includes(item.campo.tipo) ? (
-                      <a
-                        href={item.value}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={styles.link}
-                      >
-                        {item.campo.tipo === "arquivo" && "📁 "}
-                        {item.campo.tipo === "link" && "🔗 "}
-                        {extractFileName(item.value)}
-                      </a>
-                    ) : (
-                      <p style={{ whiteSpace: "pre-wrap" }}>{item.value}</p>
-                    )}
+                return (
+                  <div className={`${styles.card}`} key={item.id}>
+                    <h6 className={`${styles.label}`}>{item.campo.label}</h6>
+                    <div className={`${styles.value}`}>
+                      {["link", "arquivo"].includes(item.campo.tipo) ? (
+                        <a
+                          href={item.value}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={styles.link}
+                        >
+                          {item.campo.tipo === "arquivo" && "📁 "}
+                          {item.campo.tipo === "link" && "🔗 "}
+                          {extractFileName(item.value)}
+                        </a>
+                      ) : (
+                        <p style={{ whiteSpace: "pre-wrap" }}>{item.value}</p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
         )}
         {activeTab === "cronograma" && (

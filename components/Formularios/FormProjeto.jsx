@@ -87,8 +87,8 @@ const projetoSchema = z.object({
             message:
               "Data de fim deve ser igual ou posterior à data de início.",
             path: ["fim"], // Indica o campo com erro
-          }
-        )
+          },
+        ),
     )
     .optional(),
 
@@ -99,7 +99,7 @@ const projetoSchema = z.object({
         name: z.string().min(1, "Nome do arquivo é obrigatório!"),
         file: z.any(), // Validação básica para o arquivo
         previewUrl: z.string().url("URL de visualização inválida"),
-      })
+      }),
     )
     .optional(), // Pode ser omitido se não houver anexos
 });
@@ -154,7 +154,7 @@ const FormProjeto = ({
         setAreas(transformedArray(response));
       } catch (error) {
         setErrorDelete(
-          error.response?.data?.message ?? "Erro na conexão com o servidor."
+          error.response?.data?.message ?? "Erro na conexão com o servidor.",
         );
       } finally {
         setLoading(false);
@@ -209,7 +209,7 @@ const FormProjeto = ({
 
     if (!nomeAtividade || !inicio || !fim) {
       setErrorAddAtividade(
-        "Preencha todos os campos obrigatórios da atividade!"
+        "Preencha todos os campos obrigatórios da atividade!",
       );
       return;
     }
@@ -220,7 +220,7 @@ const FormProjeto = ({
 
     if (dataFim < dataInicio) {
       setErrorAddAtividade(
-        "A data de fim não pode ser anterior à data de início."
+        "A data de fim não pode ser anterior à data de início.",
       );
       return;
     }
@@ -298,7 +298,7 @@ const FormProjeto = ({
         const projetoAtualizado = await updateProjetoById(
           tenantSlug,
           projetoId,
-          payload
+          payload,
         );
 
         if (!projetoAtualizado || !projetoAtualizado.id) {
@@ -315,18 +315,18 @@ const FormProjeto = ({
                 const response = await uploadFileProjeto(
                   anexo.file,
                   tenantSlug,
-                  projetoAtualizado.id
+                  projetoAtualizado.id,
                 );
                 uploadedAnexos.push(response);
               } catch (error) {
                 console.error(
                   `Erro ao fazer upload do anexo ${anexo.name}:`,
-                  error
+                  error,
                 );
               }
             } else {
               console.log(
-                `Anexo já existente, não será reenviado: ${anexo.name}`
+                `Anexo já existente, não será reenviado: ${anexo.name}`,
               );
             }
           }
@@ -358,13 +358,13 @@ const FormProjeto = ({
               const response = await uploadFileProjeto(
                 anexo.file,
                 tenantSlug,
-                projetoId
+                projetoId,
               );
               uploadedAnexos.push(response);
             } catch (error) {
               console.error(
                 `Erro ao fazer upload do anexo ${anexo.name}:`,
-                error
+                error,
               );
             }
           }
