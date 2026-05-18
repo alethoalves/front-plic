@@ -56,7 +56,6 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
   const [errors, setErrors] = useState([]);
   const [deletingParticipacaoId, setDeletingParticipacaoId] = useState(null);
   const toast = useRef(null);
-  console.log("Inscrição:", inscricao);
   const showError = (message) => {
     toast.current.show({
       severity: "error",

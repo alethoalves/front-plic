@@ -58,13 +58,6 @@ const EditarParticipacao = ({
   const [fichaAvaliacao, setFichaAvaliacao] = useState(null);
   const toast = useRef(null);
 
-  // Verifica se participacaoInfo já tem fichaAvaliacao ao carregar
-  useEffect(() => {
-    if (participacaoInfo?.fichaAvaliacao) {
-      setFichaAvaliacao(participacaoInfo.fichaAvaliacao);
-      setActiveStep(2);
-    }
-  }, [participacaoInfo?.fichaAvaliacao]);
 
   const showError = (message) => {
     toast.current.show({
@@ -476,6 +469,7 @@ const EditarParticipacao = ({
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
+      let camposCarregados = [];
 
       try {
         const response = await getInscricaoUserById(tenant, inscricaoSelected);
@@ -486,27 +480,38 @@ const EditarParticipacao = ({
             tenant,
             response.edital.formOrientadorId,
           );
-          setCamposFormOrientador(
-            responseFormOrientador.campos.sort((a, b) => a.ordem - b.ordem),
+          const sorted = responseFormOrientador.campos.sort(
+            (a, b) => a.ordem - b.ordem,
           );
+          setCamposFormOrientador(sorted);
+          if (tipoParticipacao === "orientador") camposCarregados = sorted;
         }
         if (response.edital.formCoorientadorId) {
           const responseFormCoorientador = await getFormulario(
             tenant,
             response.edital.formCoorientadorId,
           );
-          setCamposFormCoorientador(
-            responseFormCoorientador.campos.sort((a, b) => a.ordem - b.ordem),
+          const sorted = responseFormCoorientador.campos.sort(
+            (a, b) => a.ordem - b.ordem,
           );
+          setCamposFormCoorientador(sorted);
+          if (tipoParticipacao === "coorientador") camposCarregados = sorted;
         }
         if (response.edital.formAlunoId) {
           const responseFormAluno = await getFormulario(
             tenant,
             response.edital.formAlunoId,
           );
-          setCamposFormAluno(
-            responseFormAluno.campos.sort((a, b) => a.ordem - b.ordem),
+          const sorted = responseFormAluno.campos.sort(
+            (a, b) => a.ordem - b.ordem,
           );
+          setCamposFormAluno(sorted);
+          if (tipoParticipacao === "aluno") camposCarregados = sorted;
+        }
+
+        if (participacaoInfo?.fichaAvaliacao) {
+          setFichaAvaliacao(participacaoInfo.fichaAvaliacao);
+          setActiveStep(camposCarregados.length > 0 ? 3 : 2);
         }
       } catch (error) {
         console.error("Erro ao buscar dados:", error);

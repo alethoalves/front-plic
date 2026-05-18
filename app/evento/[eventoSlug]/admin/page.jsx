@@ -217,203 +217,344 @@ const Page = ({ params }) => {
 
   const gerarWordEvento = async () => {
     setIsDownloading(true);
+    console.log(
+      "Gerando documento Word para o evento:",
+      evento.evento.nomeEvento,
+    );
     try {
       const submissaoData = await getSubmissaoByEvento(
         params.eventoSlug,
         evento.evento.id,
         selectedTenant?.tenant,
       );
-      console.log(submissaoData);
-      // Função auxiliar para limpar texto para o Word (sem converter para entidades HTML)
+
+      // Remove tudo que pode quebrar o XML do docx
       const cleanText = (text) => {
-        if (typeof text !== "string") return String(text || "");
-        return text.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, ""); // Remove caracteres de controle inválidos
+        if (text === null || text === undefined) return "";
+        return (
+          String(text)
+            .normalize("NFC")
+            .replace(/\r\n/g, "\n")
+            .replace(/\r/g, "\n")
+            // Remove emojis e caracteres fora do BMP
+            .replace(/[\u{10000}-\u{10FFFF}]/gu, "")
+            // Remove surrogate pairs soltos
+            .replace(/[\uD800-\uDFFF]/g, "")
+            // Remove caracteres de controle inválidos em XML 1.0
+            .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "")
+            // Remove caracteres Unicode problemáticos
+            .replace(/[\uFFFE\uFFFF]/g, "")
+            .trim()
+        );
       };
 
-      const doc = new Document({
-        styles: {
-          paragraphStyles: [
-            {
-              id: "normal",
-              name: "Normal",
-              run: { size: 24, font: "Arial" },
-              paragraph: { spacing: { line: 276, after: 200 } },
-            },
-          ],
-        },
-        sections: [
-          {
-            children: [
-              new Paragraph({
-                text: `Anais do Evento - ${evento.evento.nomeEvento}`,
-                heading: HeadingLevel.HEADING_1,
-                alignment: "center",
-                spacing: { after: 400 },
-              }),
+      const safeParagraph = (text, options = {}) => {
+        const cleaned = cleanText(text);
+        return new Paragraph({
+          children: [new TextRun({ text: cleaned || " ", ...options })],
+          ...options.paragraph,
+        });
+      };
+
+      const textToParagraphs = (
+        text,
+        runOptions = {},
+        paragraphOptions = {},
+      ) => {
+        const cleaned = cleanText(text);
+        if (!cleaned) {
+          return [
+            new Paragraph({
+              children: [new TextRun({ text: " " })],
+              ...paragraphOptions,
+            }),
+          ];
+        }
+        return cleaned
+          .split("\n")
+          .filter((line) => line.trim() !== "")
+          .map(
+            (line) =>
               new Paragraph({
                 children: [
-                  new TextRun({ text: "Total de trabalhos: ", bold: true }),
-                  new TextRun({ text: `${submissaoData.length}` }),
+                  new TextRun({ text: cleanText(line) || " ", ...runOptions }),
                 ],
-                spacing: { after: 200 },
+                alignment: "both",
+                spacing: { after: 100 },
+                ...paragraphOptions,
               }),
-              ...(selectedTenant
-                ? [
-                    new Paragraph({
-                      children: [
-                        new TextRun({ text: "Instituição: ", bold: true }),
-                        new TextRun({ text: selectedTenant.tenant }),
-                      ],
-                      spacing: { after: 200 },
-                    }),
-                  ]
-                : []),
+          );
+      };
 
-              ...submissaoData.flatMap((submissao, index) => {
-                const resumo = submissao.Resumo || {};
-                const area = resumo.area || {};
-                const participacoes = resumo.participacoes || [];
-                const palavrasChave =
-                  resumo.PalavraChave?.map((p) => p.palavra).join(", ") ||
-                  "Sem palavras-chave";
-                const secoesConteudo = resumo.conteudo || [];
+      const children = [];
 
-                const participantesPorCargo = {
-                  AUTOR: [],
-                  COAUTOR: [],
-                  ORIENTADOR: [],
-                  COORIENTADOR: [],
-                  COLABORADOR: [],
-                };
+      // Cabeçalho
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: cleanText(`Anais do Evento - ${evento.evento.nomeEvento}`),
+              bold: true,
+              size: 32,
+              font: "Arial",
+            }),
+          ],
+          alignment: "center",
+          spacing: { after: 400 },
+        }),
+      );
 
-                participacoes.forEach((part) => {
-                  const nome = part.user?.nome || "Nome não disponível";
-                  if (part.cargo && participantesPorCargo[part.cargo]) {
-                    participantesPorCargo[part.cargo].push(nome);
-                  }
-                });
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Total de trabalhos: ",
+              bold: true,
+              font: "Arial",
+            }),
+            new TextRun({ text: String(submissaoData.length), font: "Arial" }),
+          ],
+          spacing: { after: 200 },
+        }),
+      );
 
-                // Mapeamento das seções do resumo (Introdução, Metodologia, etc.)
-                const blocosConteudo = secoesConteudo.flatMap((secao) => [
-                  new Paragraph({
-                    children: [
-                      new TextRun({ text: cleanText(secao.nome), bold: true }),
-                    ],
-                    spacing: { before: 200, after: 100 },
-                  }),
-                  new Paragraph({
-                    text: cleanText(secao.conteudo),
-                    alignment: "both",
-                    spacing: { after: 200 },
-                  }),
-                ]);
-
-                return [
-                  new Paragraph({
-                    text: cleanText(resumo.titulo || "Sem título"),
-                    heading: HeadingLevel.HEADING_2,
-                    spacing: { before: 600, after: 200 },
-                  }),
-
-                  ...Object.entries(participantesPorCargo)
-                    .filter(([_, nomes]) => nomes.length > 0)
-                    .map(([cargo, nomes]) => {
-                      const labels = {
-                        AUTOR: "Autores",
-                        COAUTOR: "Coautores",
-                        ORIENTADOR: "Orientador(es)",
-                        COORIENTADOR: "Coorientador(es)",
-                        COLABORADOR: "Colaborador(es)",
-                      };
-                      return new Paragraph({
-                        children: [
-                          new TextRun({
-                            text: `${labels[cargo] || cargo}: `,
-                            bold: true,
-                          }),
-                          new TextRun({
-                            text: nomes.join(", "),
-                            italics: true,
-                          }),
-                        ],
-                        spacing: { after: 100 },
-                      });
-                    }),
-
-                  new Paragraph({
-                    children: [
-                      new TextRun({
-                        text: `Área: ${area.area || "Sem área"}`,
-                        size: 20,
-                      }),
-                      new TextRun({
-                        text: `\tGrande Área: ${area.grandeArea?.grandeArea || "Sem grande área"}`,
-                        size: 20,
-                      }),
-                      new TextRun({
-                        text: `\tCategoria: ${submissao.categoria || "Sem categoria"}`,
-                        size: 20,
-                      }),
-                    ],
-                    spacing: { after: 100 },
-                  }),
-
-                  new Paragraph({
-                    children: [
-                      new TextRun({ text: "Palavras-chave: ", bold: true }),
-                      new TextRun({
-                        text: cleanText(palavrasChave),
-                        italics: true,
-                      }),
-                    ],
-                    spacing: { after: 100 },
-                  }),
-
-                  // Se não houver seções detalhadas, tenta usar o conteudoFormatado
-                  ...(blocosConteudo.length > 0
-                    ? blocosConteudo
-                    : [
-                        new Paragraph({
-                          text: cleanText(
-                            resumo.conteudoFormatado || "Sem resumo disponível",
-                          ),
-                          alignment: "both",
-                        }),
-                      ]),
-
-                  ...(submissao.premio || submissao.mencaoHonrosa
-                    ? [
-                        new Paragraph({
-                          children: [
-                            ...(submissao.premio
-                              ? [
-                                  new TextRun({
-                                    text: "Premiado: Sim",
-                                    size: 20,
-                                  }),
-                                  new TextRun({ text: "\t" }),
-                                ]
-                              : []),
-                            ...(submissao.mencaoHonrosa
-                              ? [
-                                  new TextRun({
-                                    text: "Menção Honrosa: Sim",
-                                    size: 20,
-                                  }),
-                                ]
-                              : []),
-                          ],
-                          spacing: { before: 200 },
-                        }),
-                      ]
-                    : []),
-
-                  ...(index < submissaoData.length - 1
-                    ? [new Paragraph({ text: "", pageBreakBefore: true })]
-                    : []),
-                ];
+      if (selectedTenant) {
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({ text: "Instituicao: ", bold: true, font: "Arial" }),
+              new TextRun({
+                text: cleanText(selectedTenant.tenant),
+                font: "Arial",
               }),
             ],
+            spacing: { after: 400 },
+          }),
+        );
+      }
+
+      for (let index = 0; index < submissaoData.length; index++) {
+        try {
+          const submissao = submissaoData[index];
+          const resumo = submissao.Resumo || {};
+          const area = resumo.area || {};
+          const grandeArea = area.grandeArea || {};
+          const participacoes = resumo.participacoes || [];
+          const secoesConteudo = Array.isArray(resumo.conteudo)
+            ? resumo.conteudo
+            : [];
+
+          const palavrasChave =
+            Array.isArray(resumo.PalavraChave) && resumo.PalavraChave.length > 0
+              ? resumo.PalavraChave.map((p) => cleanText(p.palavra))
+                  .filter(Boolean)
+                  .join(", ")
+              : "Sem palavras-chave";
+
+          const participantesPorCargo = {
+            AUTOR: [],
+            COAUTOR: [],
+            ORIENTADOR: [],
+            COORIENTADOR: [],
+            COLABORADOR: [],
+          };
+
+          participacoes.forEach((part) => {
+            const nome = cleanText(part.user?.nome) || "Nome nao disponivel";
+            if (part.cargo && participantesPorCargo[part.cargo] !== undefined) {
+              participantesPorCargo[part.cargo].push(nome);
+            }
+          });
+
+          const labels = {
+            AUTOR: "Autores",
+            COAUTOR: "Coautores",
+            ORIENTADOR: "Orientador(es)",
+            COORIENTADOR: "Coorientador(es)",
+            COLABORADOR: "Colaborador(es)",
+          };
+
+          // Título do trabalho
+          children.push(
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: cleanText(resumo.titulo) || "Sem titulo",
+                  bold: true,
+                  size: 26,
+                  font: "Arial",
+                }),
+              ],
+              spacing: { before: 600, after: 200 },
+              border: {
+                bottom: { style: "single", size: 6, color: "3498DB" },
+              },
+            }),
+          );
+
+          // Participantes
+          Object.entries(participantesPorCargo)
+            .filter(([_, nomes]) => nomes.length > 0)
+            .forEach(([cargo, nomes]) => {
+              children.push(
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: `${labels[cargo] || cargo}: `,
+                      bold: true,
+                      font: "Arial",
+                      size: 22,
+                    }),
+                    new TextRun({
+                      text: nomes.join(", "),
+                      italics: true,
+                      font: "Arial",
+                      size: 22,
+                    }),
+                  ],
+                  spacing: { after: 80 },
+                }),
+              );
+            });
+
+          // Área e categoria
+          children.push(
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Area: ${cleanText(area.area) || "Sem area"}   Grande Area: ${cleanText(grandeArea.grandeArea) || "Sem grande area"}   Categoria: ${cleanText(submissao.categoria) || "Sem categoria"}`,
+                  size: 20,
+                  font: "Arial",
+                  color: "555555",
+                }),
+              ],
+              spacing: { after: 80 },
+            }),
+          );
+
+          // Palavras-chave
+          children.push(
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "Palavras-chave: ",
+                  bold: true,
+                  font: "Arial",
+                  size: 20,
+                }),
+                new TextRun({
+                  text: cleanText(palavrasChave),
+                  italics: true,
+                  font: "Arial",
+                  size: 20,
+                }),
+              ],
+              spacing: { after: 200 },
+            }),
+          );
+
+          // Conteúdo
+          if (
+            secoesConteudo.length > 0 &&
+            secoesConteudo.some((s) => s.conteudo && s.conteudo.trim() !== "")
+          ) {
+            secoesConteudo.forEach((secao) => {
+              children.push(
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: cleanText(secao.nome) || " ",
+                      bold: true,
+                      font: "Arial",
+                      size: 24,
+                      color: "2980B9",
+                    }),
+                  ],
+                  spacing: { before: 300, after: 120 },
+                }),
+              );
+              textToParagraphs(secao.conteudo, {
+                font: "Arial",
+                size: 22,
+              }).forEach((p) => children.push(p));
+            });
+          } else {
+            children.push(
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: "Resumo",
+                    bold: true,
+                    font: "Arial",
+                    size: 24,
+                    color: "2980B9",
+                  }),
+                ],
+                spacing: { before: 300, after: 120 },
+              }),
+            );
+            textToParagraphs(resumo.conteudoFormatado, {
+              font: "Arial",
+              size: 22,
+            }).forEach((p) => children.push(p));
+          }
+
+          // Premiação
+          if (submissao.premio || submissao.mencaoHonrosa) {
+            const textos = [];
+            if (submissao.premio) textos.push("Premiado: Sim");
+            if (submissao.mencaoHonrosa) textos.push("Mencao Honrosa: Sim");
+            children.push(
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: textos.join("   "),
+                    bold: true,
+                    font: "Arial",
+                    size: 20,
+                    color: "27AE60",
+                  }),
+                ],
+                spacing: { before: 200, after: 100 },
+              }),
+            );
+          }
+
+          // Quebra de página
+          if (index < submissaoData.length - 1) {
+            children.push(
+              new Paragraph({
+                children: [new TextRun({ text: " " })],
+                pageBreakBefore: true,
+              }),
+            );
+          }
+        } catch (err) {
+          console.error(
+            `Erro na submissao index ${index}, id ${submissaoData[index]?.id}:`,
+            err,
+          );
+          children.push(
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `[Erro ao processar submissao ${submissaoData[index]?.id || index}]`,
+                  font: "Arial",
+                  color: "FF0000",
+                }),
+              ],
+            }),
+          );
+        }
+      }
+
+      const doc = new Document({
+        creator: "Sistema de Eventos",
+        title: cleanText(evento.evento.nomeEvento),
+        sections: [
+          {
+            properties: {},
+            children,
           },
         ],
       });
@@ -421,7 +562,7 @@ const Page = ({ params }) => {
       const blob = await Packer.toBlob(doc);
       saveAs(
         blob,
-        `anais_${evento.evento.slug}${selectedTenant ? `_${selectedTenant.tenant}` : ""}.docx`,
+        `anais_${cleanText(evento.evento.slug)}${selectedTenant ? `_${cleanText(selectedTenant.tenant)}` : ""}.docx`,
       );
     } catch (error) {
       console.error("Erro ao gerar documento Word:", error);

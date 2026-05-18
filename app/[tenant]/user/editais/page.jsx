@@ -38,8 +38,8 @@ const Page = ({ params }) => {
           getEditais(params.tenant),
           getMinhasInscricoes(params.tenant),
         ]);
-        setEditais(editaisData);
-        setInscricoes(inscricoesData);
+        setEditais(Array.isArray(editaisData) ? editaisData : []);
+        setInscricoes(Array.isArray(inscricoesData) ? inscricoesData : []);
       } catch (error) {
         console.error("Erro ao buscar dados:", error);
       } finally {
