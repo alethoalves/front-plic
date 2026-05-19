@@ -93,7 +93,7 @@ const Page = ({ params }) => {
         setFilteredAreas(transformedArray(getAreasResponse));
 
         // Para cada plano, ordenar suas atividades por data de início
-        const planosComAtividadesOrdenadas = response.map((plano) => ({
+        const planosComAtividadesOrdenadas = response.filter((plano) => plano.statusClassificacao === 'CLASSIFICADO').map((plano) => ({
           ...plano,
           registroAtividades:
             plano.registroAtividades?.sort(
