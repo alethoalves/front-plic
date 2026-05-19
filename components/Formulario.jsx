@@ -121,6 +121,7 @@ const Formulario = ({ params }) => {
         initialData={campoToEdit}
         onClose={closeModalAndResetData}
         onSuccess={handleCreateOrEditSuccess}
+        campos={campos}
       />
     </Modal>
   );
@@ -150,60 +151,40 @@ const Formulario = ({ params }) => {
       </div>
     </Modal>
   );
-  const moveCampoUp = async (campo) => {
-    const campoIndex = campos.findIndex((c) => c.id === campo.id);
-    if (campoIndex === 0) return; // Se for o primeiro campo, não faz nada
+  const swapCampoOrdem = async (indexA, indexB) => {
+    const prev = [...campos];
+    const campoA = { ...campos[indexA] };
+    const campoB = { ...campos[indexB] };
+    const ordemA = campoA.ordem;
+    const ordemB = campoB.ordem;
 
-    const campoAbove = campos[campoIndex - 1];
+    campoA.ordem = ordemB;
+    campoB.ordem = ordemA;
 
-    // Troca a ordem dos campos no frontend
-    const updatedCampos = [...campos];
-    updatedCampos[campoIndex].ordem -= 1;
-    updatedCampos[campoIndex - 1].ordem += 1;
-
-    setCampos(updatedCampos.sort((a, b) => a.ordem - b.ordem));
+    const updated = [...campos];
+    updated[indexA] = campoA;
+    updated[indexB] = campoB;
+    setCampos(updated.sort((a, b) => a.ordem - b.ordem));
 
     try {
-      // Atualiza no backend
-      await updateCampo(params.tenant, params.idFormulario, campo.id, {
-        ordem: updatedCampos[campoIndex].ordem.toString(),
-      });
-      await updateCampo(params.tenant, params.idFormulario, campoAbove.id, {
-        ordem: updatedCampos[campoIndex - 1].ordem.toString(),
-      });
+      await updateCampo(params.tenant, params.idFormulario, campoA.id, { ordem: campoA.ordem.toString() });
+      await updateCampo(params.tenant, params.idFormulario, campoB.id, { ordem: campoB.ordem.toString() });
     } catch (error) {
-      console.error("Erro ao mover o campo:", error);
-      // Em caso de erro, reverter a alteração localmente
-      setCampos(campos);
+      console.error("Erro ao reordenar campo:", error);
+      setCampos(prev);
     }
   };
 
-  const moveCampoDown = async (campo) => {
-    const campoIndex = campos.findIndex((c) => c.id === campo.id);
-    if (campoIndex === campos.length - 1) return; // Se for o último campo, não faz nada
+  const moveCampoUp = (campo) => {
+    const index = campos.findIndex((c) => c.id === campo.id);
+    if (index === 0) return;
+    swapCampoOrdem(index, index - 1);
+  };
 
-    const campoBelow = campos[campoIndex + 1];
-
-    // Troca a ordem dos campos no frontend
-    const updatedCampos = [...campos];
-    updatedCampos[campoIndex].ordem += 1;
-    updatedCampos[campoIndex + 1].ordem -= 1;
-
-    setCampos(updatedCampos.sort((a, b) => a.ordem - b.ordem));
-
-    try {
-      // Atualiza no backend
-      await updateCampo(params.tenant, params.idFormulario, campo.id, {
-        ordem: updatedCampos[campoIndex].ordem.toString(),
-      });
-      await updateCampo(params.tenant, params.idFormulario, campoBelow.id, {
-        ordem: updatedCampos[campoIndex + 1].ordem.toString(),
-      });
-    } catch (error) {
-      console.error("Erro ao mover o campo:", error);
-      // Em caso de erro, reverter a alteração localmente
-      setCampos(campos);
-    }
+  const moveCampoDown = (campo) => {
+    const index = campos.findIndex((c) => c.id === campo.id);
+    if (index === campos.length - 1) return;
+    swapCampoOrdem(index, index + 1);
   };
 
   if (loading) {

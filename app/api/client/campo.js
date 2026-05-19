@@ -71,6 +71,34 @@ export const getCampos = async (tenantSlug, formularioId) => {
   }
 };
   
+export const createRegra = async (tenantSlug, formularioId, campoId, regraData) => {
+  try {
+    const headers = getAuthHeadersClient();
+    const response = await req.post(
+      `/private/${tenantSlug}/formularios/${formularioId}/campos/${campoId}/regras`,
+      regraData,
+      { headers }
+    );
+    return response.data.regra;
+  } catch (error) {
+    console.error('Erro ao criar regra:', error);
+    throw error;
+  }
+};
+
+export const deleteRegra = async (tenantSlug, formularioId, campoId, regraId) => {
+  try {
+    const headers = getAuthHeadersClient();
+    await req.delete(
+      `/private/${tenantSlug}/formularios/${formularioId}/campos/${campoId}/regras/${regraId}`,
+      { headers }
+    );
+  } catch (error) {
+    console.error('Erro ao deletar regra:', error);
+    throw error;
+  }
+};
+
 export const getCampo = async (tenantSlug, formularioId, campoId) => {
   try {
     const headers = getAuthHeadersClient();

@@ -998,7 +998,9 @@ $shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
 // --- Estilos para o Step de Formulário ---
 
 
+
 .formularioCard {
+  width: 100%;
   border: 1px solid $gray-50;
   border-radius: $border-radius-md;
   box-shadow: $shadow-sm;

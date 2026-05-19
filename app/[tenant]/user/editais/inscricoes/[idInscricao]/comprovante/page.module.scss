@@ -1,184 +1,899 @@
 @import "/styles/partials/colors";
 @import "/styles/partials/layout";
 @import "/styles/partials/spacing";
-.errorMsg{
-    background-color: $error-light;
-    border-radius: $gap-1;
-    margin-top: $gap-1;
-    p{
-        color: $white-light;
-        padding: $gap-1 $gap-2;
-    }
-}
-.info{
-    margin-top: $gap-2;
-    margin-bottom: $gap-2;
-    p:not(:last-child){
-        margin-bottom: 6px;
-    }
+
+$doc-max-width: 900px;
+$border-radius: 10px;
+$border-color: $gray-100;
+$section-gap: $gap-4;
+
+// ─── Loading ──────────────────────────────────────────────────────────────────
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $gap-3;
+  padding: $gap-6;
+  p { color: $gray-500; }
 }
 
-.icon{
-    width: 24px;
-    color: $primary-normal;
+// ─── Toolbar ─────────────────────────────────────────────────────────────────
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+  max-width: $doc-max-width;
+  margin: 0 auto $gap-3;
+  padding: 0 $gap-2;
 }
 
-.acompanhamento{
-    .btn{
-        max-width: 200px;
-        min-width: 170px;
-    }
-    .status{
-        display: flex;
-        align-items: center;
-        padding: 0 $gap-1;
-        position: relative; // Necessário para posicionar o pseudo-elemento corretamente
-    
-        &::after {
-        content: '';
-        position: absolute;
-        width: 2px;
-        height: 100%; // Faz com que a linha ocupe toda a altura do elemento .status
-        background-color: $white-darken; // Substitua pela cor desejada
-        left: 20px; // Centraliza na posição horizontal
-        transform: translateX(-50%); // Ajusta o alinhamento exato
-        z-index: 1;
-        }
-        
-        .left{
-            .circle{
-                position: relative;
-                z-index: 2;
-                width: 25px;
-                height: 25px;
-                background-color: $white-darken;
-                border-radius: 70px;
-                display: flex;
-                align-items: center;
-                color: $primary-light;
-                padding: 3px;
-                svg{
-                    display: none;
-                }
-            }
-        }
-        .right{
-            margin-left: $gap-2;
-            padding: $gap-2 0;
-            
-        }
-    }
-    .statusPassado{
-        border-radius: $gap-1;
-        .left .circle{
-            background-color: $primary-dark;
-            color: $white-darken;
-            svg{
-                display: block;
-            }
-        }
-        h6{
-            color: $primary-darken;
-        }
-    }
-    .statusAtual{
-        border-radius: $gap-1;
-        background-color: $white-dark;
-        .left .circle{
-            background-color: $primary-dark;
-            color: $white-darken;
-            svg{
-                display: block;
-            }
-        }
-        h6{
-            color: $primary-darken;
-        }
-        
-        
-    }
+// ─── Document wrapper ────────────────────────────────────────────────────────
+.root {
+  padding: $gap-4 $gap-2 $gap-6;
+  @include responsive(s) { padding: $gap-2 $gap-1 $gap-4; }
 }
-@media print {
-    /* Oculta elementos que não devem aparecer na impressão */
-    .no-print {
-      display: none;
-    }
-  
-    /* Ajusta o layout para impressão */
-    .navContent {
-      width: 100%;
-      padding: 0;
-      margin-top: -70px;
-      margin-left: -230px;
-    }
-  
-    /* Garante que o conteúdo ocupe a página inteira */
-    .content {
-      width: 100%;
-      page-break-inside: avoid; /* Evita que o conteúdo seja dividido entre páginas */
-    }
+
+.document {
+  max-width: $doc-max-width;
+  margin: 0 auto;
+  background: $white-light;
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  svg{
+    width: 16px;
   }
-.navContent{
-    
-    width: 960px;
-    @include responsive(m){
-        width: 100%;
-    }
-    @include responsive(s){
-        width: 100%;
-    }
-
-    .content{
-        @include responsive(s){
-            flex-direction: column;
-            padding: $gap-1;
-        }
-        
-        padding: $gap-2;
-        .header{
-            h5{
-                font-weight: 300;
-
-                span{
-                    padding: 4px $gap-2;
-                    border-radius: $gap-1;
-                    background-color: $primary-darken;
-                    color: $white-light
-                    
-                }
-                
-            };
-            display: flex;
-            flex-direction: column;
-            align-items: left;
-        } 
-    }
-}
-.detalhesProjeto{
-    .card{
-        margin-top: $gap-3;
-        border: 1px solid $gray-50;
-        border-radius: $gap-1;
-        padding: $gap-2;
-        position: relative;
-        //padding-top: $gap-3;
-        p:not(:first-child){
-            margin-top: $gap-1;
-        }
-        .label{
-            //position: absolute;
-            border: 1px solid $gray-50;
-            //top: -9px;
-            font-size: 12px;
-            padding: 2px $gap-2;
-            background-color: $white-darken;
-            border-radius: $gap-1;
-            color: $primary-darken;
-            margin-bottom: $gap-1;
-            
-        }
-       
-    }
 }
 
+// ─── Document header ─────────────────────────────────────────────────────────
+.docHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: $gap-4;
+  padding: $gap-4 $gap-5;
+  background: $primary-normal;
+  color: $white-light;
 
+  @include responsive(s) {
+    flex-direction: column;
+    padding: $gap-3;
+  }
+}
+
+.docHeaderLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.docPrograma {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  opacity: 0.8;
+  margin: 0;
+  color: $white-light;
+}
+
+.docEdital {
+  font-size: 1.375rem;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.3;
+  color: $white-light;
+}
+
+.docAno {
+  font-size: 0.875rem;
+  opacity: 0.85;
+  margin: 0;
+  color: $white-light;
+}
+
+.docHeaderRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: $gap-2;
+  flex-shrink: 0;
+
+  @include responsive(s) { align-items: flex-start; }
+}
+
+.protocolBox {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  @include responsive(s) { align-items: flex-start; }
+}
+
+.protocolLabel {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.7;
+}
+
+.protocolValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  &.statusEnviada {
+    background: rgba(255,255,255,0.25);
+    color: $white-light;
+  }
+  &.statusRascunho {
+    background: rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.8);
+  }
+}
+
+.docTitleBar {
+  padding: $gap-3 $gap-5;
+  border-bottom: 2px solid $border-color;
+  background: $gray-25;
+
+  h1 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: $gray-700;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+
+// ─── Sections ────────────────────────────────────────────────────────────────
+.section {
+  padding: $section-gap $gap-5;
+  border-bottom: 1px solid $border-color;
+
+  &:last-of-type { border-bottom: none; }
+
+  @include responsive(s) { padding: $gap-3; }
+}
+
+.projetoSection { background: $white-light; }
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+  margin-bottom: $gap-3;
+
+  svg { color: $primary-normal; flex-shrink: 0; }
+
+  h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: $gray-800;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+}
+
+// ─── Participantes (orientadores / coorientadores) ───────────────────────────
+.participanteList {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-2;
+}
+
+.participanteCard {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $gap-2 $gap-3;
+  padding: $gap-2 $gap-3;
+  background: $gray-25;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+}
+
+.participanteNome {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: $gray-800;
+}
+
+.participanteCpf {
+  font-size: 0.8125rem;
+  color: $gray-500;
+}
+
+.lattesLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8125rem;
+  color: $primary-normal;
+  text-decoration: none;
+  font-weight: 500;
+
+  &:hover { text-decoration: underline; }
+}
+
+// ─── Projeto card ─────────────────────────────────────────────────────────────
+.projetoCard {
+  background: $gray-25;
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  overflow: hidden;
+}
+
+// ─── Meta rows ───────────────────────────────────────────────────────────────
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $gap-3 $gap-5;
+  padding: $gap-3 $gap-4;
+  border-bottom: 1px solid $border-color;
+  background: $white-light;
+}
+
+.metaBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 180px;
+}
+
+.metaLabel {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: $gray-400;
+}
+
+.metaValueStrong {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: $gray-800;
+}
+
+.metaValue {
+  font-size: 0.875rem;
+  color: $gray-700;
+}
+
+// ─── Respostas grid ───────────────────────────────────────────────────────────
+.respostasGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: $border-color;
+  border-top: 1px solid $border-color;
+
+  @include responsive(s) { grid-template-columns: 1fr; }
+}
+
+.fieldBlock {
+  background: $white-light;
+  padding: $gap-3 $gap-4;
+  display: flex;
+  flex-direction: column;
+  gap: $gap-1;
+
+  &.fullWidth {
+    grid-column: 1 / -1;
+  }
+}
+
+.fieldLabel {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: $gray-400;
+}
+
+.fieldValue {
+  font-size: 0.9rem;
+  color: $gray-700;
+  line-height: 1.5;
+}
+
+.emptyValue {
+  color: $gray-300;
+  font-style: italic;
+  font-size: 0.875rem;
+}
+
+.textValue {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.fileLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.875rem;
+  color: $primary-normal;
+  text-decoration: none;
+  font-weight: 500;
+  word-break: break-all;
+
+  &:hover { text-decoration: underline; }
+
+  svg { flex-shrink: 0; }
+}
+
+.boolTrue {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  background: rgba($success-normal, 0.1);
+  color: $success-dark;
+  border-radius: 12px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.boolFalse {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  background: $gray-25;
+  color: $gray-500;
+  border-radius: 12px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+// ─── BlockNote content ────────────────────────────────────────────────────────
+.blockNoteContent {
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: $gray-700;
+
+  > * + * { margin-top: 0.5em; }
+}
+
+.bnParagraph {
+  margin: 0;
+  min-height: 1.2em;
+}
+
+.bnHeading {
+  font-weight: 700;
+  color: $gray-800;
+  margin: 0.75em 0 0.25em;
+  line-height: 1.3;
+  &:first-child { margin-top: 0; }
+}
+
+.bnList {
+  margin: 0.25em 0;
+  padding-left: 1.5rem;
+}
+
+.bnItem {
+  margin: 0.2em 0;
+  line-height: 1.5;
+}
+
+.bnCheckItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4em;
+  margin: 0.2em 0;
+}
+
+.bnChecked { color: $success-dark; }
+.bnUnchecked { color: $gray-400; }
+
+.inlineCode {
+  font-family: monospace;
+  font-size: 0.85em;
+  background: $gray-25;
+  border: 1px solid $border-color;
+  border-radius: 4px;
+  padding: 1px 5px;
+  color: $primary-normal;
+}
+
+// ─── Cronograma ───────────────────────────────────────────────────────────────
+.cronogramaBlock {
+  border-top: 1px solid $border-color;
+  padding: $gap-3 $gap-4;
+  background: $white-light;
+}
+
+.cronogramaHeader {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+  margin-bottom: $gap-2;
+
+  svg { color: $gray-500; }
+
+  span {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: $gray-500;
+  }
+}
+
+.cronogramaTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+
+  th {
+    text-align: left;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: $gray-400;
+    padding: 6px 8px;
+    border-bottom: 1px solid $border-color;
+  }
+
+  td {
+    padding: 6px 8px;
+    color: $gray-700;
+    border-bottom: 1px solid $gray-25;
+    vertical-align: top;
+
+    &:last-child { width: 100%; }
+  }
+
+  tr:last-child td { border-bottom: none; }
+}
+
+.tdDate {
+  white-space: nowrap;
+  color: $gray-500;
+  font-size: 0.8125rem;
+  width: 90px;
+}
+
+// ─── Plano card ───────────────────────────────────────────────────────────────
+.planoCard {
+  border-top: 2px solid $gray-50;
+  background: $white-light;
+}
+
+.planoTitleBar {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+  padding: $gap-2 $gap-4;
+  background: $gray-25;
+  border-bottom: 1px solid $border-color;
+
+  svg { color: $success-dark; flex-shrink: 0; }
+
+  span:first-of-type {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: $gray-700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+}
+
+.categoriaPill {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+
+  &.catRemunerado {
+    background: rgba($success-normal, 0.12);
+    color: $success-dark;
+  }
+  &.catVoluntario {
+    background: rgba($primary-normal, 0.1);
+    color: $primary-dark;
+  }
+}
+
+// ─── Alunos ───────────────────────────────────────────────────────────────────
+.alunosBlock {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border-bottom: 1px solid $border-color;
+}
+
+.alunoGroup {
+  flex: 1;
+  min-width: 250px;
+  padding: $gap-2 $gap-4;
+  border-right: 1px solid $border-color;
+
+  &:last-child { border-right: none; }
+}
+
+.alunoGroupLabel {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: $gray-400;
+  margin-bottom: $gap-2;
+
+  svg { color: $gray-400; }
+}
+
+.alunoRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px $gap-2;
+  padding: 4px 0;
+  border-bottom: 1px solid $gray-25;
+
+  &:last-child { border-bottom: none; }
+}
+
+.alunoRowWithFicha {
+  flex-direction: column;
+  align-items: stretch;
+  gap: $gap-2;
+}
+
+.alunoInfo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px $gap-2;
+}
+
+.alunoNome {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $gray-800;
+}
+
+.alunoCpf {
+  font-size: 0.75rem;
+  color: $gray-500;
+}
+
+// ─── Ética e Regulamentações ─────────────────────────────────────────────────
+.eticaBlock {
+  border-top: 1px solid $border-color;
+  background: $white-light;
+}
+
+.eticaHeader {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+  padding: $gap-2 $gap-4;
+  background: rgba($warning-normal, 0.06);
+  border-bottom: 1px solid $border-color;
+
+  svg { color: $warning-dark; flex-shrink: 0; }
+
+  span {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: $warning-dark;
+  }
+}
+
+.eticaBody {
+  padding: $gap-2 $gap-4;
+  display: flex;
+  flex-direction: column;
+  gap: $gap-2;
+}
+
+.eticaRow {
+  display: flex;
+  gap: $gap-3;
+  align-items: flex-start;
+
+  @include responsive(s) { flex-direction: column; gap: $gap-1; }
+}
+
+.eticaRowLabel {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: $gray-400;
+  min-width: 140px;
+  padding-top: 3px;
+  flex-shrink: 0;
+}
+
+.eticaFlags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $gap-1;
+}
+
+.eticaFlag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  background: rgba($warning-normal, 0.12);
+  color: $warning-dark;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.eticaMetas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $gap-2;
+}
+
+.eticaMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.eticaMetaLabel {
+  font-size: 0.6875rem;
+  color: $gray-400;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.eticaMetaValue {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $gray-800;
+}
+
+.eticaAnexos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $gap-2;
+}
+
+// ─── Respostas de participação ─────────────────────────────────────────────────
+.participacaoRespostas {
+  width: 100%;
+  border-top: 1px solid $border-color;
+  margin-top: $gap-1;
+}
+
+// ─── Participante card with ficha ────────────────────────────────────────────
+.participanteCardWithFicha {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.participanteInfo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $gap-2 $gap-3;
+}
+
+// ─── Ficha de Avaliação ───────────────────────────────────────────────────────
+.fichaAvaliacao {
+  margin-top: $gap-2;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  overflow: hidden;
+  background: $white-light;
+}
+
+.fichaHeader {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+  padding: $gap-2 $gap-3;
+  background: rgba($primary-normal, 0.06);
+  border-bottom: 1px solid $border-color;
+
+  svg { color: $primary-normal; flex-shrink: 0; }
+}
+
+.fichaHeaderLabel {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: $gray-700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  flex: 1;
+}
+
+.fichaNota {
+  font-size: 1rem;
+  font-weight: 700;
+  color: $primary-dark;
+}
+
+.fichaNotaMax {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: $gray-500;
+}
+
+.fichaGrupos {
+  padding: $gap-2;
+  display: flex;
+  flex-direction: column;
+  gap: $gap-1;
+}
+
+.faGrupo {
+  border: 1px solid $border-color;
+  border-radius: 6px;
+  overflow: hidden;
+  background: $white-light;
+}
+
+.faGrupoPrincipal { border-left: 3px solid $primary-normal; }
+.faGrupoSecundario { border-left: 3px solid rgba($primary-normal, 0.4); }
+.faGrupoTerciario { border-left: 3px solid $border-color; }
+
+.faGrupoHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $gap-2;
+  padding: 7px $gap-3;
+  background: $gray-25;
+}
+
+.faGrupoLabel {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: $gray-700;
+}
+
+.faGrupoNota {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: $gray-800;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.faGrupoNotaMax {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: $gray-500;
+}
+
+.faItens {
+  padding: $gap-2 $gap-3;
+  display: flex;
+  flex-direction: column;
+  gap: $gap-2;
+}
+
+.faItem {
+  background: $gray-25;
+  border: 1px solid $border-color;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.faItemHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px $gap-2;
+  background: $white-light;
+  border-bottom: 1px solid $border-color;
+}
+
+.faItemIndex {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: $gray-400;
+}
+
+.faItemNota {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: $success-dark;
+}
+
+.faItemCampos {
+  padding: $gap-1 $gap-2;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.faItemCampo {
+  display: flex;
+  gap: $gap-2;
+  align-items: baseline;
+  font-size: 0.8125rem;
+}
+
+.faItemCampoLabel {
+  color: $gray-500;
+  flex-shrink: 0;
+  min-width: 120px;
+
+  &::after { content: ":"; }
+}
+
+.faItemCampoValue {
+  color: $gray-800;
+  font-weight: 500;
+}
+
+.faSubgrupos {
+  padding: $gap-2 $gap-2 $gap-2 $gap-3;
+  display: flex;
+  flex-direction: column;
+  gap: $gap-1;
+  border-top: 1px solid $border-color;
+  background: $gray-25;
+}
+
+// ─── Footer ───────────────────────────────────────────────────────────────────
+.docFooter {
+  padding: $gap-3 $gap-5;
+  background: $gray-25;
+  border-top: 1px solid $border-color;
+
+  p {
+    font-size: 0.75rem;
+    color: $gray-400;
+    text-align: center;
+    margin: 0;
+  }
+}
+
+// ─── Print ────────────────────────────────────────────────────────────────────
+@media print {
+  .root { padding: 0; }
+
+  .document {
+    max-width: 100%;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .docHeader { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+
+  .section { page-break-inside: avoid; }
+
+  .planoCard { page-break-inside: avoid; }
+
+  .fichaAvaliacao { page-break-inside: avoid; }
+
+  .cronogramaTable { page-break-inside: avoid; }
+}

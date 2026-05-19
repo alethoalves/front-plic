@@ -11,6 +11,7 @@ const nextConfig = {
       },
     ],
   },
+  transpilePackages: ['@blocknote/core', '@blocknote/react', '@blocknote/mantine', '@remixicon/react'],
 };
 
 export default nextConfig;

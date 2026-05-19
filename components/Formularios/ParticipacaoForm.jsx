@@ -3,7 +3,6 @@ import { useForm } from "react-hook-form";
 import styles from "@/components/Formularios/Form.module.scss";
 import Button from "@/components/Button";
 import Input from "@/components/Input";
-import Select from "@/components/Select";
 import { formNewParticipacao } from "@/lib/zodSchemas/formNewParticipacao";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createParticipacao } from "@/app/api/client/participacao";
@@ -20,27 +19,21 @@ const ParticipacaoForm = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [showBolsaField, setShowBolsaField] = useState(false);
+  const [showBolsaField, setShowBolsaField] = useState(tipoParticipacao === "aluno");
 
-  const { control, handleSubmit, setValue, watch } = useForm({
+  const { control, handleSubmit } = useForm({
     resolver: zodResolver(formNewParticipacao),
     defaultValues: {
       userId: "",
       nome: "",
       inicio: "",
       cpf: "",
-      tipo: "",
+      tipo: tipoParticipacao ?? "",
       cvLattesId: "",
       solicitarBolsa: "false",
       ...initialData,
     },
   });
-
-  const tipo = watch("tipo");
-
-  useEffect(() => {
-    setShowBolsaField(tipo === "aluno");
-  }, [tipo]);
 
   const handleFormSubmit = async (data) => {
     const { tipo, inicio, solicitarBolsa } = data;
@@ -83,17 +76,10 @@ const ParticipacaoForm = ({
       <div className={styles.info}>
         <p>{initialData.nome}</p>
       </div>
-      <Select
-        className="mb-2"
-        control={control}
-        name="tipo"
-        label="Tipo de participação"
-        options={[
-          { label: "Selecione uma opção", value: "" },
-          { label: `${tipoParticipacao}`, value: `${tipoParticipacao}` },
-        ]}
-        disabled={loading}
-      />
+      <p className={styles.infoLabel}>Tipo de participação</p>
+      <div className={styles.info}>
+        <p>{tipoParticipacao}</p>
+      </div>
       {showLabelInicio && (
         <Input
           className="mb-2"

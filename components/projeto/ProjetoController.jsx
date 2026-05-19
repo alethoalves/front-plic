@@ -8,10 +8,10 @@ import {
 } from "@remixicon/react";
 import styles from "./ProjetoController.module.scss";
 import { useEffect, useState } from "react";
-import FormProjeto from "../Formularios/FormProjeto";
 import VerProjeto from "./VerProjeto";
 import ListaProjetos from "./ListaProjetos";
 import {
+  deleteProjetoById,
   getProjetoById,
   getProjetosDoUsuario,
   isProjetoLinkedToInscricao,
@@ -28,6 +28,7 @@ const ProjetoController = ({
   inscricao,
 }) => {
   const [loading, setLoading] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
   const [error, setError] = useState("");
   const [modalView, setModalView] = useState(idProjeto ? "view" : "list"); // "list" | "view" | "create" | "edit"
   const [selectedProjeto, setSelectedProjeto] = useState(null); // Para o projeto selecionado
@@ -67,17 +68,14 @@ const ProjetoController = ({
         (p) => p.id === projetoAtualizado.id,
       );
       if (index !== -1) {
-        // Atualizar projeto existente
         const novosProjetos = [...prevProjetos];
         novosProjetos[index] = projetoAtualizado;
         return novosProjetos.sort((a, b) => b.id - a.id);
       }
-      // Adicionar novo projeto
       return [...prevProjetos, projetoAtualizado].sort((a, b) => b.id - a.id);
     });
-    // Atualiza o modal para visualização do projeto criado/atualizado
     setSelectedProjeto(projetoAtualizado);
-    setProjetoDetalhes(projetoAtualizado);
+    setProjetoDetalhes(null); // força re-fetch para incluir AnexoProjeto atualizado
     setModalView("view");
   };
   useEffect(() => {
@@ -122,6 +120,26 @@ const ProjetoController = ({
       setError("Erro ao atualizar o projeto. Tente novamente mais tarde.");
     } finally {
       setLoading(false); // Desativa o estado de carregamento
+    }
+  };
+
+  const handleDeleteProjeto = async (projeto) => {
+    if (!window.confirm(`Deseja excluir o projeto "${projeto.titulo}"?`)) return;
+    try {
+      setDeletingId(projeto.id);
+      setError("");
+      const isLinked = await isProjetoLinkedToInscricao(tenant, projeto.id);
+      if (isLinked) {
+        setError("Este projeto está vinculado a uma inscrição e não pode ser excluído.");
+        return;
+      }
+      await deleteProjetoById(tenant, projeto.id);
+      setMeusProjetos((prev) => prev.filter((p) => p.id !== projeto.id));
+    } catch (error) {
+      console.error("Erro ao excluir projeto:", error);
+      setError(error.response?.data?.message || "Erro ao excluir o projeto. Tente novamente.");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -213,6 +231,8 @@ const ProjetoController = ({
             title={"Meus Projetos"}
             setSelectedProjeto={setSelectedProjeto}
             setModalView={setModalView}
+            onDeleteProjeto={handleDeleteProjeto}
+            deletingId={deletingId}
           />
         </>
       )}
@@ -227,48 +247,26 @@ const ProjetoController = ({
         />
       )}
       {modalView === "create" && (
-        <>
-          {/** 
-          <FormProjeto
-            tenantSlug={tenant}
-            idInscricao={inscricaoSelected}
-            onSuccess={handleCreateOrEditProjetoSuccess}
-          />
-          */}
-          <FormProjetoCreateOrEdit
-            initialData={projetoDetalhes}
-            tenantSlug={tenant}
-            idInscricao={inscricaoSelected}
-            onSuccess={handleCreateOrEditProjetoSuccess}
-            onUpdateProjeto={(projetoData) =>
-              handleUpdateProjeto(selectedProjeto.id, projetoData)
-            }
-          />
-        </>
+        <FormProjetoCreateOrEdit
+          initialData={projetoDetalhes}
+          tenantSlug={tenant}
+          idInscricao={inscricaoSelected}
+          onSuccess={handleCreateOrEditProjetoSuccess}
+          onUpdateProjeto={(projetoData) =>
+            handleUpdateProjeto(selectedProjeto?.id, projetoData)
+          }
+        />
       )}
       {modalView === "edit" && selectedProjeto && (
-        <>
-          {/**
-           * <FormProjeto
-            tenantSlug={tenant}
-            idInscricao={inscricaoSelected}
-            initialData={projetoDetalhes} // Dados do projeto para edição
-            onSuccess={handleCreateOrEditProjetoSuccess} // Atualização do estado após sucesso
-            onSubmit={(projetoData) =>
-              handleUpdateProjeto(selectedProjeto.id, projetoData)
-            }
-          />
-           */}
-          <FormProjetoCreateOrEdit
-            initialData={projetoDetalhes}
-            tenantSlug={tenant}
-            idInscricao={inscricaoSelected}
-            onSuccess={handleCreateOrEditProjetoSuccess}
-            onUpdateProjeto={(projetoData) =>
-              handleUpdateProjeto(selectedProjeto.id, projetoData)
-            }
-          />
-        </>
+        <FormProjetoCreateOrEdit
+          initialData={projetoDetalhes}
+          tenantSlug={tenant}
+          idInscricao={inscricaoSelected}
+          onSuccess={handleCreateOrEditProjetoSuccess}
+          onUpdateProjeto={(projetoData) =>
+            handleUpdateProjeto(selectedProjeto.id, projetoData)
+          }
+        />
       )}
     </>
   );

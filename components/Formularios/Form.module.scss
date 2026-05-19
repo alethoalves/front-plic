@@ -102,6 +102,13 @@
         }
         background-color: $primary-dark;
     }
+    .itemMenuDisabled{
+        cursor: not-allowed;
+        opacity: 0.45;
+        p{
+            color: $gray-300;
+        }
+    }
 }
 .options{
     .btn{
@@ -555,7 +562,58 @@
     
   }
   
-    .limitWarning {
+    .pdfDoc {
+  display: flex;
+  align-items: center;
+  gap: $gap-1;
+  padding: $gap-1 $gap-2;
+  background-color: $white-darken;
+  border-radius: 6px;
+  margin-bottom: $gap-1;
+  border: 1px solid $gray-50;
+
+  .pdfIcon {
+    flex-shrink: 0;
+    color: $error-normal;
+    display: flex;
+    align-items: center;
+  }
+
+  .pdfName {
+    flex: 1;
+    font-size: 0.875rem;
+    color: $black-light;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    &:hover {
+      text-decoration: underline;
+      color: $primary-dark;
+    }
+  }
+
+  .pdfDelete {
+    flex-shrink: 0;
+    cursor: pointer;
+    color: $gray-500;
+    display: flex;
+    align-items: center;
+    transition: color ease 0.2s;
+    &:hover {
+      color: $error-normal;
+    }
+  }
+}
+
+.pdfUploadLabel {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: $black-light;
+  margin-bottom: $gap-1;
+}
+
+.limitWarning {
   display: flex;
   align-items: center;
   gap: 0.5rem;

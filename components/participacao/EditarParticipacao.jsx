@@ -25,11 +25,13 @@ import {
 } from "@/app/api/client/participacao";
 import { getInscricaoUserById } from "@/app/api/client/inscricao";
 import { getFormulario } from "@/app/api/client/formulario";
+import { getUserTenant } from "@/app/api/client/userTenant";
 import { gerarFichaAvaliacaoParticipacao } from "@/app/api/client/cvLattes";
 import { xmlLattes } from "@/app/api/clientReq";
 import { Stepper } from "primereact/stepper";
 import { StepperPanel } from "primereact/stepperpanel";
 import { Card } from "primereact/card";
+import FormAlunoUserTenant from "./FormAlunoUserTenant";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { Toast } from "primereact/toast";
 import Image from "next/image";
@@ -56,6 +58,7 @@ const EditarParticipacao = ({
   const [errorForm, setErrorForm] = useState("");
   const [activeStep, setActiveStep] = useState(0);
   const [fichaAvaliacao, setFichaAvaliacao] = useState(null);
+  const [userTenantData, setUserTenantData] = useState(null);
   const toast = useRef(null);
 
 
@@ -509,9 +512,25 @@ const EditarParticipacao = ({
           if (tipoParticipacao === "aluno") camposCarregados = sorted;
         }
 
+        let ut = null;
+        if (tipoParticipacao === "aluno" && participacaoInfo?.user?.id && response.edital?.ano) {
+          ut = await getUserTenant(tenant, participacaoInfo.user.id, response.edital.ano);
+          setUserTenantData(ut);
+        }
+
         if (participacaoInfo?.fichaAvaliacao) {
           setFichaAvaliacao(participacaoInfo.fichaAvaliacao);
-          setActiveStep(camposCarregados.length > 0 ? 3 : 2);
+
+          if (tipoParticipacao === "aluno") {
+            const historicoFeito = !!ut?.historicoEscolarUrl;
+            if (historicoFeito && camposCarregados.length > 0) {
+              setActiveStep(4);
+            } else {
+              setActiveStep(3);
+            }
+          } else {
+            setActiveStep(camposCarregados.length > 0 ? 3 : 2);
+          }
         }
       } catch (error) {
         console.error("Erro ao buscar dados:", error);
@@ -966,7 +985,7 @@ const EditarParticipacao = ({
                       className="p-button-text p-button-plain"
                       onClick={() => setActiveStep(0)}
                     />
-                    {campos.length > 0 && (
+                    {(campos.length > 0 || tipoParticipacao === "aluno") && (
                       <Button
                         label="Próximo"
                         icon="pi pi-arrow-right"
@@ -979,7 +998,27 @@ const EditarParticipacao = ({
                 </Card>
               </div>
             </StepperPanel>
-            {/* Step: Campos Dinâmicos (Formulário) */}
+            {/* Step: Histórico Escolar (apenas aluno) */}
+            {tipoParticipacao === "aluno" && (
+              <StepperPanel header="Histórico Escolar">
+                <FormAlunoUserTenant
+                  tenantSlug={tenant}
+                  participacaoInfo={participacaoInfo}
+                  editalInfo={editalInfo}
+                  userTenant={userTenantData}
+                  onBack={() => setActiveStep((prev) => prev - 1)}
+                  onSuccess={() => {
+                    if (campos.length > 0) {
+                      setActiveStep((prev) => prev + 1);
+                    } else {
+                      showSuccess("Dados salvos com sucesso!");
+                      closeModalAndResetData();
+                    }
+                  }}
+                />
+              </StepperPanel>
+            )}
+
             {/* Step: Campos Dinâmicos (Formulário) */}
             {campos.length > 0 && (
               <StepperPanel
@@ -1041,7 +1080,7 @@ const EditarParticipacao = ({
                           label="Voltar"
                           icon="pi pi-arrow-left"
                           className="p-button-outlined p-button-secondary"
-                          onClick={() => setActiveStep(2)}
+                          onClick={() => setActiveStep((prev) => prev - 1)}
                           type="button"
                         />
                         <Button

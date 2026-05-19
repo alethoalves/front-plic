@@ -131,7 +131,7 @@ export const deleteFile = async (tenantSlug, fileUrl) => {
 };
 
 // Função para upload de arquivos vinculados a projetos
-export const uploadFileProjeto = async (file, tenantSlug, projetoId) => {
+export const uploadFileProjeto = async (file, tenantSlug, projetoId, tipo = null) => {
   try {
     const token = getCookie("authToken");
     if (!token) {
@@ -141,6 +141,7 @@ export const uploadFileProjeto = async (file, tenantSlug, projetoId) => {
     const formData = new FormData();
     formData.append("file", file); // Adiciona o arquivo ao FormData
     formData.append("projetoId", projetoId); // Adiciona o ID do projeto ao FormData
+    if (tipo) formData.append("tipo", tipo); // Adiciona o tipo do documento, se informado
 
     const response = await req.post(
       `/private/${tenantSlug}/external/projeto/upload`,

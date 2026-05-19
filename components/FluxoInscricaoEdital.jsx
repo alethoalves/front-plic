@@ -33,9 +33,10 @@ import VerInscricao from "./VerInscricao";
 import { Toast } from "primereact/toast";
 import { Card } from "primereact/card";
 import { ProgressSpinner } from "primereact/progressspinner";
-import { Router } from "next/router";
+import { useRouter } from "next/navigation";
 
 const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
+  const router = useRouter();
   // ESTADOS
   const [inscricao, setInscricao] = useState();
   const [activeStep, setActiveStep] = useState("orientador");
@@ -86,7 +87,7 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
     try {
       await submissaoInscricao(tenant, inscricaoSelected);
       showSuccess("Inscrição enviada com sucesso!");
-      Router.push(
+      router.push(
         `/${tenant}/user/editais/inscricoes/${inscricaoSelected}/acompanhamento`,
       );
     } catch (error) {
@@ -297,6 +298,37 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
         (p) => p?.tipo === "aluno" && p?.planoDeTrabalhoId === planoId,
       ).length || 0;
     return alunosNoPlano < (inscricao.edital?.maxAlunosPorPlano || 0);
+  };
+
+  const getPlanosPorProjeto = (inscricaoProjetoItem) =>
+    inscricao.planosDeTrabalho?.filter(
+      (i) =>
+        i.projetoId === inscricaoProjetoItem.projetoId ||
+        i.projetoId === inscricaoProjetoItem.id,
+    ) ?? [];
+
+  const getRemuneradosPorProjeto = (inscricaoProjetoItem) => {
+    const planoIds = getPlanosPorProjeto(inscricaoProjetoItem).map((p) => p.id);
+    return (
+      inscricao.participacoes?.filter(
+        (p) =>
+          p.tipo === "aluno" &&
+          p.solicitarBolsa === true &&
+          planoIds.includes(p.planoDeTrabalhoId),
+      ).length ?? 0
+    );
+  };
+
+  const getVoluntariosPorProjeto = (inscricaoProjetoItem) => {
+    const planoIds = getPlanosPorProjeto(inscricaoProjetoItem).map((p) => p.id);
+    return (
+      inscricao.participacoes?.filter(
+        (p) =>
+          p.tipo === "aluno" &&
+          p.solicitarBolsa !== true &&
+          planoIds.includes(p.planoDeTrabalhoId),
+      ).length ?? 0
+    );
   };
   if (loading) {
     return (
@@ -642,6 +674,28 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
                         >
                           <RiLinkUnlink size={18} />
                         </button>
+                      </div>
+                    </div>
+
+                    {/* Contadores por projeto */}
+                    <div className={styles.projetoCounters}>
+                      <div className={`${styles.projetoCounter} ${getPlanosPorProjeto(item).length >= (editalInfo?.maxPlanosPorProjeto || 6) ? styles.atLimit : ""}`}>
+                        <span className={styles.projetoCounterLabel}>Planos</span>
+                        <span className={styles.projetoCounterValue}>
+                          {getPlanosPorProjeto(item).length} / {editalInfo?.maxPlanosPorProjeto || 6}
+                        </span>
+                      </div>
+                      <div className={`${styles.projetoCounter} ${getRemuneradosPorProjeto(item) >= (editalInfo?.maxRemuneradosPorProjeto || 2) ? styles.atLimit : ""}`}>
+                        <span className={styles.projetoCounterLabel}>Remunerados</span>
+                        <span className={styles.projetoCounterValue}>
+                          {getRemuneradosPorProjeto(item)} / {editalInfo?.maxRemuneradosPorProjeto || 2}
+                        </span>
+                      </div>
+                      <div className={`${styles.projetoCounter} ${getVoluntariosPorProjeto(item) >= (editalInfo?.maxVoluntariosPorProjeto || 4) ? styles.atLimit : ""}`}>
+                        <span className={styles.projetoCounterLabel}>Voluntários</span>
+                        <span className={styles.projetoCounterValue}>
+                          {getVoluntariosPorProjeto(item)} / {editalInfo?.maxVoluntariosPorProjeto || 4}
+                        </span>
                       </div>
                     </div>
 

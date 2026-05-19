@@ -30,10 +30,14 @@ const Page = ({ params }) => {
   const [atividadesNaoEntregues, setAtividadesNaoEntregues] = useState(0);
   const [registroAtividadesNaoInscritos, setRegistroAtividadesNaoInscritos] =
     useState(0);
+  const [perfil, setPerfil] = useState(null);
   // ROTEAMENTO
   const router = useRouter();
-  const perfil = getCookie("perfilSelecionado");
   //EFETUAR BUSCAS DE DADOS AO RENDERIZAR O COMPONENTE
+  useEffect(() => {
+    setPerfil(getCookie("perfilSelecionado") ?? null);
+  }, []);
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);

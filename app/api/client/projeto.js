@@ -7,11 +7,20 @@ const convertToFormData = (data) => {
   // Campos simples
   formData.append("titulo", data.titulo);
   formData.append("areaId", data.areaId);
-  formData.append("conteudo", data.conteudo);
-  formData.append("projetoId", data.projetoId);
-  formData.append("envolveHumanos", data.envolveHumanos);
-  formData.append("envolveAnimais", data.envolveAnimais);
-  // Se o cronograma for necessário, pode ser convertido para JSON
+  if (data.conteudo !== undefined) formData.append("conteudo", data.conteudo);
+  if (data.projetoId !== undefined) formData.append("projetoId", data.projetoId);
+  formData.append("envolveHumanos", data.envolveHumanos ?? false);
+  formData.append("envolveAnimais", data.envolveAnimais ?? false);
+  formData.append("envolveOGM", data.envolveOGM ?? false);
+  formData.append("envolvePatrimonioGenetico", data.envolvePatrimonioGenetico ?? false);
+  formData.append("submetidoComiteEtica", data.submetidoComiteEtica ?? false);
+  if (data.numeroCEPCONEP !== undefined && data.numeroCEPCONEP !== null)
+    formData.append("numeroCEPCONEP", data.numeroCEPCONEP);
+  if (data.numeroSISGEN !== undefined && data.numeroSISGEN !== null)
+    formData.append("numeroSISGEN", data.numeroSISGEN);
+  if (data.numeroProtocoloEtica !== undefined && data.numeroProtocoloEtica !== null)
+    formData.append("numeroProtocoloEtica", data.numeroProtocoloEtica);
+
   if (data.cronograma) {
     formData.append("cronograma", JSON.stringify(data.cronograma));
   }
@@ -20,7 +29,7 @@ const convertToFormData = (data) => {
   if (data.camposDinamicos) {
     Object.keys(data.camposDinamicos).forEach((key) => {
       const value = data.camposDinamicos[key];
-      const fullKey = `camposDinamicos.${key}`; // Preserva o prefixo
+      const fullKey = `camposDinamicos.${key}`;
       if (value instanceof FileList && value.length > 0) {
         formData.append(fullKey, value[0]);
       } else {
@@ -165,6 +174,22 @@ export const linkProjetoToInscricao = async (tenantSlug, idInscricao, idProjeto)
     return response.data;
   } catch (error) {
     console.error("Erro ao vincular projeto à inscrição:", error);
+    throw error;
+  }
+};
+
+// Excluir um projeto pelo ID
+export const deleteProjetoById = async (tenantSlug, projetoId) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) throw new Error("Usuário não autenticado.");
+    const response = await req.delete(
+      `/private/${tenantSlug}/projeto/${projetoId}`,
+      { headers }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao excluir projeto:", error);
     throw error;
   }
 };

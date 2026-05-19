@@ -1,230 +1,278 @@
 "use client";
-import Button from "@/components/Button";
-
-import {
-  RiAddLine,
-  RiArrowRightSLine,
-  RiFileExcelLine,
-  RiLink,
-} from "@remixicon/react";
-import styles from "./VerProjeto.module.scss";
-import NoData from "../NoData";
-import GanttChart from "../GanttChart";
 import { useState } from "react";
-import {
-  linkProjetoToInscricao,
-  unlinkProjetoFromInscricao,
-} from "@/app/api/client/projeto";
+import dynamic from "next/dynamic";
+import Button from "@/components/Button";
+import { RiLink, RiFilePdfLine, RiCheckLine, RiExternalLinkLine } from "@remixicon/react";
+import styles from "./VerProjeto.module.scss";
+import { linkProjetoToInscricao } from "@/app/api/client/projeto";
+
+const BlockNoteField = dynamic(
+  () => import("@/components/Formularios/BlockNoteField"),
+  { ssr: false }
+);
+
+// Subcomponente: link para um arquivo PDF anexado
+const DocLink = ({ doc }) => (
+  <a
+    href={doc.link}
+    target="_blank"
+    rel="noopener noreferrer"
+    className={styles.pdfLink}
+  >
+    <RiFilePdfLine size={14} />
+    <span>{doc.nomeAnexo}</span>
+  </a>
+);
+
+// Subcomponente: valor de um campo dinâmico
+const FieldValue = ({ item }) => {
+  const { tipo } = item.campo;
+
+  if (tipo === "blockNote") {
+    return (
+      <BlockNoteField
+        value={item.value}
+        readOnly={true}
+        label={null}
+      />
+    );
+  }
+
+  if (tipo === "arquivo") {
+    const raw = item.value || "";
+    const parts = raw.split("/");
+    const lastName = parts[parts.length - 1];
+    const fileName = lastName.split("_").slice(1).join("_") || lastName;
+    return (
+      <a
+        href={raw}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={styles.fileLink}
+      >
+        <RiFilePdfLine size={14} />
+        <span>{fileName}</span>
+        <RiExternalLinkLine size={12} />
+      </a>
+    );
+  }
+
+  if (tipo === "link") {
+    return (
+      <a
+        href={item.value}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={styles.fileLink}
+      >
+        <RiExternalLinkLine size={14} />
+        <span>{item.value}</span>
+      </a>
+    );
+  }
+
+  if (tipo === "checkbox" || tipo === "multiselect") {
+    const raw = typeof item.value === "string" ? item.value : "";
+    let values = [];
+    try {
+      const parsed = JSON.parse(raw);
+      values = Array.isArray(parsed) ? parsed : [String(parsed)];
+    } catch {
+      values = raw.split(",").map((v) => v.trim()).filter(Boolean);
+    }
+    return (
+      <div className={styles.tagList}>
+        {values.map((v, i) => (
+          <span key={i} className={styles.tag}>{v}</span>
+        ))}
+      </div>
+    );
+  }
+
+  if (tipo === "flag") {
+    const isTrue = item.value === "true" || item.value === true;
+    return <p className={styles.fieldText}>{isTrue ? "Sim" : "Não"}</p>;
+  }
+
+  return <p className={styles.fieldText}>{item.value}</p>;
+};
 
 const VerProjeto = ({
   projetoDetalhes,
   loading,
   tenant,
   inscricaoSelected,
-  onProjetoVinculado, // Callback recebido como prop
+  onProjetoVinculado,
   closeModal,
 }) => {
-  const [activeTab, setActiveTab] = useState("conteudo");
-  const [isLinking, setIsLinking] = useState(false); // Estado de carregamento da operação de link
-  const [error, setError] = useState(null); // Estado de erro
-  console.log("Detalhes do projeto recebidos em VerProjeto:", projetoDetalhes); // Log para verificar os detalhes do projeto
+  const [isLinking, setIsLinking] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Lógica para esconder campos condicionais
-  let respostasVisiveis = projetoDetalhes.Resposta;
+  // Aplica regras condicionais para filtrar campos visíveis
+  let respostasVisiveis = projetoDetalhes.Resposta || [];
   try {
-    // Monta array de campos e objeto de valores
-    const campos = projetoDetalhes.Resposta.map((r) => r.campo);
+    const campos = respostasVisiveis.map((r) => r.campo);
     const camposDinamicosValues = {};
-    projetoDetalhes.Resposta.forEach((resp) => {
+    respostasVisiveis.forEach((resp) => {
       camposDinamicosValues[`campo_${resp.campo.id}`] = resp.value;
     });
-    // Importa a função de regras
     const { applyConditionalRules } = require("@/lib/applyConditionalRules");
-    const visibleFieldIds = applyConditionalRules(
-      campos,
-      camposDinamicosValues,
+    const visibleFieldIds = applyConditionalRules(campos, camposDinamicosValues);
+    respostasVisiveis = respostasVisiveis.filter((item) =>
+      visibleFieldIds.includes(item.campo.id)
     );
-    respostasVisiveis = projetoDetalhes.Resposta.filter((item) =>
-      visibleFieldIds.includes(item.campo.id),
-    );
-  } catch (e) {
-    // fallback: mostra tudo se der erro
-    respostasVisiveis = projetoDetalhes.Resposta;
+  } catch {
+    // fallback: mostra tudo
   }
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-  };
-  const handleLinkProject = async () => {
-    const tenantSlug = tenant;
-    const idInscricao = inscricaoSelected;
-    const idProjeto = projetoDetalhes.id;
 
+  // Documentos regulatórios por tipo
+  const anexos = projetoDetalhes.AnexoProjeto || [];
+  const docCEPCONEP = anexos.find((a) => a.tipo === "CEP_CONEP");
+  const docOGM = anexos.find((a) => a.tipo === "OGM");
+  const docComiteEtica = anexos.find((a) => a.tipo === "COMITE_ETICA");
+
+  const hasRegulatoryInfo =
+    projetoDetalhes.envolveHumanos ||
+    projetoDetalhes.envolveAnimais ||
+    projetoDetalhes.envolveOGM ||
+    projetoDetalhes.envolvePatrimonioGenetico ||
+    projetoDetalhes.submetidoComiteEtica;
+
+  const handleLinkProject = async () => {
     setIsLinking(true);
     setError(null);
-
     try {
-      const response = await linkProjetoToInscricao(
-        tenantSlug,
-        idInscricao,
-        idProjeto,
-      );
-
-      // Chama o callback para atualizar a listagem no FluxoInscricaoEdital
+      await linkProjetoToInscricao(tenant, inscricaoSelected, projetoDetalhes.id);
       if (typeof onProjetoVinculado === "function") {
-        onProjetoVinculado(projetoDetalhes); // Passa o projeto vinculado
+        onProjetoVinculado(projetoDetalhes);
       }
-      // Fecha o modal após o sucesso
       if (typeof closeModal === "function") {
         closeModal();
       }
     } catch (err) {
-      console.error("Erro ao vincular projeto:", err);
-      const errorMessage =
-        err.response?.data?.message || "Falha ao vincular o projeto.";
-      setError(errorMessage);
+      setError(err.response?.data?.message || "Falha ao vincular o projeto.");
     } finally {
       setIsLinking(false);
     }
   };
 
   return (
-    <>
-      <div className={styles.detalhesProjeto}>
-        <h6>Detalhes do Projeto</h6>
-        <div className={`${styles.card} ${styles.titulo} `}>
-          <h6 className={`${styles.label} `}>
-            Área: {projetoDetalhes.area?.area}
-          </h6>
-          <div className={`${styles.value} `}>
-            <p className="uppercase">
-              <strong>{projetoDetalhes.titulo}</strong>
-            </p>
-          </div>
-        </div>
-        <div className={`${styles.card} ${styles.titulo} `}>
-          <h6 className={`${styles.label} `}>Comitê de ética em pesquisa</h6>
-          <div className={`${styles.value} `}>
-            <p>
-              {`${
-                projetoDetalhes.envolveAnimais && projetoDetalhes.envolveHumanos
-                  ? "Este projeto envolve pesquisa com animais e com seres humanos."
-                  : projetoDetalhes.envolveAnimais &&
-                      !projetoDetalhes.envolveHumanos
-                    ? "Este projeto envolve pesquisa apenas com animais"
-                    : !projetoDetalhes.envolveAnimais &&
-                        projetoDetalhes.envolveHumanos
-                      ? "Este projeto envolve pesquisa apenas com seres humanos"
-                      : "Este projeto não envolve pesquisa com seres humanos ou animais."
-              }`}
-            </p>
-          </div>
-        </div>
-        {error && <p className={styles.error}>{error}</p>}{" "}
-        {/* Exibição de erros */}
-        <Button
-          icon={RiLink}
-          className="mt-2 btn-secondary"
-          type="button"
-          onClick={handleLinkProject} // Chama a função ao clicar
-          disabled={loading || isLinking} // Desativa o botão durante o carregamento
-        >
-          {isLinking ? "Vinculando..." : "Vincular projeto à inscrição"}
-        </Button>
-        {false && (
-          <div className={`${styles.nav}`}>
-            <div className={`${styles.menu}`}>
-              <div
-                className={`${styles.itemMenu} ${
-                  activeTab === "conteudo" ? styles.itemMenuSelected : ""
-                }`}
-                onClick={() => handleTabChange("conteudo")}
-              >
-                <p>Conteúdo</p>
-              </div>
-              <div
-                className={`${styles.itemMenu} ${
-                  activeTab === "cronograma" ? styles.itemMenuSelected : ""
-                }`}
-                onClick={() => handleTabChange("cronograma")}
-              >
-                <p>Cronograma</p>
-              </div>
-              {false && (
-                <div
-                  className={`${styles.itemMenu} ${
-                    activeTab === "anexos" ? styles.itemMenuSelected : ""
-                  }`}
-                  onClick={() => handleTabChange("anexos")}
-                >
-                  <p>Anexos</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-        {activeTab === "conteudo" && (
-          <div className={`${styles.conteudo}`}>
-            {respostasVisiveis
-              .sort((a, b) => a.campo.ordem - b.campo.ordem)
-              .map((item) => {
-                // Função para extrair o nome do arquivo da URL
-                const extractFileName = (url) => {
-                  const parts = url.split("/");
-                  const lastPart = parts[parts.length - 1];
-                  return lastPart.split("_")[1] || lastPart; // Remove o timestamp inicial
-                };
-
-                return (
-                  <div className={`${styles.card}`} key={item.id}>
-                    <h6 className={`${styles.label}`}>{item.campo.label}</h6>
-                    <div className={`${styles.value}`}>
-                      {["link", "arquivo"].includes(item.campo.tipo) ? (
-                        <a
-                          href={item.value}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={styles.link}
-                        >
-                          {item.campo.tipo === "arquivo" && "📁 "}
-                          {item.campo.tipo === "link" && "🔗 "}
-                          {extractFileName(item.value)}
-                        </a>
-                      ) : (
-                        <p style={{ whiteSpace: "pre-wrap" }}>{item.value}</p>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-          </div>
-        )}
-        {activeTab === "cronograma" && (
-          <div className={`${styles.cronograma}`}>
-            <GanttChart cronograma={projetoDetalhes.CronogramaProjeto} />
-          </div>
-        )}
-        {activeTab === "anexos" && (
-          <div className={`${styles.anexos}`}>
-            <div className={`${styles.lista}`}>
-              {projetoDetalhes.AnexoProjeto.map((anexo, index) => (
-                <div key={index} className={`${styles.listaItem}`}>
-                  <div className={`${styles.content}`}>
-                    {/* Link para visualização em nova aba */}
-                    <a
-                      href={anexo.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {anexo.nomeAnexo}
-                    </a>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+    <div className={styles.container}>
+      {/* ── Cabeçalho ── */}
+      <div className={styles.header}>
+        <span className={styles.areaTag}>{projetoDetalhes.area?.area}</span>
+        <h5 className={styles.titulo}>{projetoDetalhes.titulo}</h5>
       </div>
-    </>
+
+      {/* ── Aspectos Regulatórios e Éticos ── */}
+      {hasRegulatoryInfo && (
+        <div className={styles.section}>
+          <p className={styles.sectionTitle}>Aspectos Regulatórios e Éticos</p>
+          <div className={styles.regulatoryList}>
+            {/* Seres humanos e/ou animais */}
+            {(projetoDetalhes.envolveHumanos || projetoDetalhes.envolveAnimais) && (
+              <div className={styles.regulatoryItem}>
+                <div className={styles.regulatoryHeader}>
+                  <RiCheckLine size={14} className={styles.checkIcon} />
+                  <span>
+                    {projetoDetalhes.envolveHumanos && projetoDetalhes.envolveAnimais
+                      ? "Envolve seres humanos e animais"
+                      : projetoDetalhes.envolveHumanos
+                      ? "Envolve seres humanos"
+                      : "Envolve animais"}
+                  </span>
+                </div>
+                {docCEPCONEP && <DocLink doc={docCEPCONEP} />}
+                {projetoDetalhes.numeroCEPCONEP && (
+                  <p className={styles.protocolText}>
+                    Protocolo CEP/CONEP:{" "}
+                    <strong>{projetoDetalhes.numeroCEPCONEP}</strong>
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* OGM */}
+            {projetoDetalhes.envolveOGM && (
+              <div className={styles.regulatoryItem}>
+                <div className={styles.regulatoryHeader}>
+                  <RiCheckLine size={14} className={styles.checkIcon} />
+                  <span>Envolve Organismo Geneticamente Modificado (OGM)</span>
+                </div>
+                {docOGM && <DocLink doc={docOGM} />}
+              </div>
+            )}
+
+            {/* Patrimônio Genético */}
+            {projetoDetalhes.envolvePatrimonioGenetico && (
+              <div className={styles.regulatoryItem}>
+                <div className={styles.regulatoryHeader}>
+                  <RiCheckLine size={14} className={styles.checkIcon} />
+                  <span>
+                    Envolve Patrimônio Genético ou Conhecimento Tradicional
+                    Associado
+                  </span>
+                </div>
+                {projetoDetalhes.numeroSISGEN && (
+                  <p className={styles.protocolText}>
+                    Registro SISGEN:{" "}
+                    <strong>{projetoDetalhes.numeroSISGEN}</strong>
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Comitê de Ética */}
+            {projetoDetalhes.submetidoComiteEtica && (
+              <div className={styles.regulatoryItem}>
+                <div className={styles.regulatoryHeader}>
+                  <RiCheckLine size={14} className={styles.checkIcon} />
+                  <span>Submetido a comitê de ética da área</span>
+                </div>
+                {docComiteEtica && <DocLink doc={docComiteEtica} />}
+                {projetoDetalhes.numeroProtocoloEtica && (
+                  <p className={styles.protocolText}>
+                    Protocolo:{" "}
+                    <strong>{projetoDetalhes.numeroProtocoloEtica}</strong>
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Campos dinâmicos ── */}
+      {respostasVisiveis.length > 0 && (
+        <div className={styles.section}>
+          <p className={styles.sectionTitle}>Conteúdo do Projeto</p>
+          {respostasVisiveis
+            .sort((a, b) => (a.campo.ordem ?? 999) - (b.campo.ordem ?? 999))
+            .map((item) => (
+              <div key={item.id} className={styles.field}>
+                <p className={styles.fieldLabel}>{item.campo.label}</p>
+                <FieldValue item={item} />
+              </div>
+            ))}
+        </div>
+      )}
+
+      {/* ── Vincular à inscrição ── */}
+      {inscricaoSelected && (
+        <div className={styles.actions}>
+          {error && <p className={styles.errorMsg}>{error}</p>}
+          <Button
+            icon={RiLink}
+            className="btn-secondary"
+            type="button"
+            onClick={handleLinkProject}
+            disabled={loading || isLinking}
+          >
+            {isLinking ? "Vinculando..." : "Vincular projeto à inscrição"}
+          </Button>
+        </div>
+      )}
+    </div>
   );
 };
 

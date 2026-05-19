@@ -4,17 +4,43 @@
 
 .btnItem{
     //max-width: 370px;
-    
+
     flex: 1;
+    min-width: 0;
+    overflow: hidden;
     //height: 227px;
     border-radius: $gap-1;
     background-color: $white-light;
-    
+
     padding: $gap-3;
     box-shadow: 0px 0px 12px rgba(5, 17, 34, 0.1);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+
+    :global(.p-multiselect) {
+        max-width: 100%;
+        overflow: hidden;
+    }
+    :global(.p-multiselect-label) {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        overflow: hidden;
+    }
+    :global(.p-multiselect-token) {
+        max-width: 100%;
+        overflow: hidden;
+    }
+    :global(.p-multiselect-token-label) {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    :global(.p-multiselect-token svg) {
+        margin-right: 8px;
+        width: 14px;
+    }
     .header {
         flex: 1;
         p{

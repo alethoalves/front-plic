@@ -1,76 +1,199 @@
 @import "/styles/partials/colors";
 @import "/styles/partials/layout";
 @import "/styles/partials/spacing";
-.detalhesProjeto{
-    .card{
-        margin-top: $gap-3;
-        border: 1px solid $gray-50;
-        border-radius: $gap-1;
-        padding: $gap-2;
-        position: relative;
-        //padding-top: $gap-3;
-        p:not(:first-child){
-            margin-top: $gap-1;
-        }
-        .label{
-            //position: absolute;
-            border: 1px solid $gray-50;
-            //top: -9px;
-            font-size: 12px;
-            padding: 2px $gap-2;
-            background-color: $white-darken;
-            border-radius: $gap-1;
-            color: $primary-darken;
-            margin-bottom: $gap-1;
-            
-        }
-       
-    }
-}
-.error{
-   
-    border: 1px solid $error-dark;
-    background-color: $error-lighten;
-    padding: $gap-1 $gap-2;
-    border-radius: $gap-1;
-    display: flex;
-    align-items: center;
-    color: $error-dark;
-    margin-top: $gap-2;
-    flex: 1;
+
+.container {
+  padding-top: $gap-2;
 }
 
-.menu{
-    flex: 1;
-    margin-top: $gap-2;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: $gap-2;
-    .itemMenu{
-        cursor: pointer;
-        transition: ease .3s;
-        flex: 1;
-        text-align: center;
-        padding: $gap-2 $gap-2;
-        background-color: $white-darken;
-        &:first-child{
-            border-top-left-radius: $gap-1;
-            border-bottom-left-radius: $gap-1;
-        }
-        &:last-child{
-            border-top-right-radius: $gap-1;
-            border-bottom-right-radius: $gap-1;
-        }
-        p{
-            color: $primary-darken;
-        }
-    }
-    
-    .itemMenuSelected{
-        p{
-            color: $white-dark;
-        }
-        background-color: $primary-dark;
-    }
+// ── Header ────────────────────────────────────────────────
+.header {
+  margin-bottom: $gap-3;
+}
+
+.areaTag {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 3px $gap-2;
+  border-radius: 50px;
+  background: $white-darken;
+  color: $primary-darken;
+  border: 1px solid $gray-50;
+  margin-bottom: $gap-1;
+}
+
+.titulo {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: $black-light;
+  line-height: 1.45;
+  margin-top: 4px;
+}
+
+// ── Section card ──────────────────────────────────────────
+.section {
+  margin-bottom: $gap-2;
+  border: 1px solid $gray-50;
+  border-radius: $gap-1;
+  overflow: hidden;
+}
+
+.sectionTitle {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: $primary-darken;
+  background: $white-darken;
+  padding: $gap-1 $gap-2;
+  border-bottom: 1px solid $gray-50;
+  margin: 0;
+}
+
+// ── Regulatory items ──────────────────────────────────────
+.regulatoryList {
+  padding: $gap-2;
+  display: flex;
+  flex-direction: column;
+  gap: $gap-2;
+}
+
+.regulatoryItem {
+  &:not(:last-child) {
+    padding-bottom: $gap-2;
+    border-bottom: 1px solid $white-darken;
+  }
+}
+
+.regulatoryHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+svg{
+  width: 16px;
+}
+  span {
+    font-size: 0.875rem;
+    color: $black-light;
+    font-weight: 500;
+  }
+}
+
+.checkIcon {
+  color: $success-dark;
+  flex-shrink: 0;
+}
+
+.pdfLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  background: $white-darken;
+  border: 1px solid $gray-50;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  color: $black-light;
+  text-decoration: none;
+  margin-top: 4px;
+  transition: background ease 0.2s;
+
+  svg {
+    color: $error-normal;
+    flex-shrink: 0;
+    width: 16px;
+  }
+
+  &:hover {
+    background: $gray-50;
+    text-decoration: underline;
+  }
+}
+
+.protocolText {
+  font-size: 0.8rem;
+  color: $gray-500;
+  margin-top: 5px;
+}
+
+// ── Dynamic fields ────────────────────────────────────────
+.field {
+  padding: $gap-2;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid $white-darken;
+  }
+}
+
+.fieldLabel {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $primary-darken;
+  margin-bottom: 6px;
+}
+
+.fieldText {
+  font-size: 0.875rem;
+  color: $black-light;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+.fileLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  color: $primary-dark;
+  text-decoration: none;
+
+  svg {
+    color: $error-normal;
+    flex-shrink: 0;
+    width: 16px;
+  }
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.tagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $gap-1;
+}
+
+.tag {
+  font-size: 0.8rem;
+  padding: 2px 10px;
+  background: $white-darken;
+  border: 1px solid $gray-50;
+  border-radius: 50px;
+  color: $black-light;
+}
+
+// ── Actions ───────────────────────────────────────────────
+.actions {
+  margin-top: $gap-3;
+  padding-top: $gap-2;
+  border-top: 1px solid $gray-50;
+  display: flex;
+  flex-direction: column;
+  gap: $gap-1;
+}
+
+.errorMsg {
+  font-size: 0.875rem;
+  color: $error-normal;
+  padding: $gap-1 $gap-2;
+  background: rgba(240, 84, 84, 0.08);
+  border-radius: 6px;
+  border-left: 3px solid $error-normal;
 }

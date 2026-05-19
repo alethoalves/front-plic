@@ -500,6 +500,49 @@ $shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
   gap: $gap-1;
 }
 
+// Contadores por projeto
+.projetoCounters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $gap-2;
+  margin-bottom: $gap-3;
+}
+
+.projetoCounter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: $white-light;
+  border: 1px solid $gray-100;
+  border-radius: 20px;
+  transition: $transition-default;
+
+  &.atLimit {
+    background: rgba($warning-normal, 0.08);
+    border-color: rgba($warning-normal, 0.3);
+
+    .projetoCounterLabel,
+    .projetoCounterValue {
+      color: $warning-darken;
+    }
+  }
+}
+
+.projetoCounterLabel {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: $gray-500;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.projetoCounterValue {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: $gray-700;
+}
+
 
 
 .planoHeader {
