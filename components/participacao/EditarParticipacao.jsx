@@ -200,7 +200,9 @@ const EditarParticipacao = ({
       return;
     }
 
-    if (file.type !== "text/xml" && file.type !== "application/zip") {
+    const isZip = ["application/zip", "application/x-zip-compressed", "application/octet-stream"].includes(file.type) || file.name.endsWith(".zip");
+    const isXml = file.type === "text/xml" || file.type === "application/xml" || file.name.endsWith(".xml");
+    if (!isXml && !isZip) {
       setFileInputErrors((prev) => ({
         ...prev,
         [userId]: "Por favor, selecione um arquivo XML ou ZIP válido.",
