@@ -116,6 +116,118 @@ $shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
   }
 }
 
+// ================ STATUS BANNER ================
+
+.statusBanner {
+  border-radius: $border-radius-card;
+  padding: $gap-3;
+  border: 1px solid;
+
+  &.bannerPending {
+    background: rgba($warning-normal, 0.06);
+    border-color: rgba($warning-normal, 0.25);
+
+    .statusBannerIcon { color: $warning-dark; }
+    .statusBannerTitle { color: $warning-darken; }
+    .statusBannerSubtitle { color: $warning-darken; opacity: 0.75; }
+  }
+
+  &.bannerReady {
+    background: rgba($error-normal, 0.05);
+    border-color: rgba($error-normal, 0.25);
+    animation: pulseReady 2.5s ease-in-out infinite;
+
+    .statusBannerIcon { color: $error-normal; }
+    .statusBannerTitle { color: $error-dark; }
+  }
+
+@keyframes pulseReady {
+  0%, 100% { border-color: rgba($error-normal, 0.25); }
+  50% { border-color: rgba($error-normal, 0.6); }
+}
+}
+
+.statusBannerHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: $gap-2;
+  margin-bottom: $gap-2;
+}
+
+.statusBannerIcon {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.statusBannerTitle {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin: 0 0 2px;
+  line-height: 1.3;
+}
+
+.statusBannerSubtitle {
+  font-size: 0.8125rem;
+  color: $gray-500;
+  margin: 0;
+}
+
+.checkList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: calc(22px + $gap-2);
+}
+
+.checkItem {
+  display: flex;
+  align-items: center;
+  gap: $gap-1;
+  font-size: 0.875rem;
+
+  &.done {
+    .checkIcon { color: $success-normal; }
+    .checkLabel { color: $gray-700; }
+  }
+
+  &.pending {
+    .checkIcon { color: $warning-dark; }
+    .checkLabel { color: $gray-700; font-weight: 500; }
+  }
+
+  &.waiting {
+    opacity: 0.45;
+    .checkIcon { color: $gray-400; }
+    .checkLabel { color: $gray-500; }
+  }
+}
+
+.checkIcon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.checkLabel {
+  flex: 1;
+}
+
+.checkAction {
+  font-size: 0.75rem;
+  color: $primary-normal;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 2px 6px;
+  font-weight: 600;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: rgba($primary-normal, 0.08);
+  }
+}
+
 // Errors Container
 .errorsContainer {
   display: flex;

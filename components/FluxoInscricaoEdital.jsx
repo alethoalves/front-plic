@@ -5,6 +5,7 @@ import {
   RiAlertLine,
   RiArticleLine,
   RiCheckboxCircleLine,
+  RiCheckboxBlankCircleLine,
   RiDeleteBinLine,
   RiEditLine,
   RiEyeLine,
@@ -40,7 +41,7 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
   // ESTADOS
   const [inscricao, setInscricao] = useState();
   const [activeStep, setActiveStep] = useState("orientador");
-  const [errorDelete, setErrorDelete] = useState(null);
+  const [, setErrorDelete] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalOpenProjeto, setIsModalOpenProjeto] = useState(false);
   const [isModalOpenPlanoDeTrabalho, setIsModalOpenPlanoDeTrabalho] =
@@ -65,12 +66,6 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
       life: 5000,
     });
   };
-  // Função para verificar se atingiu o limite de projetos
-  const atingiuLimiteProjetos = () => {
-    if (!inscricao?.InscricaoProjeto || !editalInfo?.maxProjetos) return false;
-    return inscricao.InscricaoProjeto.length >= editalInfo.maxProjetos;
-  };
-
   const showSuccess = (message) => {
     toast.current.show({
       severity: "success",
@@ -259,17 +254,6 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
     });
   };
 
-  const getStepIcon = (step) => {
-    switch (step) {
-      case "orientador":
-        return RiUserSettingsLine;
-      case "projetos":
-        return RiProjectorLine;
-      default:
-        return RiUserSettingsLine;
-    }
-  };
-
   // Função para contar solicitações de bolsa
   const countBolsaSolicitadas = () => {
     if (!inscricao?.participacoes) return 0;
@@ -289,6 +273,71 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
   const atingiuLimiteBolsa = () => {
     const bolsasSolicitadas = countBolsaSolicitadas();
     return bolsasSolicitadas >= (editalInfo?.maxSolicitacaoBolsa || 0);
+  };
+
+  // Checklist de pendências da inscrição
+  const computeChecks = () => {
+    if (!inscricao || !editalInfo) return [];
+
+    const orientadores =
+      inscricao.participacoes?.filter((p) => p.tipo === "orientador") || [];
+    const projetos = inscricao.InscricaoProjeto || [];
+    const planos = inscricao.planosDeTrabalho || [];
+    const alunos =
+      inscricao.participacoes?.filter((p) => p.tipo === "aluno") || [];
+
+    const checks = [
+      {
+        label: "Orientador adicionado",
+        done: orientadores.length > 0,
+        disabled: false,
+        tab: "orientador",
+      },
+    ];
+
+    if (editalInfo.formOrientadorId) {
+      checks.push({
+        label: "Formulário do orientador preenchido",
+        done:
+          orientadores.length > 0 &&
+          orientadores.every((p) => p.status !== "incompleto"),
+        disabled: orientadores.length === 0,
+        tab: "orientador",
+      });
+    }
+
+    checks.push({
+      label: "Projeto vinculado",
+      done: projetos.length > 0,
+      disabled: false,
+      tab: "projetos",
+    });
+
+    checks.push({
+      label: "Plano de Trabalho adicionado",
+      done: planos.length > 0,
+      disabled: projetos.length === 0,
+      tab: "projetos",
+    });
+
+    checks.push({
+      label: "Aluno adicionado",
+      done: alunos.length > 0,
+      disabled: planos.length === 0,
+      tab: "projetos",
+    });
+
+    if (editalInfo.formAlunoId) {
+      checks.push({
+        label: "Formulário do aluno preenchido",
+        done:
+          alunos.length > 0 && alunos.every((p) => p.status !== "incompleto"),
+        disabled: alunos.length === 0,
+        tab: "projetos",
+      });
+    }
+
+    return checks;
   };
 
   // Função para verificar se pode adicionar mais alunos ao plano
@@ -443,6 +492,80 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
             </div>
           </Card>
 
+          {/* Banner de Status da Inscrição */}
+          {(() => {
+            const checks = computeChecks();
+            const allDone = checks.every((c) => c.done);
+            const pendingCount = checks.filter(
+              (c) => !c.done && !c.disabled,
+            ).length;
+
+            return (
+              <div
+                className={`${styles.statusBanner} ${allDone ? styles.bannerReady : styles.bannerPending}`}
+              >
+                <div className={styles.statusBannerHeader}>
+                  <span className={styles.statusBannerIcon}>
+                    {allDone ? (
+                      <RiCheckboxCircleLine size={22} />
+                    ) : (
+                      <RiAlertLine size={22} />
+                    )}
+                  </span>
+                  <div>
+                    <p className={styles.statusBannerTitle}>
+                      {allDone
+                        ? "Inscrição não enviada! Clique em finalizar para concluir."
+                        : "Inscrição não finalizada"}
+                    </p>
+                    {!allDone && (
+                      <p className={styles.statusBannerSubtitle}>
+                        {pendingCount === 0
+                          ? "Complete os itens obrigatórios antes de enviar"
+                          : `${pendingCount} ${pendingCount === 1 ? "item pendente" : "itens pendentes"} — complete antes de enviar`}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className={styles.checkList}>
+                  {checks.map((check, idx) => {
+                    const state = check.disabled
+                      ? "waiting"
+                      : check.done
+                        ? "done"
+                        : "pending";
+                    return (
+                      <div
+                        key={idx}
+                        className={`${styles.checkItem} ${styles[state]}`}
+                      >
+                        <span className={styles.checkIcon}>
+                          {state === "done" && (
+                            <RiCheckboxCircleLine size={16} />
+                          )}
+                          {state === "pending" && <RiAlertLine size={16} />}
+                          {state === "waiting" && (
+                            <RiCheckboxBlankCircleLine size={16} />
+                          )}
+                        </span>
+                        <span className={styles.checkLabel}>{check.label}</span>
+                        {state === "pending" && check.tab && (
+                          <button
+                            className={styles.checkAction}
+                            onClick={() => setActiveStep(check.tab)}
+                          >
+                            Ir →
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Alertas de Erro */}
           {errors.length > 0 && (
             <div className={styles.errorsContainer}>
@@ -454,23 +577,6 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
               ))}
             </div>
           )}
-
-          {/* Botão de Envio */}
-          <div className={styles.submitSection}>
-            <Button
-              className={styles.submitButton}
-              type="button"
-              disabled={submitting}
-              icon={RiSendPlaneLine}
-              onClick={handleFinalizarInscricao}
-            >
-              {submitting ? "Enviando..." : "Finalizar e enviar inscrição"}
-            </Button>
-            <p className={styles.termoText}>
-              Ao enviar a inscrição, você concorda com os termos estabelecidos
-              no edital.
-            </p>
-          </div>
 
           {/* Steps Menu */}
           <div className={styles.stepsContainer}>
@@ -679,22 +785,37 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
 
                     {/* Contadores por projeto */}
                     <div className={styles.projetoCounters}>
-                      <div className={`${styles.projetoCounter} ${getPlanosPorProjeto(item).length >= (editalInfo?.maxPlanosPorProjeto || 6) ? styles.atLimit : ""}`}>
-                        <span className={styles.projetoCounterLabel}>Planos</span>
+                      <div
+                        className={`${styles.projetoCounter} ${getPlanosPorProjeto(item).length >= (editalInfo?.maxPlanosPorProjeto || 6) ? styles.atLimit : ""}`}
+                      >
+                        <span className={styles.projetoCounterLabel}>
+                          Planos
+                        </span>
                         <span className={styles.projetoCounterValue}>
-                          {getPlanosPorProjeto(item).length} / {editalInfo?.maxPlanosPorProjeto || 6}
+                          {getPlanosPorProjeto(item).length} /{" "}
+                          {editalInfo?.maxPlanosPorProjeto || 6}
                         </span>
                       </div>
-                      <div className={`${styles.projetoCounter} ${getRemuneradosPorProjeto(item) >= (editalInfo?.maxRemuneradosPorProjeto || 2) ? styles.atLimit : ""}`}>
-                        <span className={styles.projetoCounterLabel}>Remunerados</span>
+                      <div
+                        className={`${styles.projetoCounter} ${getRemuneradosPorProjeto(item) >= (editalInfo?.maxRemuneradosPorProjeto || 2) ? styles.atLimit : ""}`}
+                      >
+                        <span className={styles.projetoCounterLabel}>
+                          Remunerados
+                        </span>
                         <span className={styles.projetoCounterValue}>
-                          {getRemuneradosPorProjeto(item)} / {editalInfo?.maxRemuneradosPorProjeto || 2}
+                          {getRemuneradosPorProjeto(item)} /{" "}
+                          {editalInfo?.maxRemuneradosPorProjeto || 2}
                         </span>
                       </div>
-                      <div className={`${styles.projetoCounter} ${getVoluntariosPorProjeto(item) >= (editalInfo?.maxVoluntariosPorProjeto || 4) ? styles.atLimit : ""}`}>
-                        <span className={styles.projetoCounterLabel}>Voluntários</span>
+                      <div
+                        className={`${styles.projetoCounter} ${getVoluntariosPorProjeto(item) >= (editalInfo?.maxVoluntariosPorProjeto || 4) ? styles.atLimit : ""}`}
+                      >
+                        <span className={styles.projetoCounterLabel}>
+                          Voluntários
+                        </span>
                         <span className={styles.projetoCounterValue}>
-                          {getVoluntariosPorProjeto(item)} / {editalInfo?.maxVoluntariosPorProjeto || 4}
+                          {getVoluntariosPorProjeto(item)} /{" "}
+                          {editalInfo?.maxVoluntariosPorProjeto || 4}
                         </span>
                       </div>
                     </div>
@@ -889,6 +1010,22 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
               </div>
             )}
           </Card>
+          {/* Botão de Envio */}
+          <div className={styles.submitSection}>
+            <Button
+              className={styles.submitButton}
+              type="button"
+              disabled={submitting}
+              icon={RiSendPlaneLine}
+              onClick={handleFinalizarInscricao}
+            >
+              {submitting ? "Enviando..." : "Finalizar e enviar inscrição"}
+            </Button>
+            <p className={styles.termoText}>
+              Ao enviar a inscrição, você concorda com os termos estabelecidos
+              no edital.
+            </p>
+          </div>
         </div>
       )}
     </>

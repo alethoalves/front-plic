@@ -11,6 +11,7 @@ import {
 } from "@remixicon/react";
 import styles from "./page.module.scss";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import {
   createInscricaoByUser,
@@ -24,6 +25,7 @@ import { Badge } from "@/components/Badge"; // Se tiver componente Badge, senão
 import { getEditais } from "@/app/api/client/edital";
 
 const Page = ({ params }) => {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [editais, setEditais] = useState([]);
   const [inscricoes, setInscricoes] = useState([]);
@@ -56,8 +58,7 @@ const Page = ({ params }) => {
     try {
       const response = await createInscricaoByUser(params.tenant, { editalId });
       if (response) {
-        const minhasInscricoes = await getMinhasInscricoes(params.tenant);
-        setInscricoes(minhasInscricoes);
+        router.push(`/${params.tenant}/user/editais/inscricoes/${response.inscricao.id}`);
       }
     } catch (error) {
       console.error("Error:", error);
