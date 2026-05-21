@@ -455,6 +455,29 @@ export const ativarOuPendenteParticipacao = async (
   }
 };
 
+export const exportarParticipacoes = async (tenantSlug, tipo, ano) => {
+  const headers = getAuthHeadersClient();
+  if (!headers) throw new Error('Não autenticado');
+
+  const params = { tipo };
+  if (ano) params.ano = ano;
+
+  const response = await req.get(`/private/${tenantSlug}/exportar/participacoes`, {
+    headers,
+    params,
+    responseType: 'blob',
+  });
+
+  const url = URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', `participacoes_${tipo}_${ano ?? 'todos'}.xlsx`);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+};
+
 export const upsertRespostasParticipacao = async (
   tenantSlug,
   payload,

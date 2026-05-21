@@ -46,6 +46,7 @@
       margin: 0;
       opacity: 0.8;
       font-size: 0.82rem;
+      color: $white-light;
     }
   }
 
@@ -108,6 +109,9 @@
   flex-direction: column;
   gap: $gap-2;
   padding: $gap-2;
+  svg{
+    width: 16px;
+  }
 }
 
 // ================ BOX (espelha ParticipacaoGestorController) ================

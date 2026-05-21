@@ -11,6 +11,7 @@ import {
   getParticipacoesByTenant,
   aprovarParticipacoes,
   reprovarParticipacoes,
+  exportarParticipacoes,
 } from "@/app/api/client/participacao";
 import { Toast } from "primereact/toast";
 import { Dialog } from "primereact/dialog";
@@ -53,6 +54,7 @@ const Page = ({ params }) => {
   const dataTableRef = useRef(null);
   const [loadingAprovar, setLoadingAprovar] = useState(false);
   const [loadingReprovar, setLoadingReprovar] = useState(false);
+  const [loadingExportar, setLoadingExportar] = useState(false);
   const [progress, setProgress] = useState(0);
   const [justificativasAtuais, setJustificativasAtuais] = useState("");
   const [showJustificativas, setShowJustificativas] = useState(false);
@@ -377,13 +379,33 @@ const Page = ({ params }) => {
     }
   };
 
+  const handleExportar = async () => {
+    setLoadingExportar(true);
+    try {
+      await exportarParticipacoes(params.tenant, "aluno", params.ano);
+    } catch (err) {
+      toast.current.show({ severity: "error", summary: "Erro", detail: "Não foi possível exportar.", life: 4000 });
+    } finally {
+      setLoadingExportar(false);
+    }
+  };
+
   const renderHeader = () => {
     return (
       <div className="">
         <div>
-          <label htmlFor="filtroStatus" className="block">
-            <p>Busque por palavra-chave:</p>
-          </label>
+          <div className="flex justify-between items-center mb-2">
+            <label htmlFor="filtroStatus" className="block">
+              <p>Busque por palavra-chave:</p>
+            </label>
+            <Button
+              label="Exportar Excel"
+              icon="pi pi-download"
+              className="p-button-outlined p-button-sm"
+              onClick={handleExportar}
+              loading={loadingExportar}
+            />
+          </div>
           <InputText
             value={globalFilterValue}
             onChange={onGlobalFilterChange}

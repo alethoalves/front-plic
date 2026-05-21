@@ -11,6 +11,7 @@ import {
   getParticipacao,
   aprovarParticipacoes,
   reprovarParticipacoes,
+  exportarParticipacoes,
 } from "@/app/api/client/participacao";
 import { getInscricaoUserById } from "@/app/api/client/inscricao";
 import { getFormulario } from "@/app/api/client/formulario";
@@ -118,6 +119,7 @@ const Page = ({ params }) => {
   const [displayReprovarDialog, setDisplayReprovarDialog] = useState(false);
   const [loadingAprovar, setLoadingAprovar] = useState(false);
   const [loadingReprovar, setLoadingReprovar] = useState(false);
+  const [loadingExportar, setLoadingExportar] = useState(false);
   const [progress, setProgress] = useState(0);
   const [justificativasAtuais, setJustificativasAtuais] = useState("");
   const [showJustificativas, setShowJustificativas] = useState(false);
@@ -292,9 +294,29 @@ const Page = ({ params }) => {
 
   useEffect(() => { setSelectedItems([]); }, [filters]);
 
+  const handleExportar = async () => {
+    setLoadingExportar(true);
+    try {
+      await exportarParticipacoes(params.tenant, "orientador", params.ano);
+    } catch (err) {
+      toast.current.show({ severity: "error", summary: "Erro", detail: "Não foi possível exportar.", life: 4000 });
+    } finally {
+      setLoadingExportar(false);
+    }
+  };
+
   const renderHeader = () => (
     <div>
-      <label className="block"><p>Busque por palavra-chave:</p></label>
+      <div className="flex justify-between items-center mb-2">
+        <label className="block"><p>Busque por palavra-chave:</p></label>
+        <Button
+          label="Exportar Excel"
+          icon="pi pi-download"
+          className="p-button-outlined p-button-sm"
+          onClick={handleExportar}
+          loading={loadingExportar}
+        />
+      </div>
       <InputText
         value={globalFilterValue}
         onChange={onGlobalFilterChange}
