@@ -321,6 +321,81 @@ $shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04
   }
 }
 
+// Modal de confirmação de perfil
+.modalPergunta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: $gap-3;
+
+  h4 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: $gray-800;
+    margin: 0;
+  }
+
+  p {
+    font-size: 0.9375rem;
+    color: $gray-600;
+    margin: 0;
+    line-height: 1.5;
+  }
+}
+
+.modalPerguntaIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba($primary-normal, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $primary-normal;
+}
+
+.modalInfoIcon {
+  background: rgba($warning-normal, 0.1);
+  color: $warning-normal;
+}
+
+.modalPerguntaActions {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-2;
+  width: 100%;
+
+  button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.btnSim {
+  background: $primary-normal !important;
+  border: none !important;
+  border-radius: 10px !important;
+  p, svg {
+    color: $white-light !important;
+  }
+  &:hover {
+    background: $primary-darken !important;
+  }
+}
+
+.btnNao {
+  background: $white-light !important;
+  border: 1px solid $gray-100 !important;
+  border-radius: 10px !important;
+  p, svg {
+    color: $gray-700 !important;
+  }
+  &:hover {
+    background: $gray-25 !important;
+  }
+}
+
 // Responsividade adicional
 @media (max-width: 480px) {
   .cardContent {

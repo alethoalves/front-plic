@@ -1,6 +1,6 @@
 "use client";
 // HOOKS
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 // ESTILO E ÍCONES
 import styles from "./page.module.scss";
@@ -78,15 +78,20 @@ const Page = ({ params }) => {
     },
   };
 
+  const itensEnviados = useMemo(
+    () => itens.filter((item) => item.inscricao?.status === "enviada"),
+    [itens]
+  );
+
   // Função para preparar os dados do gráfico Multi Axis
   const prepareMultiAxisData = useCallback(() => {
-    if (!itens.length) return;
+    if (!itensEnviados.length) return;
 
     const editaisSet = new Set();
     const dataPorEdital = {};
     const todasDatas = new Set();
 
-    itens.forEach((item) => {
+    itensEnviados.forEach((item) => {
       const edital = item.inscricao.edital.titulo;
       editaisSet.add(edital);
 
@@ -119,12 +124,12 @@ const Page = ({ params }) => {
     }));
 
     setChartMultiAxisData({ labels, datasets });
-  }, [itens]);
+  }, [itensEnviados]);
 
   // Chame a função no useEffect
   useEffect(() => {
     prepareMultiAxisData();
-  }, [itens, prepareMultiAxisData]);
+  }, [itensEnviados, prepareMultiAxisData]);
 
   // Opções do gráfico
   const chartOptions = {
@@ -154,9 +159,9 @@ const Page = ({ params }) => {
 
   // Processar dados para o gráfico
   const processChartData = useCallback(() => {
-    if (itens.length === 0) return;
+    if (itensEnviados.length === 0) return;
 
-    const editaisMap = itens.reduce((acc, item) => {
+    const editaisMap = itensEnviados.reduce((acc, item) => {
       const editalKey = `${item.inscricao?.edital?.titulo} - ${item.inscricao?.edital?.ano}`;
 
       if (!acc[editalKey]) {
@@ -230,7 +235,7 @@ const Page = ({ params }) => {
       labels: labels,
       datasets: datasets,
     });
-  }, [itens]);
+  }, [itensEnviados]);
 
   // BUSCA DE DADOS INICIAIS
   const fetchInitialData = useCallback(async () => {
@@ -278,7 +283,7 @@ const Page = ({ params }) => {
 
   useEffect(() => {
     processChartData();
-  }, [itens, processChartData]);
+  }, [itensEnviados, processChartData]);
 
   const closeModalAndResetData = () => {
     setIsModalOpen(false);
@@ -370,7 +375,7 @@ const Page = ({ params }) => {
                 <h5>
                   {
                     new Set(
-                      itens
+                      itensEnviados
                         .map((item) => item.inscricaoProjeto?.projeto?.id)
                         .filter(Boolean)
                     ).size
@@ -384,7 +389,7 @@ const Page = ({ params }) => {
 
             <div className={styles.card_style1}>
               <div className={styles.left}>
-                <h5>{new Set(itens.map((item) => item.id)).size}</h5>
+                <h5>{new Set(itensEnviados.map((item) => item.id)).size}</h5>
               </div>
               <div className={styles.right}>
                 <h6>Planos de Trabalho</h6>
@@ -396,7 +401,7 @@ const Page = ({ params }) => {
                 <h5>
                   {
                     new Set(
-                      itens.flatMap(
+                      itensEnviados.flatMap(
                         (item) =>
                           item.inscricao?.participacoes
                             ?.map((p) => p.user?.nome)
@@ -416,7 +421,7 @@ const Page = ({ params }) => {
                 <h5>
                   {
                     new Set(
-                      itens.flatMap(
+                      itensEnviados.flatMap(
                         (item) =>
                           item.participacoes
                             ?.map((p) => p.user?.nome)
@@ -434,7 +439,7 @@ const Page = ({ params }) => {
             <div className={styles.card_style1}>
               <div className={styles.left}>
                 <h5>
-                  {itens.reduce((total, item) => {
+                  {itensEnviados.reduce((total, item) => {
                     return total + (item.qtdSolicitacoesBolsa || 0);
                   }, 0)}
                 </h5>

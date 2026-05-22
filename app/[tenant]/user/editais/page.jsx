@@ -8,11 +8,14 @@ import {
   RiErrorWarningLine,
   RiTimerLine,
   RiCalendarEventLine,
+  RiUserLine,
+  RiInformationLine,
 } from "@remixicon/react";
 import styles from "./page.module.scss";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
+import Modal from "@/components/Modal";
 import {
   createInscricaoByUser,
   getMinhasInscricoes,
@@ -31,6 +34,11 @@ const Page = ({ params }) => {
   const [inscricoes, setInscricoes] = useState([]);
   const [errorMessages, setErrorMessages] = useState({});
   const [inscribingId, setInscribingId] = useState(null);
+  const [modalConfirmacao, setModalConfirmacao] = useState({
+    open: false,
+    editalId: null,
+  });
+  const [modalNaoAluno, setModalNaoAluno] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -51,6 +59,21 @@ const Page = ({ params }) => {
     fetchData();
   }, [params.tenant]);
 
+  const handleClickInscrever = (editalId) => {
+    setModalConfirmacao({ open: true, editalId });
+  };
+
+  const handleConfirmarProfessor = async () => {
+    const editalId = modalConfirmacao.editalId;
+    setModalConfirmacao({ open: false, editalId: null });
+    await createNewInscricao(editalId);
+  };
+
+  const handleNaoProfessor = () => {
+    setModalConfirmacao({ open: false, editalId: null });
+    setModalNaoAluno(true);
+  };
+
   const createNewInscricao = async (editalId) => {
     setInscribingId(editalId);
     setErrorMessages((prev) => ({ ...prev, [editalId]: "" }));
@@ -58,7 +81,9 @@ const Page = ({ params }) => {
     try {
       const response = await createInscricaoByUser(params.tenant, { editalId });
       if (response) {
-        router.push(`/${params.tenant}/user/editais/inscricoes/${response.inscricao.id}`);
+        router.push(
+          `/${params.tenant}/user/editais/inscricoes/${response.inscricao.id}`,
+        );
       }
     } catch (error) {
       console.error("Error:", error);
@@ -201,7 +226,7 @@ const Page = ({ params }) => {
                         <Button
                           className={styles.inscreverButton}
                           icon={RiSurveyLine}
-                          onClick={() => createNewInscricao(edital.id)}
+                          onClick={() => handleClickInscrever(edital.id)}
                           loading={inscribingId === edital.id}
                           disabled={inscribingId === edital.id}
                         >
@@ -273,6 +298,56 @@ const Page = ({ params }) => {
           </div>
         )}
       </div>
+
+      {/* Modal: confirmação de perfil professor */}
+      <Modal
+        isOpen={modalConfirmacao.open}
+        onClose={() => setModalConfirmacao({ open: false, editalId: null })}
+      >
+        <div className={styles.modalPergunta}>
+          <div className={styles.modalPerguntaIcon}>
+            <RiUserLine size={28} />
+          </div>
+          <h4>Confirmação de perfil</h4>
+          <p>Apenas professores podem fazer inscrição. Você é professor?</p>
+          <div className={styles.modalPerguntaActions}>
+            <Button
+              className={styles.btnSim}
+              onClick={handleConfirmarProfessor}
+            >
+              Sim, sou professor
+            </Button>
+            <Button className={styles.btnNao} onClick={handleNaoProfessor}>
+              Não, sou aluno
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Modal: informação para alunos */}
+      <Modal isOpen={modalNaoAluno} onClose={() => setModalNaoAluno(false)}>
+        <div className={styles.modalPergunta}>
+          <div
+            className={`${styles.modalPerguntaIcon} ${styles.modalInfoIcon}`}
+          >
+            <RiInformationLine size={28} />
+          </div>
+          <h4>Acesso restrito a professores</h4>
+          <p>
+            Somente professores podem realizar inscrições. Você deve entrar em
+            contato com um professor da sua instituição para que ele possa te
+            inscrever nos editais de iniciação científica.
+          </p>
+          <div className={styles.modalPerguntaActions}>
+            <Button
+              className={styles.btnSim}
+              onClick={() => setModalNaoAluno(false)}
+            >
+              Entendi
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
