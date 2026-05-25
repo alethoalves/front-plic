@@ -36,7 +36,7 @@ import { Card } from "primereact/card";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { useRouter } from "next/navigation";
 
-const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
+const FluxoInscricaoEdital = ({ tenant, inscricaoSelected, gestorMode = false }) => {
   const router = useRouter();
   // ESTADOS
   const [inscricao, setInscricao] = useState();
@@ -82,9 +82,13 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
     try {
       await submissaoInscricao(tenant, inscricaoSelected);
       showSuccess("Inscrição enviada com sucesso!");
-      router.push(
-        `/${tenant}/user/editais/inscricoes/${inscricaoSelected}/acompanhamento`,
-      );
+      if (gestorMode) {
+        router.push(`/${tenant}/gestor/${editalInfo?.ano}/inscricoes`);
+      } else {
+        router.push(
+          `/${tenant}/user/editais/inscricoes/${inscricaoSelected}/acompanhamento`,
+        );
+      }
     } catch (error) {
       console.error("Erro ao enviar a inscrição:", error);
 
@@ -466,6 +470,14 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected }) => {
           onClose={closeModalAndResetData}
         />
       </Modal>
+
+      {/* Banner Modo Gestor */}
+      {gestorMode && (
+        <div className={styles.gestorBanner}>
+          <RiUserSettingsLine size={18} />
+          <span>Modo Gestor — você está acessando esta inscrição em nome do proponente.</span>
+        </div>
+      )}
 
       {/* Conteúdo Principal */}
       {inscricao && (

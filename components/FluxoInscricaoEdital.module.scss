@@ -116,6 +116,27 @@ $shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
   }
 }
 
+// ================ GESTOR BANNER ================
+
+.gestorBanner {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+  padding: $gap-2 $gap-4;
+  background: rgba($primary-normal, 0.07);
+  border: 1px solid rgba($primary-normal, 0.25);
+  border-radius: $border-radius-card;
+  color: $primary-dark;
+  font-size: 0.875rem;
+  font-weight: 500;
+
+  svg {
+    flex-shrink: 0;
+    color: $primary-normal;
+    width: 16px;
+  }
+}
+
 // ================ STATUS BANNER ================
 
 .statusBanner {

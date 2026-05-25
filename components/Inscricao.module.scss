@@ -58,6 +58,13 @@
 .statusDefault{
     background-color: $gray-50;
 }
+.head {
+    display: flex;
+    align-items: center;
+    gap: $gap-2;
+    margin-bottom: $gap-2;
+}
+
 .mainContent{
     margin-top: $gap-2;
     .box, .orientadores,.atividades{

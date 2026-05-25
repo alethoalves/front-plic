@@ -11,7 +11,9 @@ import {
   RiGraduationCapLine,
   RiFileList3Line,
   RiFoldersLine,
+  RiExternalLinkLine,
 } from "@remixicon/react";
+import Link from "next/link";
 import { getInscricao, getInscricaoUserById } from "@/app/api/client/inscricao";
 import { DataView } from "primereact/dataview";
 import CPFVerificationForm from "./Formularios/CPFVerificationForm";
@@ -376,6 +378,13 @@ const Inscricao = ({ params, inscricaoId }) => {
             {inscricao.edital.ano})
           </h5>
         </div>
+        <Link
+          href={`/${params.tenant}/gestor/${inscricao.edital.ano}/inscricoes/${inscricaoId}`}
+          className={`ml-1 ${styles.icon} ${styles.iconClick}`}
+          title="Abrir inscrição completa"
+        >
+          <RiExternalLinkLine />
+        </Link>
       </div>
 
       <div className={styles.mainContent}>
