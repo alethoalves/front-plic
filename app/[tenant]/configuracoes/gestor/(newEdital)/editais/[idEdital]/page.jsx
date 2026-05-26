@@ -11,10 +11,12 @@ import {
   RiSettings5Line,
   RiSettingsLine,
   RiSurveyLine,
+  RiBarChart2Line,
 } from "@remixicon/react";
 import Header from "@/components/Header";
 import EditalFormularios from "@/components/EditalFormularios";
 import EditalAtividades from "@/components/EditalAtividades";
+import EditalFichaAvaliacao from "@/components/EditalFichaAvaliacao";
 import Button from "@/components/Button";
 import { useEffect, useState } from "react";
 import { getEdital, updateEdital } from "@/app/api/client/edital";
@@ -220,6 +222,19 @@ const Page = ({ params }) => {
               edital.
             </p>
             <EditalFormularios params={params} />
+          </div>
+        </div>
+        <div className={styles.head}>
+          <div className={styles.headIcon}>
+            <RiBarChart2Line />
+          </div>
+          <div className={styles.item}>
+            <h5>Ficha de Avaliação de Participação</h5>
+            <p>
+              Configure os critérios de avaliação baseados no Lattes para cada
+              tipo de participante (orientador, aluno, etc.).
+            </p>
+            <EditalFichaAvaliacao params={params} />
           </div>
         </div>
       </div>

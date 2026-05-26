@@ -1,0 +1,428 @@
+@import "./../styles/partials/colors";
+@import "./../styles/partials/layout";
+@import "./../styles/partials/spacing";
+
+.container {
+  padding-top: $gap-2;
+}
+
+// ─── Save bar ────────────────────────────────────────────────────────────────
+.saveBar {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+  margin-bottom: $gap-3;
+}
+
+.unsaved {
+  font-size: 0.82rem;
+  color: $warning-darken;
+}
+
+// ─── Badges ──────────────────────────────────────────────────────────────────
+.badges {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 6px;
+  background-color: $primary-lighten;
+  color: $primary-darken;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+
+.badgePoints {
+  display: inline-block;
+  padding: 2px 6px;
+  background-color: $white-dark;
+  color: $gray-600;
+  border-radius: 4px;
+  font-size: 0.72rem;
+}
+
+// ─── Actions ─────────────────────────────────────────────────────────────────
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.edit,
+.delete {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: 0.2s ease;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.edit {
+  color: $primary-darken;
+  &:hover {
+    border-color: $primary-normal;
+    background-color: $white-dark;
+  }
+}
+
+.delete {
+  color: $error-normal;
+  &:hover {
+    border-color: $error-dark;
+    background-color: $error-lighten;
+  }
+}
+
+.expandBtn {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $gray-400;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+// ─── Add buttons ─────────────────────────────────────────────────────────────
+.addItem {
+  display: flex;
+  align-items: center;
+  gap: $gap-1;
+  padding: $gap-1 $gap-2;
+  margin-top: $gap-1;
+  border: 1px dashed $primary-normal;
+  border-radius: 6px;
+  cursor: pointer;
+  color: $primary-normal;
+  font-size: 0.875rem;
+  transition: 0.2s ease;
+
+  &:hover {
+    background-color: $white-normal;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+}
+
+.addPerfil {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $gap-1;
+  padding: $gap-2 $gap-3;
+  margin-top: $gap-2;
+  border: 1px dashed $primary-normal;
+  border-radius: 8px;
+  cursor: pointer;
+  color: $primary-normal;
+  background-color: $white-light;
+  transition: 0.2s ease;
+
+  &:hover {
+    background-color: $white-normal;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+.addIcon {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+// ─── Perfil ──────────────────────────────────────────────────────────────────
+.perfil {
+  border: 1px solid $gray-100;
+  border-radius: 8px;
+  margin-bottom: $gap-2;
+  overflow: hidden;
+}
+
+.perfilHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $gap-2 $gap-3;
+  background-color: $white-darken;
+
+  @include responsive(xs) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: $gap-1;
+  }
+}
+
+.perfilInfo {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+}
+
+.perfilBody {
+  padding: $gap-2 $gap-3;
+  background-color: $white-light;
+}
+
+// ─── Grupo ───────────────────────────────────────────────────────────────────
+.grupo {
+  border: 1px solid $gray-100;
+  border-radius: 6px;
+  margin-bottom: $gap-1;
+  overflow: hidden;
+}
+
+.grupoHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $gap-1 $gap-2;
+  background-color: $white-normal;
+}
+
+.grupoInfo {
+  display: flex;
+  align-items: center;
+  gap: $gap-1;
+
+  span:first-of-type {
+    font-size: 0.875rem;
+    color: $gray-700;
+  }
+}
+
+.grupoBody {
+  padding: $gap-1 $gap-2;
+  background-color: $white-light;
+}
+
+// ─── Item ────────────────────────────────────────────────────────────────────
+.item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: $gap-1 $gap-2;
+  border-bottom: 1px solid $gray-100;
+  gap: $gap-1;
+
+  &:last-of-type {
+    border-bottom: none;
+  }
+}
+
+.itemInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.itemLabel {
+  display: block;
+  font-size: 0.875rem;
+  color: $gray-700;
+}
+
+.itemMeta {
+  display: flex;
+  gap: $gap-1;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+// ─── Form ────────────────────────────────────────────────────────────────────
+.form {
+  h4 {
+    margin-bottom: $gap-1;
+  }
+
+  > p {
+    margin-bottom: $gap-2;
+    color: $gray-500;
+    font-size: 0.875rem;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: $gap-2;
+
+  span {
+    font-size: 0.8rem;
+    color: $gray-600;
+    font-weight: 500;
+  }
+
+  input,
+  select {
+    padding: $gap-1 $gap-2;
+    border: 1px solid $gray-200;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    outline: none;
+    background-color: $white-light;
+
+    &:focus {
+      border-color: $primary-normal;
+    }
+  }
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $gap-2;
+}
+
+.formActions {
+  display: flex;
+  gap: $gap-2;
+  justify-content: flex-end;
+  margin-top: $gap-3;
+  border-top: 1px solid $gray-100;
+  padding-top: $gap-2;
+}
+
+// ─── Path display (read-only) ────────────────────────────────────────────────
+.pathDisplay {
+  font-size: 0.78rem;
+  color: $gray-500;
+  background-color: $white-darken;
+  border: 1px solid $gray-100;
+  border-radius: 6px;
+  padding: 6px $gap-2;
+  margin-bottom: $gap-2;
+  word-break: break-all;
+
+  span {
+    font-weight: 600;
+    color: $gray-600;
+    margin-right: 4px;
+  }
+}
+
+// ─── Sub-sections ────────────────────────────────────────────────────────────
+.subSection {
+  margin-bottom: $gap-2;
+  padding: $gap-2;
+  border: 1px solid $gray-100;
+  border-radius: 8px;
+
+  h6 {
+    margin-bottom: $gap-1;
+    color: $gray-500;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+}
+
+.campoRow,
+.condicaoRow {
+  display: flex;
+  align-items: center;
+  gap: $gap-1;
+  margin-bottom: $gap-1;
+  flex-wrap: wrap;
+
+  input,
+  select {
+    padding: 6px $gap-1;
+    border: 1px solid $gray-200;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    flex: 1;
+    min-width: 80px;
+    outline: none;
+    background-color: $white-light;
+
+    &:focus {
+      border-color: $primary-normal;
+    }
+  }
+}
+
+.checkLabel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.addSmall {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px $gap-1;
+  color: $primary-normal;
+  font-size: 0.85rem;
+  cursor: pointer;
+  border-radius: 4px;
+  width: fit-content;
+
+  &:hover {
+    background-color: $white-normal;
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.deleteSmall {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $error-normal;
+  cursor: pointer;
+  border-radius: 4px;
+  flex-shrink: 0;
+
+  &:hover {
+    background-color: $error-lighten;
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}
