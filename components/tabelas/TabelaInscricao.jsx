@@ -2,6 +2,7 @@
 // HOOKS
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { getCookie } from "cookies-next";
 
 // ESTILO
 import styles from "./TabelaInscricao.module.scss";
@@ -26,6 +27,17 @@ import FormNewInscricao from "@/components/Formularios/FormNewInscricao";
 import { RiEditLine } from "@remixicon/react";
 // SERVIÇOS
 import { getInscricoesByTenantAndYear } from "@/app/api/client/inscricao";
+
+const getCurrentUserId = () => {
+  try {
+    const token = getCookie("authToken");
+    if (!token) return null;
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.id ?? null;
+  } catch {
+    return null;
+  }
+};
 import {
   statusClassificacaoBodyTemplate,
   statusClassificacaoFilterTemplate,
@@ -59,6 +71,8 @@ const TabelaInscricao = ({ params }) => {
   const [deleteInscricaoDialog, setDeleteInscricaoDialog] = useState(false);
   const [deleteInscricoesDialog, setDeleteInscricoesDialog] = useState(false);
   const [editais, setEditais] = useState([]);
+  const currentUserId = getCurrentUserId();
+  const isAdmin = currentUserId === 1;
 
   // REFS
   const toast = useRef(null);
@@ -291,13 +305,15 @@ const TabelaInscricao = ({ params }) => {
           severity="success"
           onClick={openNew}
         />
-        <Button
-          label="Deletar"
-          icon="pi pi-trash"
-          severity="danger"
-          onClick={confirmDeleteSelected}
-          disabled={!selectedInscricoes || !selectedInscricoes.length}
-        />
+        {isAdmin && (
+          <Button
+            label="Deletar"
+            icon="pi pi-trash"
+            severity="danger"
+            onClick={confirmDeleteSelected}
+            disabled={!selectedInscricoes || !selectedInscricoes.length}
+          />
+        )}
       </div>
     );
   };
@@ -326,13 +342,15 @@ const TabelaInscricao = ({ params }) => {
             setIsModalOpen(true);
           }}
         />
-        <Button
-          icon="pi pi-trash"
-          rounded
-          outlined
-          severity="danger"
-          onClick={() => confirmDeleteInscricao(rowData)}
-        />
+        {isAdmin && (
+          <Button
+            icon="pi pi-trash"
+            rounded
+            outlined
+            severity="danger"
+            onClick={() => confirmDeleteInscricao(rowData)}
+          />
+        )}
       </React.Fragment>
     );
   };
@@ -444,11 +462,11 @@ const TabelaInscricao = ({ params }) => {
               emptyMessage="Nenhuma inscrição encontrada."
               paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
               currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros"
-              selection={selectedInscricoes}
-              onSelectionChange={(e) => setSelectedInscricoes(e.value)}
-              selectionMode="multiple"
+              selection={isAdmin ? selectedInscricoes : undefined}
+              onSelectionChange={isAdmin ? (e) => setSelectedInscricoes(e.value) : undefined}
+              selectionMode={isAdmin ? "multiple" : undefined}
             >
-              <Column selectionMode="multiple" exportable={false}></Column>
+              {isAdmin && <Column selectionMode="multiple" exportable={false}></Column>}
 
               <Column
                 body={actionBodyTemplate}

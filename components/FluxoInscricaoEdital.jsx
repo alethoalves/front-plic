@@ -452,6 +452,7 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected, gestorMode = false })
           planoDeTrabalhoDetalhes={planoDeTrabalhoSelected}
           onUpdatePlanoDeTrabalho={updatePlanoDeTrabalhoList}
           editalFormularioId={editalInfo?.formPlanoDeTrabalhoId}
+          minAtividadesPorPlano={editalInfo?.minAtividadesPorPlano}
         />
       </Modal>
 

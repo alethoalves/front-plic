@@ -36,6 +36,7 @@ const FormPlanoDeTrabalhoCreateOrEdit = ({
   onSuccess,
   onUpdatePlanoDeTrabalho,
   idFormularioEdital,
+  minAtividadesPorPlano,
 }) => {
   //ESTADOS
   const [loading, setLoading] = useState(false);
@@ -174,6 +175,12 @@ const FormPlanoDeTrabalhoCreateOrEdit = ({
 
   // Submete o formulário
   const handleFormSubmit = async (data) => {
+    if (minAtividadesPorPlano && cronograma.length < minAtividadesPorPlano) {
+      setError(
+        `O cronograma de atividades deve ter no mínimo ${minAtividadesPorPlano} atividade${minAtividadesPorPlano > 1 ? "s" : ""}. Atualmente há ${cronograma.length}.`
+      );
+      return;
+    }
     setLoading(true);
     setError("");
     try {
