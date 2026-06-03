@@ -912,24 +912,6 @@ const CertificateValidationPage = () => {
               {certificateData.tipo !== "historico" && (
                 <CertificateDetails data={certificateData} />
               )}
-
-              <div className={styles.legalInfo}>
-                <h4>Informações Importantes</h4>
-                <ul>
-                  <li>
-                    Este certificado é válido somente se autenticado neste
-                    sistema
-                  </li>
-                  <li>
-                    A autenticidade pode ser verificada a qualquer momento
-                    usando o código acima
-                  </li>
-                  <li>
-                    Para verificar novamente, acesse:
-                    www.plic.app.br/autenticacao
-                  </li>
-                </ul>
-              </div>
             </section>
           )}
         </div>
