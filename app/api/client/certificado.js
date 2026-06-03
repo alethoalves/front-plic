@@ -194,21 +194,19 @@ export const generateAndDownloadCertificatePDF = async (eventoId, tipo, submissa
 
 export const validarCertificado = async (codigo) => {
   try {
-    // Aqui você não precisa de headers de autenticação já que é uma rota pública
-    // Se precisar, use getAuthHeadersClient() ou deixe sem headers
     const response = await req.get(`/autenticacao`, {
-      params: { codigo } // Passa o código como parâmetro de query
+      params: { codigo }
     });
     return response.data;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.warn("Certificado não encontrado:", error.response?.data?.message);
+      console.warn("Não encontrado:", error.response?.data?.message);
       return {
-        autenticidade: false,
-        message: error.response?.data?.message || "Certificado não encontrado"
+        status: "error",
+        message: error.response?.data?.message || "Não encontrado"
       };
     }
-    console.error("Erro na validação do certificado:", error);
+    console.error("Erro na validação:", error);
     throw error;
   }
 };
