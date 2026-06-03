@@ -451,12 +451,23 @@
   margin-bottom: $gap-4;
 
   .historicoHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: $gap-1;
     margin-bottom: $gap-3;
+
     h3 {
       color: $primary-dark;
       font-size: 1.5rem;
       margin: 0;
     }
+  }
+
+  .historicoDataEmissao {
+    font-size: 0.875rem;
+    color: $gray-500;
   }
 
   .historicoInfo {
@@ -488,6 +499,39 @@
     }
   }
 
+  .historicoResumo {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: $gap-2;
+    margin-bottom: $gap-4;
+    padding: $gap-3;
+    background: $primary-lighten;
+    border-radius: 10px;
+  }
+
+  .resumoItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 4px;
+    
+  }
+
+  .resumoNumero {
+    font-size: 2rem;
+    font-weight: 700;
+    color: $white-normal;
+    line-height: 1;
+  }
+
+  .resumoLabel {
+    font-size: 0.8rem;
+    color: $white-normal;
+    font-weight: 500;
+    opacity: 0.85;
+  }
+
   .semParticipacoes {
     color: $gray-500;
     font-style: italic;
@@ -501,13 +545,26 @@
     &:last-child { margin-bottom: 0; }
   }
 
+  .historicoGrupoHeader {
+    display: flex;
+    align-items: center;
+    gap: $gap-1;
+    margin-bottom: $gap-2;
+    padding-bottom: $gap-1;
+    border-bottom: 2px solid $primary-lighten;
+  }
+
   .historicoGrupoTitulo {
     font-size: 1.1rem;
     font-weight: 700;
     color: $primary-dark;
-    margin-bottom: $gap-2;
-    padding-bottom: $gap-1;
-    border-bottom: 2px solid $primary-lighten;
+    margin: 0;
+  }
+
+  .historicoGrupoContador {
+    font-size: 0.95rem;
+    color: $gray-500;
+    font-weight: 500;
   }
 
   .historicoItem {
@@ -520,26 +577,95 @@
     &:last-child { margin-bottom: 0; }
   }
 
-  .historicoItemTitle {
-    font-weight: 600;
-    color: $black-normal;
-    font-size: 1rem;
+  .historicoItemHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: $gap-1;
     margin-bottom: $gap-1;
   }
 
-  .historicoItemMeta {
+  .historicoItemEdital {
+    font-weight: 600;
+    color: $black-normal;
+    font-size: 1rem;
+  }
+
+  .historicoItemPeriodo {
     display: flex;
-    flex-direction: column;
-    gap: 4px;
+    align-items: center;
+    gap: $gap-1;
+    font-size: 0.875rem;
+    color: $gray-600;
+    flex-shrink: 0;
+  }
 
-    span {
-      font-size: 0.875rem;
-      color: $gray-600;
+  .previsaoBadge {
+    background: $warning-light;
+    color: $warning-dark;
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
 
-      strong {
-        color: $black-light;
-      }
-    }
+  .historicoItemPlano {
+    font-size: 0.875rem;
+    color: $gray-600;
+    margin-bottom: 4px;
+  }
+
+  .historicoItemBolsa {
+    font-size: 0.875rem;
+    color: $gray-600;
+
+    strong { color: $black-light; }
+  }
+
+  .orientadosSection {
+    margin-top: $gap-1;
+    padding-top: $gap-1;
+    border-top: 1px dashed $gray-200;
+  }
+
+  .orientadosLabel {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: $gray-500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .orientadoPlano {
+    margin-bottom: $gap-1;
+
+    &:last-child { margin-bottom: 0; }
+  }
+
+  .orientadoPlanoTitulo {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: $black-light;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .orientadoAluno {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    color: $gray-600;
+    padding: 2px 0 2px $gap-2;
+  }
+
+  .orientadoStatus {
+    font-size: 0.8rem;
+    color: $gray-500;
+    font-style: italic;
   }
 }
 

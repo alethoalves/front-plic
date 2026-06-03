@@ -54,8 +54,8 @@ const CertificateValidationPage = () => {
               if (img.complete) return resolve();
               img.onload = () => resolve();
               img.onerror = () => resolve();
-            })
-        )
+            }),
+        ),
       );
 
       // Converter para canvas
@@ -109,7 +109,7 @@ const CertificateValidationPage = () => {
         const nomeAvaliador = certificado?.user?.nome || "avaliador";
         return `certificado_avaliador_${nomeAvaliador.replace(
           /\s+/g,
-          "_"
+          "_",
         )}_${codigo}.pdf`;
 
       case "planoDeTrabalho":
@@ -117,7 +117,7 @@ const CertificateValidationPage = () => {
           getPlanoDeTrabalhoParticipantName() || "participante";
         return `certificado_conclusao_${nomeParticipante.replace(
           /\s+/g,
-          "_"
+          "_",
         )}_${codigo}.pdf`;
 
       default:
@@ -132,7 +132,7 @@ const CertificateValidationPage = () => {
     if (certificado?.planoDeTrabalho?.inscricao?.participacoes) {
       const participacaoAluno =
         certificado.planoDeTrabalho.inscricao.participacoes.find(
-          (p) => p.tipo === "aluno"
+          (p) => p.tipo === "aluno",
         );
       if (participacaoAluno?.user?.nome) {
         return participacaoAluno.user.nome;
@@ -141,7 +141,7 @@ const CertificateValidationPage = () => {
       // Se não encontrar aluno, tenta encontrar orientador
       const participacaoOrientador =
         certificado.planoDeTrabalho.inscricao.participacoes.find(
-          (p) => p.tipo === "orientador"
+          (p) => p.tipo === "orientador",
         );
       if (participacaoOrientador?.user?.nome) {
         return participacaoOrientador.user.nome;
@@ -172,7 +172,7 @@ const CertificateValidationPage = () => {
       if (result?.html) {
         result.html = result.html.replace(
           /data:image\/[^;]+;base64,(https?:\/\/)/g,
-          "$1"
+          "$1",
         );
       }
 
@@ -212,28 +212,121 @@ const CertificateValidationPage = () => {
 
   const tipoParticipacaoLabel = (tipo) => {
     switch (tipo) {
-      case "aluno": return "Bolsista / Voluntário";
-      case "orientador": return "Orientador";
-      case "coorientador": return "Coorientador";
-      default: return tipo;
+      case "aluno":
+        return "Bolsista / Voluntário";
+      case "orientador":
+        return "Orientador";
+      case "coorientador":
+        return "Coorientador";
+      default:
+        return tipo;
     }
+  };
+
+  const getStatusText = (status) => {
+    const map = {
+      EM_ANALISE: "Em análise",
+      APROVADA: "Aprovada",
+      RECUSADA: "Recusada",
+      SUBSTITUIDA: "Substituída",
+      CANCELADA: "Cancelada",
+      ATIVA: "Regular",
+      PENDENTE: "Pendente",
+      INATIVA: "Inativo",
+      CLASSIFICADO: "Classificado",
+    };
+    return map[status] || status || "-";
   };
 
   // Componente para exibir histórico de participação
   const HistoricoDisplay = ({ data }) => {
     if (!data || data.tipo !== "historico") return null;
-    const { user, tenant, participacoes, codVerificador } = data;
+    const { user, tenant, participacoes, codVerificador, total, dataEmissao } =
+      data;
+    const totalGeral = total?.geral ?? 0;
 
-    const porTipo = {};
-    (participacoes || []).forEach((p) => {
-      if (!porTipo[p.tipo]) porTipo[p.tipo] = [];
-      porTipo[p.tipo].push(p);
-    });
+    const ListaParticipacoes = ({ tipo, lista, titulo }) => {
+      if (!lista || lista.length === 0) return null;
+      return (
+        <div className={styles.historicoGrupo}>
+          <div className={styles.historicoGrupoHeader}>
+            <h4 className={styles.historicoGrupoTitulo}>{titulo}</h4>
+            <span className={styles.historicoGrupoContador}>
+              ({lista.length})
+            </span>
+          </div>
+          {lista.map((p) => {
+            const edital = p.inscricao?.edital;
+            return (
+              <div key={p.id} className={styles.historicoItem}>
+                <div className={styles.historicoItemHeader}>
+                  <div className={styles.historicoItemEdital}>
+                    {edital?.titulo} ({edital?.ano})
+                  </div>
+                  <div className={styles.historicoItemPeriodo}>
+                    {formatarPeriodo(p.dt_inicio, p.dt_final)}
+                    {p.dt_final_tipo === "PREVISAO" && (
+                      <span className={styles.previsaoBadge}>Previsão</span>
+                    )}
+                  </div>
+                </div>
+
+                {tipo === "aluno" && p.planoDeTrabalho && (
+                  <div className={styles.historicoItemPlano}>
+                    Plano: {p.planoDeTrabalho.titulo}
+                  </div>
+                )}
+
+                {tipo === "aluno" && (
+                  <div className={styles.historicoItemBolsa}>
+                    <strong>Bolsa:</strong> {p.bolsa}
+                  </div>
+                )}
+
+                {(tipo === "orientador" || tipo === "coorientador") &&
+                  p.inscricao?.planosDeTrabalho?.length > 0 && (
+                    <div className={styles.orientadosSection}>
+                      <span className={styles.orientadosLabel}>
+                        Estudantes orientados:
+                      </span>
+                      {p.inscricao.planosDeTrabalho.map((plano) => (
+                        <div key={plano.id} className={styles.orientadoPlano}>
+                          <span className={styles.orientadoPlanoTitulo}>
+                            {plano.titulo}
+                          </span>
+                          {plano.participacoes
+                            .filter((part) => part.tipo === "aluno")
+                            .map((part) => (
+                              <div
+                                key={part.id}
+                                className={styles.orientadoAluno}
+                              >
+                                <span>{part.user.nome}</span>
+                                <span className={styles.orientadoStatus}>
+                                  {getStatusText(part.statusParticipacao)}
+                                </span>
+                              </div>
+                            ))}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+              </div>
+            );
+          })}
+        </div>
+      );
+    };
 
     return (
       <div className={styles.historicoContainer}>
         <div className={styles.historicoHeader}>
           <h3>Histórico de Participação em Iniciação Científica</h3>
+          {dataEmissao && (
+            <span className={styles.historicoDataEmissao}>
+              Consultado em: {new Date(dataEmissao).toLocaleDateString("pt-BR")}
+            </span>
+          )}
         </div>
 
         <div className={styles.historicoInfo}>
@@ -244,7 +337,8 @@ const CertificateValidationPage = () => {
           <div className={styles.infoRow}>
             <span className={styles.infoLabel}>Instituição:</span>
             <span className={styles.infoValue}>
-              {tenant?.nome} {tenant?.sigla ? `(${tenant.sigla})` : ""}
+              {tenant?.nome}
+              {tenant?.sigla ? ` (${tenant.sigla})` : ""}
             </span>
           </div>
           <div className={styles.infoRow}>
@@ -253,53 +347,62 @@ const CertificateValidationPage = () => {
           </div>
         </div>
 
-        {Object.keys(porTipo).length === 0 && (
-          <p className={styles.semParticipacoes}>Nenhuma participação registrada.</p>
+        {totalGeral > 0 && (
+          <div className={styles.historicoResumo}>
+            <div className={styles.resumoItem}>
+              <span className={styles.resumoNumero}>{totalGeral}</span>
+              <span className={styles.resumoLabel}>Total de Participações</span>
+            </div>
+            {total.por_tipo.orientador > 0 && (
+              <div className={styles.resumoItem}>
+                <span className={styles.resumoNumero}>
+                  {total.por_tipo.orientador}
+                </span>
+                <span className={styles.resumoLabel}>Como Orientador</span>
+              </div>
+            )}
+            {total.por_tipo.coorientador > 0 && (
+              <div className={styles.resumoItem}>
+                <span className={styles.resumoNumero}>
+                  {total.por_tipo.coorientador}
+                </span>
+                <span className={styles.resumoLabel}>Como Coorientador</span>
+              </div>
+            )}
+            {total.por_tipo.aluno > 0 && (
+              <div className={styles.resumoItem}>
+                <span className={styles.resumoNumero}>
+                  {total.por_tipo.aluno}
+                </span>
+                <span className={styles.resumoLabel}>
+                  Como Bolsista/Voluntário
+                </span>
+              </div>
+            )}
+          </div>
         )}
 
-        {["aluno", "orientador", "coorientador"].map((tipo) => {
-          const lista = porTipo[tipo];
-          if (!lista || lista.length === 0) return null;
-          return (
-            <div key={tipo} className={styles.historicoGrupo}>
-              <h4 className={styles.historicoGrupoTitulo}>
-                {tipoParticipacaoLabel(tipo)}
-              </h4>
-              {lista.map((p) => {
-                const edital = p.inscricao?.edital;
-                const historicos = p.HistoricoStatusParticipacao || [];
-                const dtInicio = historicos.find(
-                  (h) => h.status === "ATIVA"
-                )?.inicio || edital?.inicioVigencia;
-                const dtFim = historicos.find(
-                  (h) => h.status === "ENCERRADA"
-                )?.inicio || edital?.fimVigencia;
+        {totalGeral === 0 && (
+          <p className={styles.semParticipacoes}>
+            Nenhuma participação registrada.
+          </p>
+        )}
 
-                return (
-                  <div key={p.id} className={styles.historicoItem}>
-                    <div className={styles.historicoItemTitle}>
-                      {p.planoDeTrabalho?.titulo || "Plano de Trabalho"}
-                    </div>
-                    <div className={styles.historicoItemMeta}>
-                      <span>
-                        <strong>Edital:</strong>{" "}
-                        {edital?.titulo} ({edital?.ano})
-                      </span>
-                      <span>
-                        <strong>Período:</strong>{" "}
-                        {formatarPeriodo(dtInicio, dtFim)}
-                      </span>
-                      <span>
-                        <strong>Status:</strong>{" "}
-                        {p.planoDeTrabalho?.statusClassificacao || p.statusParticipacao}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          );
-        })}
+        <ListaParticipacoes
+          tipo="aluno"
+          lista={participacoes?.aluno}
+          titulo="Participações como Bolsista / Voluntário"
+        />
+        <ListaParticipacoes
+          tipo="orientador"
+          lista={participacoes?.orientador}
+          titulo="Participações como Orientador"
+        />
+        <ListaParticipacoes
+          tipo="coorientador"
+          lista={participacoes?.coorientador}
+          titulo="Participações como Coorientador"
+        />
       </div>
     );
   };
@@ -403,7 +506,7 @@ const CertificateValidationPage = () => {
             <span className={styles.infoLabel}>Data de Emissão:</span>
             <span className={styles.infoValue}>
               {new Date(data.certificado?.createdAt).toLocaleDateString(
-                "pt-BR"
+                "pt-BR",
               )}
             </span>
           </div>
@@ -699,14 +802,15 @@ const CertificateValidationPage = () => {
                       id="certificateCode"
                       value={certificateCode}
                       onChange={(e) => setCertificateCode(e.target.value)}
-                      placeholder="Ex: d8JCqJqW ou t6u11188"
+                      placeholder="Digite o código do certificado ou histórico"
                       className={styles.inputField}
                       disabled={loading}
                       autoComplete="off"
                       spellCheck="false"
                     />
                     <span className={styles.inputHint}>
-                      Insira o código do certificado ou do histórico de participação
+                      Insira o código do certificado ou do histórico de
+                      participação
                     </span>
                   </div>
                 </div>
@@ -823,9 +927,6 @@ const CertificateValidationPage = () => {
                   <li>
                     Para verificar novamente, acesse:
                     www.plic.app.br/autenticacao
-                  </li>
-                  <li>
-                    Em caso de dúvidas, entre em contato: suporte@plic.com.br
                   </li>
                 </ul>
               </div>
