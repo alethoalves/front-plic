@@ -285,7 +285,12 @@ const FormPlanoDeTrabalhoCreateOrEdit = ({
       {activeTab === "conteudo" && (
         <div className={styles.divCronograma}>
           <h6 className="mb-2">Cronograma de Atividades</h6>
-          <Atividades cronograma={cronograma} setCronograma={setCronograma} />
+          <Atividades
+            cronograma={cronograma}
+            setCronograma={setCronograma}
+            tenantSlug={tenantSlug}
+            currentPlanoId={initialData?.id}
+          />
         </div>
       )}
       <div className={`${styles.btnSubmit} mt-2`}>

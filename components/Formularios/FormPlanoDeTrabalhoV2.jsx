@@ -251,7 +251,12 @@ const FormPlanoDeTrabalhoV2 = ({
         </div>
       )}
       {activeTab === "cronograma" && (
-        <Atividades cronograma={cronograma} setCronograma={setCronograma} />
+        <Atividades
+          cronograma={cronograma}
+          setCronograma={setCronograma}
+          tenantSlug={tenantSlug}
+          currentPlanoId={initialData?.id}
+        />
       )}
       <div className={`${styles.btnSubmit} mt-2`}>
         <Button

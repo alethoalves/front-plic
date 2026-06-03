@@ -606,6 +606,74 @@
   }
 }
 
+.planoImportItem {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+  padding: $gap-2;
+  background-color: $white-normal;
+  border: 1px solid $gray-100;
+  border-left: 3px solid $primary-dark;
+  border-radius: 8px;
+  transition: border-color ease 0.2s, box-shadow ease 0.2s;
+
+  &:not(:last-child) {
+    margin-bottom: $gap-1;
+  }
+
+  &:hover {
+    border-color: $primary-normal;
+    border-left-color: $primary-normal;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  }
+
+  .planoImportContent {
+    flex: 1;
+    min-width: 0;
+
+    h6 {
+      color: $primary-darken;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
+    }
+
+    .planoImportMeta {
+     
+      flex-wrap: wrap;
+      gap: 6px;
+
+      p {
+        color: $gray-500;
+        margin: 0;
+      }
+
+      .planoImportBadge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background-color: $white-darken;
+        border: 1px solid $gray-100;
+        border-radius: 20px;
+        padding: 2px 8px;
+        white-space: nowrap;
+        flex-shrink: 0;
+
+        p {
+          color: $primary-darken;
+          font-weight: 500;
+          white-space: nowrap;
+        }
+      }
+    }
+  }
+
+  .planoImportAction {
+    flex-shrink: 0;
+  }
+}
+
 .pdfUploadLabel {
   font-size: 0.8125rem;
   font-weight: 500;

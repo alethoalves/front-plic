@@ -5,12 +5,14 @@ import React, { useState } from "react";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import GanttChart from "./GanttChart";
-import { RiDeleteBinLine } from "@remixicon/react";
+import Modal from "@/components/Modal";
+import { RiDeleteBinLine, RiDownloadLine, RiCalendarLine } from "@remixicon/react";
 import styles from "@/components/Formularios/Form.module.scss";
 import { formatDateToISO } from "@/lib/formatarDatas";
 import { useForm } from "react-hook-form";
+import { getPlanosDeTrabalhoByUser } from "@/app/api/client/planoDeTrabalho";
 
-const Atividades = ({ cronograma, setCronograma }) => {
+const Atividades = ({ cronograma, setCronograma, tenantSlug, currentPlanoId }) => {
   const [errorAddAtividade, setErrorAddAtividade] = useState("");
   const [loading, setLoading] = useState("");
   const [atividade, setAtividade] = useState({
@@ -19,6 +21,11 @@ const Atividades = ({ cronograma, setCronograma }) => {
     fim: "",
     comentario: "",
   });
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [planosDisponiveis, setPlanosDisponiveis] = useState([]);
+  const [loadingPlanos, setLoadingPlanos] = useState(false);
+  const [errorImport, setErrorImport] = useState("");
+
   const {
     register,
     control,
@@ -29,7 +36,7 @@ const Atividades = ({ cronograma, setCronograma }) => {
     getValues,
     resetField,
   } = useForm({});
-  // Adicionar uma nova atividade ao cronograma
+
   const handleAddAtividade = () => {
     const nomeAtividade = getValues("nomeAtividade");
     const inicio = getValues("inicio");
@@ -42,7 +49,6 @@ const Atividades = ({ cronograma, setCronograma }) => {
       return;
     }
 
-    // Verificar e formatar as datas para o formato ISO (YYYY-MM-DD)
     const dataInicio = new Date(formatDateToISO(inicio));
     const dataFim = new Date(formatDateToISO(fim));
 
@@ -54,21 +60,52 @@ const Atividades = ({ cronograma, setCronograma }) => {
     }
 
     setCronograma((prev) => [...prev, { nome: nomeAtividade, inicio, fim }]);
-    setErrorAddAtividade(""); // Limpa a mensagem de erro caso tenha sucesso
+    setErrorAddAtividade("");
 
     resetField("nomeAtividade");
     resetField("inicio");
     resetField("fim");
   };
 
-  // Remover uma atividade do cronograma
   const handleRemoveAtividade = (index) => {
     setCronograma((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleOpenImportModal = async (e) => {
+    e.preventDefault();
+    if (!tenantSlug) return;
+
+    setImportModalOpen(true);
+    setLoadingPlanos(true);
+    setErrorImport("");
+
+    try {
+      const planos = await getPlanosDeTrabalhoByUser(tenantSlug);
+      const planosComCronograma = (planos || []).filter(
+        (p) =>
+          p.id !== currentPlanoId &&
+          p.CronogramaPlanoDeTrabalho?.length > 0
+      );
+      setPlanosDisponiveis(planosComCronograma);
+    } catch (err) {
+      setErrorImport("Erro ao carregar planos de trabalho.");
+    } finally {
+      setLoadingPlanos(false);
+    }
+  };
+
+  const handleImportFromPlano = (plano) => {
+    const atividadesImportadas = plano.CronogramaPlanoDeTrabalho.map((item) => ({
+      nome: item.atividade,
+      inicio: item.inicio,
+      fim: item.fim,
+    }));
+    setCronograma((prev) => [...prev, ...atividadesImportadas]);
+    setImportModalOpen(false);
+  };
+
   return (
     <div className={styles.cronograma}>
-      {/* Campo: Nome da Atividade */}
       <div className={`${styles.input} mb-2`}>
         <Input
           name="nomeAtividade"
@@ -83,7 +120,6 @@ const Atividades = ({ cronograma, setCronograma }) => {
         />
       </div>
 
-      {/* Campos: Data de Início e Fim */}
       <div className={`${styles.inputGroup} flex`}>
         <div className={`${styles.input} mr-2`}>
           <Input
@@ -107,24 +143,35 @@ const Atividades = ({ cronograma, setCronograma }) => {
         </div>
       </div>
 
-      {/* Botão: Adicionar Atividade */}
-      <Button
-        onClick={(e) => {
-          e.preventDefault(); // Impede o envio do formulário
-          handleAddAtividade();
-        }}
-        className="btn-secondary mt-2"
-        disabled={loading}
-      >
-        Adicionar Atividade
-      </Button>
+      <div className="flex gap-2 mt-2">
+        <Button
+          onClick={(e) => {
+            e.preventDefault();
+            handleAddAtividade();
+          }}
+          className="btn-secondary"
+          disabled={loading}
+        >
+          Adicionar Atividade
+        </Button>
+        {tenantSlug && (
+          <Button
+            icon={RiDownloadLine}
+            onClick={handleOpenImportModal}
+            className="btn-secondary"
+            disabled={loading}
+          >
+            Importar de outro Plano
+          </Button>
+        )}
+      </div>
+
       {errorAddAtividade && (
         <div className="notification notification-error">
           <p className="p5">{errorAddAtividade}</p>
         </div>
       )}
 
-      {/* Exibição do Cronograma */}
       <GanttChart cronograma={cronograma} />
 
       <div className={styles.lista}>
@@ -151,6 +198,66 @@ const Atividades = ({ cronograma, setCronograma }) => {
             </div>
           ))}
       </div>
+
+      <Modal
+        isOpen={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        size="medium"
+      >
+        <h4 className="mb-2">Importar Atividades</h4>
+        <p className="mb-3">
+          Selecione um plano de trabalho para importar suas atividades no
+          cronograma atual.
+        </p>
+
+        {loadingPlanos && <p>Carregando planos...</p>}
+
+        {errorImport && (
+          <div className="notification notification-error mb-2">
+            <p className="p5">{errorImport}</p>
+          </div>
+        )}
+
+        {!loadingPlanos && !errorImport && planosDisponiveis.length === 0 && (
+          <div className="notification notification-warning">
+            <p className="p5">
+              Nenhum outro plano de trabalho com atividades encontrado.
+            </p>
+          </div>
+        )}
+
+        {!loadingPlanos &&
+          planosDisponiveis.map((plano) => (
+            <div key={plano.id} className={styles.planoImportItem}>
+              <div className={styles.planoImportContent}>
+                <h6>{plano.titulo}</h6>
+                <div className={styles.planoImportMeta}>
+                  <p className="p5">
+                    {plano.inscricao?.edital?.titulo}
+                    {plano.inscricao?.edital?.ano
+                      ? ` · ${plano.inscricao.edital.ano}`
+                      : ""}
+                  </p>
+                  <span className={styles.planoImportBadge}>
+                    <RiCalendarLine size={12} />
+                    <p className="p5">{plano.CronogramaPlanoDeTrabalho.length} atividade{plano.CronogramaPlanoDeTrabalho.length !== 1 ? "s" : ""}</p>
+                  </span>
+                </div>
+              </div>
+              <div className={styles.planoImportAction}>
+                <Button
+                  className="btn-primary"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleImportFromPlano(plano);
+                  }}
+                >
+                  Importar
+                </Button>
+              </div>
+            </div>
+          ))}
+      </Modal>
     </div>
   );
 };
