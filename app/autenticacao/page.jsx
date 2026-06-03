@@ -341,6 +341,18 @@ const CertificateValidationPage = () => {
               {tenant?.sigla ? ` (${tenant.sigla})` : ""}
             </span>
           </div>
+          {tenant?.nomeGestorIc && (
+            <div className={styles.infoRow}>
+              <span className={styles.infoLabel}>Gestor de IC:</span>
+              <span className={styles.infoValue}>{tenant.nomeGestorIc}</span>
+            </div>
+          )}
+          {tenant?.emailTenant && (
+            <div className={styles.infoRow}>
+              <span className={styles.infoLabel}>E-mail:</span>
+              <span className={styles.infoValue}>{tenant.emailTenant}</span>
+            </div>
+          )}
           <div className={styles.infoRow}>
             <span className={styles.infoLabel}>Código verificador:</span>
             <span className={styles.infoValue}>{codVerificador}</span>
