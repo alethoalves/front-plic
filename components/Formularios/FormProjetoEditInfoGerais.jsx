@@ -182,6 +182,12 @@ const FormProjetoEditInfoGerais = ({
       return;
     }
 
+    const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
+    if (!dateRegex.test(inicio) || !dateRegex.test(fim)) {
+      setErrorAddAtividade("Informe as datas no formato DD/MM/AAAA.");
+      return;
+    }
+
     // Verificar e formatar as datas para o formato ISO (YYYY-MM-DD)
     const dataInicio = new Date(formatDateToISO(inicio));
     const dataFim = new Date(formatDateToISO(fim));
