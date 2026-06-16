@@ -26,7 +26,10 @@ import {
 import { getInscricaoUserById } from "@/app/api/client/inscricao";
 import { getFormulario } from "@/app/api/client/formulario";
 import { getUserTenant } from "@/app/api/client/userTenant";
-import { gerarFichaAvaliacaoParticipacao } from "@/app/api/client/cvLattes";
+import {
+  gerarFichaAvaliacaoParticipacao,
+  getItensAprovadosRejeitadosParticipacao,
+} from "@/app/api/client/cvLattes";
 import { xmlLattes } from "@/app/api/clientReq";
 import { Stepper } from "primereact/stepper";
 import { StepperPanel } from "primereact/stepperpanel";
@@ -35,6 +38,7 @@ import FormAlunoUserTenant from "./FormAlunoUserTenant";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { Toast } from "primereact/toast";
 import Image from "next/image";
+import Modal from "@/components/Modal";
 
 const EditarParticipacao = ({
   participacaoInfo,
@@ -59,6 +63,10 @@ const EditarParticipacao = ({
   const [activeStep, setActiveStep] = useState(0);
   const [fichaAvaliacao, setFichaAvaliacao] = useState(null);
   const [userTenantData, setUserTenantData] = useState(null);
+  const [itensNaoContabilizados, setItensNaoContabilizados] = useState(null);
+  const [isItensModalOpen, setIsItensModalOpen] = useState(false);
+  const [loadingItensNaoContabilizados, setLoadingItensNaoContabilizados] =
+    useState(false);
   const toast = useRef(null);
 
 
@@ -180,6 +188,30 @@ const EditarParticipacao = ({
       showError(errorMessage);
     } finally {
       setLoadingForm(false);
+    }
+  };
+
+  const handleVerItensNaoContabilizados = async () => {
+    if (itensNaoContabilizados) {
+      setIsItensModalOpen(true);
+      return;
+    }
+    setLoadingItensNaoContabilizados(true);
+    try {
+      const result = await getItensAprovadosRejeitadosParticipacao(
+        tenant,
+        participacaoInfo.id,
+      );
+      setItensNaoContabilizados(result.fichaAvaliacao);
+      setIsItensModalOpen(true);
+    } catch (error) {
+      console.error("Erro ao buscar itens não contabilizados:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        "Erro ao buscar itens não contabilizados.";
+      showError(errorMessage);
+    } finally {
+      setLoadingItensNaoContabilizados(false);
     }
   };
 
@@ -471,6 +503,156 @@ const EditarParticipacao = ({
       </div>
     );
   };
+
+  // Componente recursivo para renderizar os itens aprovados/rejeitados (com motivo)
+  // de cada grupo, usado no modal "Ver itens não contabilizados"
+  const GrupoItensNaoContabilizados = ({ grupo, nivel = 0 }) => {
+    const [expanded, setExpanded] = useState(false);
+
+    const temItens =
+      grupo.itensAprovados?.length > 0 ||
+      grupo.itensRejeitados?.length > 0 ||
+      grupo.grupos?.some(
+        (subGrupo) =>
+          subGrupo.itensAprovados?.length > 0 ||
+          subGrupo.itensRejeitados?.length > 0 ||
+          subGrupo.grupos?.some(
+            (g) => g.itensAprovados?.length > 0 || g.itensRejeitados?.length > 0,
+          ),
+      );
+
+    const getNivelClass = () => {
+      switch (nivel) {
+        case 0:
+          return styles.grupoPrincipal;
+        case 1:
+          return styles.grupoSecundario;
+        default:
+          return styles.grupoTerciario;
+      }
+    };
+
+    const renderCampos = (campos) =>
+      campos
+        .filter(
+          (campo) =>
+            campo.value !== undefined &&
+            campo.value !== null &&
+            campo.value !== "",
+        )
+        .map((campo, campoIdx) => (
+          <div key={campoIdx} className={styles.campoItem}>
+            <span className={styles.campoLabel}>{campo.label}</span>
+            <span className={styles.campoValor}>
+              {typeof campo.value === "object"
+                ? JSON.stringify(campo.value)
+                : String(campo.value)}
+            </span>
+          </div>
+        ));
+
+    return (
+      <div className={`${styles.grupoAvaliacao} ${getNivelClass()}`}>
+        <div
+          className={`${styles.grupoHeader} ${temItens ? styles.clickable : ""}`}
+          onClick={() => temItens && setExpanded(!expanded)}
+        >
+          <div className={styles.grupoHeaderTop}>
+            {temItens && (
+              <i
+                className={`pi ${expanded ? "pi-chevron-down" : "pi-chevron-right"} ${styles.expandIcon}`}
+              />
+            )}
+            <h5 className={styles.grupoLabel}>{grupo.label}</h5>
+          </div>
+
+          <div className={styles.grupoHeaderBottom}>
+            <span style={{ color: "#16a34a", fontSize: "0.85rem", marginRight: 12 }}>
+              {grupo.itensAprovados?.length || 0} aprovado(s)
+            </span>
+            <span style={{ color: "#dc2626", fontSize: "0.85rem" }}>
+              {grupo.itensRejeitados?.length || 0} não contabilizado(s)
+            </span>
+          </div>
+        </div>
+
+        {expanded && grupo.itensAprovados?.length > 0 && (
+          <div className={styles.itensResposta}>
+            <p style={{ fontWeight: 600, color: "#16a34a", margin: "8px 0 4px" }}>
+              Itens aprovados
+            </p>
+            {grupo.itensAprovados.map((item, idx) => (
+              <div key={idx} className={styles.itemResposta}>
+                <div className={styles.itemHeader}>
+                  <span className={styles.itemIndex}>Item {idx + 1}</span>
+                </div>
+                <div className={styles.itemCampos}>{renderCampos(item)}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {expanded && grupo.itensRejeitados?.length > 0 && (
+          <div className={styles.itensResposta}>
+            <p style={{ fontWeight: 600, color: "#dc2626", margin: "8px 0 4px" }}>
+              Itens não contabilizados
+            </p>
+            {grupo.itensRejeitados.map((rejeitado, idx) => (
+              <div
+                key={idx}
+                className={styles.itemResposta}
+                style={{ borderLeft: "3px solid #dc2626" }}
+              >
+                <div className={styles.itemHeader}>
+                  <span className={styles.itemIndex}>Item {idx + 1}</span>
+                </div>
+                <div className={styles.itemCampos}>
+                  {renderCampos(rejeitado.campos)}
+                </div>
+                {rejeitado.motivosReprovacao?.length > 0 && (
+                  <div
+                    style={{ marginTop: 8, fontSize: "0.85rem", color: "#7f1d1d" }}
+                  >
+                    <strong>Motivo da reprovação:</strong>
+                    <ul style={{ margin: "4px 0 0 16px" }}>
+                      {rejeitado.motivosReprovacao.map((motivo, mIdx) => (
+                        <li key={mIdx}>
+                          Campo <strong>{motivo.campo}</strong> ({motivo.operador}
+                          ): esperado{" "}
+                          <strong>{JSON.stringify(motivo.valorEsperado)}</strong>,
+                          encontrado{" "}
+                          <strong>
+                            {motivo.valorEncontrado === null ||
+                            motivo.valorEncontrado === undefined ||
+                            motivo.valorEncontrado === ""
+                              ? "(ausente)"
+                              : String(motivo.valorEncontrado)}
+                          </strong>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {expanded && grupo.grupos?.length > 0 && (
+          <div className={styles.subgrupos}>
+            {grupo.grupos.map((subGrupo, idx) => (
+              <GrupoItensNaoContabilizados
+                key={idx}
+                grupo={subGrupo}
+                nivel={nivel + 1}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -952,6 +1134,22 @@ const EditarParticipacao = ({
                     </div>
                   </div>
 
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      padding: "8px 0",
+                    }}
+                  >
+                    <Button
+                      label="Ver itens não contabilizados"
+                      icon="pi pi-eye"
+                      className="p-button-text p-button-plain"
+                      onClick={handleVerItensNaoContabilizados}
+                      loading={loadingItensNaoContabilizados}
+                    />
+                  </div>
+
                   {/* Conteúdo - Grupos de avaliação */}
                   <div className={styles.fichaContent}>
                     {fichaAvaliacao?.grupos?.length > 0 ? (
@@ -1130,6 +1328,26 @@ const EditarParticipacao = ({
       ) : (
         <div className="p-4">Carregando...</div>
       )}
+
+      <Modal
+        isOpen={isItensModalOpen}
+        onClose={() => setIsItensModalOpen(false)}
+        size="large"
+      >
+        <h4>Itens não contabilizados</h4>
+        <p style={{ marginBottom: 16 }}>
+          Veja abaixo, por grupo, quais itens do currículo Lattes foram
+          aprovados e quais não foram contabilizados na nota, com o motivo da
+          reprovação.
+        </p>
+        {itensNaoContabilizados?.grupos?.length > 0 ? (
+          itensNaoContabilizados.grupos.map((grupo, index) => (
+            <GrupoItensNaoContabilizados key={index} grupo={grupo} nivel={0} />
+          ))
+        ) : (
+          <p>Nenhum item encontrado.</p>
+        )}
+      </Modal>
     </>
   );
 };

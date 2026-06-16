@@ -15,7 +15,19 @@ export const gerarFichaAvaliacaoParticipacao = async (tenantSlug, idParticipacao
       throw error;
     }
   };
-  
+
+export const getItensAprovadosRejeitadosParticipacao = async (tenantSlug, idParticipacao) => {
+    try {
+      const headers = getAuthHeadersClient();
+      if (!headers) return false;
+      const response = await req.get(`/private/${tenantSlug}/itens-aprovados-rejeitados-participacao/${idParticipacao}`, { headers });
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao obter itens aprovados/rejeitados da participação:", error);
+      throw error;
+    }
+  };
+
 /**************************
  * CV LATTES
  **************************/
