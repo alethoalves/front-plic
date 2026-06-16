@@ -372,6 +372,13 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected, gestorMode = false })
     );
   };
 
+  const getMaxVoluntariosPorProjeto = (inscricaoProjetoItem) => {
+    const maxRemunerados = editalInfo?.maxRemuneradosPorProjeto || 2;
+    const maxVoluntarios = editalInfo?.maxVoluntariosPorProjeto || 4;
+    const remunerados = getRemuneradosPorProjeto(inscricaoProjetoItem);
+    return maxRemunerados + maxVoluntarios - remunerados;
+  };
+
   const getVoluntariosPorProjeto = (inscricaoProjetoItem) => {
     const planoIds = getPlanosPorProjeto(inscricaoProjetoItem).map((p) => p.id);
     return (
@@ -821,14 +828,14 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected, gestorMode = false })
                         </span>
                       </div>
                       <div
-                        className={`${styles.projetoCounter} ${getVoluntariosPorProjeto(item) >= (editalInfo?.maxVoluntariosPorProjeto || 4) ? styles.atLimit : ""}`}
+                        className={`${styles.projetoCounter} ${getVoluntariosPorProjeto(item) >= getMaxVoluntariosPorProjeto(item) ? styles.atLimit : ""}`}
                       >
                         <span className={styles.projetoCounterLabel}>
                           Voluntários
                         </span>
                         <span className={styles.projetoCounterValue}>
                           {getVoluntariosPorProjeto(item)} /{" "}
-                          {editalInfo?.maxVoluntariosPorProjeto || 4}
+                          {getMaxVoluntariosPorProjeto(item)}
                         </span>
                       </div>
                     </div>
