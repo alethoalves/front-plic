@@ -21,6 +21,8 @@ import {
   getInscricaoUserById,
   submissaoInscricao,
 } from "@/app/api/client/inscricao";
+import { getQuestionarioPublico } from "@/app/api/client/questionarioSatisfacao";
+import QuestionarioSatisfacaoModal from "@/components/QuestionarioSatisfacaoModal";
 import Modal from "@/components/Modal";
 import ProjetoController from "./projeto/ProjetoController";
 import ParticipacaoController from "./participacao/ParticipacaoController";
@@ -36,7 +38,11 @@ import { Card } from "primereact/card";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { useRouter } from "next/navigation";
 
-const FluxoInscricaoEdital = ({ tenant, inscricaoSelected, gestorMode = false }) => {
+const FluxoInscricaoEdital = ({
+  tenant,
+  inscricaoSelected,
+  gestorMode = false,
+}) => {
   const router = useRouter();
   // ESTADOS
   const [inscricao, setInscricao] = useState();
@@ -57,6 +63,8 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected, gestorMode = false })
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState([]);
   const [deletingParticipacaoId, setDeletingParticipacaoId] = useState(null);
+  const [showQuestionario, setShowQuestionario] = useState(false);
+  const [questionario, setQuestionario] = useState(null);
   const toast = useRef(null);
   const showError = (message) => {
     toast.current.show({
@@ -75,10 +83,9 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected, gestorMode = false })
     });
   };
 
-  const handleFinalizarInscricao = async () => {
+  const executarSubmissao = async () => {
     setSubmitting(true);
     setErrors([]);
-
     try {
       await submissaoInscricao(tenant, inscricaoSelected);
       showSuccess("Inscrição enviada com sucesso!");
@@ -91,7 +98,6 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected, gestorMode = false })
       }
     } catch (error) {
       console.error("Erro ao enviar a inscrição:", error);
-
       if (Array.isArray(error.response?.data?.errors)) {
         setErrors(error.response.data.errors);
       } else {
@@ -102,6 +108,23 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected, gestorMode = false })
       }
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleFinalizarInscricao = async () => {
+    // Se já respondeu, submete direto sem verificar questionário
+    if (inscricao?.questionarioRespondido) {
+      executarSubmissao();
+      return;
+    }
+    // Verifica se existe questionário ativo para inscrição neste tenant
+    try {
+      const q = await getQuestionarioPublico(tenant, "inscricao");
+      setQuestionario(q);
+      setShowQuestionario(true);
+    } catch {
+      // Sem questionário ativo — submete direto
+      executarSubmissao();
     }
   };
 
@@ -483,7 +506,10 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected, gestorMode = false })
       {gestorMode && (
         <div className={styles.gestorBanner}>
           <RiUserSettingsLine size={18} />
-          <span>Modo Gestor — você está acessando esta inscrição em nome do proponente.</span>
+          <span>
+            Modo Gestor — você está acessando esta inscrição em nome do
+            proponente.
+          </span>
         </div>
       )}
 
@@ -581,6 +607,37 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected, gestorMode = false })
                       </div>
                     );
                   })}
+                </div>
+
+                <div className={styles.supportChannels}>
+                  <div className={styles.supportChannel}>
+                    <span className={styles.supportChannelIcon}>💬</span>
+                    <div className={styles.supportChannelBody}>
+                      <span className={styles.supportChannelLabel}>Problema técnico na plataforma?</span>
+                      <a
+                        href={`https://wa.me/5561991651494?text=${encodeURIComponent("Olá! Preciso de ajuda com minha inscrição no PLIC.")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.supportChannelLink + " " + styles.whatsapp}
+                      >
+                        Chamar suporte no WhatsApp →
+                      </a>
+                    </div>
+                  </div>
+                  {editalInfo?.tenant?.emailTenant && (
+                    <div className={styles.supportChannel}>
+                      <span className={styles.supportChannelIcon}>✉️</span>
+                      <div className={styles.supportChannelBody}>
+                        <span className={styles.supportChannelLabel}>Dúvida sobre as regras do edital?</span>
+                        <a
+                          href={`mailto:${editalInfo.tenant.emailTenant}`}
+                          className={styles.supportChannelLink + " " + styles.email}
+                        >
+                          {editalInfo.tenant.emailTenant}
+                        </a>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             );
@@ -1047,6 +1104,26 @@ const FluxoInscricaoEdital = ({ tenant, inscricaoSelected, gestorMode = false })
             </p>
           </div>
         </div>
+      )}
+
+      {showQuestionario && questionario && (
+        <QuestionarioSatisfacaoModal
+          tenant={tenant}
+          questionario={questionario}
+          inscricaoId={inscricaoSelected}
+          onConcluir={() => {
+            setShowQuestionario(false);
+            // Após responder, marca localmente para não exibir novamente caso a submissão falhe
+            setInscricao((prev) =>
+              prev ? { ...prev, questionarioRespondido: true } : prev,
+            );
+            executarSubmissao();
+          }}
+          onCancelar={() => {
+            // Apenas fecha — usuário retorna à inscrição sem submeter
+            setShowQuestionario(false);
+          }}
+        />
       )}
     </>
   );

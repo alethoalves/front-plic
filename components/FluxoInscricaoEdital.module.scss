@@ -249,6 +249,61 @@ $shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
   }
 }
 
+// Support Channels
+.supportChannels {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-top: 1px solid $gray-200;
+  margin-top: $gap-1;
+}
+
+.supportChannel {
+  display: flex;
+  align-items: flex-start;
+  gap: $gap-2;
+  padding: $gap-2 calc(22px + $gap-2);
+
+  & + & {
+    border-top: 1px solid $gray-100;
+  }
+}
+
+.supportChannelIcon {
+  font-size: 1rem;
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+
+.supportChannelBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.supportChannelLabel {
+  font-size: 0.8125rem;
+  color: $gray-600;
+}
+
+.supportChannelLink {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+
+  &.whatsapp {
+    color: #25d366;
+  }
+
+  &.email {
+    color: $primary-normal;
+  }
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
 // Errors Container
 .errorsContainer {
   display: flex;

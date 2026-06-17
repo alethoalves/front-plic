@@ -1,0 +1,471 @@
+@import "./styles/partials/colors";
+@import "./styles/partials/layout";
+@import "./styles/partials/spacing";
+
+// ─── Layout principal ─────────────────────────────────────────────────────────
+
+.main {
+  display: flex;
+  flex-direction: column;
+  svg{
+  width: 14px;
+}
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  margin-bottom: $gap-2;
+}
+
+.voltar {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $gray-500;
+  font-size: 0.88rem;
+  padding: 0;
+  transition: color 0.15s;
+
+  &:hover {
+    color: $primary-normal;
+  }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-4;
+}
+
+// ─── Seções ───────────────────────────────────────────────────────────────────
+
+.section {
+  background-color: $white-light;
+  border-radius: 8px;
+  border: 1px solid rgba(#000, 0.08);
+  padding: $gap-4;
+  display: flex;
+  flex-direction: column;
+  gap: $gap-3;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: $primary-dark;
+}
+
+.sectionHint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: $gray-500;
+}
+
+// ─── Campos ───────────────────────────────────────────────────────────────────
+
+.fieldsRow {
+  display: flex;
+  gap: $gap-3;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: $gray-700;
+}
+
+.hint {
+  font-weight: 400;
+  color: $gray-500;
+  font-size: 0.8rem;
+}
+
+.input,
+.select {
+  padding: 0.5rem 0.75rem;
+  border: 1.5px solid rgba(#000, 0.18);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: $gray-700;
+  background-color: $white-light;
+  font-family: inherit;
+  transition: border-color 0.15s;
+  max-width: 480px;
+  width: 100%;
+
+  &:focus {
+    outline: none;
+    border-color: $primary-normal;
+  }
+}
+
+.inputSm {
+  padding: 0.35rem 0.6rem;
+  border: 1.5px solid rgba(#000, 0.18);
+  border-radius: 6px;
+  font-size: 0.87rem;
+  color: $gray-700;
+  background-color: $white-light;
+  font-family: inherit;
+  transition: border-color 0.15s;
+  width: 100%;
+
+  &:focus {
+    outline: none;
+    border-color: $primary-normal;
+  }
+}
+
+.inputNumero {
+  width: 52px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.selectSm {
+  padding: 0.35rem 0.6rem;
+  border: 1.5px solid rgba(#000, 0.18);
+  border-radius: 6px;
+  font-size: 0.87rem;
+  color: $gray-700;
+  background-color: $white-light;
+  font-family: inherit;
+  transition: border-color 0.15s;
+
+  &:focus {
+    outline: none;
+    border-color: $primary-normal;
+  }
+}
+
+.textareaApresentacao,
+.textareaSm {
+  padding: 0.5rem 0.75rem;
+  border: 1.5px solid rgba(#000, 0.18);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: $gray-700;
+  background-color: $white-light;
+  font-family: inherit;
+  line-height: 1.5;
+  resize: vertical;
+  transition: border-color 0.15s;
+  width: 100%;
+
+  &:focus {
+    outline: none;
+    border-color: $primary-normal;
+  }
+}
+
+.checkLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  font-size: 0.88rem;
+  color: $gray-700;
+
+  input[type="checkbox"] {
+    accent-color: $primary-normal;
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+}
+
+.toggleBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: $gray-500;
+  font-size: 0.9rem;
+  transition: color 0.15s;
+
+  &.toggleAtivo {
+    color: $primary-normal;
+  }
+}
+
+// ─── Botões pequenos ──────────────────────────────────────────────────────────
+
+.btnIconSm {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid rgba(#000, 0.15);
+  border-radius: 5px;
+  padding: 0.2rem;
+  cursor: pointer;
+  color: $gray-500;
+  transition: color 0.15s, border-color 0.15s;
+  line-height: 1;
+
+  &:hover {
+    color: $primary-normal;
+    border-color: $primary-normal;
+  }
+}
+
+.btnIconSmDanger {
+  @extend .btnIconSm;
+
+  &:hover {
+    color: $error-normal;
+    border-color: $error-normal;
+  }
+}
+
+.btnAddSmall {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $primary-normal;
+  font-size: 0.84rem;
+  font-weight: 600;
+  padding: 0.2rem 0;
+  margin-top: 0.25rem;
+  transition: opacity 0.15s;
+
+  &:hover {
+    opacity: 0.75;
+  }
+}
+
+// ─── Bloco ────────────────────────────────────────────────────────────────────
+
+.blocoCard {
+  border: 1.5px solid rgba($primary-normal, 0.25);
+  border-radius: 8px;
+  padding: $gap-3;
+  display: flex;
+  flex-direction: column;
+  gap: $gap-3;
+  background-color: rgba($primary-normal, 0.02);
+}
+
+.blocoHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: $gap-2;
+}
+
+.blocoTitulo {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+  flex: 1;
+  min-width: 0;
+}
+
+.blocoLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $primary-normal;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.blocoAcoes {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-shrink: 0;
+}
+
+.questoesList {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-3;
+}
+
+.btnAddQuestao {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: 1px dashed rgba($primary-normal, 0.5);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  color: $primary-normal;
+  font-size: 0.88rem;
+  font-weight: 600;
+  align-self: flex-start;
+  transition: background-color 0.15s;
+
+  &:hover {
+    background-color: rgba($primary-normal, 0.05);
+  }
+}
+
+.btnAddBloco {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: 2px dashed rgba($primary-normal, 0.35);
+  border-radius: 8px;
+  padding: 0.75rem $gap-3;
+  cursor: pointer;
+  color: $primary-normal;
+  font-size: 0.9rem;
+  font-weight: 600;
+  width: 100%;
+  justify-content: center;
+  transition: background-color 0.15s;
+
+  &:hover {
+    background-color: rgba($primary-normal, 0.04);
+  }
+}
+
+// ─── Questão ──────────────────────────────────────────────────────────────────
+
+.questaoCard {
+  border: 1px solid rgba(#000, 0.1);
+  border-radius: 6px;
+  padding: $gap-3;
+  background-color: $white-light;
+  display: flex;
+  flex-direction: column;
+  gap: $gap-3;
+}
+
+.questaoHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: $gap-2;
+}
+
+.questaoMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.questaoAcoes {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-shrink: 0;
+}
+
+// ─── Opções (múltipla escolha) ────────────────────────────────────────────────
+
+.opcoesList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.opcaoRow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+// ─── Escala (Likert) ──────────────────────────────────────────────────────────
+
+.escalaWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.escalaHint {
+  margin: 0;
+  font-size: 0.82rem;
+  color: $gray-500;
+  font-weight: 600;
+}
+
+.escalaGrid {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.escalaItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  flex: 1;
+  min-width: 90px;
+}
+
+.escalaNum {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: $primary-normal;
+}
+
+// ─── Condicional ──────────────────────────────────────────────────────────────
+
+.condicionalWrap {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-2;
+  padding-top: $gap-2;
+  border-top: 1px dashed rgba(#000, 0.12);
+}
+
+.condicionalFields {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-2;
+  padding-left: $gap-2;
+  border-left: 2px solid rgba($primary-normal, 0.2);
+}
+
+// ─── Ações ────────────────────────────────────────────────────────────────────
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: $gap-3;
+  padding-bottom: $gap-4;
+  flex-wrap: wrap;
+}
+
+.saveError {
+  margin: 0;
+  font-size: 0.88rem;
+  color: $error-dark;
+}
+
+.saveSuccess {
+  margin: 0;
+  font-size: 0.88rem;
+  color: $success-normal;
+  font-weight: 600;
+}
