@@ -128,9 +128,9 @@ const ProjetoController = ({
     try {
       setDeletingId(projeto.id);
       setError("");
-      const isLinked = await isProjetoLinkedToInscricao(tenant, projeto.id);
-      if (isLinked) {
-        setError("Este projeto está vinculado a uma inscrição e não pode ser excluído.");
+      const { linked, fichaAvaliacaoId } = await isProjetoLinkedToInscricao(tenant, projeto.id);
+      if (linked) {
+        setError(`Este projeto possui ficha de avaliação vinculada (ID: ${fichaAvaliacaoId}) e não pode ser excluído.`);
         return;
       }
       await deleteProjetoById(tenant, projeto.id);
@@ -147,16 +147,16 @@ const ProjetoController = ({
   const handleEditProjeto = async () => {
     try {
       setLoading(true); // Ativa o estado de carregamento
-      const isLinked = await isProjetoLinkedToInscricao(
+      const { linked, fichaAvaliacaoId } = await isProjetoLinkedToInscricao(
         tenant,
         idProjeto || selectedProjeto.id,
       );
 
-      if (isLinked) {
+      if (linked) {
         setError(
-          "Este projeto foi adicionado a alguma inscrição, só é possível editá-lo desvinculando-o de todoas as incrições. Caso isso não seja viável, crie um novo projeto.",
+          `Este projeto possui ficha de avaliação vinculada (ID: ${fichaAvaliacaoId}) e não pode ser editado.`,
         );
-        return; // Impede a mudança para o modo de edição
+        return;
       }
 
       setModalView("edit"); // Muda para o modo de edição se não estiver vinculado

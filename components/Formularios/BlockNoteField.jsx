@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback, useState, useEffect, useRef } from "react";
 import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
 import "@blocknote/react/style.css";
@@ -47,10 +47,33 @@ const BlockNoteField = ({
   }, []);
 
   const editor = useCreateBlockNote({ initialContent });
+  const initializedRef = useRef(false);
 
   const [charCount, setCharCount] = useState(() =>
     extractBlockNoteText(value).length
   );
+
+  // Quando o formulário faz reset() com dados reais após o editor já ter montado
+  // vazio (race condition com carregamento assíncrono do formulário), preenche o
+  // editor na primeira vez que value chega com conteúdo e o editor ainda está vazio.
+  useEffect(() => {
+    if (initializedRef.current) return;
+    if (!value) return;
+    try {
+      const parsed = typeof value === "string" ? JSON.parse(value) : value;
+      if (!Array.isArray(parsed) || parsed.length === 0) return;
+      const currentDoc = editor.document;
+      const editorIsEmpty =
+        currentDoc.length === 1 &&
+        (!currentDoc[0].content || currentDoc[0].content.length === 0);
+      if (!editorIsEmpty) return;
+      initializedRef.current = true;
+      editor.replaceBlocks(editor.document, parsed);
+      setCharCount(extractBlockNoteText(JSON.stringify(parsed)).length);
+    } catch {
+      // valor inválido, ignora
+    }
+  }, [value, editor]);
 
   const handleChange = useCallback(() => {
     const blocks = editor.document;
@@ -59,6 +82,29 @@ const BlockNoteField = ({
     setCharCount(text.length);
     if (onChange) onChange(serialized);
   }, [editor, onChange]);
+
+  // BlockNote não preserva parágrafos ao colar texto com \n (nem texto puro
+  // nem HTML do Word/Google Docs). Interceptamos e usamos insertBlocks para
+  // criar blocos irmãos — evita o aninhamento que insertContent causa.
+  const handlePasteCapture = useCallback(
+    (e) => {
+      const text = e.clipboardData?.getData("text/plain");
+      if (!text || !text.includes("\n")) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const cursorBlock = editor.getTextCursorPosition().block;
+
+      const newBlocks = text.split("\n").map((line) => ({
+        type: "paragraph",
+        content: line ? [{ type: "text", text: line }] : [],
+      }));
+
+      editor.insertBlocks(newBlocks, cursorBlock, "after");
+    },
+    [editor]
+  );
 
   const isReadOnly = disabled || readOnly;
   const overLimit = maxChar && charCount > maxChar;
@@ -76,6 +122,7 @@ const BlockNoteField = ({
         </p>
       )}
       <div
+        onPasteCapture={isReadOnly ? undefined : handlePasteCapture}
         style={{
           border: error
             ? "1.5px solid #ef4444"

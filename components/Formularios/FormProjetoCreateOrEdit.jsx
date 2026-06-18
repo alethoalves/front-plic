@@ -260,7 +260,7 @@ const FormProjetoCreateOrEdit = ({
       }
     } catch (error) {
       console.error("Erro ao enviar o formulário:", error);
-      setError(error.message || "Erro ao enviar o formulário.");
+      setError(error.response?.data?.message || error.message || "Erro ao enviar o formulário.");
     } finally {
       setLoading(false);
     }

@@ -205,7 +205,7 @@ export const isProjetoLinkedToInscricao = async (tenantSlug, projetoId) => {
       `/private/${tenantSlug}/projeto/${projetoId}/isProjetoLinkedToInscricao`,
       { headers }
     );
-    return response.data.linked; // Retorna true ou false com base na resposta
+    return { linked: response.data.linked, fichaAvaliacaoId: response.data.fichaAvaliacaoId };
   } catch (error) {
     console.error("Erro ao verificar vínculo do projeto com inscrição:", error);
     throw error;
