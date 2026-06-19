@@ -1,41 +1,80 @@
-// Atividades.js
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import GanttChart from "./GanttChart";
 import Modal from "@/components/Modal";
-import { RiDeleteBinLine, RiDownloadLine, RiCalendarLine } from "@remixicon/react";
+import {
+  RiDeleteBinLine,
+  RiDownloadLine,
+  RiCalendarLine,
+  RiPencilLine,
+  RiCheckLine,
+  RiCloseLine,
+} from "@remixicon/react";
 import styles from "@/components/Formularios/Form.module.scss";
-import { formatDateToISO } from "@/lib/formatarDatas";
+import { formatDateToISO, formatarData } from "@/lib/formatarDatas";
 import { useForm } from "react-hook-form";
 import { getPlanosDeTrabalhoByUser } from "@/app/api/client/planoDeTrabalho";
 
-const Atividades = ({ cronograma, setCronograma, tenantSlug, currentPlanoId }) => {
-  const [errorAddAtividade, setErrorAddAtividade] = useState("");
-  const [loading, setLoading] = useState("");
-  const [atividade, setAtividade] = useState({
-    nome: "",
-    inicio: "",
-    fim: "",
-    comentario: "",
-  });
+const parseLocalDate = (str) => {
+  if (!str) return new Date(0);
+  if (str.includes("/")) {
+    const [d, m, y] = str.split("/").map(Number);
+    return new Date(y, m - 1, d);
+  }
+  return new Date(str);
+};
+
+const applyDateMask = (raw) => {
+  let v = raw.replace(/\D/g, "").slice(0, 8);
+  if (v.length > 2) v = v.slice(0, 2) + "/" + v.slice(2);
+  if (v.length > 5) v = v.slice(0, 5) + "/" + v.slice(5);
+  return v;
+};
+
+const calcFim = (inicio, duracao) => {
+  if (!inicio || !duracao || !/^\d{2}\/\d{2}\/\d{4}$/.test(inicio)) return "";
+  const [d, m, y] = inicio.split("/").map(Number);
+  const date = new Date(y, m - 1, d);
+  date.setDate(date.getDate() + parseInt(duracao, 10) - 1);
+  return `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()}`;
+};
+
+const normalizeDate = (dateStr) => {
+  if (!dateStr) return "";
+  if (dateStr.includes("/")) return dateStr;
+  return formatarData(dateStr);
+};
+
+const Atividades = ({
+  cronograma,
+  setCronograma,
+  tenantSlug,
+  currentPlanoId,
+  minAtividadesPorPlano,
+}) => {
+  const [errorAdd, setErrorAdd] = useState("");
+  const [loading, setLoading] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [planosDisponiveis, setPlanosDisponiveis] = useState([]);
   const [loadingPlanos, setLoadingPlanos] = useState(false);
   const [errorImport, setErrorImport] = useState("");
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [editValues, setEditValues] = useState({ nome: "", inicio: "", fim: "", duracao: "" });
+  const [editError, setEditError] = useState("");
 
-  const {
-    register,
-    control,
-    formState: { errors },
-    handleSubmit,
-    setValue,
-    reset,
-    getValues,
-    resetField,
-  } = useForm({});
+  const { control, resetField, setValue, watch, getValues } = useForm({});
+
+  const duracaoWatch = watch("duracao");
+  const inicioWatch = watch("inicio");
+
+  useEffect(() => {
+    if (!duracaoWatch || !inicioWatch) return;
+    const fim = calcFim(inicioWatch, duracaoWatch);
+    if (fim) setValue("fim", fim);
+  }, [duracaoWatch, inicioWatch, setValue]);
 
   const handleAddAtividade = () => {
     const nomeAtividade = getValues("nomeAtividade");
@@ -43,15 +82,13 @@ const Atividades = ({ cronograma, setCronograma, tenantSlug, currentPlanoId }) =
     const fim = getValues("fim");
 
     if (!nomeAtividade || !inicio || !fim) {
-      setErrorAddAtividade(
-        "Preencha todos os campos obrigatórios da atividade!"
-      );
+      setErrorAdd("Preencha todos os campos obrigatórios da atividade!");
       return;
     }
 
     const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
     if (!dateRegex.test(inicio) || !dateRegex.test(fim)) {
-      setErrorAddAtividade("Informe as datas no formato DD/MM/AAAA.");
+      setErrorAdd("Informe as datas no formato DD/MM/AAAA.");
       return;
     }
 
@@ -59,41 +96,70 @@ const Atividades = ({ cronograma, setCronograma, tenantSlug, currentPlanoId }) =
     const dataFim = new Date(formatDateToISO(fim));
 
     if (dataFim < dataInicio) {
-      setErrorAddAtividade(
-        "A data de fim não pode ser anterior à data de início."
-      );
+      setErrorAdd("A data de fim não pode ser anterior à data de início.");
       return;
     }
 
     setCronograma((prev) => [...prev, { nome: nomeAtividade, inicio, fim }]);
-    setErrorAddAtividade("");
-
+    setErrorAdd("");
     resetField("nomeAtividade");
     resetField("inicio");
     resetField("fim");
+    resetField("duracao");
   };
 
   const handleRemoveAtividade = (index) => {
     setCronograma((prev) => prev.filter((_, i) => i !== index));
+    if (editingIndex === index) setEditingIndex(null);
+  };
+
+  const handleStartEdit = (index) => {
+    const item = cronograma[index];
+    setEditingIndex(index);
+    setEditValues({ nome: item.nome, inicio: item.inicio, fim: item.fim, duracao: "" });
+    setEditError("");
+  };
+
+  const handleCancelEdit = () => {
+    setEditingIndex(null);
+    setEditError("");
+  };
+
+  const handleSaveEdit = () => {
+    const { nome, inicio, fim } = editValues;
+    if (!nome || !inicio || !fim) {
+      setEditError("Preencha todos os campos.");
+      return;
+    }
+    const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
+    if (!dateRegex.test(inicio) || !dateRegex.test(fim)) {
+      setEditError("Informe as datas no formato DD/MM/AAAA.");
+      return;
+    }
+    if (parseLocalDate(fim) < parseLocalDate(inicio)) {
+      setEditError("A data de fim não pode ser anterior à data de início.");
+      return;
+    }
+    setCronograma((prev) =>
+      prev.map((item, i) => (i === editingIndex ? { nome, inicio, fim } : item))
+    );
+    setEditingIndex(null);
+    setEditError("");
   };
 
   const handleOpenImportModal = async (e) => {
     e.preventDefault();
     if (!tenantSlug) return;
-
     setImportModalOpen(true);
     setLoadingPlanos(true);
     setErrorImport("");
-
     try {
       const planos = await getPlanosDeTrabalhoByUser(tenantSlug);
       const planosComCronograma = (planos || []).filter(
-        (p) =>
-          p.id !== currentPlanoId &&
-          p.CronogramaPlanoDeTrabalho?.length > 0
+        (p) => p.id !== currentPlanoId && p.CronogramaPlanoDeTrabalho?.length > 0
       );
       setPlanosDisponiveis(planosComCronograma);
-    } catch (err) {
+    } catch {
       setErrorImport("Erro ao carregar planos de trabalho.");
     } finally {
       setLoadingPlanos(false);
@@ -103,37 +169,74 @@ const Atividades = ({ cronograma, setCronograma, tenantSlug, currentPlanoId }) =
   const handleImportFromPlano = (plano) => {
     const atividadesImportadas = plano.CronogramaPlanoDeTrabalho.map((item) => ({
       nome: item.atividade,
-      inicio: item.inicio,
-      fim: item.fim,
+      inicio: normalizeDate(item.inicio),
+      fim: normalizeDate(item.fim),
     }));
     setCronograma((prev) => [...prev, ...atividadesImportadas]);
     setImportModalOpen(false);
   };
 
+  const sortedItems = [...cronograma]
+    .map((item, originalIndex) => ({ ...item, _idx: originalIndex }))
+    .sort((a, b) => parseLocalDate(a.inicio) - parseLocalDate(b.inicio));
+
+  const isBelow = minAtividadesPorPlano && cronograma.length < minAtividadesPorPlano;
+
   return (
     <div className={styles.cronograma}>
+      {tenantSlug && (
+        <div className={styles.importBanner}>
+          <div className={styles.importBannerText}>
+            <RiDownloadLine size={16} />
+            <p className="p5">Importe atividades de outro plano para agilizar o preenchimento</p>
+          </div>
+          <Button
+            icon={RiDownloadLine}
+            onClick={handleOpenImportModal}
+            className="btn-primary"
+            disabled={loading}
+          >
+            Importar Cronograma
+          </Button>
+        </div>
+      )}
+
+      {minAtividadesPorPlano > 0 && (
+        <div className={`${styles.minCounter} ${isBelow ? styles.minCounterBelow : styles.minCounterOk}`}>
+          <p className="p5">
+            {cronograma.length} de {minAtividadesPorPlano} atividade{minAtividadesPorPlano !== 1 ? "s" : ""} mínima{minAtividadesPorPlano !== 1 ? "s" : ""}
+          </p>
+        </div>
+      )}
+
       <div className={`${styles.input} mb-2`}>
         <Input
           name="nomeAtividade"
           label="Nome da Atividade"
-          value={atividade.nome}
-          onChange={(e) =>
-            setAtividade((prev) => ({ ...prev, nome: e.target.value }))
-          }
           placeholder="Digite o nome da atividade"
           disabled={loading}
           control={control}
         />
       </div>
 
-      <div className={`${styles.inputGroup} flex`}>
-        <div className={`${styles.input} mr-2`}>
+      <div className={styles.dateRow}>
+        <div className={styles.input}>
           <Input
             name="inicio"
             label="Data de Início"
             inputType="date"
             control={control}
-            placeholder="Selecione a data de início"
+            placeholder="DD/MM/AAAA"
+            disabled={loading}
+          />
+        </div>
+        <div className={styles.inputDuracao}>
+          <Input
+            name="duracao"
+            label="Duração (dias)"
+            inputType="number"
+            control={control}
+            placeholder="Ex: 30"
             disabled={loading}
           />
         </div>
@@ -143,7 +246,7 @@ const Atividades = ({ cronograma, setCronograma, tenantSlug, currentPlanoId }) =
             label="Data de Fim"
             inputType="date"
             control={control}
-            placeholder="Selecione a data de fim"
+            placeholder="DD/MM/AAAA"
             disabled={loading}
           />
         </div>
@@ -155,54 +258,124 @@ const Atividades = ({ cronograma, setCronograma, tenantSlug, currentPlanoId }) =
             e.preventDefault();
             handleAddAtividade();
           }}
-          className="btn-secondary"
+          className="btn-primary"
           disabled={loading}
         >
-          Adicionar Atividade
+          + Adicionar Atividade
         </Button>
-        {tenantSlug && (
-          <Button
-            icon={RiDownloadLine}
-            onClick={handleOpenImportModal}
-            className="btn-secondary"
-            disabled={loading}
-          >
-            Importar de outro Plano
-          </Button>
-        )}
       </div>
 
-      {errorAddAtividade && (
-        <div className="notification notification-error">
-          <p className="p5">{errorAddAtividade}</p>
+      {errorAdd && (
+        <div className="notification notification-error mt-1">
+          <p className="p5">{errorAdd}</p>
         </div>
       )}
 
       <GanttChart cronograma={cronograma} />
 
       <div className={styles.lista}>
-        {cronograma
-          .sort((a, b) => new Date(a.inicio) - new Date(b.inicio))
-          .map((item, index) => (
-            <div key={index} className={styles.listaItem}>
-              <div
-                className={styles.icon}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleRemoveAtividade(index);
-                }}
-                disabled={loading}
-              >
-                <RiDeleteBinLine />
+        {sortedItems.map((item) => {
+          if (editingIndex === item._idx) {
+            return (
+              <div key={`edit-${item._idx}`} className={styles.listaItem}>
+                <div className={styles.listaItemEditForm}>
+                  <input
+                    className={styles.editInput}
+                    value={editValues.nome}
+                    onChange={(e) =>
+                      setEditValues((p) => ({ ...p, nome: e.target.value }))
+                    }
+                    placeholder="Nome da atividade"
+                  />
+                  <div className={styles.editDateRow}>
+                    <input
+                      className={styles.editInput}
+                      value={editValues.inicio}
+                      onChange={(e) => {
+                        const v = applyDateMask(e.target.value);
+                        setEditValues((p) => {
+                          const fim = p.duracao ? calcFim(v, p.duracao) : p.fim;
+                          return { ...p, inicio: v, fim: fim || p.fim };
+                        });
+                      }}
+                      placeholder="Início DD/MM/AAAA"
+                    />
+                    <input
+                      className={`${styles.editInput} ${styles.editInputSmall}`}
+                      value={editValues.duracao}
+                      onChange={(e) => {
+                        const duracao = e.target.value.replace(/\D/g, "");
+                        setEditValues((p) => {
+                          const fim = calcFim(p.inicio, duracao);
+                          return { ...p, duracao, ...(fim ? { fim } : {}) };
+                        });
+                      }}
+                      placeholder="Dias"
+                      inputMode="numeric"
+                    />
+                    <input
+                      className={styles.editInput}
+                      value={editValues.fim}
+                      onChange={(e) => {
+                        const v = applyDateMask(e.target.value);
+                        setEditValues((p) => ({ ...p, fim: v, duracao: "" }));
+                      }}
+                      placeholder="Fim DD/MM/AAAA"
+                    />
+                  </div>
+                  {editError && <p className={styles.editError}>{editError}</p>}
+                  <div className={styles.editActions}>
+                    <button
+                      type="button"
+                      className={styles.editSave}
+                      onClick={handleSaveEdit}
+                    >
+                      <RiCheckLine size={14} /> Salvar
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.editCancel}
+                      onClick={handleCancelEdit}
+                    >
+                      <RiCloseLine size={14} /> Cancelar
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div className={styles.content}>
-                <h6>
-                  {item.inicio} - {item.fim}
-                </h6>
-                <p>{item.nome}</p>
+            );
+          }
+
+          return (
+            <div key={`item-${item._idx}`} className={styles.listaItem}>
+              <div className={styles.listaItemContent}>
+                <p className={styles.itemName}>{item.nome}</p>
+                <p className={`p5 ${styles.itemDates}`}>
+                  {item.inicio} – {item.fim}
+                </p>
+              </div>
+              <div className={styles.listaItemActions}>
+                <div
+                  className={`${styles.actionIcon} ${styles.actionIconEdit}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleStartEdit(item._idx);
+                  }}
+                >
+                  <RiPencilLine />
+                </div>
+                <div
+                  className={`${styles.actionIcon} ${styles.actionIconDelete}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleRemoveAtividade(item._idx);
+                  }}
+                >
+                  <RiDeleteBinLine />
+                </div>
               </div>
             </div>
-          ))}
+          );
+        })}
       </div>
 
       <Modal
@@ -246,7 +419,10 @@ const Atividades = ({ cronograma, setCronograma, tenantSlug, currentPlanoId }) =
                   </p>
                   <span className={styles.planoImportBadge}>
                     <RiCalendarLine size={12} />
-                    <p className="p5">{plano.CronogramaPlanoDeTrabalho.length} atividade{plano.CronogramaPlanoDeTrabalho.length !== 1 ? "s" : ""}</p>
+                    <p className="p5">
+                      {plano.CronogramaPlanoDeTrabalho.length} atividade
+                      {plano.CronogramaPlanoDeTrabalho.length !== 1 ? "s" : ""}
+                    </p>
                   </span>
                 </div>
               </div>

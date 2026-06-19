@@ -290,6 +290,7 @@ const FormPlanoDeTrabalhoCreateOrEdit = ({
             setCronograma={setCronograma}
             tenantSlug={tenantSlug}
             currentPlanoId={initialData?.id}
+            minAtividadesPorPlano={minAtividadesPorPlano}
           />
         </div>
       )}

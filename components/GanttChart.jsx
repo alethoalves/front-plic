@@ -10,6 +10,8 @@ const parseDate = (dateStr) => {
 };
 
 const GanttChart = ({ cronograma }) => {
+  if (!cronograma || cronograma.length === 0) return null;
+
   const dayWidth = 5; // Cada dia corresponde a 5px
 
   // Determinar a data mínima e máxima no cronograma
