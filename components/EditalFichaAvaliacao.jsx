@@ -86,6 +86,7 @@ const CondicaoRow = ({ cond, onChange, onDelete, availableAttrs, enumValues }) =
         <option value="EQUAL">EQUAL</option>
         <option value="BETWEEN">BETWEEN</option>
         <option value="OR">OR</option>
+        <option value="CONTAINS">CONTAINS</option>
       </select>
       {cond.operador === "EQUAL" && enumValues?.[cond.campo]?.length > 0 ? (
         <select

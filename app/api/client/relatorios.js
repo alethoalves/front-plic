@@ -45,6 +45,25 @@ export const relatorioInscricoes = async (tenantSlug) => {
   }
 };
 
+export const relatorioEmailsUsuarios = async (tenantSlug) => {
+  const headers = getAuthHeadersClient();
+  if (!headers) throw new Error('Não autenticado');
+
+  const response = await req.get(`/private/${tenantSlug}/relatorios/emails-usuarios`, {
+    headers,
+    responseType: 'blob',
+  });
+
+  const url = URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', 'emails_usuarios.xlsx');
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+};
+
 export const getSubmissaoByEvento = async (eventoSlug, idEvento, tenantSlug) => {
   try {
     const headers = getAuthHeadersClient();
