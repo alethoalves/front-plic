@@ -59,3 +59,20 @@ export const getRespostasQuestionario = async (tenantSlug, id) => {
   const response = await req.get(`/private/${tenantSlug}/questionarios-satisfacao/${id}/respostas`, { headers });
   return response.data;
 };
+
+export const generateTokenPublico = async (tenantSlug, id) => {
+  const headers = getAuthHeadersClient();
+  const response = await req.post(`/private/${tenantSlug}/questionarios-satisfacao/${id}/token`, {}, { headers });
+  return response.data;
+};
+
+export const revokeTokenPublico = async (tenantSlug, id) => {
+  const headers = getAuthHeadersClient();
+  const response = await req.delete(`/private/${tenantSlug}/questionarios-satisfacao/${id}/token`, { headers });
+  return response.data;
+};
+
+export const getResultadosPublicos = async (token) => {
+  const response = await req.get(`/public/questionarios-satisfacao/resultado/${token}`);
+  return response.data;
+};

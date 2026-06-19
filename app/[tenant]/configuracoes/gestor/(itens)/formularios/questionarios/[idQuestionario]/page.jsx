@@ -11,12 +11,15 @@ import {
   RiArrowUpLine,
   RiArrowDownLine,
   RiEyeLine,
+  RiEditLine,
+  RiBarChartLine,
 } from "@remixicon/react";
 
 import styles from "./page.module.scss";
 import Header from "@/components/Header";
 import Button from "@/components/Button";
 import QuestionarioSatisfacaoModal from "@/components/QuestionarioSatisfacaoModal";
+import RespostasView from "./RespostasView";
 import { getQuestionario, updateQuestionario } from "@/app/api/client/questionarioSatisfacao";
 
 // ─── Utilitários ──────────────────────────────────────────────────────────────
@@ -310,6 +313,7 @@ function BlocoEditor({ bloco, onUpdate, onRemove, onMoveUp, onMoveDown, questoes
 const Page = ({ params }) => {
   const router = useRouter();
 
+  const [aba, setAba] = useState("editar");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -323,6 +327,7 @@ const Page = ({ params }) => {
   const [ativo, setAtivo] = useState(false);
   const [apresentacao, setApresentacao] = useState("");
   const [blocos, setBlocos] = useState([]);
+  const [tokenPublico, setTokenPublico] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -335,6 +340,7 @@ const Page = ({ params }) => {
         setAtivo(q.ativo);
         setApresentacao(q.schema?.apresentacao ?? "");
         setBlocos(q.schema?.blocos ?? []);
+        setTokenPublico(q.tokenPublico ?? null);
       } catch {
         setError("Erro ao carregar questionário.");
       } finally {
@@ -407,79 +413,105 @@ const Page = ({ params }) => {
           className="mb-3"
           titulo="Questionário de satisfação"
           subtitulo={titulo}
-          descricao="Edite as perguntas e configurações do questionário."
+          descricao="Edite as perguntas, configurações e visualize as respostas."
         />
+
+        {/* ── Abas ── */}
+        <div className={styles.tabs}>
+          <button
+            type="button"
+            className={`${styles.tab} ${aba === "editar" ? styles.tabAtiva : ""}`}
+            onClick={() => setAba("editar")}
+          >
+            <RiEditLine size={16} /> Editar formulário
+          </button>
+          <button
+            type="button"
+            className={`${styles.tab} ${aba === "respostas" ? styles.tabAtiva : ""}`}
+            onClick={() => setAba("respostas")}
+          >
+            <RiBarChartLine size={16} /> Respostas e gráficos
+          </button>
+        </div>
 
         <div className={styles.content}>
 
-          {/* ── Informações gerais ── */}
-          <section className={styles.section}>
-            <h5 className={styles.sectionTitle}>Informações gerais</h5>
-            <div className={styles.fieldsRow}>
-              <div className={styles.fieldGroup} style={{ flex: 2 }}>
-                <label className={styles.label}>Título</label>
-                <input className={styles.input} value={titulo} onChange={e => setTitulo(e.target.value)} />
-              </div>
-              <div className={styles.fieldGroup} style={{ flex: 3 }}>
-                <label className={styles.label}>Descrição</label>
-                <input className={styles.input} value={descricao} onChange={e => setDescricao(e.target.value)} placeholder="Ex: Fluxo de Inscrição | PIBIC 2026/2027" />
-              </div>
-            </div>
-            <div className={styles.fieldsRow}>
-              <div className={styles.fieldGroup}>
-                <label className={styles.label}>Contexto</label>
-                <select className={styles.select} value={contexto} onChange={e => setContexto(e.target.value)}>
-                  <option value="inscricao">Inscrição</option>
-                </select>
-              </div>
-              <div className={styles.fieldGroup}>
-                <label className={styles.label}>Status</label>
-                <button type="button" className={`${styles.toggleBtn} ${ativo ? styles.toggleAtivo : ""}`} onClick={() => setAtivo(v => !v)}>
-                  {ativo ? <RiToggleFill size={28} /> : <RiToggleLine size={28} />}
-                  <span>{ativo ? "Ativo" : "Inativo"}</span>
+          {aba === "editar" && (
+            <>
+              {/* ── Informações gerais ── */}
+              <section className={styles.section}>
+                <h5 className={styles.sectionTitle}>Informações gerais</h5>
+                <div className={styles.fieldsRow}>
+                  <div className={styles.fieldGroup} style={{ flex: 2 }}>
+                    <label className={styles.label}>Título</label>
+                    <input className={styles.input} value={titulo} onChange={e => setTitulo(e.target.value)} />
+                  </div>
+                  <div className={styles.fieldGroup} style={{ flex: 3 }}>
+                    <label className={styles.label}>Descrição</label>
+                    <input className={styles.input} value={descricao} onChange={e => setDescricao(e.target.value)} placeholder="Ex: Fluxo de Inscrição | PIBIC 2026/2027" />
+                  </div>
+                </div>
+                <div className={styles.fieldsRow}>
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.label}>Contexto</label>
+                    <select className={styles.select} value={contexto} onChange={e => setContexto(e.target.value)}>
+                      <option value="inscricao">Inscrição</option>
+                    </select>
+                  </div>
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.label}>Status</label>
+                    <button type="button" className={`${styles.toggleBtn} ${ativo ? styles.toggleAtivo : ""}`} onClick={() => setAtivo(v => !v)}>
+                      {ativo ? <RiToggleFill size={28} /> : <RiToggleLine size={28} />}
+                      <span>{ativo ? "Ativo" : "Inativo"}</span>
+                    </button>
+                  </div>
+                </div>
+              </section>
+
+              {/* ── Apresentação ── */}
+              <section className={styles.section}>
+                <h5 className={styles.sectionTitle}>Texto de apresentação</h5>
+                <p className={styles.sectionHint}>Texto exibido ao respondente antes das perguntas. Use linhas em branco para separar parágrafos.</p>
+                <textarea className={styles.textareaApresentacao} rows={6} value={apresentacao} onChange={e => setApresentacao(e.target.value)} placeholder="Ex: Prezado(a) orientador(a), este questionário tem como objetivo..." />
+              </section>
+
+              {/* ── Blocos e questões ── */}
+              <section className={styles.section}>
+                <h5 className={styles.sectionTitle}>Blocos e questões</h5>
+                {blocos.length === 0 && <p className={styles.sectionHint}>Nenhum bloco adicionado. Clique em "Adicionar bloco" para começar.</p>}
+                {blocos.map((bloco, idx) => (
+                  <BlocoEditor
+                    key={bloco.id}
+                    bloco={bloco}
+                    onUpdate={(b) => updateBloco(bloco.id, b)}
+                    onRemove={() => removeBloco(bloco.id)}
+                    onMoveUp={() => moveBloco(idx, -1)}
+                    onMoveDown={() => moveBloco(idx, 1)}
+                    questoesAnterioresDoBloco={questoesAnterioresDoBloco(idx)}
+                  />
+                ))}
+                <button type="button" className={styles.btnAddBloco} onClick={addBloco}>
+                  <RiAddCircleLine size={18} /> Adicionar bloco
                 </button>
+              </section>
+
+              {/* ── Ações ── */}
+              <div className={styles.actions}>
+                {saveError && <p className={styles.saveError}>{saveError}</p>}
+                {saveSuccess && <p className={styles.saveSuccess}>Salvo com sucesso!</p>}
+                <Button type="button" hierarchy="secondary" icon={RiEyeLine} onClick={() => setShowPreview(true)}>
+                  Visualizar questionário
+                </Button>
+                <Button type="button" hierarchy="primary" icon={RiSaveLine} onClick={handleSalvar} disabled={saving}>
+                  {saving ? "Salvando..." : "Salvar alterações"}
+                </Button>
               </div>
-            </div>
-          </section>
+            </>
+          )}
 
-          {/* ── Apresentação ── */}
-          <section className={styles.section}>
-            <h5 className={styles.sectionTitle}>Texto de apresentação</h5>
-            <p className={styles.sectionHint}>Texto exibido ao respondente antes das perguntas. Use linhas em branco para separar parágrafos.</p>
-            <textarea className={styles.textareaApresentacao} rows={6} value={apresentacao} onChange={e => setApresentacao(e.target.value)} placeholder="Ex: Prezado(a) orientador(a), este questionário tem como objetivo..." />
-          </section>
-
-          {/* ── Blocos e questões ── */}
-          <section className={styles.section}>
-            <h5 className={styles.sectionTitle}>Blocos e questões</h5>
-            {blocos.length === 0 && <p className={styles.sectionHint}>Nenhum bloco adicionado. Clique em "Adicionar bloco" para começar.</p>}
-            {blocos.map((bloco, idx) => (
-              <BlocoEditor
-                key={bloco.id}
-                bloco={bloco}
-                onUpdate={(b) => updateBloco(bloco.id, b)}
-                onRemove={() => removeBloco(bloco.id)}
-                onMoveUp={() => moveBloco(idx, -1)}
-                onMoveDown={() => moveBloco(idx, 1)}
-                questoesAnterioresDoBloco={questoesAnterioresDoBloco(idx)}
-              />
-            ))}
-            <button type="button" className={styles.btnAddBloco} onClick={addBloco}>
-              <RiAddCircleLine size={18} /> Adicionar bloco
-            </button>
-          </section>
-
-          {/* ── Ações ── */}
-          <div className={styles.actions}>
-            {saveError && <p className={styles.saveError}>{saveError}</p>}
-            {saveSuccess && <p className={styles.saveSuccess}>Salvo com sucesso!</p>}
-            <Button type="button" hierarchy="secondary" icon={RiEyeLine} onClick={() => setShowPreview(true)}>
-              Visualizar questionário
-            </Button>
-            <Button type="button" hierarchy="primary" icon={RiSaveLine} onClick={handleSalvar} disabled={saving}>
-              {saving ? "Salvando..." : "Salvar alterações"}
-            </Button>
-          </div>
+          {aba === "respostas" && (
+            <RespostasView params={params} schema={buildSchema()} tokenPublicoInicial={tokenPublico} />
+          )}
         </div>
       </main>
     </>

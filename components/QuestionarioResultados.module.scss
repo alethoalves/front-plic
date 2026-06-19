@@ -1,0 +1,258 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-4;
+}
+
+.summaryCard {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  background: rgba($primary-normal, 0.06);
+  border: 1px solid rgba($primary-normal, 0.15);
+  border-radius: 8px;
+  padding: $gap-3 $gap-4;
+}
+
+.summaryNum {
+  font-size: 2rem;
+  font-weight: 800;
+  color: $primary-normal;
+  line-height: 1;
+}
+
+.summaryLabel {
+  font-size: 0.95rem;
+  color: $gray-600;
+}
+
+.semResposta {
+  font-size: 0.9rem;
+  color: $gray-500;
+  margin: 0;
+}
+
+.blocoWrap {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-3;
+}
+
+.blocoTitulo {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $primary-normal;
+  padding-bottom: $gap-1;
+  border-bottom: 2px solid rgba($primary-normal, 0.15);
+}
+
+.questaoCard {
+  background: $white-light;
+  border: 1px solid rgba(#000, 0.08);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.questaoCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: $gap-2;
+  padding: $gap-3;
+  border-bottom: 1px solid rgba(#000, 0.06);
+  background: rgba(#000, 0.01);
+}
+
+.questaoInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.questaoTipo {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $primary-normal;
+}
+
+.questaoTexto {
+  margin: 0;
+  font-size: 0.92rem;
+  color: $gray-700;
+  line-height: 1.4;
+}
+
+.questaoCount {
+  font-size: 0.82rem;
+  color: $gray-500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.questaoCardBody {
+  padding: $gap-3;
+}
+
+.visWrap {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-3;
+}
+
+.stat {
+  margin: 0;
+  font-size: 0.88rem;
+  color: $gray-600;
+
+  strong {
+    color: $primary-normal;
+    font-size: 1.1rem;
+  }
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.87rem;
+
+  th {
+    text-align: left;
+    padding: 0.35rem 0.6rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: $gray-500;
+    border-bottom: 1.5px solid rgba(#000, 0.1);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  td {
+    padding: 0.35rem 0.6rem;
+    color: $gray-700;
+    border-bottom: 1px solid rgba(#000, 0.05);
+
+    &:nth-child(2),
+    &:nth-child(3) {
+      text-align: right;
+      width: 80px;
+    }
+  }
+
+  tr:last-child td { border-bottom: none; }
+}
+
+.npsWrap {
+  display: flex;
+  align-items: center;
+  gap: $gap-4;
+  flex-wrap: wrap;
+}
+
+.npsScore {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 2.5rem;
+  font-weight: 900;
+  line-height: 1;
+  min-width: 80px;
+}
+
+.npsLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: $gray-500;
+  margin-top: 0.2rem;
+}
+
+.npsBreakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.promoter  { color: #16a34a; }
+.passive   { color: #ca8a04; }
+.detractor { color: #dc2626; }
+
+.matrizWrap { overflow-x: auto; }
+
+.matrizTabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+
+  th {
+    padding: 0.4rem 0.6rem;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: $gray-600;
+    border-bottom: 1.5px solid rgba(#000, 0.1);
+    white-space: nowrap;
+
+    small { font-weight: 400; color: $gray-400; }
+    &:first-child { text-align: left; }
+  }
+
+  td {
+    padding: 0.4rem 0.6rem;
+    text-align: center;
+    color: $gray-700;
+    border-bottom: 1px solid rgba(#000, 0.05);
+
+    &:first-child { text-align: left; max-width: 260px; }
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: rgba(#000, 0.01); }
+}
+
+.pct {
+  font-size: 0.78rem;
+  color: $gray-400;
+}
+
+.abertaList {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-2;
+}
+
+.abertaItem {
+  display: flex;
+  align-items: flex-start;
+  gap: $gap-2;
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: $gray-700;
+    line-height: 1.5;
+    flex: 1;
+    background: rgba(#000, 0.02);
+    border-left: 3px solid rgba($primary-normal, 0.3);
+    padding: 0.4rem 0.6rem;
+    border-radius: 0 4px 4px 0;
+  }
+}
+
+.abertaIdx {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: $gray-400;
+  min-width: 20px;
+  padding-top: 0.45rem;
+}

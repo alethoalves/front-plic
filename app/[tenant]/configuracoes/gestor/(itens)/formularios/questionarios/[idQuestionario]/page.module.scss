@@ -35,6 +35,46 @@
   }
 }
 
+// ─── Abas ─────────────────────────────────────────────────────────────────────
+
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid rgba(#000, 0.08);
+  margin-bottom: $gap-4;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem $gap-3;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: $gray-500;
+  transition: color 0.15s, border-color 0.15s;
+  font-family: inherit;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    color: $primary-normal;
+  }
+
+  &.tabAtiva {
+    color: $primary-normal;
+    border-bottom-color: $primary-normal;
+  }
+}
+
 .content {
   display: flex;
   flex-direction: column;

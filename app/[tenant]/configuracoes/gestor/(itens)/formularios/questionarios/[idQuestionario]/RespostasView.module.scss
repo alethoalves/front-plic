@@ -1,0 +1,208 @@
+@import "./styles/partials/colors";
+@import "./styles/partials/layout";
+@import "./styles/partials/spacing";
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-4;
+  padding-bottom: $gap-4;
+}
+
+.loading,
+.error {
+  font-size: 0.9rem;
+  color: $gray-500;
+  padding: $gap-2 0;
+}
+
+.error {
+  color: $error-dark;
+}
+
+// ─── Painel de link público ───────────────────────────────────────────────────
+
+.linkPanel {
+  border: 1.5px solid rgba($primary-normal, 0.2);
+  border-radius: 8px;
+  padding: $gap-3;
+  background: rgba($primary-normal, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: $gap-2;
+}
+
+.linkPanelHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: $primary-normal;
+}
+
+.linkPanelTitle {
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.linkPanelDesc {
+  margin: 0;
+  font-size: 0.85rem;
+  color: $gray-600;
+}
+
+.linkPanelEmpty {
+  display: flex;
+  align-items: center;
+  gap: $gap-3;
+}
+
+.lockIcon {
+  color: rgba($primary-normal, 0.3);
+}
+
+.linkRow {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+  background: $white-light;
+  border: 1px solid rgba(#000, 0.12);
+  border-radius: 6px;
+  padding: 0.4rem 0.75rem;
+  flex-wrap: wrap;
+}
+
+.linkUrl {
+  font-size: 0.83rem;
+  color: $gray-700;
+  font-family: monospace;
+  flex: 1;
+  word-break: break-all;
+}
+
+.linkActions {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+  flex-wrap: wrap;
+}
+
+// ─── Botões do painel ─────────────────────────────────────────────────────────
+
+.btnCopiar {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.75rem;
+  border: 1.5px solid $primary-normal;
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $primary-normal;
+  white-space: nowrap;
+  font-family: inherit;
+  transition: background-color 0.15s;
+
+  &:hover {
+    background: rgba($primary-normal, 0.06);
+  }
+}
+
+.btnGerar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  border: none;
+  border-radius: 6px;
+  background: $primary-normal;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: $white-light;
+  font-family: inherit;
+  transition: opacity 0.15s;
+
+  &:hover:not(:disabled) {
+    opacity: 0.88;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.btnRegenerar {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid rgba(#000, 0.15);
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $gray-600;
+  font-family: inherit;
+  transition: color 0.15s, border-color 0.15s;
+
+  &:hover:not(:disabled) {
+    color: $primary-normal;
+    border-color: $primary-normal;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.btnRevogar {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid rgba(#000, 0.15);
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $gray-600;
+  font-family: inherit;
+  transition: color 0.15s, border-color 0.15s;
+
+  &:hover:not(:disabled) {
+    color: $error-normal;
+    border-color: $error-normal;
+  }
+
+  &.btnRevogarConfirm {
+    color: $error-normal;
+    border-color: $error-normal;
+    background: rgba($error-normal, 0.05);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.btnCancelar {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: $gray-500;
+  font-family: inherit;
+  padding: 0.3rem 0.5rem;
+  text-decoration: underline;
+
+  &:hover {
+    color: $gray-700;
+  }
+}
