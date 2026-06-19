@@ -463,6 +463,7 @@ const FluxoInscricaoEdital = ({
           onProjetoVinculado={addProjetoVinculado}
           editalFormularioId={editalInfo?.formProjetoId}
           inscricao={inscricao}
+          editalAno={editalInfo?.ano}
         />
       </Modal>
 

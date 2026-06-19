@@ -26,6 +26,7 @@ const ProjetoController = ({
   onProjetoVinculado,
   closeModal,
   inscricao,
+  editalAno,
 }) => {
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
@@ -42,6 +43,7 @@ const ProjetoController = ({
       const response = await getProjetosDoUsuario(
         tenant,
         inscricao.proponenteId,
+        editalAno,
       );
 
       // Ordena os projetos por ID decrescente
