@@ -406,6 +406,44 @@
   }
 }
 
+// ─── Sub-grupo de condições aninhado ─────────────────────────────────────────
+.subgrupoCondicao {
+  border: 1px dashed $primary-normal;
+  border-radius: 6px;
+  padding: $gap-1 $gap-2;
+  margin-bottom: $gap-1;
+  background-color: $white-light;
+}
+
+.subgrupoHeader {
+  display: flex;
+  align-items: center;
+  gap: $gap-1;
+  margin-bottom: $gap-1;
+
+  select {
+    padding: 4px $gap-1;
+    border: 1px solid $gray-200;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    outline: none;
+    background-color: $white-light;
+
+    &:focus {
+      border-color: $primary-normal;
+    }
+  }
+}
+
+.subgrupoLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: $primary-darken;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
 .deleteSmall {
   width: 28px;
   height: 28px;

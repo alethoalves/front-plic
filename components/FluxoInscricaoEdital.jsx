@@ -483,6 +483,7 @@ const FluxoInscricaoEdital = ({
           planoDeTrabalhoDetalhes={planoDeTrabalhoSelected}
           tipoParticipacao={tipoParticipacao}
           atingiuLimiteBolsa={atingiuLimiteBolsa()}
+          gestorMode={gestorMode}
         />
       </Modal>
 

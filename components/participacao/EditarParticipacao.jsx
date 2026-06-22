@@ -39,6 +39,7 @@ import { ProgressSpinner } from "primereact/progressspinner";
 import { Toast } from "primereact/toast";
 import Image from "next/image";
 import Modal from "@/components/Modal";
+import ImportarLattesGestor from "@/components/ImportarLattesGestor";
 
 const EditarParticipacao = ({
   participacaoInfo,
@@ -49,6 +50,7 @@ const EditarParticipacao = ({
   closeModalAndResetData,
   handleValidateParticipacao,
   tipoParticipacao,
+  gestorMode = false,
 }) => {
   const [camposFormOrientador, setCamposFormOrientador] = useState([]);
   const [camposFormCoorientador, setCamposFormCoorientador] = useState([]);
@@ -62,6 +64,7 @@ const EditarParticipacao = ({
   const [errorForm, setErrorForm] = useState("");
   const [activeStep, setActiveStep] = useState(0);
   const [fichaAvaliacao, setFichaAvaliacao] = useState(null);
+  const [domImported, setDomImported] = useState(false);
   const [userTenantData, setUserTenantData] = useState(null);
   const [itensNaoContabilizados, setItensNaoContabilizados] = useState(null);
   const [isItensModalOpen, setIsItensModalOpen] = useState(false);
@@ -216,7 +219,7 @@ const EditarParticipacao = ({
   };
 
   const handleNextStep = () => {
-    if (!participacaoInfo?.user?.cvLattes?.length) {
+    if (!participacaoInfo?.user?.cvLattes?.length && !domImported) {
       showError("Por favor, envie um currículo antes de prosseguir.");
       return;
     }
@@ -1107,6 +1110,32 @@ const EditarParticipacao = ({
                     />
                   </div>
                 </Card>
+
+                {gestorMode && (
+                  <Card className={styles.avaliacaoCard} style={{ marginTop: "16px" }}>
+                    <div className={styles.avaliacaoHeader}>
+                      <div className={styles.avaliacaoIcon}>
+                        <span style={{ fontSize: "20px" }}>🔗</span>
+                      </div>
+                      <div>
+                        <h4>Importar dados do Lattes (alternativa ao XML)</h4>
+                        <p className={styles.avaliacaoSubtitle}>
+                          Use quando o XML não está disponível
+                        </p>
+                      </div>
+                    </div>
+                    <ImportarLattesGestor
+                      tenant={tenant}
+                      participacaoId={participacaoInfo?.id}
+                      onSuccess={() => {
+                        setDomImported(true);
+                        showSuccess(
+                          "CV importado via DOM. Clique em \"Gerar Ficha de Avaliação\" acima."
+                        );
+                      }}
+                    />
+                  </Card>
+                )}
               </div>
             </StepperPanel>
             <StepperPanel header={`Ficha do ${tipoParticipacao}`}>

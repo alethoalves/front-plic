@@ -37,6 +37,8 @@ const emptyItem = () => ({
 
 const emptyCampo = () => ({ type: "text", label: "", tagLattes: "", qualis: false });
 const emptyCondicao = () => ({ campo: "", operador: "EQUAL", valor: "" });
+const emptySubgrupo = () => ({ operador: "OR", condicoes: [emptyCondicao(), emptyCondicao()] });
+const isSubgrupo = (c) => Boolean(c?.condicoes && Array.isArray(c.condicoes));
 
 const isLeafItem = (obj) => Boolean(obj?.tagLattes);
 
@@ -115,6 +117,51 @@ const CondicaoRow = ({ cond, onChange, onDelete, availableAttrs, enumValues }) =
       )}
       <div className={styles.deleteSmall} onClick={onDelete}>
         <RiDeleteBinLine />
+      </div>
+    </div>
+  );
+};
+
+// ─── SubgrupoCondicao ─────────────────────────────────────────────────────────
+const SubgrupoCondicao = ({ subgrupo, onChange, onDelete, availableAttrs, enumValues }) => {
+  const updateInner = (i, cond) => {
+    const condicoes = clone(subgrupo.condicoes);
+    condicoes[i] = cond;
+    onChange({ ...subgrupo, condicoes });
+  };
+  const deleteInner = (i) =>
+    onChange({ ...subgrupo, condicoes: subgrupo.condicoes.filter((_, idx) => idx !== i) });
+  const addInner = () =>
+    onChange({ ...subgrupo, condicoes: [...subgrupo.condicoes, emptyCondicao()] });
+
+  return (
+    <div className={styles.subgrupoCondicao}>
+      <div className={styles.subgrupoHeader}>
+        <span className={styles.subgrupoLabel}>Sub-grupo</span>
+        <select
+          value={subgrupo.operador}
+          onChange={(e) => onChange({ ...subgrupo, operador: e.target.value })}
+        >
+          <option value="OR">OR</option>
+          <option value="AND">AND</option>
+        </select>
+        <div className={styles.deleteSmall} onClick={onDelete}>
+          <RiDeleteBinLine />
+        </div>
+      </div>
+      {subgrupo.condicoes.map((cond, i) => (
+        <CondicaoRow
+          key={i}
+          cond={cond}
+          availableAttrs={availableAttrs}
+          enumValues={enumValues}
+          onChange={(c) => updateInner(i, c)}
+          onDelete={() => deleteInner(i)}
+        />
+      ))}
+      <div className={styles.addSmall} onClick={addInner}>
+        <RiAddCircleLine />
+        <span>Adicionar condição ao sub-grupo</span>
       </div>
     </div>
   );
@@ -262,6 +309,11 @@ const ItemForm = ({ initialData, mode, onSave, onClose }) => {
       ...data.filterLattes,
       condicoes: [...(data.filterLattes?.condicoes || []), emptyCondicao()],
     });
+  const addSubgrupo = () =>
+    set("filterLattes", {
+      ...data.filterLattes,
+      condicoes: [...(data.filterLattes?.condicoes || []), emptySubgrupo()],
+    });
   const updateCondicao = (i, cond) => {
     const condicoes = clone(data.filterLattes.condicoes);
     condicoes[i] = cond;
@@ -403,19 +455,34 @@ const ItemForm = ({ initialData, mode, onSave, onClose }) => {
             <option value="OR">OR</option>
           </select>
         </label>
-        {(data.filterLattes?.condicoes || []).map((cond, i) => (
-          <CondicaoRow
-            key={i}
-            cond={cond}
-            availableAttrs={availableAttrs}
-            enumValues={selectedElement?.enumValues || {}}
-            onChange={(c) => updateCondicao(i, c)}
-            onDelete={() => deleteCondicao(i)}
-          />
-        ))}
+        {(data.filterLattes?.condicoes || []).map((cond, i) =>
+          isSubgrupo(cond) ? (
+            <SubgrupoCondicao
+              key={i}
+              subgrupo={cond}
+              availableAttrs={availableAttrs}
+              enumValues={selectedElement?.enumValues || {}}
+              onChange={(c) => updateCondicao(i, c)}
+              onDelete={() => deleteCondicao(i)}
+            />
+          ) : (
+            <CondicaoRow
+              key={i}
+              cond={cond}
+              availableAttrs={availableAttrs}
+              enumValues={selectedElement?.enumValues || {}}
+              onChange={(c) => updateCondicao(i, c)}
+              onDelete={() => deleteCondicao(i)}
+            />
+          )
+        )}
         <div className={styles.addSmall} onClick={addCondicao}>
           <RiAddCircleLine />
           <span>Adicionar condição</span>
+        </div>
+        <div className={styles.addSmall} onClick={addSubgrupo}>
+          <RiAddCircleLine />
+          <span>Adicionar sub-grupo (OR/AND aninhado)</span>
         </div>
       </div>
 

@@ -24,6 +24,7 @@ const ParticipacaoController = ({
   tipoParticipacao,
   planoDeTrabalhoDetalhes,
   atingiuLimiteBolsa,
+  gestorMode = false,
 }) => {
   const [participacaoInfo, setParticipacaoInfo] = useState(itemToEdit || null); // Inicializa com itemToEdit
   const [verifiedData, setVerifiedData] = useState(null);
@@ -99,6 +100,7 @@ const ParticipacaoController = ({
             handleValidateParticipacao={handleValidateParticipacao}
             setParticipacaoInfo={setParticipacaoInfo}
             tipoParticipacao={tipoParticipacao}
+            gestorMode={gestorMode}
           />
         </>
       )}
