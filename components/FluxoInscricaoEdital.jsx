@@ -523,6 +523,7 @@ const FluxoInscricaoEdital = ({
           onUpdatePlanoDeTrabalho={updatePlanoDeTrabalhoList}
           editalFormularioId={editalInfo?.formPlanoDeTrabalhoId}
           minAtividadesPorPlano={editalInfo?.minAtividadesPorPlano}
+          editalAno={editalInfo?.ano}
         />
       </Modal>
 

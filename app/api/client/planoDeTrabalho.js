@@ -253,6 +253,22 @@ export const aplicarNotaCorte = async (tenantSlug, notaCorte, classificados, des
     }
   };
   
+  export const parseCronogramaComIA = async (tenantSlug, texto, anoBase) => {
+    try {
+      const headers = getAuthHeadersClient();
+      if (!headers) return false;
+      const response = await req.post(
+        `/private/${tenantSlug}/user/ai/parse-cronograma`,
+        { texto, anoBase },
+        { headers }
+      );
+      return response.data.atividades;
+    } catch (error) {
+      console.error("Erro ao parsear cronograma com IA:", error);
+      throw error;
+    }
+  };
+
   export const deletePlanoDeTrabalho = async (tenantSlug, inscricaoId, id) => {
     try {
       const headers = getAuthHeadersClient();

@@ -898,3 +898,103 @@
   }
 }
   
+.importBannerActions {
+  display: flex;
+  gap: $gap-1;
+  flex-wrap: wrap;
+}
+
+.aiTextarea {
+  width: 100%;
+  min-height: 160px;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  resize: vertical;
+  font-family: inherit;
+  color: #374151;
+
+  &:focus {
+    outline: none;
+    border-color: $primary-dark;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08);
+  }
+
+  &::placeholder {
+    color: #9ca3af;
+    white-space: pre-line;
+  }
+}
+
+.aiPreviewTable {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin-bottom: $gap-1;
+}
+
+.aiPreviewHeader {
+  display: grid;
+  grid-template-columns: 1fr 110px 110px 32px;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  padding: 0 0.25rem;
+}
+
+.aiPreviewRow {
+  display: grid;
+  grid-template-columns: 1fr 110px 110px 32px;
+  gap: 0.5rem;
+  align-items: center;
+  position: relative;
+
+  &.aiPreviewRowWarn {
+    background-color: #fffbeb;
+    border-radius: 4px;
+    padding: 2px 4px;
+    border-left: 3px solid #f59e0b;
+  }
+}
+
+.aiPreviewInput {
+  width: 100%;
+  padding: 0.375rem 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-family: inherit;
+  color: #374151;
+
+  &:focus {
+    outline: none;
+    border-color: $primary-dark;
+  }
+}
+
+.aiPreviewRemove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #ef4444;
+  padding: 0.25rem;
+  border-radius: 4px;
+
+  &:hover {
+    background-color: #fee2e2;
+  }
+}
+
+.aiPreviewWarnIcon {
+  position: absolute;
+  right: -20px;
+  color: #f59e0b;
+  display: flex;
+  align-items: center;
+}

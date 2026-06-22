@@ -37,6 +37,7 @@ const FormPlanoDeTrabalhoCreateOrEdit = ({
   onUpdatePlanoDeTrabalho,
   idFormularioEdital,
   minAtividadesPorPlano,
+  editalAno,
 }) => {
   //ESTADOS
   const [loading, setLoading] = useState(false);
@@ -291,6 +292,7 @@ const FormPlanoDeTrabalhoCreateOrEdit = ({
             tenantSlug={tenantSlug}
             currentPlanoId={initialData?.id}
             minAtividadesPorPlano={minAtividadesPorPlano}
+            anoBase={editalAno}
           />
         </div>
       )}

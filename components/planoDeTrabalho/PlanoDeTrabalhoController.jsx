@@ -15,6 +15,7 @@ const PlanoDeTrabalhoController = ({
   onUpdatePlanoDeTrabalho,
   editalFormularioId,
   minAtividadesPorPlano,
+  editalAno,
 }) => {
   const [currentPlanoDeTrabalho, setCurrentPlanoDeTrabalho] = useState(
     planoDeTrabalhoDetalhes
@@ -53,6 +54,7 @@ const PlanoDeTrabalhoController = ({
           }}
           idFormularioEdital={editalFormularioId}
           minAtividadesPorPlano={minAtividadesPorPlano}
+          editalAno={editalAno}
         />
       )}
       {currentPlanoDeTrabalho && !edit && (

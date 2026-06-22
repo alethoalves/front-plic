@@ -12,11 +12,17 @@ import {
   RiPencilLine,
   RiCheckLine,
   RiCloseLine,
+  RiSparklingLine,
+  RiAlertLine,
+  RiArrowLeftLine,
 } from "@remixicon/react";
 import styles from "@/components/Formularios/Form.module.scss";
 import { formatDateToISO, formatarData } from "@/lib/formatarDatas";
 import { useForm } from "react-hook-form";
-import { getPlanosDeTrabalhoByUser } from "@/app/api/client/planoDeTrabalho";
+import {
+  getPlanosDeTrabalhoByUser,
+  parseCronogramaComIA,
+} from "@/app/api/client/planoDeTrabalho";
 
 const parseLocalDate = (str) => {
   if (!str) return new Date(0);
@@ -54,6 +60,7 @@ const Atividades = ({
   tenantSlug,
   currentPlanoId,
   minAtividadesPorPlano,
+  anoBase,
 }) => {
   const [errorAdd, setErrorAdd] = useState("");
   const [loading, setLoading] = useState(false);
@@ -62,8 +69,19 @@ const Atividades = ({
   const [loadingPlanos, setLoadingPlanos] = useState(false);
   const [errorImport, setErrorImport] = useState("");
   const [editingIndex, setEditingIndex] = useState(null);
-  const [editValues, setEditValues] = useState({ nome: "", inicio: "", fim: "", duracao: "" });
+  const [editValues, setEditValues] = useState({
+    nome: "",
+    inicio: "",
+    fim: "",
+    duracao: "",
+  });
   const [editError, setEditError] = useState("");
+
+  const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [aiTexto, setAiTexto] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiPreview, setAiPreview] = useState(null);
+  const [aiError, setAiError] = useState("");
 
   const { control, resetField, setValue, watch, getValues } = useForm({});
 
@@ -116,7 +134,12 @@ const Atividades = ({
   const handleStartEdit = (index) => {
     const item = cronograma[index];
     setEditingIndex(index);
-    setEditValues({ nome: item.nome, inicio: item.inicio, fim: item.fim, duracao: "" });
+    setEditValues({
+      nome: item.nome,
+      inicio: item.inicio,
+      fim: item.fim,
+      duracao: "",
+    });
     setEditError("");
   };
 
@@ -141,10 +164,44 @@ const Atividades = ({
       return;
     }
     setCronograma((prev) =>
-      prev.map((item, i) => (i === editingIndex ? { nome, inicio, fim } : item))
+      prev.map((item, i) =>
+        i === editingIndex ? { nome, inicio, fim } : item,
+      ),
     );
     setEditingIndex(null);
     setEditError("");
+  };
+
+  const handleAnalisarComIA = async (e) => {
+    e.preventDefault();
+    if (!aiTexto.trim()) {
+      setAiError("Cole um texto para analisar.");
+      return;
+    }
+    setAiLoading(true);
+    setAiError("");
+    try {
+      const atividades = await parseCronogramaComIA(
+        tenantSlug,
+        aiTexto,
+        anoBase,
+      );
+      setAiPreview(atividades.map((a) => ({ ...a })));
+    } catch {
+      setAiError("Não foi possível processar o texto. Tente novamente.");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleAdicionarDoAI = (e) => {
+    e.preventDefault();
+    const validas = aiPreview.filter((a) => a.nome && a.inicio && a.fim);
+    setCronograma((prev) => [...prev, ...validas]);
+    setAiModalOpen(false);
+    setAiTexto("");
+    setAiPreview(null);
+    setAiError("");
   };
 
   const handleOpenImportModal = async (e) => {
@@ -156,7 +213,8 @@ const Atividades = ({
     try {
       const planos = await getPlanosDeTrabalhoByUser(tenantSlug);
       const planosComCronograma = (planos || []).filter(
-        (p) => p.id !== currentPlanoId && p.CronogramaPlanoDeTrabalho?.length > 0
+        (p) =>
+          p.id !== currentPlanoId && p.CronogramaPlanoDeTrabalho?.length > 0,
       );
       setPlanosDisponiveis(planosComCronograma);
     } catch {
@@ -167,11 +225,13 @@ const Atividades = ({
   };
 
   const handleImportFromPlano = (plano) => {
-    const atividadesImportadas = plano.CronogramaPlanoDeTrabalho.map((item) => ({
-      nome: item.atividade,
-      inicio: normalizeDate(item.inicio),
-      fim: normalizeDate(item.fim),
-    }));
+    const atividadesImportadas = plano.CronogramaPlanoDeTrabalho.map(
+      (item) => ({
+        nome: item.atividade,
+        inicio: normalizeDate(item.inicio),
+        fim: normalizeDate(item.fim),
+      }),
+    );
     setCronograma((prev) => [...prev, ...atividadesImportadas]);
     setImportModalOpen(false);
   };
@@ -180,7 +240,8 @@ const Atividades = ({
     .map((item, originalIndex) => ({ ...item, _idx: originalIndex }))
     .sort((a, b) => parseLocalDate(a.inicio) - parseLocalDate(b.inicio));
 
-  const isBelow = minAtividadesPorPlano && cronograma.length < minAtividadesPorPlano;
+  const isBelow =
+    minAtividadesPorPlano && cronograma.length < minAtividadesPorPlano;
 
   return (
     <div className={styles.cronograma}>
@@ -188,23 +249,44 @@ const Atividades = ({
         <div className={styles.importBanner}>
           <div className={styles.importBannerText}>
             <RiDownloadLine size={16} />
-            <p className="p5">Importe atividades de outro plano para agilizar o preenchimento</p>
+            <p className="p5">
+              Agilize o preenchimento importando de outro plano ou usando a IA
+            </p>
           </div>
-          <Button
-            icon={RiDownloadLine}
-            onClick={handleOpenImportModal}
-            className="btn-primary"
-            disabled={loading}
-          >
-            Importar Cronograma
-          </Button>
+          <div className={styles.importBannerActions}>
+            {anoBase && (
+              <Button
+                icon={RiSparklingLine}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setAiModalOpen(true);
+                }}
+                className="btn-secondary"
+                disabled={loading}
+              >
+                Preencher com IA
+              </Button>
+            )}
+            <Button
+              icon={RiDownloadLine}
+              onClick={handleOpenImportModal}
+              className="btn-primary"
+              disabled={loading}
+            >
+              Importar Cronograma de outro Plano
+            </Button>
+          </div>
         </div>
       )}
 
       {minAtividadesPorPlano > 0 && (
-        <div className={`${styles.minCounter} ${isBelow ? styles.minCounterBelow : styles.minCounterOk}`}>
+        <div
+          className={`${styles.minCounter} ${isBelow ? styles.minCounterBelow : styles.minCounterOk}`}
+        >
           <p className="p5">
-            {cronograma.length} de {minAtividadesPorPlano} atividade{minAtividadesPorPlano !== 1 ? "s" : ""} mínima{minAtividadesPorPlano !== 1 ? "s" : ""}
+            {cronograma.length} de {minAtividadesPorPlano} atividade
+            {minAtividadesPorPlano !== 1 ? "s" : ""} mínima
+            {minAtividadesPorPlano !== 1 ? "s" : ""}
           </p>
         </div>
       )}
@@ -377,6 +459,160 @@ const Atividades = ({
           );
         })}
       </div>
+
+      <Modal
+        isOpen={aiModalOpen}
+        onClose={() => {
+          setAiModalOpen(false);
+          setAiTexto("");
+          setAiPreview(null);
+          setAiError("");
+        }}
+        size="medium"
+      >
+        {aiPreview === null ? (
+          <>
+            <h4 className="mb-2">Preencher cronograma com IA</h4>
+            <p className="mb-2">
+              Cole abaixo o texto com as atividades e os períodos. Pode ser uma
+              tabela copiada, uma lista ou texto corrido.
+            </p>
+            <textarea
+              className={styles.aiTextarea}
+              rows={10}
+              placeholder={`Exemplos aceitos:\n• Levantamento bibliográfico: agosto a outubro\n• Coleta de dados — novembro/dezembro\n• Análise dos resultados: janeiro a março`}
+              value={aiTexto}
+              onChange={(e) => setAiTexto(e.target.value)}
+              disabled={aiLoading}
+            />
+            {aiError && (
+              <div className="notification notification-error mt-1">
+                <p className="p5">{aiError}</p>
+              </div>
+            )}
+            <div className="flex gap-2 mt-2">
+              <Button
+                icon={RiSparklingLine}
+                className="btn-primary"
+                onClick={handleAnalisarComIA}
+                disabled={aiLoading}
+              >
+                {aiLoading ? "Analisando..." : "Analisar com IA"}
+              </Button>
+            </div>
+          </>
+        ) : (
+          <>
+            <h4 className="mb-1">Revise as atividades identificadas</h4>
+            <p className="mb-2">
+              Verifique e edite os dados antes de adicionar ao cronograma.
+              Linhas com data em branco serão ignoradas.
+            </p>
+            <div className={styles.aiPreviewTable}>
+              <div className={styles.aiPreviewHeader}>
+                <span>Atividade</span>
+                <span>Início</span>
+                <span>Fim</span>
+                <span></span>
+              </div>
+              {aiPreview.map((item, idx) => {
+                const semData = !item.inicio || !item.fim;
+                return (
+                  <div
+                    key={idx}
+                    className={`${styles.aiPreviewRow} ${semData ? styles.aiPreviewRowWarn : ""}`}
+                  >
+                    <input
+                      className={styles.aiPreviewInput}
+                      value={item.nome || ""}
+                      onChange={(e) =>
+                        setAiPreview((prev) =>
+                          prev.map((r, i) =>
+                            i === idx ? { ...r, nome: e.target.value } : r,
+                          ),
+                        )
+                      }
+                      placeholder="Nome da atividade"
+                    />
+                    <input
+                      className={styles.aiPreviewInput}
+                      value={item.inicio || ""}
+                      onChange={(e) => {
+                        const v = applyDateMask(e.target.value);
+                        setAiPreview((prev) =>
+                          prev.map((r, i) =>
+                            i === idx ? { ...r, inicio: v } : r,
+                          ),
+                        );
+                      }}
+                      placeholder="DD/MM/AAAA"
+                    />
+                    <input
+                      className={styles.aiPreviewInput}
+                      value={item.fim || ""}
+                      onChange={(e) => {
+                        const v = applyDateMask(e.target.value);
+                        setAiPreview((prev) =>
+                          prev.map((r, i) =>
+                            i === idx ? { ...r, fim: v } : r,
+                          ),
+                        );
+                      }}
+                      placeholder="DD/MM/AAAA"
+                    />
+                    <button
+                      type="button"
+                      className={styles.aiPreviewRemove}
+                      onClick={() =>
+                        setAiPreview((prev) => prev.filter((_, i) => i !== idx))
+                      }
+                      title="Remover"
+                    >
+                      <RiCloseLine size={16} />
+                    </button>
+                    {semData && (
+                      <span
+                        className={styles.aiPreviewWarnIcon}
+                        title="Data não identificada"
+                      >
+                        <RiAlertLine size={14} />
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            {aiError && (
+              <div className="notification notification-error mt-1">
+                <p className="p5">{aiError}</p>
+              </div>
+            )}
+            <div className="flex gap-2 mt-2">
+              <Button
+                icon={RiCheckLine}
+                className="btn-primary"
+                onClick={handleAdicionarDoAI}
+                disabled={aiPreview.every(
+                  (a) => !a.nome || !a.inicio || !a.fim,
+                )}
+              >
+                Adicionar ao cronograma
+              </Button>
+              <Button
+                icon={RiArrowLeftLine}
+                className="btn-secondary"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setAiPreview(null);
+                  setAiError("");
+                }}
+              >
+                Voltar
+              </Button>
+            </div>
+          </>
+        )}
+      </Modal>
 
       <Modal
         isOpen={importModalOpen}
