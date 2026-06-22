@@ -1040,6 +1040,14 @@ const EditarParticipacao = ({
               </div>
 
               <div className={styles.stepFooter}>
+                {gestorMode && (
+                  <Button
+                    label="Incluir CV manualmente"
+                    icon="pi pi-file-import"
+                    className="p-button-text p-button-plain"
+                    onClick={() => setActiveStep(1)}
+                  />
+                )}
                 <Button
                   className="btn-primary"
                   label="Próximo"
