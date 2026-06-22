@@ -319,6 +319,11 @@ const FluxoInscricaoEdital = ({
         done: orientadores.length > 0,
         disabled: false,
         tab: "orientador",
+        action: () => {
+          setActiveStep("orientador");
+          setTipoParticipacao("orientador");
+          openModalAndSetData(null);
+        },
       },
     ];
 
@@ -330,6 +335,12 @@ const FluxoInscricaoEdital = ({
           orientadores.every((p) => p.status !== "incompleto"),
         disabled: orientadores.length === 0,
         tab: "orientador",
+        action: () => {
+          const incompleto = orientadores.find((p) => p.status === "incompleto");
+          setActiveStep("orientador");
+          setTipoParticipacao("orientador");
+          openModalAndSetData(incompleto || orientadores[0]);
+        },
       });
     }
 
@@ -338,6 +349,10 @@ const FluxoInscricaoEdital = ({
       done: projetos.length > 0,
       disabled: false,
       tab: "projetos",
+      action: () => {
+        setActiveStep("projetos");
+        setIsModalOpenProjeto(true);
+      },
     });
 
     checks.push({
@@ -345,6 +360,15 @@ const FluxoInscricaoEdital = ({
       done: planos.length > 0,
       disabled: projetos.length === 0,
       tab: "projetos",
+      action: () => {
+        setActiveStep("projetos");
+        const primeiroProjeto = projetos[0];
+        if (primeiroProjeto) {
+          setSelectedProjetoId(primeiroProjeto.projeto.id);
+          setPlanoDeTrabalhoSelected(null);
+          setIsModalOpenPlanoDeTrabalho(true);
+        }
+      },
     });
 
     checks.push({
@@ -352,6 +376,15 @@ const FluxoInscricaoEdital = ({
       done: alunos.length > 0,
       disabled: planos.length === 0,
       tab: "projetos",
+      action: () => {
+        setActiveStep("projetos");
+        const primeiroPlano = planos[0];
+        if (primeiroPlano) {
+          setTipoParticipacao("aluno");
+          setPlanoDeTrabalhoSelected(primeiroPlano);
+          openModalAndSetData(null);
+        }
+      },
     });
 
     if (editalInfo.formAlunoId) {
@@ -361,6 +394,12 @@ const FluxoInscricaoEdital = ({
           alunos.length > 0 && alunos.every((p) => p.status !== "incompleto"),
         disabled: alunos.length === 0,
         tab: "projetos",
+        action: () => {
+          const incompleto = alunos.find((p) => p.status === "incompleto");
+          setActiveStep("projetos");
+          setTipoParticipacao("aluno");
+          openModalAndSetData(incompleto || alunos[0]);
+        },
       });
     }
 
@@ -597,10 +636,10 @@ const FluxoInscricaoEdital = ({
                           )}
                         </span>
                         <span className={styles.checkLabel}>{check.label}</span>
-                        {state === "pending" && check.tab && (
+                        {state === "pending" && check.action && (
                           <button
                             className={styles.checkAction}
-                            onClick={() => setActiveStep(check.tab)}
+                            onClick={check.action}
                           >
                             Ir →
                           </button>
