@@ -2,18 +2,18 @@ import { getAuthHeadersClient } from "@/lib/headers.js";
 import { req } from "./../axios.js";
 import { getCookie } from 'cookies-next';
 
-export const importarLattesGestor = async (tenantSlug, participacaoId, jsonImportado) => {
+export const importarLattesGestor = async (tenantSlug, participacaoId, html) => {
   try {
     const headers = getAuthHeadersClient();
     if (!headers) return false;
     const response = await req.post(
       `/private/${tenantSlug}/gestor/import-lattes-participacao/${participacaoId}`,
-      { jsonImportado },
+      { html },
       { headers }
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao importar CV Lattes via DOM:", error);
+    console.error("Erro ao importar CV Lattes via HTML:", error);
     throw error;
   }
 };
