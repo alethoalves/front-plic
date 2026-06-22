@@ -1039,15 +1039,32 @@ const EditarParticipacao = ({
                 )}
               </div>
 
-              <div className={styles.stepFooter}>
-                {gestorMode && (
-                  <Button
-                    label="Incluir CV manualmente"
-                    icon="pi pi-file-import"
-                    className="p-button-text p-button-plain"
-                    onClick={() => setActiveStep(1)}
+              {gestorMode && (
+                <Card className={styles.avaliacaoCard} style={{ marginTop: "16px" }}>
+                  <div className={styles.avaliacaoHeader}>
+                    <div className={styles.avaliacaoIcon}>
+                      <span style={{ fontSize: "20px" }}>🔗</span>
+                    </div>
+                    <div>
+                      <h4>Importar dados do Lattes (alternativa ao XML)</h4>
+                      <p className={styles.avaliacaoSubtitle}>
+                        Use quando o XML não está disponível
+                      </p>
+                    </div>
+                  </div>
+                  <ImportarLattesGestor
+                    tenant={tenant}
+                    participacaoId={participacaoInfo?.id}
+                    onSuccess={() => {
+                      setDomImported(true);
+                      showSuccess("CV importado com sucesso.");
+                      setActiveStep(1);
+                    }}
                   />
-                )}
+                </Card>
+              )}
+
+              <div className={styles.stepFooter}>
                 <Button
                   className="btn-primary"
                   label="Próximo"
@@ -1119,31 +1136,6 @@ const EditarParticipacao = ({
                   </div>
                 </Card>
 
-                {gestorMode && (
-                  <Card className={styles.avaliacaoCard} style={{ marginTop: "16px" }}>
-                    <div className={styles.avaliacaoHeader}>
-                      <div className={styles.avaliacaoIcon}>
-                        <span style={{ fontSize: "20px" }}>🔗</span>
-                      </div>
-                      <div>
-                        <h4>Importar dados do Lattes (alternativa ao XML)</h4>
-                        <p className={styles.avaliacaoSubtitle}>
-                          Use quando o XML não está disponível
-                        </p>
-                      </div>
-                    </div>
-                    <ImportarLattesGestor
-                      tenant={tenant}
-                      participacaoId={participacaoInfo?.id}
-                      onSuccess={() => {
-                        setDomImported(true);
-                        showSuccess(
-                          "CV importado via DOM. Clique em \"Gerar Ficha de Avaliação\" acima."
-                        );
-                      }}
-                    />
-                  </Card>
-                )}
               </div>
             </StepperPanel>
             <StepperPanel header={`Ficha do ${tipoParticipacao}`}>
