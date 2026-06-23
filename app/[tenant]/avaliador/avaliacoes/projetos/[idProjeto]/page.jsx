@@ -17,6 +17,7 @@ import { Fieldset } from "primereact/fieldset";
 import { Accordion, AccordionTab } from "primereact/accordion";
 import GanttChart from "@/components/GanttChart";
 import { Timeline } from "primereact/timeline";
+import BlockNoteContent from "@/components/BlockNoteContent";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(true);
@@ -326,6 +327,8 @@ const Page = ({ params }) => {
                           Nenhum arquivo/link enviado
                         </p>
                       )
+                    ) : item.campo.tipo === "blockNote" ? (
+                      <BlockNoteContent value={item.value} />
                     ) : (
                       <p
                         style={{
@@ -505,6 +508,8 @@ const Page = ({ params }) => {
                             Nenhum arquivo/link enviado
                           </p>
                         )
+                      ) : item.campo.tipo === "blockNote" ? (
+                        <BlockNoteContent value={item.value} />
                       ) : (
                         <p
                           style={{
