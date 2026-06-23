@@ -88,3 +88,30 @@ export const createResposta = async (tenantSlug, campoId, respostaData) => {
       throw error;
     }
   };
+
+/**
+ * Determines the navigation code for the activity submission modal.
+ *
+ * Accepts the full registroAtividade object and returns an object with either:
+ *   - { response: { status: "concluido" } }  → activity already completed (read-only view)
+ *   - { code: 1 }                             → plano de trabalho is missing its area
+ *   - { code: 2 }                             → form is ready to be filled
+ *
+ * @param {Object} registroAtividade - The full registro de atividade object.
+ * @returns {{ code?: number, response?: { status: string } }}
+ */
+export const startSubmission = (registroAtividade) => {
+  if (!registroAtividade) {
+    return { code: 2 };
+  }
+
+  if (registroAtividade.status === "concluido") {
+    return { response: { status: "concluido" } };
+  }
+
+  if (!registroAtividade.planoDeTrabalho?.area) {
+    return { code: 1 };
+  }
+
+  return { code: 2 };
+};

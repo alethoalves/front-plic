@@ -300,7 +300,7 @@ const Page = ({ params }) => {
   const openModalAndSetData = async (data) => {
     setItemToEdit(data);
 
-    const response = await startSubmission(data.id);
+    const response = startSubmission(data);
     if (response?.response?.status === "concluido") {
       setCode(3);
     } else {
