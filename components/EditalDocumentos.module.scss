@@ -1,0 +1,399 @@
+@import "./../styles/partials/colors";
+@import "./../styles/partials/layout";
+@import "./../styles/partials/spacing";
+
+.container {
+  margin-top: $gap-2;
+  width: 100%;
+}
+
+.feedback {
+  display: flex;
+  align-items: center;
+  gap: $gap-1;
+  padding: $gap-1 $gap-2;
+  border-radius: $gap-1;
+  margin-bottom: $gap-2;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+
+  p {
+    font-size: 14px;
+    margin: 0;
+  }
+
+  &.success {
+    background-color: rgba($success-normal, 0.12);
+    color: $success-dark;
+    border: 1px solid rgba($success-normal, 0.3);
+  }
+
+  &.error {
+    background-color: rgba($error-normal, 0.1);
+    color: $error-dark;
+    border: 1px solid rgba($error-normal, 0.25);
+  }
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-2;
+  background-color: $white-normal;
+  border: 1px solid $gray-100;
+  border-radius: $gap-1;
+  padding: $gap-3;
+  margin-bottom: $gap-3;
+}
+
+.formRow {
+  display: flex;
+  gap: $gap-2;
+
+  @include responsive(xs) {
+    flex-direction: column;
+  }
+
+  .field {
+    flex: 1;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  label {
+    font-size: 13px;
+    font-weight: 600;
+    color: $gray-700;
+  }
+
+  input,
+  select {
+    border: 1px solid $gray-100;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+    color: $gray-800;
+    background-color: $white-light;
+    outline: none;
+    transition: border-color 0.2s;
+
+    &:focus {
+      border-color: $primary-normal;
+    }
+  }
+
+  select {
+    cursor: pointer;
+  }
+}
+
+.error {
+  font-size: 12px;
+  color: $error-dark;
+}
+
+.uploadArea {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dropzone {
+  border: 2px dashed $gray-200;
+  border-radius: $gap-1;
+  padding: $gap-3;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background-color: $gray-25;
+
+  &:hover {
+    border-color: $primary-normal;
+    background-color: $white-normal;
+  }
+
+  &.hasFile {
+    border-color: $success-normal;
+    background-color: rgba($success-normal, 0.06);
+
+    p {
+      color: $success-dark;
+      font-weight: 600;
+    }
+  }
+
+  svg {
+    width: 32px;
+    height: 32px;
+    color: $primary-normal;
+    margin-bottom: $gap-1;
+  }
+
+  p {
+    font-size: 14px;
+    color: $gray-600;
+    margin: 0 0 4px;
+    word-break: break-all;
+  }
+
+  span {
+    font-size: 12px;
+    color: $gray-400;
+  }
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.listSection {
+  h6 {
+    font-size: 14px;
+    font-weight: 700;
+    color: $gray-700;
+    margin-bottom: $gap-2;
+  }
+}
+
+.loadingText,
+.emptyText {
+  font-size: 14px;
+  color: $gray-400;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: $gap-1;
+}
+
+.listItem {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+  background-color: $white-normal;
+  border: 1px solid $gray-100;
+  border-radius: $gap-1;
+  padding: $gap-1 $gap-2;
+  transition: border-color 0.2s;
+
+  &:hover {
+    border-color: $gray-200;
+  }
+}
+
+.docIcon {
+  color: $primary-normal;
+  flex-shrink: 0;
+
+  svg {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+.docInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.docTitulo {
+  font-size: 14px;
+  font-weight: 600;
+  color: $gray-800;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.docDescricao {
+  font-size: 12px;
+  color: $gray-500;
+  margin: 2px 0 0;
+}
+
+.docTipo {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: $primary-dark;
+  background-color: $primary-lighten;
+  padding: 2px 8px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.docActions {
+  display: flex;
+  align-items: center;
+  gap: $gap-1;
+  flex-shrink: 0;
+
+  a {
+    font-size: 13px;
+    font-weight: 600;
+    color: $primary-normal;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.deleteBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $gray-400;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+
+  &:hover {
+    color: $error-normal;
+    background-color: rgba($error-normal, 0.08);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.editBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $gray-400;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+
+  &:hover {
+    color: $primary-normal;
+    background-color: $primary-lighten;
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.saveBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $success-normal;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+
+  &:hover {
+    background-color: rgba($success-normal, 0.1);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.cancelBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $gray-400;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+
+  &:hover {
+    color: $error-normal;
+    background-color: rgba($error-normal, 0.08);
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.editingItem {
+  background-color: $white-darken;
+  border-color: $primary-light;
+  align-items: flex-start;
+}
+
+.editFields {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.editInput {
+  border: 1px solid $gray-100;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  color: $gray-800;
+  background-color: $white-normal;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.2s;
+
+  &:focus {
+    border-color: $primary-normal;
+  }
+}
+
+.editSelect {
+  border: 1px solid $gray-100;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  color: $gray-800;
+  background-color: $white-normal;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+
+  &:focus {
+    border-color: $primary-normal;
+  }
+}

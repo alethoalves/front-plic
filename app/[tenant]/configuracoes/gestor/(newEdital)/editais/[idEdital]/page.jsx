@@ -12,11 +12,13 @@ import {
   RiSettingsLine,
   RiSurveyLine,
   RiBarChart2Line,
+  RiFileLine,
 } from "@remixicon/react";
 import Header from "@/components/Header";
 import EditalFormularios from "@/components/EditalFormularios";
 import EditalAtividades from "@/components/EditalAtividades";
 import EditalFichaAvaliacao from "@/components/EditalFichaAvaliacao";
+import EditalDocumentos from "@/components/EditalDocumentos";
 import Button from "@/components/Button";
 import { useEffect, useState } from "react";
 import { getEdital, updateEdital } from "@/app/api/client/edital";
@@ -235,6 +237,21 @@ const Page = ({ params }) => {
               tipo de participante (orientador, aluno, etc.).
             </p>
             <EditalFichaAvaliacao params={params} />
+          </div>
+        </div>
+
+        <div className={styles.head}>
+          <div className={styles.headIcon}>
+            <RiFileLine />
+          </div>
+          <div className={styles.item}>
+            <h5>Documentos do Edital</h5>
+            <p>
+              Adicione documentos como o edital em PDF, passo a passo de
+              inscrição e outros materiais de apoio. Classifique cada documento
+              pelo local onde ele será exibido.
+            </p>
+            <EditalDocumentos params={params} />
           </div>
         </div>
       </div>

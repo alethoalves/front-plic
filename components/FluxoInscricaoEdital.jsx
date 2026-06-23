@@ -23,6 +23,7 @@ import {
 } from "@/app/api/client/inscricao";
 import { getQuestionarioPublico } from "@/app/api/client/questionarioSatisfacao";
 import QuestionarioSatisfacaoModal from "@/components/QuestionarioSatisfacaoModal";
+import EditalDocumentosViewer from "@/components/EditalDocumentosViewer";
 import Modal from "@/components/Modal";
 import ProjetoController from "./projeto/ProjetoController";
 import ParticipacaoController from "./participacao/ParticipacaoController";
@@ -579,6 +580,15 @@ const FluxoInscricaoEdital = ({
               </div>
             </div>
           </Card>
+
+          {/* Documentos do edital */}
+          {editalInfo?.id && (
+            <EditalDocumentosViewer
+              tenant={tenant}
+              editalId={editalInfo.id}
+              tipo="INSCRICAO"
+            />
+          )}
 
           {/* Banner de Status da Inscrição */}
           {(() => {
