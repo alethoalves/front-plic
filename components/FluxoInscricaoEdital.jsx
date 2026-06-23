@@ -31,7 +31,7 @@ import NoData from "./NoData";
 import PlanoDeTrabalhoController from "./planoDeTrabalho/PlanoDeTrabalhoController";
 import { unlinkProjetoFromInscricao } from "@/app/api/client/projeto";
 import { deletePlanoDeTrabalho } from "@/app/api/client/planoDeTrabalho";
-import { deleteParticipacao, updateParticipacao } from "@/app/api/client/participacao";
+import { deleteParticipacao, updateSolicitarBolsa } from "@/app/api/client/participacao";
 import Button from "./Button";
 import VerInscricao from "./VerInscricao";
 import { Toast } from "primereact/toast";
@@ -273,7 +273,7 @@ const FluxoInscricaoEdital = ({
     setConfirmBolsa(null);
     setTogglingBolsaId(aluno.id);
     try {
-      const updated = await updateParticipacao(tenant, aluno.id, { solicitarBolsa: novoValor });
+      const updated = await updateSolicitarBolsa(tenant, aluno.id, novoValor);
       setInscricao((prev) => ({
         ...prev,
         participacoes: prev.participacoes.map((p) =>

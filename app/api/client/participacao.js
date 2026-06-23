@@ -232,6 +232,22 @@ export const reprovarParticipacoes = async (tenantSlug, participacaoIds, justifi
     throw error;
   }
 };
+export const updateSolicitarBolsa = async (tenantSlug, idParticipacao, solicitarBolsa) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+    const response = await req.patch(
+      `/private/${tenantSlug}/participacoes/${idParticipacao}/solicitar-bolsa`,
+      { solicitarBolsa },
+      { headers }
+    );
+    return response.data.participacao;
+  } catch (error) {
+    console.error("Erro ao atualizar solicitarBolsa:", error);
+    throw error;
+  }
+};
+
 export const updateParticipacao = async (
   tenantSlug,
   idParticipacao,
