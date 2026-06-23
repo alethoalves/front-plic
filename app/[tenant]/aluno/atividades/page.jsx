@@ -22,7 +22,7 @@ import {
   updateRegistroAtividade,
 } from "@/app/api/client/registroAtividade";
 import Campo from "@/components/Campo";
-import { startSubmission } from "@/app/api/client/resposta";
+import { startSubmission } from "@/app/api/client/conviteEvento";
 import FormArea from "@/components/Formularios/FormArea";
 
 const Page = ({ params }) => {
