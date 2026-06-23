@@ -31,7 +31,7 @@ import NoData from "./NoData";
 import PlanoDeTrabalhoController from "./planoDeTrabalho/PlanoDeTrabalhoController";
 import { unlinkProjetoFromInscricao } from "@/app/api/client/projeto";
 import { deletePlanoDeTrabalho } from "@/app/api/client/planoDeTrabalho";
-import { deleteParticipacao } from "@/app/api/client/participacao";
+import { deleteParticipacao, updateParticipacao } from "@/app/api/client/participacao";
 import Button from "./Button";
 import VerInscricao from "./VerInscricao";
 import { Toast } from "primereact/toast";
@@ -64,6 +64,8 @@ const FluxoInscricaoEdital = ({
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState([]);
   const [deletingParticipacaoId, setDeletingParticipacaoId] = useState(null);
+  const [togglingBolsaId, setTogglingBolsaId] = useState(null);
+  const [confirmBolsa, setConfirmBolsa] = useState(null);
   const [showQuestionario, setShowQuestionario] = useState(false);
   const [questionario, setQuestionario] = useState(null);
   const toast = useRef(null);
@@ -258,6 +260,31 @@ const FluxoInscricaoEdital = ({
       showError(errorMessage);
     } finally {
       setDeletingParticipacaoId(null);
+    }
+  };
+
+  const handleToggleBolsa = (aluno, novoValor) => {
+    setConfirmBolsa({ aluno, novoValor });
+  };
+
+  const executeToggleBolsa = async () => {
+    const { aluno, novoValor } = confirmBolsa;
+    const para = novoValor ? "Bolsista" : "Voluntário";
+    setConfirmBolsa(null);
+    setTogglingBolsaId(aluno.id);
+    try {
+      const updated = await updateParticipacao(tenant, aluno.id, { solicitarBolsa: novoValor });
+      setInscricao((prev) => ({
+        ...prev,
+        participacoes: prev.participacoes.map((p) =>
+          p.id === aluno.id ? { ...p, solicitarBolsa: updated.solicitarBolsa } : p,
+        ),
+      }));
+      showSuccess(`${aluno.user.nome} alterado para ${para} com sucesso.`);
+    } catch (error) {
+      showError(error.response?.data?.message || "Erro ao atualizar categoria do aluno.");
+    } finally {
+      setTogglingBolsaId(null);
     }
   };
 
@@ -469,6 +496,38 @@ const FluxoInscricaoEdital = ({
   return (
     <>
       <Toast ref={toast} position="top-right" />
+      <Modal
+        isOpen={!!confirmBolsa}
+        onClose={() => setConfirmBolsa(null)}
+        size="small"
+      >
+        {confirmBolsa && (
+          <div className={styles.confirmBolsaContent}>
+            <h4>Alterar categoria</h4>
+            <p className={styles.confirmBolsaNome}>{confirmBolsa.aluno.user.nome}</p>
+            <div className={styles.confirmBolsaSetas}>
+              <span className={`${styles.confirmBolsaTag} ${confirmBolsa.aluno.solicitarBolsa ? styles.tagBolsista : styles.tagVoluntario}`}>
+                {confirmBolsa.aluno.solicitarBolsa ? "Bolsista" : "Voluntário"}
+              </span>
+              <i className="pi pi-arrow-right" />
+              <span className={`${styles.confirmBolsaTag} ${confirmBolsa.novoValor ? styles.tagBolsista : styles.tagVoluntario}`}>
+                {confirmBolsa.novoValor ? "Bolsista" : "Voluntário"}
+              </span>
+            </div>
+            <p className={styles.confirmBolsaAviso}>
+              Esta alteração pode ser desfeita antes da submissão da inscrição.
+            </p>
+            <div className={styles.confirmBolsaAcoes}>
+              <Button className="btn-secondary" onClick={() => setConfirmBolsa(null)}>
+                Cancelar
+              </Button>
+              <Button className="btn-primary" onClick={executeToggleBolsa}>
+                Confirmar alteração
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       {/* Modais */}
       <Modal isOpen={isModalOpen} onClose={closeModalAndResetData}>
@@ -1039,13 +1098,28 @@ const FluxoInscricaoEdital = ({
                                       <span className={styles.alunoNome}>
                                         {aluno.user.nome.toUpperCase()}
                                       </span>
-                                      {aluno.solicitarBolsa && (
-                                        <span className={styles.bolsaBadge}>
-                                          <RiUserAddLine size={12} />
-                                          Bolsa
-                                        </span>
-                                      )}
                                     </div>
+                                  </div>
+                                  <div
+                                    className={`${styles.categoriaSplitButton} ${aluno.solicitarBolsa ? styles.splitBolsista : styles.splitVoluntario} ${(togglingBolsaId === aluno.id || (!aluno.solicitarBolsa && atingiuLimiteBolsa())) ? styles.splitDisabled : ""}`}
+                                    title={!aluno.solicitarBolsa && atingiuLimiteBolsa() ? "Limite de bolsas atingido" : undefined}
+                                  >
+                                    <span className={styles.splitLabel}>
+                                      {togglingBolsaId === aluno.id
+                                        ? <i className="pi pi-spin pi-spinner" />
+                                        : (aluno.solicitarBolsa ? "Bolsista" : "Voluntário")
+                                      }
+                                    </span>
+                                    <button
+                                      className={styles.splitAction}
+                                      disabled={togglingBolsaId === aluno.id || (!aluno.solicitarBolsa && atingiuLimiteBolsa())}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleToggleBolsa(aluno, !aluno.solicitarBolsa);
+                                      }}
+                                    >
+                                      Alterar
+                                    </button>
                                   </div>
                                   <button
                                     className={`${styles.iconButton} ${styles.danger}`}
