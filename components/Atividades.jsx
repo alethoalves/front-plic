@@ -264,7 +264,7 @@ const Atividades = ({
                 className="btn-secondary"
                 disabled={loading}
               >
-                Preencher com IA
+                Colar Atividades
               </Button>
             )}
             <Button
@@ -472,7 +472,7 @@ const Atividades = ({
       >
         {aiPreview === null ? (
           <>
-            <h4 className="mb-2">Preencher cronograma com IA</h4>
+            <h4 className="mb-2">Inserir Atividades em Massa</h4>
             <p className="mb-2">
               Cole abaixo o texto com as atividades e os períodos. Pode ser uma
               tabela copiada, uma lista ou texto corrido.
@@ -497,7 +497,7 @@ const Atividades = ({
                 onClick={handleAnalisarComIA}
                 disabled={aiLoading}
               >
-                {aiLoading ? "Analisando..." : "Analisar com IA"}
+                {aiLoading ? "Processando..." : "Processar com IA"}
               </Button>
             </div>
           </>
