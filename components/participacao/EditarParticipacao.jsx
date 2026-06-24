@@ -70,6 +70,7 @@ const EditarParticipacao = ({
   const [userTenantData, setUserTenantData] = useState(null);
   const [itensNaoContabilizados, setItensNaoContabilizados] = useState(null);
   const [isItensModalOpen, setIsItensModalOpen] = useState(false);
+  const [lattesJaExistenteModal, setLattesJaExistenteModal] = useState({ open: false, message: "" });
   const [loadingItensNaoContabilizados, setLoadingItensNaoContabilizados] =
     useState(false);
   // Perfil de avaliação do tipo de participação atual (extraído do schemaFichaAvaliacaoParticipacao)
@@ -326,11 +327,15 @@ const EditarParticipacao = ({
       console.error("Erro ao fazer upload:", error);
       const errorMessage =
         error.response?.data?.message || "Erro ao enviar o arquivo.";
-      setFileInputErrors((prev) => ({
-        ...prev,
-        [userId]: errorMessage,
-      }));
-      showError(errorMessage);
+      if (error.response?.status === 400 && error.response?.data?.message) {
+        setLattesJaExistenteModal({ open: true, message: errorMessage });
+      } else {
+        setFileInputErrors((prev) => ({
+          ...prev,
+          [userId]: errorMessage,
+        }));
+        showError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
@@ -1447,6 +1452,22 @@ const EditarParticipacao = ({
       ) : (
         <div className="p-4">Carregando...</div>
       )}
+
+      <Modal
+        isOpen={lattesJaExistenteModal.open}
+        onClose={() => setLattesJaExistenteModal({ open: false, message: "" })}
+        size="small"
+        showIconClose={false}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <h4>Atenção</h4>
+          <p>{lattesJaExistenteModal.message}</p>
+          <Button
+            label="Entendi"
+            onClick={() => setLattesJaExistenteModal({ open: false, message: "" })}
+          />
+        </div>
+      </Modal>
 
       <Modal
         isOpen={isItensModalOpen}
