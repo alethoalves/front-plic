@@ -5,10 +5,13 @@ import {
   RiExternalLinkLine,
   RiEyeLine,
   RiSave2Line,
-  RiYoutubeLine, // Adicione este
-  RiFlaskLine, // Para Iniciação Científica
-  RiUserStarLine, // Para Monitoria
-  RiCommunityLine, // Para Extensão
+  RiYoutubeLine,
+  RiFlaskLine,
+  RiUserStarLine,
+  RiCommunityLine,
+  RiAlertLine,
+  RiTimeLine,
+  RiInformationLine,
 } from "@remixicon/react";
 import styles from "./EditarParticipacao.module.scss";
 import { useCallback, useEffect, useState, useMemo, useRef } from "react";
@@ -70,7 +73,7 @@ const EditarParticipacao = ({
   const [userTenantData, setUserTenantData] = useState(null);
   const [itensNaoContabilizados, setItensNaoContabilizados] = useState(null);
   const [isItensModalOpen, setIsItensModalOpen] = useState(false);
-  const [lattesJaExistenteModal, setLattesJaExistenteModal] = useState({ open: false, message: "" });
+  const [lattesJaExistenteModal, setLattesJaExistenteModal] = useState({ open: false, message: "", detail: "", hint: "" });
   const [loadingItensNaoContabilizados, setLoadingItensNaoContabilizados] =
     useState(false);
   // Perfil de avaliação do tipo de participação atual (extraído do schemaFichaAvaliacaoParticipacao)
@@ -327,8 +330,9 @@ const EditarParticipacao = ({
       console.error("Erro ao fazer upload:", error);
       const errorMessage =
         error.response?.data?.message || "Erro ao enviar o arquivo.";
-      if (error.response?.status === 400 && error.response?.data?.message) {
-        setLattesJaExistenteModal({ open: true, message: errorMessage });
+      if (error.response?.data?.code === "LATTES_IDENTICAL") {
+        const { message, detail, hint } = error.response.data;
+        setLattesJaExistenteModal({ open: true, message, detail: detail ?? "", hint: hint ?? "" });
       } else {
         setFileInputErrors((prev) => ({
           ...prev,
@@ -1455,17 +1459,42 @@ const EditarParticipacao = ({
 
       <Modal
         isOpen={lattesJaExistenteModal.open}
-        onClose={() => setLattesJaExistenteModal({ open: false, message: "" })}
+        onClose={() => setLattesJaExistenteModal({ open: false, message: "", detail: "", hint: "" })}
         size="small"
         showIconClose={false}
       >
-        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-          <h4>Atenção</h4>
-          <p>{lattesJaExistenteModal.message}</p>
-          <Button
-            label="Entendi"
-            onClick={() => setLattesJaExistenteModal({ open: false, message: "" })}
-          />
+        <div className={styles.lattesAlertModal}>
+          <div className={styles.lattesAlertHeader}>
+            <div className={styles.lattesAlertIconWrapper}>
+              <RiAlertLine size={24} />
+            </div>
+            <h4>CV Lattes já registrado</h4>
+          </div>
+
+          <p className={styles.lattesAlertMessage}>
+            {lattesJaExistenteModal.message}
+          </p>
+
+          {lattesJaExistenteModal.detail && (
+            <div className={styles.lattesAlertDetail}>
+              <RiTimeLine size={18} />
+              {lattesJaExistenteModal.detail}
+            </div>
+          )}
+
+          {lattesJaExistenteModal.hint && (
+            <div className={styles.lattesAlertHint}>
+              <span className={styles.lattesAlertHintTitle}>O que fazer?</span>
+              <p>{lattesJaExistenteModal.hint}</p>
+            </div>
+          )}
+
+          <div className={styles.lattesAlertFooter}>
+            <Button
+              label="Entendi"
+              onClick={() => setLattesJaExistenteModal({ open: false, message: "", detail: "", hint: "" })}
+            />
+          </div>
         </div>
       </Modal>
 
