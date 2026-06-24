@@ -1611,6 +1611,9 @@ $shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
   font-size: 0.875rem;
   color: $warning-darken;
   font-weight: 500;
+  svg{
+    width: 14px;
+  }
 }
 
 .lattesAlertHint {
