@@ -199,6 +199,18 @@ const PerfilForm = ({ initialData, mode, onSave, onClose }) => {
       </label>
 
       <label className={styles.field}>
+        <span>Tipo de avaliação</span>
+        <select
+          value={data.tipoAvaliacao || "AUTOMATICA"}
+          onChange={(e) => set("tipoAvaliacao", e.target.value)}
+        >
+          <option value="AUTOMATICA">Automática — leitura automática do Lattes</option>
+          <option value="MANUAL">Manual — proponente informa as quantidades</option>
+          <option value="HIBRIDA">Híbrida — leitura automática + edição das quantidades</option>
+        </select>
+      </label>
+
+      <label className={styles.field}>
         <span>Aplicabilidade</span>
         <input
           value={data.aplicabilidade}
@@ -670,6 +682,9 @@ const EditalFichaAvaliacao = ({ params }) => {
                   <span className={styles.badge}>{perfil.tipoParticipacao}</span>
                   <span className={styles.badge}>{perfil.aplicabilidade}</span>
                   <span className={styles.badgePoints}>{perfil.notaMax} pts máx.</span>
+                  <span className={styles.badge} title="Tipo de avaliação">
+                    {perfil.tipoAvaliacao === "MANUAL" ? "Manual" : perfil.tipoAvaliacao === "HIBRIDA" ? "Híbrida" : "Automática"}
+                  </span>
                 </div>
               </div>
             </div>

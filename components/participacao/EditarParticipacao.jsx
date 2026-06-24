@@ -29,7 +29,9 @@ import { getUserTenant } from "@/app/api/client/userTenant";
 import {
   gerarFichaAvaliacaoParticipacao,
   getItensAprovadosRejeitadosParticipacao,
+  salvarFichaAvaliacaoManual,
 } from "@/app/api/client/cvLattes";
+import FichaAvaliacaoManual from "./FichaAvaliacaoManual";
 import { xmlLattes } from "@/app/api/clientReq";
 import { Stepper } from "primereact/stepper";
 import { StepperPanel } from "primereact/stepperpanel";
@@ -70,6 +72,8 @@ const EditarParticipacao = ({
   const [isItensModalOpen, setIsItensModalOpen] = useState(false);
   const [loadingItensNaoContabilizados, setLoadingItensNaoContabilizados] =
     useState(false);
+  // Perfil de avaliação do tipo de participação atual (extraído do schemaFichaAvaliacaoParticipacao)
+  const [perfilSchema, setPerfilSchema] = useState(null);
   const toast = useRef(null);
 
 
@@ -168,6 +172,34 @@ const EditarParticipacao = ({
         error.message ||
         "Erro ao enviar o formulário.";
       setErrorForm(errorMessage);
+      showError(errorMessage);
+    } finally {
+      setLoadingForm(false);
+    }
+  };
+
+  const handleSalvarFichaManual = async (fichaReconstruida) => {
+    setLoadingForm(true);
+    try {
+      const result = await salvarFichaAvaliacaoManual(
+        tenant,
+        participacaoInfo.id,
+        fichaReconstruida,
+      );
+      setFichaAvaliacao(result.fichaAvaliacao);
+      setInscricao((prev) => ({
+        ...prev,
+        participacoes: prev.participacoes.map((p) =>
+          p.id === participacaoInfo.id
+            ? { ...p, fichaAvaliacao: result.fichaAvaliacao }
+            : p,
+        ),
+      }));
+      showSuccess("Ficha salva com sucesso!");
+      closeModalAndResetData();
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "Erro ao salvar a ficha de avaliação.";
       showError(errorMessage);
     } finally {
       setLoadingForm(false);
@@ -705,10 +737,25 @@ const EditarParticipacao = ({
           setUserTenantData(ut);
         }
 
+        // Extrair perfil de avaliação do edital para o tipo de participação atual
+        let perfil = null;
+        if (response.edital?.schemaFichaAvaliacaoParticipacao) {
+          let schemaArray = response.edital.schemaFichaAvaliacaoParticipacao;
+          if (typeof schemaArray === "string") schemaArray = JSON.parse(schemaArray);
+          if (!Array.isArray(schemaArray)) schemaArray = [schemaArray];
+          perfil = schemaArray.find((p) => p.tipoParticipacao === tipoParticipacao) || null;
+        }
+        setPerfilSchema(perfil);
+
+        const tipoAvaliacao = perfil?.tipoAvaliacao || "AUTOMATICA";
+
         if (participacaoInfo?.fichaAvaliacao) {
           setFichaAvaliacao(participacaoInfo.fichaAvaliacao);
 
-          if (tipoParticipacao === "aluno") {
+          if (tipoAvaliacao === "MANUAL") {
+            // Modo manual: step único da ficha (índice 0)
+            setActiveStep(0);
+          } else if (tipoParticipacao === "aluno") {
             const historicoFeito = !!ut?.historicoEscolarUrl;
             if (historicoFeito && camposCarregados.length > 0) {
               setActiveStep(4);
@@ -753,6 +800,14 @@ const EditarParticipacao = ({
       <Toast ref={toast} position="top-right" />
       {!loading ? (
         <div className={styles.editarParticipacao}>
+          {(perfilSchema?.tipoAvaliacao || "AUTOMATICA") === "MANUAL" ? (
+            <FichaAvaliacaoManual
+              schema={perfilSchema}
+              fichaAtual={fichaAvaliacao}
+              onSave={handleSalvarFichaManual}
+              loading={loadingForm}
+            />
+          ) : (
           <Stepper
             activeStep={activeStep}
             orientation="vertical"
@@ -1140,6 +1195,15 @@ const EditarParticipacao = ({
             </StepperPanel>
             <StepperPanel header={`Ficha do ${tipoParticipacao}`}>
               <div className={styles.fichaAvaliacao}>
+                {(fichaAvaliacao?.tipoAvaliacao === "HIBRIDA" || perfilSchema?.tipoAvaliacao === "HIBRIDA") ? (
+                  <FichaAvaliacaoManual
+                    schema={perfilSchema ?? fichaAvaliacao}
+                    fichaAtual={fichaAvaliacao}
+                    onSave={handleSalvarFichaManual}
+                    onBack={() => setActiveStep(0)}
+                    loading={loadingForm}
+                  />
+                ) : (
                 <Card className={styles.fichaCard}>
                   {/* Cabeçalho com nota total */}
                   <div className={styles.fichaHeader}>
@@ -1225,6 +1289,7 @@ const EditarParticipacao = ({
                     )}
                   </div>
                 </Card>
+                )}
               </div>
             </StepperPanel>
             {/* Step: Histórico Escolar (apenas aluno) */}
@@ -1330,6 +1395,7 @@ const EditarParticipacao = ({
               </StepperPanel>
             )}
           </Stepper>
+          )}
 
           {/* Botão de excluir fora do Stepper */}
           {!loading ||

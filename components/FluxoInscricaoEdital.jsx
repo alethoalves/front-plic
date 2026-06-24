@@ -409,8 +409,8 @@ const FluxoInscricaoEdital = ({
         const primeiroPlano = planos[0];
         if (primeiroPlano) {
           setTipoParticipacao("aluno");
-          setPlanoDeTrabalhoSelected(primeiroPlano);
           openModalAndSetData(null);
+          setPlanoDeTrabalhoSelected(primeiroPlano);
         }
       },
     });

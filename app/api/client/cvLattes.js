@@ -18,6 +18,22 @@ export const importarLattesGestor = async (tenantSlug, participacaoId, html) => 
   }
 };
 
+export const salvarFichaAvaliacaoManual = async (tenantSlug, idParticipacao, fichaAvaliacao) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+    const response = await req.post(
+      `/private/${tenantSlug}/salvar-ficha-avaliacao-manual/${idParticipacao}`,
+      { fichaAvaliacao },
+      { headers }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao salvar ficha de avaliação manual:", error);
+    throw error;
+  }
+};
+
 export const gerarFichaAvaliacaoParticipacao = async (tenantSlug, idParticipacao) => {
     try {
       const headers = getAuthHeadersClient();
