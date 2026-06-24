@@ -110,6 +110,8 @@ const EditarParticipacao = ({
 
   const campos = getCamposByTipoParticipacao();
 
+  const tipoAvaliacao = perfilSchema?.tipoAvaliacao || fichaAvaliacao?.tipoAvaliacao || "AUTOMATICA";
+
   const participacaoSchema = useMemo(
     () =>
       z.object({
@@ -196,7 +198,11 @@ const EditarParticipacao = ({
         ),
       }));
       showSuccess("Ficha salva com sucesso!");
-      closeModalAndResetData();
+      if (tipoParticipacao === "aluno" || campos.length > 0) {
+        setActiveStep((prev) => prev + 1);
+      } else {
+        closeModalAndResetData();
+      }
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Erro ao salvar a ficha de avaliação.";
@@ -753,8 +759,19 @@ const EditarParticipacao = ({
           setFichaAvaliacao(participacaoInfo.fichaAvaliacao);
 
           if (tipoAvaliacao === "MANUAL") {
-            // Modo manual: step único da ficha (índice 0)
-            setActiveStep(0);
+            // MANUAL: Ficha=step 0, Histórico=step 1 (aluno), Formulário=step 1/2
+            if (tipoParticipacao === "aluno") {
+              const historicoFeito = !!ut?.historicoEscolarUrl;
+              if (historicoFeito && camposCarregados.length > 0) {
+                setActiveStep(2);
+              } else {
+                setActiveStep(1);
+              }
+            } else if (camposCarregados.length > 0) {
+              setActiveStep(1);
+            } else {
+              setActiveStep(0);
+            }
           } else if (tipoParticipacao === "aluno") {
             const historicoFeito = !!ut?.historicoEscolarUrl;
             if (historicoFeito && camposCarregados.length > 0) {
@@ -800,19 +817,22 @@ const EditarParticipacao = ({
       <Toast ref={toast} position="top-right" />
       {!loading ? (
         <div className={styles.editarParticipacao}>
-          {(perfilSchema?.tipoAvaliacao || "AUTOMATICA") === "MANUAL" ? (
-            <FichaAvaliacaoManual
-              schema={perfilSchema}
-              fichaAtual={fichaAvaliacao}
-              onSave={handleSalvarFichaManual}
-              loading={loadingForm}
-            />
-          ) : (
           <Stepper
             activeStep={activeStep}
             orientation="vertical"
             style={{ flexBasis: "50rem" }}
           >
+            {tipoAvaliacao === "MANUAL" && (
+              <StepperPanel header="Ficha de Avaliação">
+                <FichaAvaliacaoManual
+                  schema={perfilSchema}
+                  fichaAtual={fichaAvaliacao}
+                  onSave={handleSalvarFichaManual}
+                  loading={loadingForm}
+                />
+              </StepperPanel>
+            )}
+            {tipoAvaliacao !== "MANUAL" && (
             <StepperPanel header="Currículo">
               <div className={styles.curriculoStep}>
                 {/* Card de informações do CV */}
@@ -1129,6 +1149,8 @@ const EditarParticipacao = ({
                 />
               </div>
             </StepperPanel>
+            )}
+            {tipoAvaliacao !== "MANUAL" && (
             <StepperPanel header={`Gerar Ficha do ${tipoParticipacao}`}>
               <div className={styles.fichaAvaliacao}>
                 <Card className={styles.avaliacaoCard}>
@@ -1193,9 +1215,11 @@ const EditarParticipacao = ({
 
               </div>
             </StepperPanel>
+            )}
+            {tipoAvaliacao !== "MANUAL" && (
             <StepperPanel header={`Ficha do ${tipoParticipacao}`}>
               <div className={styles.fichaAvaliacao}>
-                {(fichaAvaliacao?.tipoAvaliacao === "HIBRIDA" || perfilSchema?.tipoAvaliacao === "HIBRIDA") ? (
+                {tipoAvaliacao === "HIBRIDA" ? (
                   <FichaAvaliacaoManual
                     schema={perfilSchema ?? fichaAvaliacao}
                     fichaAtual={fichaAvaliacao}
@@ -1292,6 +1316,7 @@ const EditarParticipacao = ({
                 )}
               </div>
             </StepperPanel>
+            )}
             {/* Step: Histórico Escolar (apenas aluno) */}
             {tipoParticipacao === "aluno" && (
               <StepperPanel header="Histórico Escolar">
@@ -1395,7 +1420,6 @@ const EditarParticipacao = ({
               </StepperPanel>
             )}
           </Stepper>
-          )}
 
           {/* Botão de excluir fora do Stepper */}
           {!loading ||
