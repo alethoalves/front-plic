@@ -43,7 +43,8 @@ const ProjetoController = ({
       const response = await getProjetosDoUsuario(
         tenant,
         inscricao.proponenteId,
-        editalAno,
+        null,
+        true,
       );
 
       // Ordena os projetos por ID decrescente

@@ -93,7 +93,7 @@ export const createProjetoInscricao = async (
   };
   
 // Obter os projetos do usuário autenticado
-export const getProjetosDoUsuario = async (tenantSlug, proponenteId = null, ano = null) => {
+export const getProjetosDoUsuario = async (tenantSlug, proponenteId = null, ano = null, comConteudo = false) => {
   try {
     const headers = getAuthHeadersClient();
     if (!headers) {
@@ -103,6 +103,7 @@ export const getProjetosDoUsuario = async (tenantSlug, proponenteId = null, ano 
     const params = {};
     if (proponenteId) params.proponenteId = proponenteId;
     if (ano) params.ano = ano;
+    if (comConteudo) params.comConteudo = true;
 
     const response = await req.get(`/private/${tenantSlug}/projetosDoUsuario`, {
       headers,
