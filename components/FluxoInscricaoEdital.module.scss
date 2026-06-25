@@ -137,6 +137,31 @@ $shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
   }
 }
 
+.gestorBannerComprovante {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  padding: 4px 12px;
+  background: rgba($primary-normal, 0.12);
+  border: 1px solid rgba($primary-normal, 0.3);
+  border-radius: 20px;
+  color: $primary-dark;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover {
+    background: rgba($primary-normal, 0.2);
+  }
+
+  svg {
+    color: $primary-normal;
+    width: 14px;
+  }
+}
+
 // ================ STATUS BANNER ================
 
 .statusBanner {

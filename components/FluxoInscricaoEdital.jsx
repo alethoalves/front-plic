@@ -16,7 +16,9 @@ import {
   RiArrowRightSLine,
   RiUserSettingsLine,
   RiProjectorLine,
+  RiFilePaper2Line,
 } from "@remixicon/react";
+import Link from "next/link";
 import {
   getInscricaoUserById,
   submissaoInscricao,
@@ -612,6 +614,15 @@ const FluxoInscricaoEdital = ({
             Modo Gestor — você está acessando esta inscrição em nome do
             proponente.
           </span>
+          {inscricao?.status === "enviada" && (
+            <Link
+              href={`/${tenant}/gestor/${inscricao.edital?.ano}/inscricoes/${inscricaoSelected}/comprovante`}
+              className={styles.gestorBannerComprovante}
+            >
+              <RiFilePaper2Line size={16} />
+              Ver comprovante
+            </Link>
+          )}
         </div>
       )}
 
