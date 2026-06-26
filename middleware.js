@@ -83,7 +83,6 @@ export const middleware = async (request) => {
   const token = getCookie("authToken", { cookies });
   const tokenAvaliador = getCookie("authTokenAvaliador", { cookies });
   const perfilSelecionado = getCookie("perfilSelecionado", { cookies });
-  console.log('ENTROU NO MIDDLEWARE')
 // Permitir explicitamente a página de autenticação sem tratá‑la como tenant
 if (pathname === "/autenticacao" || pathname.startsWith("/autenticacao/")) {
   return NextResponse.next();
@@ -97,7 +96,6 @@ if (pathname === "/autenticacao" || pathname.startsWith("/autenticacao/")) {
       /^\/$/.test(pathname) ||  //RAIZ
       url.pathname.startsWith(`/errors/server`)) // ERRO
     {
-      console.log('ENTROU NA RAIZ OU NO ERRO') 
       return NextResponse.next();
     }
     
@@ -106,16 +104,13 @@ if (pathname === "/autenticacao" || pathname.startsWith("/autenticacao/")) {
      * ****************/
     // APENAS /eventos/signin
     if (/^\/eventos\/signin$/.test(pathname)) {
-      console.log('ENTROU NA ROTA /evento/signin')
       return NextResponse.next();
     }
     
     if (url.pathname.startsWith(`/evento/${slugEvento}/avaliador/convite`)) {
-      console.log(`/evento/${slugEvento}/avaliador`)
       // Não tem token válido OU não tem permissão de acesso -> redireciona
-      
+
       const eventoExists = await getEventoBySlug(slugEvento);
-      console.log(eventoExists.pathLogo)
       if (!eventoExists) {
         return NextResponse.redirect(urlToEventos);
       }
@@ -139,10 +134,7 @@ if (pathname === "/autenticacao" || pathname.startsWith("/autenticacao/")) {
    
     // Middleware apenas para as rotas avaliador `/evento/slugEvento/edicao/slugEdicao/avaliador`
     if (url.pathname.startsWith(`/evento/${slugEvento}/edicao/${slugEdicao}/avaliador`)) {
-      console.log("AQUI ALETHO")
-      console.log(url.pathname)
       const pongAvaliador = await pingAvaliador(tokenAvaliador);
-      console.log(pongAvaliador)
       // Não tem token válido OU não tem permissão de acesso -> redireciona
       if (!pongAvaliador) return NextResponse.redirect(urlToRootAvaliadorEvento);
       const eventoEdicaoExists = await getEventoBySlug(slugEdicao);
@@ -165,13 +157,11 @@ if (pathname === "/autenticacao" || pathname.startsWith("/autenticacao/")) {
 
     // Middleware apenas para as rotas admin `/eventos/[eventoSlug]/admin`
     if (url.pathname.startsWith(`/evento/${slugEvento}/admin`)) {
-      console.log(`/evento/${slugEvento}/admin`)
       // Não tem token válido OU não tem permissão de acesso -> redireciona
       let pongAdminEvento;
       pongAdminEvento = await pingAdminEvento(token,slugEvento);
       if (!pongAdminEvento) return NextResponse.redirect(urlToSignin);
       const eventoExists = await getEventoBySlug(slugEvento);
-      console.log(eventoExists.pathLogo)
       if (!eventoExists) {
         return NextResponse.redirect(urlToSignin);
       }
@@ -188,9 +178,7 @@ if (pathname === "/autenticacao" || pathname.startsWith("/autenticacao/")) {
       
         return NextResponseWithEvento;
     }
-    console.log(pathname)
     if (url.pathname.startsWith(`/evento/${slugEvento}/publicacoes`)) {
-      console.log(`/evento/${slugEvento}`)
       const eventoExists = await getEventoRootBySlug(slugEvento);
       if (!eventoExists) {
         return NextResponse.redirect('/eventos');
@@ -209,7 +197,6 @@ if (pathname === "/autenticacao" || pathname.startsWith("/autenticacao/")) {
         return NextResponseWithEvento;
     }
     if (url.pathname.startsWith(`/evento/${slugEvento}/edicao`)) {
-      console.log(`/evento/${slugEvento}/edicao/`)
       const eventoExists = await getEventoRootBySlug(slugEvento);
       if (!eventoExists) {
         return NextResponse.redirect('/eventos');
@@ -228,7 +215,6 @@ if (pathname === "/autenticacao" || pathname.startsWith("/autenticacao/")) {
         return NextResponseWithEvento;
     }
     if (url.pathname.startsWith(`/evento/${slugEvento}`)) {
-      console.log(`/evento/${slugEvento}`)
       const eventoExists = await getEventoRootBySlug(slugEvento);
       if (!eventoExists) {
         return NextResponse.redirect('/eventos');
@@ -250,8 +236,6 @@ if (pathname === "/autenticacao" || pathname.startsWith("/autenticacao/")) {
     
     // /eventos ou /eventos/ ou eventos/qualquercoisa
     if (/^\/eventos(\/|$)/.test(pathname)) {
-      console.log('ENTROU EM QUALQUER ROTA que começa com /eventos');
-      
       return NextResponse.next();
     }
     let pongAvaliador;
@@ -264,9 +248,7 @@ if (pathname === "/autenticacao" || pathname.startsWith("/autenticacao/")) {
      * ****************/
     // APENAS /avaliador
     if (pathname === '/avaliador') {
-      console.log('ENTROU NA ROTA APENAS /avaliador')
       //if (pongAvaliador) return NextResponse.redirect(urlToAvaliador);
-      console.log(pongAvaliador)
       return NextResponse.next();
     }
 
@@ -287,9 +269,7 @@ if (pathname === "/autenticacao" || pathname.startsWith("/autenticacao/")) {
      * ****************/
     // APENAS /root
     if (pathname === '/root') {
-      console.log('ENTROU NA ROTA APENAS /root')
       if (pongRoot) return NextResponse.redirect(urlToPlic);
-      console.log(pongRoot)
       return NextResponse.next();
     }
 
@@ -337,7 +317,6 @@ if (pathname === "/autenticacao" || pathname.startsWith("/autenticacao/")) {
 
     
     if (url.pathname.startsWith(`/${tenant}/public`)) {
-      console.log('ENTROU NA ROTA /public')
       return NextResponseWithTenant;
     }
 
