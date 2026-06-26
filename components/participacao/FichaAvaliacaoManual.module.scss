@@ -165,6 +165,54 @@
   gap: 6px;
 }
 
+// ─── Link do Lattes ─────────────────────────────────────────────────────────
+.lattesLinkField {
+  margin: 16px 20px 0;
+}
+
+.lattesLinkLabel {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: var(--color-text, #111827);
+}
+
+.lattesLinkInput {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border, #d1d5db);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  background: #fff;
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary, #1d4ed8);
+    box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.15);
+  }
+
+  &::placeholder {
+    color: var(--color-text-secondary, #9ca3af);
+  }
+
+  &.lattesLinkInputError {
+    border-color: #dc2626;
+
+    &:focus {
+      border-color: #dc2626;
+      box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.15);
+    }
+  }
+}
+
+.lattesLinkErrorMsg {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.78rem;
+  color: #dc2626;
+}
+
 // ─── Confirmação ─────────────────────────────────────────────────────────────
 
 .confirmacao {

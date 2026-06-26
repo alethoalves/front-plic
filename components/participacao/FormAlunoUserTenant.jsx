@@ -210,7 +210,7 @@ const FormAlunoUserTenant = ({
           icon="pi pi-check"
           className="btn-primary"
           type="button"
-          disabled={processing || participacaoExterna === null}
+          disabled={processing || participacaoExterna === null || (!historicoUrl && !result)}
           onClick={onSuccess}
         />
       </div>

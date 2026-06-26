@@ -163,6 +163,19 @@ const FichaAvaliacaoManual = ({
 
   const [quantidades, setQuantidades] = useState(initialQuantidades);
   const [confirmado, setConfirmado] = useState(false);
+  const [lattesUrl, setLattesUrl] = useState(fichaAtual?.lattesUrl ?? "");
+  const [lattesUrlError, setLattesUrlError] = useState("");
+
+  const validarLattesUrl = (url) => {
+    if (!url.trim()) return "";
+    const regex = /^https?:\/\/lattes\.cnpq\.br\/\d+$/;
+    if (!regex.test(url.trim())) {
+      return "Formato esperado: http://lattes.cnpq.br/0000000000000000";
+    }
+    return "";
+  };
+
+  const isLattesUrlValida = lattesUrl.trim() && !validarLattesUrl(lattesUrl);
 
   const handleChange = (caminho, valor) => {
     setQuantidades((prev) => ({ ...prev, [caminho]: valor }));
@@ -171,6 +184,7 @@ const FichaAvaliacaoManual = ({
 
   const handleSalvar = () => {
     const ficha = reconstruirFicha(schema, quantidades);
+    ficha.lattesUrl = lattesUrl.trim();
     onSave(ficha);
   };
 
@@ -209,6 +223,28 @@ const FichaAvaliacaoManual = ({
         ))}
       </div>
 
+      <div className={styles.lattesLinkField}>
+        <label htmlFor="lattesUrl" className={styles.lattesLinkLabel}>
+          Link do Currículo Lattes
+        </label>
+        <input
+          id="lattesUrl"
+          type="url"
+          placeholder="https://lattes.cnpq.br/..."
+          value={lattesUrl}
+          onChange={(e) => {
+            setLattesUrl(e.target.value);
+            setLattesUrlError(validarLattesUrl(e.target.value));
+            setConfirmado(false);
+          }}
+          onBlur={() => setLattesUrlError(validarLattesUrl(lattesUrl))}
+          className={`${styles.lattesLinkInput} ${lattesUrlError ? styles.lattesLinkInputError : ""}`}
+        />
+        {lattesUrlError && (
+          <small className={styles.lattesLinkErrorMsg}>{lattesUrlError}</small>
+        )}
+      </div>
+
       <label className={styles.confirmacao}>
         <input
           type="checkbox"
@@ -236,7 +272,7 @@ const FichaAvaliacaoManual = ({
           icon={loading ? "pi pi-spin pi-spinner" : "pi pi-save"}
           className="btn-primary"
           onClick={handleSalvar}
-          disabled={loading || !confirmado}
+          disabled={loading || !confirmado || !isLattesUrlValida}
         />
       </div>
     </Card>
