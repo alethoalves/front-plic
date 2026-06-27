@@ -111,7 +111,7 @@
   align-items: center;
   gap: 10px;
   padding: 12px 16px;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
   background: #f0fdf4;
   border: 1px solid #bbf7d0;
   border-radius: 8px;
@@ -121,6 +121,26 @@
   i {
     font-size: 1rem;
     flex-shrink: 0;
+  }
+}
+
+.autoPreenchidoWarning {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  color: #92400e;
+  line-height: 1.5;
+
+  i {
+    font-size: 1rem;
+    flex-shrink: 0;
+    margin-top: 1px;
   }
 }
 

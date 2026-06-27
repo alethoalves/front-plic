@@ -5,7 +5,12 @@ import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { Toast } from "primereact/toast";
-import { RiExternalLinkLine, RiFileTextLine, RiUploadLine, RiDatabaseLine } from "@remixicon/react";
+import {
+  RiExternalLinkLine,
+  RiFileTextLine,
+  RiUploadLine,
+  RiDatabaseLine,
+} from "@remixicon/react";
 import FileInput from "../FileInput";
 import Modal from "@/components/Modal";
 import generateLattesText from "@/lib/generateLattesText";
@@ -92,7 +97,8 @@ const GrupoManual = ({ grupo, caminho, quantidades, onChange, nivel = 0 }) => {
   const isLeaf = grupo.notaPorItem !== undefined;
   const hasChildren = !isLeaf && grupo.grupos?.length > 0;
 
-  const nivelClass = nivel === 0 ? styles.nivel0 : nivel === 1 ? styles.nivel1 : styles.nivel2;
+  const nivelClass =
+    nivel === 0 ? styles.nivel0 : nivel === 1 ? styles.nivel1 : styles.nivel2;
 
   return (
     <div className={`${styles.grupo} ${nivelClass}`}>
@@ -102,23 +108,31 @@ const GrupoManual = ({ grupo, caminho, quantidades, onChange, nivel = 0 }) => {
       >
         <div className={styles.grupoHeaderEsquerda}>
           {hasChildren && (
-            <i className={`pi ${expanded ? "pi-chevron-down" : "pi-chevron-right"} ${styles.expandIcon}`} />
+            <i
+              className={`pi ${expanded ? "pi-chevron-down" : "pi-chevron-right"} ${styles.expandIcon}`}
+            />
           )}
           <span className={styles.grupoLabel}>{grupo.label}</span>
         </div>
 
         <div className={styles.grupoHeaderDireita}>
           {isLeaf ? (
-            <div className={styles.inputWrapper} onClick={(e) => e.stopPropagation()}>
+            <div
+              className={styles.inputWrapper}
+              onClick={(e) => e.stopPropagation()}
+            >
               <input
                 type="number"
                 min={0}
                 value={quantidades[caminho] ?? 0}
-                onChange={(e) => onChange(caminho, Math.max(0, parseInt(e.target.value) || 0))}
+                onChange={(e) =>
+                  onChange(caminho, Math.max(0, parseInt(e.target.value) || 0))
+                }
                 className={styles.qtyInput}
               />
               <span className={styles.qtyLabel}>
-                × {grupo.notaPorItem} pts = <strong>{notaAtual}</strong>/{grupo.notaMax}
+                × {grupo.notaPorItem} pts = <strong>{notaAtual}</strong>/
+                {grupo.notaMax}
               </span>
             </div>
           ) : (
@@ -168,7 +182,8 @@ const FichaAvaliacaoManual = ({
 
   const lattesUrlInicial = useMemo(() => {
     if (fichaAtual?.lattesUrl) return fichaAtual.lattesUrl;
-    if (identificadorExistente) return `http://lattes.cnpq.br/${identificadorExistente}`;
+    if (identificadorExistente)
+      return `http://lattes.cnpq.br/${identificadorExistente}`;
     return "";
   }, [fichaAtual, identificadorExistente]);
 
@@ -189,11 +204,21 @@ const FichaAvaliacaoManual = ({
   const [xmlStorageUrl, setXmlStorageUrl] = useState(ultimoCv?.url || null);
 
   const showError = (msg) => {
-    toast.current?.show({ severity: "error", summary: "Erro", detail: msg, life: 5000 });
+    toast.current?.show({
+      severity: "error",
+      summary: "Erro",
+      detail: msg,
+      life: 5000,
+    });
   };
 
   const showSuccess = (msg) => {
-    toast.current?.show({ severity: "success", summary: "Sucesso", detail: msg, life: 5000 });
+    toast.current?.show({
+      severity: "success",
+      summary: "Sucesso",
+      detail: msg,
+      life: 5000,
+    });
   };
 
   const validarLattesUrl = (url) => {
@@ -228,7 +253,8 @@ const FichaAvaliacaoManual = ({
       showSuccess("Ficha preenchida com os dados do Lattes!");
       setXmlModalOpen(false);
     } catch (error) {
-      const errorMessage = error.response?.data?.message || "Erro ao gerar ficha de avaliação.";
+      const errorMessage =
+        error.response?.data?.message || "Erro ao gerar ficha de avaliação.";
       showError(errorMessage);
     } finally {
       setGerando(false);
@@ -238,8 +264,16 @@ const FichaAvaliacaoManual = ({
   const handleFileUploadNoModal = async (file) => {
     if (!file || !onFileUpload) return;
 
-    const isZip = ["application/zip", "application/x-zip-compressed", "application/octet-stream"].includes(file.type) || file.name.endsWith(".zip");
-    const isXml = file.type === "text/xml" || file.type === "application/xml" || file.name.endsWith(".xml");
+    const isZip =
+      [
+        "application/zip",
+        "application/x-zip-compressed",
+        "application/octet-stream",
+      ].includes(file.type) || file.name.endsWith(".zip");
+    const isXml =
+      file.type === "text/xml" ||
+      file.type === "application/xml" ||
+      file.name.endsWith(".xml");
     if (!isXml && !isZip) {
       setXmlUploadError("Por favor, selecione um arquivo XML ou ZIP válido.");
       return;
@@ -255,7 +289,8 @@ const FichaAvaliacaoManual = ({
       showSuccess("XML importado e ficha preenchida com sucesso!");
       setXmlModalOpen(false);
     } catch (error) {
-      const errorMessage = error.response?.data?.message || "Erro ao enviar o arquivo.";
+      const errorMessage =
+        error.response?.data?.message || "Erro ao enviar o arquivo.";
       setXmlUploadError(errorMessage);
     } finally {
       setUploadingXml(false);
@@ -289,7 +324,8 @@ const FichaAvaliacaoManual = ({
             Agilize o preenchimento da ficha de avaliação
           </h4>
           <p className={styles.importarSubtitulo}>
-            Utilize o XML do Currículo Lattes para preencher automaticamente os dados abaixo.
+            Utilize o XML do Currículo Lattes para preencher automaticamente os
+            dados abaixo.
           </p>
 
           <div
@@ -300,7 +336,9 @@ const FichaAvaliacaoManual = ({
               <RiFileTextLine size={24} />
             </div>
             <div className={styles.importarCardTexto}>
-              <span className={styles.importarCardLabel}>Importar do XML do Lattes</span>
+              <span className={styles.importarCardLabel}>
+                Importar do XML do Lattes
+              </span>
               <span className={styles.importarCardDesc}>
                 {jaTemXml
                   ? "Usar XML já cadastrado ou enviar um novo"
@@ -315,7 +353,13 @@ const FichaAvaliacaoManual = ({
               <i className="pi pi-file" />
               <span>
                 XML cadastrado
-                {lattesInfo.formattedDate && (<> — atualizado em {lattesInfo.formattedDate} às {lattesInfo.formattedTime}</>)}
+                {lattesInfo.formattedDate && (
+                  <>
+                    {" "}
+                    — atualizado em {lattesInfo.formattedDate} às{" "}
+                    {lattesInfo.formattedTime}
+                  </>
+                )}
               </span>
               <a href={xmlStorageUrl} target="_blank" rel="noopener noreferrer">
                 Visualizar <RiExternalLinkLine size={14} />
@@ -326,10 +370,24 @@ const FichaAvaliacaoManual = ({
       )}
 
       {autoPreenchido && (
-        <div className={styles.autoPreenchidoBanner}>
-          <i className="pi pi-check-circle" />
-          <span>Ficha preenchida automaticamente com os dados do Lattes. Revise e ajuste se necessário.</span>
-        </div>
+        <>
+          <div className={styles.autoPreenchidoBanner}>
+            <i className="pi pi-check-circle" />
+            <span>
+              Ficha preenchida automaticamente com os dados do Lattes. Revise e
+              ajuste se necessário.
+            </span>
+          </div>
+          <div className={styles.autoPreenchidoWarning}>
+            <i className="pi pi-exclamation-triangle" />
+            <span>
+              Caso algum item do Currículo Lattes não tenha sido contabilizado
+              na ficha, você pode ajustar as quantidades manualmente nos campos
+              abaixo. Certifique-se de que os itens estejam devidamente
+              registrados no Lattes.
+            </span>
+          </div>
+        </>
       )}
 
       <Card className={styles.fichaCard}>
@@ -337,14 +395,17 @@ const FichaAvaliacaoManual = ({
           <div className={styles.fichaTitulo}>
             <h4>{schema.label || "Ficha de Avaliação"}</h4>
             <p className={styles.fichaSubtitulo}>
-              Informe a quantidade de itens de cada categoria. A nota é calculada automaticamente.
+              Informe a quantidade de itens de cada categoria. A nota é
+              calculada automaticamente.
             </p>
           </div>
           <div className={styles.notaTotal}>
             <span className={styles.notaTotalLabel}>Nota Total</span>
             <span className={styles.notaTotalValor}>
               {notaTotal}
-              <span className={styles.notaTotalMax}>/{schema.notaMax ?? 0}</span>
+              <span className={styles.notaTotalMax}>
+                /{schema.notaMax ?? 0}
+              </span>
             </span>
           </div>
         </div>
@@ -380,7 +441,9 @@ const FichaAvaliacaoManual = ({
             className={`${styles.lattesLinkInput} ${lattesUrlError ? styles.lattesLinkInputError : ""}`}
           />
           {lattesUrlError && (
-            <small className={styles.lattesLinkErrorMsg}>{lattesUrlError}</small>
+            <small className={styles.lattesLinkErrorMsg}>
+              {lattesUrlError}
+            </small>
           )}
         </div>
 
@@ -418,13 +481,17 @@ const FichaAvaliacaoManual = ({
 
       <Modal
         isOpen={xmlModalOpen}
-        onClose={() => { setXmlModalOpen(false); setXmlUploadError(""); }}
+        onClose={() => {
+          setXmlModalOpen(false);
+          setXmlUploadError("");
+        }}
         size="small"
       >
         <div className={styles.xmlModal}>
           <h4>Importar XML do Currículo Lattes</h4>
           <p>
-            Selecione uma das opções abaixo para preencher a ficha de avaliação automaticamente.
+            Selecione uma das opções abaixo para preencher a ficha de avaliação
+            automaticamente.
           </p>
 
           {jaTemXml && (
@@ -432,10 +499,13 @@ const FichaAvaliacaoManual = ({
               <div className={styles.xmlModalOptionHeader}>
                 <RiDatabaseLine size={20} />
                 <div>
-                  <span className={styles.xmlModalOptionLabel}>Usar XML já cadastrado</span>
+                  <span className={styles.xmlModalOptionLabel}>
+                    Usar XML já cadastrado
+                  </span>
                   {lattesInfo && (
                     <span className={styles.xmlModalOptionDesc}>
-                      Última atualização: {lattesInfo.formattedDate} às {lattesInfo.formattedTime}
+                      Última atualização: {lattesInfo.formattedDate} às{" "}
+                      {lattesInfo.formattedTime}
                     </span>
                   )}
                 </div>
@@ -456,7 +526,9 @@ const FichaAvaliacaoManual = ({
               <RiUploadLine size={20} />
               <div>
                 <span className={styles.xmlModalOptionLabel}>
-                  {jaTemXml ? "Enviar novo XML do participante" : "Enviar XML do Currículo Lattes"}
+                  {jaTemXml
+                    ? "Enviar novo XML do participante"
+                    : "Enviar XML do Currículo Lattes"}
                 </span>
                 <span className={styles.xmlModalOptionDesc}>
                   Arquivo XML ou ZIP exportado da plataforma Lattes
