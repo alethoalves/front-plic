@@ -48,32 +48,41 @@ const Page = ({ params }) => {
     useState(false);
 
   const dataTableRef = useRef(null);
-  // Configure as opções do gráfico Multi Axis
   const multiAxisOptions = {
     responsive: true,
     interaction: { mode: "index", intersect: false },
-    stacked: false,
     maintainAspectRatio: false,
-    aspectRatio: 0.6,
-
     plugins: {
       title: {
         display: true,
-        text: "Evolução das Inscrições por Edital (minutos)",
+        text: "Evolução das Inscrições por Edital (por dia)",
+        font: { size: 14, weight: "bold" },
       },
       legend: { position: "top" },
+      tooltip: {
+        callbacks: {
+          footer: (items) => {
+            const total = items.reduce((sum, item) => sum + item.parsed.y, 0);
+            return `Total: ${total}`;
+          },
+        },
+      },
     },
     scales: {
-      y: {
-        type: "linear",
-        display: true,
-        position: "left",
+      x: {
+        stacked: true,
+        ticks: {
+          maxRotation: 45,
+          minRotation: 0,
+          autoSkip: true,
+          maxTicksLimit: 20,
+        },
       },
-      y1: {
-        type: "linear",
-        display: true,
-        position: "right",
-        grid: { drawOnChartArea: false },
+      y: {
+        stacked: true,
+        beginAtZero: true,
+        ticks: { stepSize: 1, precision: 0 },
+        title: { display: true, text: "Inscrições" },
       },
     },
   };
@@ -83,7 +92,6 @@ const Page = ({ params }) => {
     [itens]
   );
 
-  // Função para preparar os dados do gráfico Multi Axis
   const prepareMultiAxisData = useCallback(() => {
     if (!itensEnviados.length) return;
 
@@ -95,10 +103,9 @@ const Page = ({ params }) => {
       const edital = item.inscricao.edital.titulo;
       editaisSet.add(edital);
 
-      const data = new Date(item.inscricao.createdAt).toLocaleString("pt-BR", {
-        dateStyle: "short",
-        timeStyle: "short", // aqui é alterado (short, medium, long), comentar essa linha deixa apenas o dia
-      });
+      const dt = new Date(item.inscricao.createdAt);
+      const data = `${String(dt.getDate()).padStart(2, "0")}/${String(dt.getMonth() + 1).padStart(2, "0")}`;
+
       todasDatas.add(data);
 
       if (!dataPorEdital[edital]) dataPorEdital[edital] = {};
@@ -107,20 +114,27 @@ const Page = ({ params }) => {
       dataPorEdital[edital][data] += 1;
     });
 
-    const labels = Array.from(todasDatas).sort(
-      (a, b) =>
-        new Date(a.split("/").reverse().join("-")) -
-        new Date(b.split("/").reverse().join("-"))
-    );
-    const cores = ["#FF6384", "#36A2EB", "#FFCE56", "#8BC34A", "#9C27B0"];
+    const labels = Array.from(todasDatas).sort((a, b) => {
+      const [dA, mA] = a.split("/").map(Number);
+      const [dB, mB] = b.split("/").map(Number);
+      return mA - mB || dA - dB;
+    });
+
+    const cores = [
+      { border: "#4F46E5", bg: "#4F46E5CC" },
+      { border: "#0EA5E9", bg: "#0EA5E9CC" },
+      { border: "#F59E0B", bg: "#F59E0BCC" },
+      { border: "#10B981", bg: "#10B981CC" },
+      { border: "#EC4899", bg: "#EC4899CC" },
+    ];
 
     const datasets = Array.from(editaisSet).map((edital, index) => ({
       label: edital,
       data: labels.map((label) => dataPorEdital[edital][label] || 0),
-      borderColor: cores[index % cores.length],
-      backgroundColor: `${cores[index % cores.length]}66`,
-      tension: 0.4,
-      yAxisID: index % 2 === 0 ? "y" : "y1", // alternando os eixos y
+      borderColor: cores[index % cores.length].border,
+      backgroundColor: cores[index % cores.length].bg,
+      borderWidth: 1,
+      borderRadius: 3,
     }));
 
     setChartMultiAxisData({ labels, datasets });
@@ -355,10 +369,10 @@ const Page = ({ params }) => {
           {Object.keys(chartMultiAxisData) &&
             Object.keys(chartMultiAxisData).length > 0 && (
               <Chart
-                type="line"
+                type="bar"
                 data={chartMultiAxisData}
                 options={multiAxisOptions}
-                style={{ height: "400px" }}
+                style={{ height: "450px" }}
               />
             )}
           {loading && <p>Carregando dados do gráfico...</p>}
