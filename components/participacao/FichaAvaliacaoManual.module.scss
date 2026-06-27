@@ -1,3 +1,130 @@
+// ─── Seção de importação ────────────────────────────────────────────────────
+.importarSection {
+  margin-bottom: 16px;
+}
+
+.importarTitulo {
+  margin: 0 0 4px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text, #111827);
+}
+
+.importarSubtitulo {
+  margin: 0 0 12px;
+  font-size: 0.82rem;
+  color: var(--color-text-secondary, #6b7280);
+}
+
+.importarCard {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    border-color: var(--color-primary, #1d4ed8);
+    box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.1);
+  }
+
+  .pi-chevron-right {
+    color: var(--color-text-secondary, #9ca3af);
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+}
+
+.importarCardIcon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: var(--color-primary, #1d4ed8);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.importarCardTexto {
+  flex: 1;
+  min-width: 0;
+}
+
+.importarCardLabel {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-text, #111827);
+}
+
+.importarCardDesc {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--color-text-secondary, #6b7280);
+  margin-top: 2px;
+}
+
+// ─── Link do XML no storage ──────────────────────────────────────────────────
+.xmlStorageLink {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  margin-top: 10px;
+  background: var(--color-surface-secondary, #f9fafb);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  font-size: 0.82rem;
+  color: var(--color-text-secondary, #6b7280);
+
+  i {
+    font-size: 1rem;
+    flex-shrink: 0;
+    color: var(--color-primary, #1d4ed8);
+  }
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--color-primary, #1d4ed8);
+    text-decoration: none;
+    font-weight: 500;
+    margin-left: auto;
+    flex-shrink: 0;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+// ─── Banner de sucesso ──────────────────────────────────────────────────────
+.autoPreenchidoBanner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #166534;
+
+  i {
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+}
+
+// ─── Ficha ──────────────────────────────────────────────────────────────────
 .fichaCard {
   padding: 0;
 }
@@ -251,4 +378,65 @@
   gap: 12px;
   padding: 16px 20px;
   border-top: 1px solid var(--color-border, #e5e7eb);
+}
+
+// ─── Modal XML ──────────────────────────────────────────────────────────────
+.xmlModal {
+  h4 {
+    margin: 0 0 8px;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  > p {
+    margin: 0 0 20px;
+    font-size: 0.85rem;
+    color: var(--color-text-secondary, #6b7280);
+    line-height: 1.5;
+  }
+}
+
+.xmlModalOption {
+  padding: 16px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  background: var(--color-surface-secondary, #f9fafb);
+
+  & + & {
+    margin-top: 12px;
+  }
+}
+
+.xmlModalOptionHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+  color: var(--color-primary, #1d4ed8);
+  svg{
+    width: 12px;
+  }
+}
+
+.xmlModalOptionLabel {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-text, #111827);
+}
+
+.xmlModalOptionDesc {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--color-text-secondary, #6b7280);
+  margin-top: 2px;
+}
+
+.xmlModalLoading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 0.82rem;
+  color: var(--color-text-secondary, #6b7280);
 }

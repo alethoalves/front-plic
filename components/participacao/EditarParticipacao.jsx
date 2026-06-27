@@ -838,6 +838,54 @@ const EditarParticipacao = ({
                   fichaAtual={fichaAvaliacao}
                   onSave={handleSalvarFichaManual}
                   loading={loadingForm}
+                  cvLattes={participacaoInfo?.user?.cvLattes}
+                  onGerarFicha={async () => {
+                    const result = await gerarFichaAvaliacaoParticipacao(
+                      tenant,
+                      participacaoInfo.id,
+                    );
+                    setFichaAvaliacao(result.fichaAvaliacao);
+                    return result;
+                  }}
+                  onFileUpload={async (file) => {
+                    const response = await xmlLattes(file, tenant, participacaoInfo.user.id);
+                    if (response?.fileUrl) {
+                      const fichaResult = await gerarFichaAvaliacaoParticipacao(
+                        tenant,
+                        participacaoInfo.id,
+                      );
+                      setFichaAvaliacao(fichaResult.fichaAvaliacao);
+
+                      const updatedParticipacao = {
+                        ...participacaoInfo,
+                        fichaAvaliacao: fichaResult.fichaAvaliacao,
+                        user: {
+                          ...participacaoInfo.user,
+                          cvLattes: [
+                            ...participacaoInfo.user.cvLattes,
+                            {
+                              id: Date.now(),
+                              url: response.fileUrl,
+                              userId: participacaoInfo.user.id,
+                              identificadorLattes: response.identificadorLattes || null,
+                            },
+                          ],
+                        },
+                      };
+                      setInscricao((prev) => ({
+                        ...prev,
+                        participacoes: prev.participacoes.map((p) =>
+                          p.id === updatedParticipacao.id
+                            ? { ...p, ...updatedParticipacao }
+                            : p,
+                        ),
+                      }));
+                      setParticipacaoInfo((prev) => ({ ...prev, ...updatedParticipacao }));
+
+                      return { ...response, fichaGerada: fichaResult.fichaAvaliacao };
+                    }
+                    return response;
+                  }}
                 />
               </StepperPanel>
             )}
