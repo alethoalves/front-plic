@@ -63,7 +63,7 @@ const Page = ({ params }) => {
       try {
         const response = await getInscricaoUserById(
           params.tenant,
-          params.idInscricao
+          params.idInscricao,
         );
         setInscricao(response);
       } catch (error) {
@@ -89,7 +89,7 @@ const Page = ({ params }) => {
           setLoading(true);
           const { inscricao: updated, message } = await reabrirInscricao(
             params.tenant,
-            params.idInscricao
+            params.idInscricao,
           );
 
           setInscricao((prev) => ({ ...prev, status: updated.status }));
@@ -154,7 +154,7 @@ const Page = ({ params }) => {
                   <h6>Inscrição gerada</h6>
                   {inscricao.status === "pendente" ? (
                     <p>{`A inscrição deve ser finalizada até ${formatDateForDisplay(
-                      inscricao.edital?.fimInscricao
+                      inscricao.edital?.fimInscricao,
                     )}`}</p>
                   ) : (
                     ""
@@ -201,9 +201,7 @@ const Page = ({ params }) => {
                           onClick={handleCancelarInscricao}
                           disabled={loading}
                         >
-                          <p>
-                            {loading ? "Processando…" : "Cancelar inscrição"}
-                          </p>
+                          <p>{loading ? "Processando…" : "Editar inscrição"}</p>
                         </button>
                       </div>
                     </>
