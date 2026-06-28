@@ -1,13 +1,9 @@
 "use client";
-// HOOKS
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { getCookie } from "cookies-next";
 
-// ESTILO
 import styles from "./TabelaInscricao.module.scss";
 
-// PRIMEREACT
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { InputText } from "primereact/inputtext";
@@ -15,7 +11,6 @@ import { FilterMatchMode, FilterOperator } from "primereact/api";
 import { Card } from "primereact/card";
 import { ProgressBar } from "primereact/progressbar";
 import { Button } from "primereact/button";
-import { InputNumber } from "primereact/inputnumber";
 import { Toast } from "primereact/toast";
 import { FilterService } from "primereact/api";
 import { Dialog } from "primereact/dialog";
@@ -23,9 +18,8 @@ import { Toolbar } from "primereact/toolbar";
 import { Tag } from "primereact/tag";
 import { IconField } from "primereact/iconfield";
 import { InputIcon } from "primereact/inputicon";
-import FormNewInscricao from "@/components/Formularios/FormNewInscricao";
-import { RiEditLine } from "@remixicon/react";
-// SERVIÇOS
+import { ContextMenu } from "primereact/contextmenu";
+
 import { getInscricoesByTenantAndYear } from "@/app/api/client/inscricao";
 
 const getCurrentUserId = () => {
@@ -38,27 +32,49 @@ const getCurrentUserId = () => {
     return null;
   }
 };
-import {
-  statusClassificacaoBodyTemplate,
-  statusClassificacaoFilterTemplate,
-} from "@/lib/tableTemplates";
+
+import { statusClassificacaoFilterTemplate } from "@/lib/tableTemplates";
+import { getSeverityByStatus, formatStatusText } from "@/lib/tagUtils";
 import Modal from "../Modal";
 import Inscricao from "../Inscricao";
 import NovaInscricao from "../NovaInscricao";
 import { deleteInscricao as deleteInscricaoApi } from "@/app/api/client/inscricao";
-// Registra filtro personalizado para intervalo de notas
+
 FilterService.register("nota_intervalo", (value, filters) => {
   const [min, max] = filters ?? [undefined, undefined];
-
   if (min === undefined && max === undefined) return true;
   if (typeof min === "number" && value < min) return false;
   if (typeof max === "number" && value > max) return false;
-
   return true;
 });
 
+const NAME_PARTICLES = new Set([
+  "de",
+  "da",
+  "do",
+  "dos",
+  "das",
+  "e",
+  "em",
+  "na",
+  "no",
+  "nos",
+  "nas",
+]);
+
+const normalizeName = (name) => {
+  if (!name) return "";
+  return name
+    .toLowerCase()
+    .split(" ")
+    .map((word, i) => {
+      if (i > 0 && NAME_PARTICLES.has(word)) return word;
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join(" ");
+};
+
 const TabelaInscricao = ({ params }) => {
-  // ESTADOS
   const [loading, setLoading] = useState(true);
   const [itens, setItens] = useState([]);
   const [globalFilterValue, setGlobalFilterValue] = useState("");
@@ -67,93 +83,82 @@ const TabelaInscricao = ({ params }) => {
   const [filteredItens, setFilteredItens] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedInscricao, setSelectedInscricao] = useState(null);
-  const [selectedInscricoes, setSelectedInscricoes] = useState(null);
   const [deleteInscricaoDialog, setDeleteInscricaoDialog] = useState(false);
-  const [deleteInscricoesDialog, setDeleteInscricoesDialog] = useState(false);
   const [editais, setEditais] = useState([]);
   const currentUserId = getCurrentUserId();
   const isAdmin = currentUserId === 1;
 
-  // REFS
   const toast = useRef(null);
   const dataTableRef = useRef(null);
+  const cm = useRef(null);
 
-  // FILTROS
+  const menuModel = [
+    {
+      label: "Editar",
+      icon: "pi pi-pencil",
+      command: () => setIsModalOpen(true),
+    },
+    ...(isAdmin
+      ? [
+          { separator: true },
+          {
+            label: "Excluir",
+            icon: "pi pi-trash",
+            command: () => setDeleteInscricaoDialog(true),
+          },
+        ]
+      : []),
+  ];
+
   const [filters, setFilters] = useState({
     global: { value: "", matchMode: FilterMatchMode.CONTAINS },
-    "edital.titulo": {
-      value: [],
-      matchMode: FilterMatchMode.IN,
-    },
-    status: {
-      value: [],
-      matchMode: FilterMatchMode.IN,
-    },
-    proponente: {
-      value: "",
-      matchMode: FilterMatchMode.CONTAINS,
-    },
-    alunosString: {
-      value: "",
-      matchMode: FilterMatchMode.CONTAINS,
-    },
-    orientadoresString: {
-      value: "",
-      matchMode: FilterMatchMode.CONTAINS,
-    },
-    participantesString: {
-      value: "",
-      matchMode: FilterMatchMode.CONTAINS,
-    },
+    "edital.titulo": { value: [], matchMode: FilterMatchMode.IN },
+    status: { value: [], matchMode: FilterMatchMode.IN },
+    proponente: { value: "", matchMode: FilterMatchMode.CONTAINS },
+    alunosString: { value: "", matchMode: FilterMatchMode.CONTAINS },
+    orientadoresString: { value: "", matchMode: FilterMatchMode.CONTAINS },
+    participantesString: { value: "", matchMode: FilterMatchMode.CONTAINS },
     id: {
       operator: FilterOperator.AND,
       constraints: [{ value: undefined, matchMode: FilterMatchMode.EQUALS }],
     },
   });
+
   const getEditaisUnicos = useCallback((inscricoes) => {
     const editaisSet = new Set();
-
     inscricoes.forEach((item) => {
-      if (item.edital?.titulo) {
-        editaisSet.add(item.edital.titulo);
-      }
+      if (item.edital?.titulo) editaisSet.add(item.edital.titulo);
     });
-
     return Array.from(editaisSet).map((edital) => ({
       label: edital,
       value: edital,
     }));
   }, []);
+
   const fetchInitialData = async () => {
     setLoading(true);
     try {
       const inscricoes = await getInscricoesByTenantAndYear(
         params.tenant,
-        params.ano || null
+        params.ano || null,
       );
 
-      // Processa os itens para adicionar campos virtuais
       const itensProcessados =
         inscricoes?.map((inscricao) => {
-          // Proponente (nome + CPF)
           const proponenteStr = `${inscricao.proponente?.nome || ""} ${
             inscricao.proponente?.cpf || ""
           }`.trim();
 
-          // Participantes (todos - alunos e orientadores)
           const participantesStr = inscricao.participacoes
             ?.map((p) => `${p.user.nome} ${p.user.cpf}`)
             .join(" ")
             .trim();
 
-          // Campo virtual para busca global (combina tudo)
           const buscaGlobalStr = `${proponenteStr} ${participantesStr}`.trim();
 
           return {
             ...inscricao,
-            // Campo para busca global
             buscaGlobal: buscaGlobalStr,
-            // Campos específicos para filtros individuais
             proponenteString: proponenteStr,
             alunosString:
               inscricao.participacoes
@@ -170,7 +175,6 @@ const TabelaInscricao = ({ params }) => {
         }) || [];
 
       setItens(itensProcessados);
-      // Configura status disponíveis
       setStatusDisponiveis([
         { label: "Pendente", value: "pendente" },
         { label: "Enviada", value: "enviada" },
@@ -178,13 +182,12 @@ const TabelaInscricao = ({ params }) => {
         { label: "Reprovada", value: "reprovada" },
       ]);
 
-      // Configura editais disponíveis
       const editaisUnicos = [
         ...new Set(itensProcessados.map((item) => item.edital?.titulo)),
       ].filter(Boolean);
 
       setEditaisDisponiveis(
-        editaisUnicos.map((edital) => ({ label: edital, value: edital }))
+        editaisUnicos.map((edital) => ({ label: edital, value: edital })),
       );
       setEditais(getEditaisUnicos(itensProcessados));
     } catch (error) {
@@ -200,12 +203,10 @@ const TabelaInscricao = ({ params }) => {
     }
   };
 
-  // BUSCA DE DADOS INICIAIS
   useEffect(() => {
     fetchInitialData();
   }, [params.tenant, params.ano]);
 
-  // HANDLERS
   const onGlobalFilterChange = (e) => {
     const value = e.target.value;
     let _filters = { ...filters };
@@ -224,17 +225,11 @@ const TabelaInscricao = ({ params }) => {
     setIsModalOpen(true);
   };
 
-  const confirmDeleteInscricao = (inscricao) => {
-    setSelectedInscricao(inscricao);
-    setDeleteInscricaoDialog(true);
-  };
-
   const deleteInscricao = async () => {
     try {
       await deleteInscricaoApi(params.tenant, selectedInscricao.id);
 
-      let _inscricoes = itens.filter((val) => val.id !== selectedInscricao.id);
-      setItens(_inscricoes);
+      setItens((prev) => prev.filter((val) => val.id !== selectedInscricao.id));
       setDeleteInscricaoDialog(false);
       setSelectedInscricao(null);
 
@@ -249,114 +244,50 @@ const TabelaInscricao = ({ params }) => {
         severity: "error",
         summary: "Erro",
         detail:
-          "Falha ao deletar inscrição. Verifique se há projetos e planos de trabalho associadosà inscrição.",
+          "Falha ao deletar inscrição. Verifique se há projetos e planos de trabalho associados à inscrição.",
         life: 3000,
       });
     }
-  };
-
-  const confirmDeleteSelected = () => {
-    setDeleteInscricoesDialog(true);
-  };
-
-  const deleteSelectedInscricoes = async () => {
-    setDeleteInscricoesDialog(false);
-
-    // Criamos uma cópia mutável do array de itens
-    let currentItens = [...itens];
-
-    for (const inscricao of selectedInscricoes) {
-      try {
-        await deleteInscricaoApi(params.tenant, inscricao.id);
-
-        // Atualiza a lista após cada deleção bem-sucedida
-        currentItens = currentItens.filter((val) => val.id !== inscricao.id);
-        setItens(currentItens);
-
-        toast.current.show({
-          severity: "success",
-          summary: "Sucesso",
-          detail: `Inscrição ${inscricao.id} deletada`,
-          life: 2000,
-        });
-      } catch (error) {
-        toast.current.show({
-          severity: "error",
-          summary: "Erro",
-          detail: `Falha ao deletar inscrição ${inscricao.id}`,
-          life: 2000,
-        });
-      }
-    }
-
-    setSelectedInscricoes(null);
   };
 
   const exportCSV = () => {
     dataTableRef.current.exportCSV();
   };
 
-  const leftToolbarTemplate = () => {
-    return (
-      <div className="flex flex-wrap gap-1">
-        <Button
-          label="Nova Inscrição"
-          icon="pi pi-plus"
-          severity="success"
-          onClick={openNew}
-        />
-        {isAdmin && (
-          <Button
-            label="Deletar"
-            icon="pi pi-trash"
-            severity="danger"
-            onClick={confirmDeleteSelected}
-            disabled={!selectedInscricoes || !selectedInscricoes.length}
-          />
-        )}
-      </div>
-    );
-  };
+  const leftToolbarTemplate = () => (
+    <Button
+      label="Nova Inscrição"
+      icon="pi pi-plus"
+      severity="success"
+      onClick={openNew}
+    />
+  );
 
-  const rightToolbarTemplate = () => {
-    return (
-      <Button
-        label="Exportar"
-        icon="pi pi-upload"
-        className="p-button-help"
-        onClick={exportCSV}
-      />
-    );
-  };
+  const rightToolbarTemplate = () => (
+    <Button
+      label="Exportar"
+      icon="pi pi-download"
+      className="p-button-help"
+      onClick={exportCSV}
+    />
+  );
 
-  const actionBodyTemplate = (rowData) => {
-    return (
-      <React.Fragment>
-        <Button
-          icon="pi pi-pencil"
-          rounded
-          outlined
-          className="mr-2"
-          onClick={() => {
-            setSelectedInscricao(rowData);
-            setIsModalOpen(true);
-          }}
-        />
-        {isAdmin && (
-          <Button
-            icon="pi pi-trash"
-            rounded
-            outlined
-            severity="danger"
-            onClick={() => confirmDeleteInscricao(rowData)}
-          />
-        )}
-      </React.Fragment>
-    );
-  };
+  const totalRecords = (filteredItens ?? itens).length;
 
   const header = (
-    <div>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        flexWrap: "wrap",
+        gap: "1rem",
+      }}
+    >
+      <span className="text-color-secondary">
+        {totalRecords}{" "}
+        {totalRecords === 1 ? "inscrição encontrada" : "inscrições encontradas"}
+      </span>
       <IconField iconPosition="left">
         <InputText
           type="search"
@@ -385,24 +316,9 @@ const TabelaInscricao = ({ params }) => {
     </React.Fragment>
   );
 
-  const deleteInscricoesDialogFooter = (
-    <React.Fragment>
-      <Button
-        label="Não"
-        icon="pi pi-times"
-        outlined
-        onClick={() => setDeleteInscricoesDialog(false)}
-      />
-      <Button
-        label="Sim"
-        icon="pi pi-check"
-        severity="danger"
-        onClick={deleteSelectedInscricoes}
-      />
-    </React.Fragment>
-  );
-
   const renderModalContent = () => {
+    if (!isModalOpen) return null;
+
     if (selectedInscricao) {
       return (
         <Modal isOpen={isModalOpen} onClose={closeModalAndResetData}>
@@ -416,21 +332,21 @@ const TabelaInscricao = ({ params }) => {
           />
         </Modal>
       );
-    } else {
-      return (
-        <Modal isOpen={isModalOpen} onClose={closeModalAndResetData}>
-          <NovaInscricao params={params} />
-        </Modal>
-      );
     }
+
+    return (
+      <Modal isOpen={isModalOpen} onClose={closeModalAndResetData}>
+        <NovaInscricao params={params} />
+      </Modal>
+    );
   };
 
-  // RENDERIZAÇÃO
   return (
     <>
       {renderModalContent()}
+      <ContextMenu model={menuModel} ref={cm} />
       <main className={styles.main}>
-        <Card className="pt-2 ">
+        <Card className="pt-2">
           <Toast ref={toast} />
           <Toolbar
             className="mr-2 ml-2 p-2"
@@ -462,17 +378,17 @@ const TabelaInscricao = ({ params }) => {
               emptyMessage="Nenhuma inscrição encontrada."
               paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
               currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros"
-              selection={isAdmin ? selectedInscricoes : undefined}
-              onSelectionChange={isAdmin ? (e) => setSelectedInscricoes(e.value) : undefined}
-              selectionMode={isAdmin ? "multiple" : undefined}
+              onRowClick={(e) => {
+                setSelectedInscricao(e.data);
+                setIsModalOpen(true);
+              }}
+              contextMenuSelection={selectedInscricao}
+              onContextMenuSelectionChange={(e) =>
+                setSelectedInscricao(e.value)
+              }
+              onContextMenu={(e) => cm.current.show(e.originalEvent)}
+              rowClassName={() => "cursor-pointer"}
             >
-              {isAdmin && <Column selectionMode="multiple" exportable={false}></Column>}
-
-              <Column
-                body={actionBodyTemplate}
-                exportable={false}
-                style={{ minWidth: "12rem" }}
-              ></Column>
               <Column
                 field="id"
                 header="ID Inscrição"
@@ -501,10 +417,13 @@ const TabelaInscricao = ({ params }) => {
                 }
                 showFilterMenu={false}
                 filterField="status"
-                body={(rowData) => rowData.status}
+                body={(rowData) => (
+                  <Tag rounded severity={getSeverityByStatus(rowData.status)}>
+                    {formatStatusText(rowData.status)}
+                  </Tag>
+                )}
                 style={{ width: "12rem" }}
               />
-
               <Column
                 field="proponente"
                 header="Proponente"
@@ -512,8 +431,8 @@ const TabelaInscricao = ({ params }) => {
                 filter
                 filterPlaceholder="Filtrar por nome"
                 filterField="proponente"
+                body={(rowData) => normalizeName(rowData.proponente)}
               />
-
               <Column
                 field="orientadoresString"
                 header="Orientadores"
@@ -525,10 +444,23 @@ const TabelaInscricao = ({ params }) => {
                   const orientadores =
                     rowData.participacoes
                       ?.filter((p) => p.tipo === "orientador")
-                      ?.map((participacao) => ({
-                        nome: participacao.user.nome,
-                        status: participacao.statusParticipacao,
+                      ?.map((p) => ({
+                        nome: p.user.nome,
+                        status: p.statusParticipacao,
                       })) || [];
+
+                  if (orientadores.length === 0) {
+                    return (
+                      <span
+                        style={{
+                          color: "var(--text-color-secondary)",
+                          fontStyle: "italic",
+                        }}
+                      >
+                        Nenhum orientador
+                      </span>
+                    );
+                  }
 
                   return (
                     <div className={styles["alunos-orientadores-cell"]}>
@@ -541,11 +473,13 @@ const TabelaInscricao = ({ params }) => {
                             gap: "0.5rem",
                           }}
                         >
-                          <span>{orientador.nome}</span>
-                          {statusClassificacaoBodyTemplate(
-                            orientador.status,
-                            styles
-                          )}
+                          <span>{normalizeName(orientador.nome)}</span>
+                          <Tag
+                            rounded
+                            severity={getSeverityByStatus(orientador.status)}
+                          >
+                            {formatStatusText(orientador.status)}
+                          </Tag>
                         </div>
                       ))}
                     </div>
@@ -557,14 +491,30 @@ const TabelaInscricao = ({ params }) => {
                 field="alunosString"
                 header="Alunos"
                 sortable
+                filter
+                filterPlaceholder="Filtrar alunos"
+                filterField="alunosString"
                 body={(rowData) => {
                   const alunos =
                     rowData.participacoes
                       ?.filter((p) => p.tipo === "aluno")
-                      ?.map((participacao) => ({
-                        nome: participacao.user.nome,
-                        status: participacao.statusParticipacao,
+                      ?.map((p) => ({
+                        nome: p.user.nome,
+                        status: p.statusParticipacao,
                       })) || [];
+
+                  if (alunos.length === 0) {
+                    return (
+                      <span
+                        style={{
+                          color: "var(--text-color-secondary)",
+                          fontStyle: "italic",
+                        }}
+                      >
+                        Nenhum aluno
+                      </span>
+                    );
+                  }
 
                   return (
                     <div className={styles["alunos-orientadores-cell"]}>
@@ -577,11 +527,13 @@ const TabelaInscricao = ({ params }) => {
                             gap: "0.5rem",
                           }}
                         >
-                          <span>{aluno.nome}</span>
-                          {statusClassificacaoBodyTemplate(
-                            aluno.status,
-                            styles
-                          )}
+                          <span>{normalizeName(aluno.nome)}</span>
+                          <Tag
+                            rounded
+                            severity={getSeverityByStatus(aluno.status)}
+                          >
+                            {formatStatusText(aluno.status)}
+                          </Tag>
                         </div>
                       ))}
                     </div>
@@ -612,28 +564,6 @@ const TabelaInscricao = ({ params }) => {
             <span>
               Tem certeza que deseja deletar a inscrição{" "}
               <b>{selectedInscricao.id}</b>?
-            </span>
-          )}
-        </div>
-      </Dialog>
-
-      <Dialog
-        visible={deleteInscricoesDialog}
-        style={{ width: "32rem" }}
-        breakpoints={{ "960px": "75vw", "641px": "90vw" }}
-        header="Confirmar"
-        modal
-        footer={deleteInscricoesDialogFooter}
-        onHide={() => setDeleteInscricoesDialog(false)}
-      >
-        <div className="confirmation-content">
-          <i
-            className="pi pi-exclamation-triangle mr-3"
-            style={{ fontSize: "2rem" }}
-          />
-          {selectedInscricoes && (
-            <span>
-              Tem certeza que deseja deletar as inscrições selecionadas?
             </span>
           )}
         </div>

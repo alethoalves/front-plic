@@ -174,6 +174,8 @@ const FichaAvaliacaoManual = ({
   onFileUpload,
   onGerarFicha,
   cvLattes,
+  onVerItensNaoContabilizados,
+  loadingItensNaoContabilizados = false,
 }) => {
   const toast = useRef(null);
   const ultimoCv = cvLattes?.length > 0 ? cvLattes[cvLattes.length - 1] : null;
@@ -409,6 +411,24 @@ const FichaAvaliacaoManual = ({
             </span>
           </div>
         </div>
+
+        {onVerItensNaoContabilizados && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              padding: "8px 0",
+            }}
+          >
+            <Button
+              label="Ver itens não contabilizados"
+              icon="pi pi-eye"
+              className="p-button-text p-button-plain"
+              onClick={onVerItensNaoContabilizados}
+              loading={loadingItensNaoContabilizados}
+            />
+          </div>
+        )}
 
         <div className={styles.grupos}>
           {schema.grupos?.map((grupo, i) => (

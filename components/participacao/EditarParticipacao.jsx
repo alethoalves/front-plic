@@ -1283,6 +1283,8 @@ const EditarParticipacao = ({
                     onSave={handleSalvarFichaManual}
                     onBack={() => setActiveStep(0)}
                     loading={loadingForm}
+                    onVerItensNaoContabilizados={handleVerItensNaoContabilizados}
+                    loadingItensNaoContabilizados={loadingItensNaoContabilizados}
                   />
                 ) : (
                 <Card className={styles.fichaCard}>
