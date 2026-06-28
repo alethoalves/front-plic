@@ -1283,6 +1283,7 @@ const EditarParticipacao = ({
                     onSave={handleSalvarFichaManual}
                     onBack={() => setActiveStep(0)}
                     loading={loadingForm}
+                    cvLattes={participacaoInfo?.user?.cvLattes}
                     onVerItensNaoContabilizados={handleVerItensNaoContabilizados}
                     loadingItensNaoContabilizados={loadingItensNaoContabilizados}
                   />
