@@ -89,6 +89,7 @@ const CondicaoRow = ({ cond, onChange, onDelete, availableAttrs, enumValues }) =
         <option value="BETWEEN">BETWEEN</option>
         <option value="OR">OR</option>
         <option value="CONTAINS">CONTAINS</option>
+        <option value="NOT_CONTAINS">NOT_CONTAINS</option>
       </select>
       {cond.operador === "EQUAL" && enumValues?.[cond.campo]?.length > 0 ? (
         <select
@@ -281,14 +282,39 @@ const GrupoForm = ({ initialData, mode, onSave, onClose }) => {
 
 // ─── ItemForm ─────────────────────────────────────────────────────────────────
 const ItemForm = ({ initialData, mode, onSave, onClose }) => {
-  const [data, setData] = useState(clone(initialData));
+  const initState = () => {
+    const d = clone(initialData);
+    if (Array.isArray(d.path)) {
+      const primaryPath = d.path[0];
+      const primaryEl = LATTES_ELEMENTS.find((e) => e.path === primaryPath);
+      d.pathsAdicionais = d.path.slice(1).map((p) => {
+        const el = LATTES_ELEMENTS.find((e) => e.path === p);
+        return { path: p, tagLattes: el?.tagLattes || "" };
+      });
+      d.path = primaryPath;
+      if (primaryEl) d.tagLattes = primaryEl.tagLattes;
+    }
+    if (!d.pathsAdicionais) d.pathsAdicionais = [];
+    return d;
+  };
+
+  const [data, setData] = useState(initState);
   const set = (k, v) => setData((prev) => ({ ...prev, [k]: v }));
 
-  // Elemento Lattes selecionado (para filtrar attrs disponíveis)
+  // Elemento Lattes principal
   const selectedElement = LATTES_ELEMENTS.find(
     (e) => e.tagLattes === data.tagLattes
   ) || null;
-  const availableAttrs = selectedElement?.attrs || [];
+
+  // Merge attrs de todos os elementos selecionados (principal + adicionais)
+  const allSelectedElements = [
+    selectedElement,
+    ...(data.pathsAdicionais || []).map((p) =>
+      LATTES_ELEMENTS.find((e) => e.tagLattes === p.tagLattes)
+    ),
+  ].filter(Boolean);
+  const availableAttrs = [...new Set(allSelectedElements.flatMap((e) => e.attrs || []))];
+  const mergedEnumValues = Object.assign({}, ...allSelectedElements.map((e) => e.enumValues || {}));
 
   const handleElementSelect = (tagLattes) => {
     const el = LATTES_ELEMENTS.find((e) => e.tagLattes === tagLattes);
@@ -301,6 +327,28 @@ const ItemForm = ({ initialData, mode, onSave, onClose }) => {
     } else {
       setData((prev) => ({ ...prev, path: "", tagLattes: "" }));
     }
+  };
+
+  // Paths adicionais
+  const addPathAdicional = () =>
+    set("pathsAdicionais", [...(data.pathsAdicionais || []), { path: "", tagLattes: "" }]);
+  const updatePathAdicional = (i, tagLattes) => {
+    const el = LATTES_ELEMENTS.find((e) => e.tagLattes === tagLattes);
+    const arr = clone(data.pathsAdicionais);
+    arr[i] = el ? { path: el.path, tagLattes: el.tagLattes } : { path: "", tagLattes: "" };
+    set("pathsAdicionais", arr);
+  };
+  const deletePathAdicional = (i) =>
+    set("pathsAdicionais", data.pathsAdicionais.filter((_, idx) => idx !== i));
+
+  const handleSave = () => {
+    const toSave = clone(data);
+    const additional = (toSave.pathsAdicionais || []).filter((p) => p.path);
+    if (additional.length > 0) {
+      toSave.path = [toSave.path, ...additional.map((p) => p.path)];
+    }
+    delete toSave.pathsAdicionais;
+    onSave(toSave);
   };
 
   // campos ops
@@ -372,6 +420,39 @@ const ItemForm = ({ initialData, mode, onSave, onClose }) => {
           <span>Path:</span> {data.path}
         </div>
       )}
+
+      {/* Paths adicionais */}
+      <div className={styles.subSection}>
+        <h6>Caminhos adicionais (opcional)</h6>
+        <p className={styles.hint}>
+          Permite buscar itens em mais de uma seção do Lattes para o mesmo critério.
+        </p>
+        {(data.pathsAdicionais || []).map((pa, i) => (
+          <div key={i} className={styles.campoRow}>
+            <select
+              value={pa.tagLattes || ""}
+              onChange={(e) => updatePathAdicional(i, e.target.value)}
+            >
+              <option value="">-- selecione o elemento --</option>
+              {LATTES_ELEMENTS.map((el) => (
+                <option key={el.tagLattes} value={el.tagLattes}>
+                  {el.label}
+                </option>
+              ))}
+            </select>
+            {pa.path && (
+              <span className={styles.pathSmall}>{pa.path}</span>
+            )}
+            <div className={styles.deleteSmall} onClick={() => deletePathAdicional(i)}>
+              <RiDeleteBinLine />
+            </div>
+          </div>
+        ))}
+        <div className={styles.addSmall} onClick={addPathAdicional}>
+          <RiAddCircleLine />
+          <span>Adicionar caminho</span>
+        </div>
+      </div>
 
       <div className={styles.row}>
         <label className={styles.field}>
@@ -473,7 +554,7 @@ const ItemForm = ({ initialData, mode, onSave, onClose }) => {
               key={i}
               subgrupo={cond}
               availableAttrs={availableAttrs}
-              enumValues={selectedElement?.enumValues || {}}
+              enumValues={mergedEnumValues}
               onChange={(c) => updateCondicao(i, c)}
               onDelete={() => deleteCondicao(i)}
             />
@@ -482,7 +563,7 @@ const ItemForm = ({ initialData, mode, onSave, onClose }) => {
               key={i}
               cond={cond}
               availableAttrs={availableAttrs}
-              enumValues={selectedElement?.enumValues || {}}
+              enumValues={mergedEnumValues}
               onChange={(c) => updateCondicao(i, c)}
               onDelete={() => deleteCondicao(i)}
             />
@@ -502,7 +583,7 @@ const ItemForm = ({ initialData, mode, onSave, onClose }) => {
         <Button className="btn-secondary" onClick={onClose}>
           Cancelar
         </Button>
-        <Button className="btn-primary" onClick={() => onSave(data)}>
+        <Button className="btn-primary" onClick={handleSave}>
           Salvar
         </Button>
       </div>

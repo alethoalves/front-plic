@@ -584,22 +584,27 @@ const EditarParticipacao = ({
 
     const renderCampos = (campos) =>
       campos
-        .filter(
-          (campo) =>
-            campo.value !== undefined &&
-            campo.value !== null &&
-            campo.value !== "",
-        )
-        .map((campo, campoIdx) => (
-          <div key={campoIdx} className={styles.campoItem}>
-            <span className={styles.campoLabel}>{campo.label}</span>
-            <span className={styles.campoValor}>
-              {typeof campo.value === "object"
-                ? JSON.stringify(campo.value)
-                : String(campo.value)}
-            </span>
-          </div>
-        ));
+        .map((campo, campoIdx) => {
+          const vazio =
+            campo.value === undefined ||
+            campo.value === null ||
+            campo.value === "";
+          return (
+            <div key={campoIdx} className={styles.campoItem}>
+              <span className={styles.campoLabel}>{campo.label}</span>
+              <span
+                className={styles.campoValor}
+                style={vazio ? { color: "#9ca3af", fontStyle: "italic" } : undefined}
+              >
+                {vazio
+                  ? "(vazio)"
+                  : typeof campo.value === "object"
+                    ? JSON.stringify(campo.value)
+                    : String(campo.value)}
+              </span>
+            </div>
+          );
+        });
 
     return (
       <div className={`${styles.grupoAvaliacao} ${getNivelClass()}`}>
@@ -665,21 +670,48 @@ const EditarParticipacao = ({
                   >
                     <strong>Motivo da reprovação:</strong>
                     <ul style={{ margin: "4px 0 0 16px" }}>
-                      {rejeitado.motivosReprovacao.map((motivo, mIdx) => (
-                        <li key={mIdx}>
-                          Campo <strong>{motivo.campo}</strong> ({motivo.operador}
-                          ): esperado{" "}
-                          <strong>{JSON.stringify(motivo.valorEsperado)}</strong>,
-                          encontrado{" "}
-                          <strong>
-                            {motivo.valorEncontrado === null ||
-                            motivo.valorEncontrado === undefined ||
-                            motivo.valorEncontrado === ""
-                              ? "(ausente)"
-                              : String(motivo.valorEncontrado)}
-                          </strong>
-                        </li>
-                      ))}
+                      {rejeitado.motivosReprovacao.map((motivo, mIdx) => {
+                        if (motivo.subCondicoes) {
+                          const reprovadas = motivo.subCondicoes.filter((s) => !s.aprovado);
+                          return (
+                            <li key={mIdx}>
+                              Sub-grupo ({motivo.operador}) — nenhuma condição atendida:
+                              <ul style={{ margin: "2px 0 0 16px" }}>
+                                {reprovadas.map((sub, sIdx) => (
+                                  <li key={sIdx}>
+                                    Campo <strong>{sub.campo}</strong> ({sub.operador}
+                                    ): esperado{" "}
+                                    <strong>{JSON.stringify(sub.valorEsperado)}</strong>,
+                                    encontrado{" "}
+                                    <strong>
+                                      {sub.valorEncontrado === null ||
+                                      sub.valorEncontrado === undefined ||
+                                      sub.valorEncontrado === ""
+                                        ? "(ausente)"
+                                        : String(sub.valorEncontrado)}
+                                    </strong>
+                                  </li>
+                                ))}
+                              </ul>
+                            </li>
+                          );
+                        }
+                        return (
+                          <li key={mIdx}>
+                            Campo <strong>{motivo.campo}</strong> ({motivo.operador}
+                            ): esperado{" "}
+                            <strong>{JSON.stringify(motivo.valorEsperado)}</strong>,
+                            encontrado{" "}
+                            <strong>
+                              {motivo.valorEncontrado === null ||
+                              motivo.valorEncontrado === undefined ||
+                              motivo.valorEncontrado === ""
+                                ? "(ausente)"
+                                : String(motivo.valorEncontrado)}
+                            </strong>
+                          </li>
+                        );
+                      })}
                     </ul>
                   </div>
                 )}

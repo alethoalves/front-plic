@@ -335,6 +335,18 @@
   }
 }
 
+.hint {
+  font-size: 0.75rem;
+  color: $gray-400;
+  margin-bottom: $gap-1;
+}
+
+.pathSmall {
+  font-size: 0.72rem;
+  color: $gray-400;
+  word-break: break-all;
+}
+
 // ─── Sub-sections ────────────────────────────────────────────────────────────
 .subSection {
   margin-bottom: $gap-2;
