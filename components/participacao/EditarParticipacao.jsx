@@ -872,6 +872,16 @@ const EditarParticipacao = ({
       <Toast ref={toast} position="top-right" />
       {!loading ? (
         <div className={styles.editarParticipacao}>
+          {/* Suporte WhatsApp */}
+          <div className={styles.whatsappContactSection}>
+            <Button
+              className={styles.whatsappButton}
+              onClick={handleWhatsAppContact}
+              icon="pi pi-whatsapp"
+              label="Problema técnico? Entre em contato com o suporte"
+            />
+          </div>
+
           <Stepper
             activeStep={activeStep}
             orientation="vertical"

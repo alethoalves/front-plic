@@ -923,6 +923,7 @@ $shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
 
 // --- Seção de Contato WhatsApp ---
 .whatsappContactSection {
+  margin: $gap-2 0;
   padding: $gap-3 $gap-4;
   background: linear-gradient(135deg, #e7f5e8 0%, #d4ebd6 100%);
   border-top: 1px solid rgba(#25d366, 0.2);
@@ -932,6 +933,7 @@ $shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
   align-items: center;
   text-align: center;
   gap: $gap-2;
+  border-radius: $border-radius-sm;
 }
 
 .whatsappButton {
