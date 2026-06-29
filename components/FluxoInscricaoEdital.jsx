@@ -116,7 +116,10 @@ const FluxoInscricaoEdital = ({
         setErrors(error.response.data.errors);
         setShowErrorsModal(true);
       } else {
-        const msg = error.response?.data?.message || error.message || "Ocorreu um erro inesperado ao enviar sua inscrição. Tente novamente.";
+        const msg =
+          error.response?.data?.message ||
+          error.message ||
+          "Ocorreu um erro inesperado ao enviar sua inscrição. Tente novamente.";
         setErrors([msg]);
         setShowErrorsModal(true);
       }
@@ -665,7 +668,8 @@ const FluxoInscricaoEdital = ({
             </div>
             <h4>Instruções para o participante</h4>
             <p className={styles.delegationInstructions}>
-              Oriente <strong>{delegationDialog.participacao?.user?.nome}</strong> a:
+              Oriente{" "}
+              <strong>{delegationDialog.participacao?.user?.nome}</strong> a:
             </p>
             <div className={styles.delegationSteps}>
               <ol className={styles.delegationStepsList}>
@@ -677,19 +681,34 @@ const FluxoInscricaoEdital = ({
                     rel="noopener noreferrer"
                     className={styles.delegationLink}
                   >
-                    {window.location.origin}/{tenant}/user/participacoes
+                    {window.location.origin}/{tenant}
                   </a>{" "}
                   e fazer login com o CPF cadastrado.
                 </li>
-                <li>No menu lateral, clicar em <strong>Minhas Participações</strong>.</li>
-                <li>Localizar a participação referente a este edital (Inscrição <strong>#{inscricaoSelected}</strong>).</li>
-                <li>Clicar na participação e preencher toda a documentação solicitada (currículo Lattes, formulários, etc.).</li>
-                <li>Verificar se o status da documentação ficou como <strong>Completo</strong>.</li>
+                <li>
+                  No menu lateral, clicar em{" "}
+                  <strong>Minhas Participações</strong>.
+                </li>
+                <li>
+                  Localizar a participação referente a este edital (Inscrição{" "}
+                  <strong>#{inscricaoSelected}</strong>).
+                </li>
+                <li>
+                  Clicar na participação e preencher toda a documentação
+                  solicitada (currículo Lattes, formulários, etc.).
+                </li>
+                <li>
+                  Verificar se o status da documentação ficou como{" "}
+                  <strong>Completo</strong>.
+                </li>
               </ol>
             </div>
             <div className={styles.delegationWarning}>
               <RiErrorWarningLine size={18} />
-              <p>A inscrição só poderá ser finalizada e enviada quando todas as participações estiverem com a documentação completa.</p>
+              <p>
+                A inscrição só poderá ser finalizada e enviada quando todas as
+                participações estiverem com a documentação completa.
+              </p>
             </div>
             <div className={styles.delegationActions}>
               <Button
@@ -758,7 +777,10 @@ const FluxoInscricaoEdital = ({
               newParticipacao?.status !== "completo"
             ) {
               closeModalAndResetData();
-              setDelegationDialog({ participacao: newParticipacao, tipo: tipoParticipacao });
+              setDelegationDialog({
+                participacao: newParticipacao,
+                tipo: tipoParticipacao,
+              });
             }
           }}
         />
