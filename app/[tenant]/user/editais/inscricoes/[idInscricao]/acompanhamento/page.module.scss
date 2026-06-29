@@ -136,5 +136,47 @@
     }
 }
 
+// Confirm Modal
+.confirmModal {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: center;
 
+  h4 {
+    margin: 0;
+    font-size: 1.125rem;
+  }
+
+  > p {
+    font-size: 0.9375rem;
+    color: $gray-600;
+    line-height: 1.5;
+    margin: 0;
+  }
+}
+
+.confirmModalIcon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 56px;
+  height: 56px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: rgba($error-normal, 0.1);
+  color: $error-normal;
+}
+
+.confirmModalActions {
+  display: flex;
+  justify-content: center;
+  gap: $gap-3;
+  margin-top: $gap-2;
+
+  :global(.button) {
+    width: auto;
+    padding: 0 24px;
+  }
+}
 

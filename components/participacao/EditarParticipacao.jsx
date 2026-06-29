@@ -796,33 +796,47 @@ const EditarParticipacao = ({
 
         const tipoAvaliacao = perfil?.tipoAvaliacao || "AUTOMATICA";
 
-        if (participacaoInfo?.fichaAvaliacao) {
-          setFichaAvaliacao(participacaoInfo.fichaAvaliacao);
+        const temCV = participacaoInfo?.user?.cvLattes?.length > 0;
+        const temFicha = !!participacaoInfo?.fichaAvaliacao;
+        const historicoFeito = !!ut?.historicoEscolarUrl;
+        const temCampos = camposCarregados.length > 0;
+        const isAluno = tipoParticipacao === "aluno";
+        const isManual = tipoAvaliacao === "MANUAL";
 
-          if (tipoAvaliacao === "MANUAL") {
-            // MANUAL: Ficha=step 0, Histórico=step 1 (aluno), Formulário=step 1/2
-            if (tipoParticipacao === "aluno") {
-              const historicoFeito = !!ut?.historicoEscolarUrl;
-              if (historicoFeito && camposCarregados.length > 0) {
-                setActiveStep(2);
-              } else {
-                setActiveStep(1);
-              }
-            } else if (camposCarregados.length > 0) {
-              setActiveStep(1);
-            } else {
-              setActiveStep(0);
-            }
-          } else if (tipoParticipacao === "aluno") {
-            const historicoFeito = !!ut?.historicoEscolarUrl;
-            if (historicoFeito && camposCarregados.length > 0) {
-              setActiveStep(4);
-            } else {
-              setActiveStep(3);
-            }
-          } else {
-            setActiveStep(camposCarregados.length > 0 ? 3 : 2);
+        if (temFicha) {
+          setFichaAvaliacao(participacaoInfo.fichaAvaliacao);
+        }
+
+        if (isManual) {
+          // Steps MANUAL: [0] Ficha Manual, [1?] Histórico (aluno), [1-2?] Formulário
+          let step = 0;
+          if (temFicha) {
+            step++;
+            if (isAluno && historicoFeito) step++;
           }
+          // Se completo, vai pro último step
+          if (participacaoInfo.status === "completo") {
+            step = 0;
+            if (isAluno) step++;
+            if (temCampos) step++;
+          }
+          setActiveStep(step);
+        } else {
+          // Steps AUTOMÁTICA: [0] CV, [1] Gerar Ficha, [2] Ficha, [3?] Histórico (aluno), [3-4?] Formulário
+          let step = 0;
+          if (temCV) step = 1;
+          if (temFicha) {
+            step = 2;
+            if (isAluno) step = historicoFeito ? (temCampos ? 4 : 3) : 3;
+            else step = temCampos ? 3 : 2;
+          }
+          // Se completo, vai pro último step
+          if (participacaoInfo.status === "completo") {
+            step = 2;
+            if (isAluno) step++;
+            if (temCampos) step++;
+          }
+          setActiveStep(step);
         }
       } catch (error) {
         console.error("Erro ao buscar dados:", error);

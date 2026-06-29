@@ -17,6 +17,9 @@ import {
   RiUserSettingsLine,
   RiProjectorLine,
   RiFilePaper2Line,
+  RiFileCopyLine,
+  RiCheckLine,
+  RiErrorWarningLine,
 } from "@remixicon/react";
 import Link from "next/link";
 import {
@@ -33,7 +36,10 @@ import NoData from "./NoData";
 import PlanoDeTrabalhoController from "./planoDeTrabalho/PlanoDeTrabalhoController";
 import { unlinkProjetoFromInscricao } from "@/app/api/client/projeto";
 import { deletePlanoDeTrabalho } from "@/app/api/client/planoDeTrabalho";
-import { deleteParticipacao, updateSolicitarBolsa } from "@/app/api/client/participacao";
+import {
+  deleteParticipacao,
+  updateSolicitarBolsa,
+} from "@/app/api/client/participacao";
 import Button from "./Button";
 import VerInscricao from "./VerInscricao";
 import { Toast } from "primereact/toast";
@@ -65,9 +71,12 @@ const FluxoInscricaoEdital = ({
   const [tipoParticipacao, setTipoParticipacao] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState([]);
+  const [showErrorsModal, setShowErrorsModal] = useState(false);
   const [deletingParticipacaoId, setDeletingParticipacaoId] = useState(null);
   const [togglingBolsaId, setTogglingBolsaId] = useState(null);
   const [confirmBolsa, setConfirmBolsa] = useState(null);
+  const [delegationDialog, setDelegationDialog] = useState(null);
+  const [copied, setCopied] = useState(false);
   const [showQuestionario, setShowQuestionario] = useState(false);
   const [questionario, setQuestionario] = useState(null);
   const toast = useRef(null);
@@ -105,11 +114,11 @@ const FluxoInscricaoEdital = ({
       console.error("Erro ao enviar a inscrição:", error);
       if (Array.isArray(error.response?.data?.errors)) {
         setErrors(error.response.data.errors);
+        setShowErrorsModal(true);
       } else {
-        showError(
-          error.message ||
-            "Ocorreu um erro inesperado ao enviar sua inscrição. Tente novamente.",
-        );
+        const msg = error.response?.data?.message || error.message || "Ocorreu um erro inesperado ao enviar sua inscrição. Tente novamente.";
+        setErrors([msg]);
+        setShowErrorsModal(true);
       }
     } finally {
       setSubmitting(false);
@@ -173,6 +182,39 @@ const FluxoInscricaoEdital = ({
     setIsModalOpenPlanoDeTrabalho(false);
     setPlanoDeTrabalhoSelected(null);
     setIsModalOpenInscricao(false);
+  };
+
+  const getTipoParticipacaoLabel = (tipo) => {
+    switch (tipo) {
+      case "orientador":
+        return "orientador";
+      case "coorientador":
+        return "coorientador";
+      case "aluno":
+        return "aluno";
+      default:
+        return tipo;
+    }
+  };
+
+  const handleOpenParticipacaoModal = (participacao, tipo) => {
+    if (
+      participacao &&
+      participacao.user?.id !== inscricao.proponenteId &&
+      participacao.status !== "completo"
+    ) {
+      setDelegationDialog({ participacao, tipo });
+    } else {
+      setTipoParticipacao(tipo);
+      openModalAndSetData(participacao);
+    }
+  };
+
+  const handleDelegationNo = () => {
+    const { participacao, tipo } = delegationDialog;
+    setDelegationDialog(null);
+    setTipoParticipacao(tipo);
+    openModalAndSetData(participacao);
   };
 
   const openProjetoModal = (projetoId) => {
@@ -279,12 +321,17 @@ const FluxoInscricaoEdital = ({
       setInscricao((prev) => ({
         ...prev,
         participacoes: prev.participacoes.map((p) =>
-          p.id === aluno.id ? { ...p, solicitarBolsa: updated.solicitarBolsa } : p,
+          p.id === aluno.id
+            ? { ...p, solicitarBolsa: updated.solicitarBolsa }
+            : p,
         ),
       }));
       showSuccess(`${aluno.user.nome} alterado para ${para} com sucesso.`);
     } catch (error) {
-      showError(error.response?.data?.message || "Erro ao atualizar categoria do aluno.");
+      showError(
+        error.response?.data?.message ||
+          "Erro ao atualizar categoria do aluno.",
+      );
     } finally {
       setTogglingBolsaId(null);
     }
@@ -366,10 +413,14 @@ const FluxoInscricaoEdital = ({
         disabled: orientadores.length === 0,
         tab: "orientador",
         action: () => {
-          const incompleto = orientadores.find((p) => p.status === "incompleto");
+          const incompleto = orientadores.find(
+            (p) => p.status === "incompleto",
+          );
           setActiveStep("orientador");
-          setTipoParticipacao("orientador");
-          openModalAndSetData(incompleto || orientadores[0]);
+          handleOpenParticipacaoModal(
+            incompleto || orientadores[0],
+            "orientador",
+          );
         },
       });
     }
@@ -427,8 +478,7 @@ const FluxoInscricaoEdital = ({
         action: () => {
           const incompleto = alunos.find((p) => p.status === "incompleto");
           setActiveStep("projetos");
-          setTipoParticipacao("aluno");
-          openModalAndSetData(incompleto || alunos[0]);
+          handleOpenParticipacaoModal(incompleto || alunos[0], "aluno");
         },
       });
     }
@@ -506,13 +556,19 @@ const FluxoInscricaoEdital = ({
         {confirmBolsa && (
           <div className={styles.confirmBolsaContent}>
             <h4>Alterar categoria</h4>
-            <p className={styles.confirmBolsaNome}>{confirmBolsa.aluno.user.nome}</p>
+            <p className={styles.confirmBolsaNome}>
+              {confirmBolsa.aluno.user.nome}
+            </p>
             <div className={styles.confirmBolsaSetas}>
-              <span className={`${styles.confirmBolsaTag} ${confirmBolsa.aluno.solicitarBolsa ? styles.tagBolsista : styles.tagVoluntario}`}>
+              <span
+                className={`${styles.confirmBolsaTag} ${confirmBolsa.aluno.solicitarBolsa ? styles.tagBolsista : styles.tagVoluntario}`}
+              >
                 {confirmBolsa.aluno.solicitarBolsa ? "Bolsista" : "Voluntário"}
               </span>
               <i className="pi pi-arrow-right" />
-              <span className={`${styles.confirmBolsaTag} ${confirmBolsa.novoValor ? styles.tagBolsista : styles.tagVoluntario}`}>
+              <span
+                className={`${styles.confirmBolsaTag} ${confirmBolsa.novoValor ? styles.tagBolsista : styles.tagVoluntario}`}
+              >
                 {confirmBolsa.novoValor ? "Bolsista" : "Voluntário"}
               </span>
             </div>
@@ -520,11 +576,161 @@ const FluxoInscricaoEdital = ({
               Esta alteração pode ser desfeita antes da submissão da inscrição.
             </p>
             <div className={styles.confirmBolsaAcoes}>
-              <Button className="btn-secondary" onClick={() => setConfirmBolsa(null)}>
+              <Button
+                className="btn-secondary"
+                onClick={() => setConfirmBolsa(null)}
+              >
                 Cancelar
               </Button>
               <Button className="btn-primary" onClick={executeToggleBolsa}>
                 Confirmar alteração
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Modal de erros da submissão */}
+      <Modal
+        isOpen={showErrorsModal}
+        onClose={() => setShowErrorsModal(false)}
+        size="small"
+      >
+        <div className={styles.errorsModalContent}>
+          <div className={styles.errorsModalIcon}>
+            <RiErrorWarningLine size={28} />
+          </div>
+          <h4>Não foi possível enviar a inscrição</h4>
+          <p className={styles.errorsModalDesc}>
+            Corrija os itens abaixo antes de tentar novamente:
+          </p>
+          <div className={styles.errorsModalList}>
+            {errors.map((error, index) => (
+              <div key={index} className={styles.errorsModalItem}>
+                <RiAlertLine size={16} />
+                <span>{error}</span>
+              </div>
+            ))}
+          </div>
+          <Button
+            className="btn-primary"
+            onClick={() => setShowErrorsModal(false)}
+          >
+            Entendi
+          </Button>
+        </div>
+      </Modal>
+
+      {/* Dialog de delegação de documentação */}
+      <Modal
+        isOpen={!!delegationDialog}
+        onClose={() => setDelegationDialog(null)}
+        size="small"
+      >
+        {delegationDialog && !delegationDialog.showInstructions && (
+          <div className={styles.delegationContent}>
+            <div className={styles.delegationIcon}>
+              <RiUserSettingsLine size={28} />
+            </div>
+            <h4>
+              Documentação do {getTipoParticipacaoLabel(delegationDialog.tipo)}
+            </h4>
+            <p className={styles.delegationQuestion}>
+              Deseja que o próprio{" "}
+              <strong>{getTipoParticipacaoLabel(delegationDialog.tipo)}</strong>{" "}
+              nos envie ou edite a documentação?
+            </p>
+            <div className={styles.delegationActions}>
+              <Button
+                className="btn-primary"
+                onClick={() =>
+                  setDelegationDialog((prev) => ({
+                    ...prev,
+                    showInstructions: true,
+                  }))
+                }
+              >
+                Sim
+              </Button>
+              <Button className="btn-secondary" onClick={handleDelegationNo}>
+                Não, eu já tenho todos os documentos e irei enviar
+              </Button>
+            </div>
+          </div>
+        )}
+        {delegationDialog && delegationDialog.showInstructions && (
+          <div className={styles.delegationContent}>
+            <div className={styles.delegationIcon}>
+              <RiSendPlaneLine size={28} />
+            </div>
+            <h4>Instruções para o participante</h4>
+            <p className={styles.delegationInstructions}>
+              Oriente <strong>{delegationDialog.participacao?.user?.nome}</strong> a:
+            </p>
+            <div className={styles.delegationSteps}>
+              <ol className={styles.delegationStepsList}>
+                <li>
+                  Acessar a plataforma em{" "}
+                  <a
+                    href={`${window.location.origin}/${tenant}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.delegationLink}
+                  >
+                    {window.location.origin}/{tenant}/user/participacoes
+                  </a>{" "}
+                  e fazer login com o CPF cadastrado.
+                </li>
+                <li>No menu lateral, clicar em <strong>Minhas Participações</strong>.</li>
+                <li>Localizar a participação referente a este edital (Inscrição <strong>#{inscricaoSelected}</strong>).</li>
+                <li>Clicar na participação e preencher toda a documentação solicitada (currículo Lattes, formulários, etc.).</li>
+                <li>Verificar se o status da documentação ficou como <strong>Completo</strong>.</li>
+              </ol>
+            </div>
+            <div className={styles.delegationWarning}>
+              <RiErrorWarningLine size={18} />
+              <p>A inscrição só poderá ser finalizada e enviada quando todas as participações estiverem com a documentação completa.</p>
+            </div>
+            <div className={styles.delegationActions}>
+              <Button
+                className="btn-primary"
+                onClick={() => {
+                  const texto =
+                    `Olá, ${delegationDialog.participacao?.user?.nome}!\n\n` +
+                    `Você foi adicionado(a) como ${getTipoParticipacaoLabel(delegationDialog.tipo)} em uma inscrição de edital. ` +
+                    `Para completar sua documentação, siga os passos abaixo:\n\n` +
+                    `1. Acesse a plataforma: ${window.location.origin}/${tenant}\n` +
+                    `2. Faça login com seu CPF cadastrado.\n` +
+                    `3. No menu lateral, clique em "Minhas Participações".\n` +
+                    `4. Localize a participação referente a este edital (Inscrição #${inscricaoSelected}).\n` +
+                    `5. Clique na participação e preencha toda a documentação solicitada (currículo Lattes, formulários, etc.).\n` +
+                    `6. Verifique se o status da documentação ficou como "Completo".\n\n` +
+                    `Importante: a inscrição só poderá ser finalizada quando todas as participações estiverem com a documentação completa.`;
+                  navigator.clipboard.writeText(texto);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+              >
+                {copied ? (
+                  <>
+                    <RiCheckLine size={16} />
+                    Copiado!
+                  </>
+                ) : (
+                  <>
+                    <RiFileCopyLine size={16} />
+                    Copiar texto para enviar ao participante
+                  </>
+                )}
+              </Button>
+              <Button
+                className="btn-secondary"
+                onClick={() => {
+                  setDelegationDialog(null);
+                  setCopied(false);
+                }}
+              >
+                Fechar
               </Button>
             </div>
           </div>
@@ -546,6 +752,15 @@ const FluxoInscricaoEdital = ({
           tipoParticipacao={tipoParticipacao}
           atingiuLimiteBolsa={atingiuLimiteBolsa()}
           gestorMode={gestorMode}
+          onParticipacaoCreated={(newParticipacao) => {
+            if (
+              newParticipacao?.user?.id !== inscricao.proponenteId &&
+              newParticipacao?.status !== "completo"
+            ) {
+              closeModalAndResetData();
+              setDelegationDialog({ participacao: newParticipacao, tipo: tipoParticipacao });
+            }
+          }}
         />
       </Modal>
 
@@ -735,12 +950,16 @@ const FluxoInscricaoEdital = ({
                   <div className={styles.supportChannel}>
                     <span className={styles.supportChannelIcon}>💬</span>
                     <div className={styles.supportChannelBody}>
-                      <span className={styles.supportChannelLabel}>Problema técnico na plataforma?</span>
+                      <span className={styles.supportChannelLabel}>
+                        Problema técnico na plataforma?
+                      </span>
                       <a
                         href={`https://wa.me/5561991651494?text=${encodeURIComponent("Olá! Preciso de ajuda com minha inscrição no PLIC.")}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={styles.supportChannelLink + " " + styles.whatsapp}
+                        className={
+                          styles.supportChannelLink + " " + styles.whatsapp
+                        }
                       >
                         Chamar suporte no WhatsApp →
                       </a>
@@ -750,10 +969,14 @@ const FluxoInscricaoEdital = ({
                     <div className={styles.supportChannel}>
                       <span className={styles.supportChannelIcon}>✉️</span>
                       <div className={styles.supportChannelBody}>
-                        <span className={styles.supportChannelLabel}>Dúvida sobre as regras do edital?</span>
+                        <span className={styles.supportChannelLabel}>
+                          Dúvida sobre as regras do edital?
+                        </span>
                         <a
                           href={`mailto:${editalInfo.tenant.emailTenant}`}
-                          className={styles.supportChannelLink + " " + styles.email}
+                          className={
+                            styles.supportChannelLink + " " + styles.email
+                          }
                         >
                           {editalInfo.tenant.emailTenant}
                         </a>
@@ -832,8 +1055,7 @@ const FluxoInscricaoEdital = ({
                       <div
                         className={styles.participacaoInfoClickable}
                         onClick={() => {
-                          openModalAndSetData(item);
-                          setTipoParticipacao("orientador");
+                          handleOpenParticipacaoModal(item, "orientador");
                         }}
                       >
                         <div className={styles.participacaoInfo}>
@@ -1098,8 +1320,10 @@ const FluxoInscricaoEdital = ({
                                   <div
                                     className={styles.alunoInfoClickable}
                                     onClick={() => {
-                                      openModalAndSetData(aluno);
-                                      setTipoParticipacao("aluno");
+                                      handleOpenParticipacaoModal(
+                                        aluno,
+                                        "aluno",
+                                      );
                                     }}
                                   >
                                     <div className={styles.alunoInfo}>
@@ -1112,21 +1336,36 @@ const FluxoInscricaoEdital = ({
                                     </div>
                                   </div>
                                   <div
-                                    className={`${styles.categoriaSplitButton} ${aluno.solicitarBolsa ? styles.splitBolsista : styles.splitVoluntario} ${(togglingBolsaId === aluno.id || (!aluno.solicitarBolsa && atingiuLimiteBolsa())) ? styles.splitDisabled : ""}`}
-                                    title={!aluno.solicitarBolsa && atingiuLimiteBolsa() ? "Limite de bolsas atingido" : undefined}
+                                    className={`${styles.categoriaSplitButton} ${aluno.solicitarBolsa ? styles.splitBolsista : styles.splitVoluntario} ${togglingBolsaId === aluno.id || (!aluno.solicitarBolsa && atingiuLimiteBolsa()) ? styles.splitDisabled : ""}`}
+                                    title={
+                                      !aluno.solicitarBolsa &&
+                                      atingiuLimiteBolsa()
+                                        ? "Limite de bolsas atingido"
+                                        : undefined
+                                    }
                                   >
                                     <span className={styles.splitLabel}>
-                                      {togglingBolsaId === aluno.id
-                                        ? <i className="pi pi-spin pi-spinner" />
-                                        : (aluno.solicitarBolsa ? "Bolsista" : "Voluntário")
-                                      }
+                                      {togglingBolsaId === aluno.id ? (
+                                        <i className="pi pi-spin pi-spinner" />
+                                      ) : aluno.solicitarBolsa ? (
+                                        "Bolsista"
+                                      ) : (
+                                        "Voluntário"
+                                      )}
                                     </span>
                                     <button
                                       className={styles.splitAction}
-                                      disabled={togglingBolsaId === aluno.id || (!aluno.solicitarBolsa && atingiuLimiteBolsa())}
+                                      disabled={
+                                        togglingBolsaId === aluno.id ||
+                                        (!aluno.solicitarBolsa &&
+                                          atingiuLimiteBolsa())
+                                      }
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        handleToggleBolsa(aluno, !aluno.solicitarBolsa);
+                                        handleToggleBolsa(
+                                          aluno,
+                                          !aluno.solicitarBolsa,
+                                        );
                                       }}
                                     >
                                       Alterar

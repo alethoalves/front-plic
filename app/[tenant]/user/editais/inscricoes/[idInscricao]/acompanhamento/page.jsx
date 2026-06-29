@@ -41,7 +41,7 @@ import {
 } from "@/app/api/client/inscricao";
 import Link from "next/link";
 import { Toast } from "primereact/toast";
-import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import { RiErrorWarningLine } from "@remixicon/react";
 import { formatDateForDisplay } from "@/lib/formatDateForDisplay";
 
 const Page = ({ params }) => {
@@ -53,9 +53,10 @@ const Page = ({ params }) => {
   const [inscricaoSelected, setInscricaoSelected] = useState(null);
   const [errorMessages, setErrorMessages] = useState({}); // Alterado para armazenar erros por edital
   const [notFound, setNotFound] = useState(false);
+  const [showConfirmCancel, setShowConfirmCancel] = useState(false);
 
   const router = useRouter();
-  const toastRef = useRef(null); // Toast do PrimeReact
+  const toastRef = useRef(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -76,47 +77,67 @@ const Page = ({ params }) => {
     fetchData();
   }, [params.tenant, params.inscricaoSelected]);
   const handleCancelarInscricao = () => {
-    confirmDialog({
-      message:
-        "Cancelar a inscrição fará com que ela volte para o status PENDENTE. Deseja continuar?",
-      header: "Confirmar cancelamento",
-      icon: "pi pi-exclamation-triangle",
-      acceptLabel: "Sim",
-      rejectLabel: "Não",
-      acceptClassName: "p-button-danger",
-      accept: async () => {
-        try {
-          setLoading(true);
-          const { inscricao: updated, message } = await reabrirInscricao(
-            params.tenant,
-            params.idInscricao,
-          );
+    setShowConfirmCancel(true);
+  };
 
-          setInscricao((prev) => ({ ...prev, status: updated.status }));
-          toastRef.current?.show({
-            severity: "success",
-            summary: "Sucesso",
-            detail: message || "Inscrição reaberta com sucesso!",
-          });
-        } catch (err) {
-          toastRef.current?.show({
-            severity: "error",
-            summary: "Erro",
-            detail:
-              err.response?.data?.message ||
-              "Erro ao cancelar / reabrir inscrição.",
-          });
-        } finally {
-          setLoading(false);
-        }
-      },
-    });
+  const executarCancelamento = async () => {
+    setShowConfirmCancel(false);
+    try {
+      setLoading(true);
+      const { inscricao: updated, message } = await reabrirInscricao(
+        params.tenant,
+        params.idInscricao,
+      );
+
+      setInscricao((prev) => ({ ...prev, status: updated.status }));
+      toastRef.current?.show({
+        severity: "success",
+        summary: "Sucesso",
+        detail: message || "Inscrição reaberta com sucesso!",
+      });
+    } catch (err) {
+      toastRef.current?.show({
+        severity: "error",
+        summary: "Erro",
+        detail:
+          err.response?.data?.message ||
+          "Erro ao cancelar / reabrir inscrição.",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <>
       <Toast ref={toastRef} />
-      <ConfirmDialog />
+      <Modal
+        isOpen={showConfirmCancel}
+        onClose={() => setShowConfirmCancel(false)}
+        size="small"
+      >
+        <div className={styles.confirmModal}>
+          <div className={styles.confirmModalIcon}>
+            <RiErrorWarningLine size={28} />
+          </div>
+          <h4>Confirmar cancelamento</h4>
+          <p>
+            Cancelar a inscrição fará com que ela volte para o status{" "}
+            <strong>PENDENTE</strong>. Deseja continuar?
+          </p>
+          <div className={styles.confirmModalActions}>
+            <Button
+              className="btn-error"
+              onClick={() => setShowConfirmCancel(false)}
+            >
+              Não, manter inscrição
+            </Button>
+            <Button className="btn-error-outline" onClick={executarCancelamento}>
+              Sim, cancelar
+            </Button>
+          </div>
+        </div>
+      </Modal>
       {notFound && <NoData description="Inscrição não encontrada :/" />}
       {loading && <p>Carregando...</p>}
       {inscricao && !notFound && !loading && (

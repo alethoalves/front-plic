@@ -7,6 +7,7 @@ import {
   RiFolderFill,
   RiFolderLine,
   RiFoldersLine,
+  RiGroupLine,
   RiHistoryLine,
   RiListCheck2,
   RiMicroscopeLine,
@@ -107,6 +108,20 @@ const Page = ({ params }) => {
               </div>
             </Link>
           )}
+          <Link href={`/${params.tenant}/user/participacoes`}>
+            <div className={styles.infoBox}>
+              <div className={styles.icon}>
+                <RiGroupLine />
+              </div>
+              <div className={styles.infoBoxContent}>
+                <h6>Minhas Participações</h6>
+                <p>
+                  Acompanhe suas participações em editais e envie a documentação
+                  solicitada.
+                </p>
+              </div>
+            </div>
+          </Link>
           <Link href={`/${params.tenant}/user/planos`}>
             <div className={styles.infoBox}>
               <div className={styles.icon}>

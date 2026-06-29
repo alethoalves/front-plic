@@ -1,0 +1,414 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+.navContent {
+  min-height: 100vh;
+}
+
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: $gap-2;
+  svg{
+    width: 12px;
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+
+  .headerIcon {
+    background: linear-gradient(135deg, $primary-dark 0%, $primary-darken 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+      width: 32px;
+      height: 32px;
+    }
+  }
+
+  .headerContent {
+    h6 {
+      margin: 0;
+      color: #1e293b;
+      font-size: 1.5rem;
+    }
+
+    p {
+      margin: 0.5rem 0 0 0;
+      color: #64748b;
+    }
+  }
+}
+
+.anosNav {
+  display: flex;
+  gap: 6px;
+  margin-bottom: $gap-3;
+  flex-wrap: wrap;
+}
+
+.anoTab {
+  padding: 6px 16px;
+  border: 1px solid $gray-200;
+  border-radius: 20px;
+  background: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $gray-500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    border-color: $primary-normal;
+    color: $primary-normal;
+  }
+
+  &.anoActive {
+    background: $primary-normal;
+    border-color: $primary-normal;
+    color: white;
+  }
+}
+
+.mainContent {
+  margin-top: 1rem;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  text-align: center;
+  color: #64748b;
+}
+
+// Lista de participações
+.participacoesList {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-2;
+}
+
+.participacaoCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $gap-3;
+  background: white;
+  border: 1px solid $gray-50;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: $primary-normal;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  &.fechado {
+    opacity: 0.6;
+    cursor: default;
+
+    &:hover {
+      border-color: $gray-50;
+      box-shadow: none;
+    }
+  }
+}
+
+.cardLeft {
+  display: flex;
+  align-items: center;
+  gap: $gap-3;
+  flex: 1;
+  min-width: 0;
+}
+
+
+.cardInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.cardEdital {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: $black-normal;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardMeta {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+  flex-wrap: wrap;
+}
+
+.tipoBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8125rem;
+  color: $gray-500;
+
+  svg {
+    color: $primary-normal;
+  }
+}
+
+.statusParticipacaoBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border: none;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  &.success {
+    background: rgba($success-normal, 0.1);
+    color: $success-dark;
+  }
+
+  &.warning {
+    background: rgba($warning-normal, 0.1);
+    color: $warning-dark;
+  }
+
+  &.danger {
+    background: rgba(#ef4444, 0.1);
+    color: #b91c1c;
+  }
+
+  &.default {
+    background: $gray-50;
+    color: $gray-500;
+  }
+}
+
+.inscricaoBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border: none;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  &.inscricaoEnviada {
+    background: rgba($success-normal, 0.1);
+    color: $success-dark;
+  }
+
+  &.inscricaoPendente {
+    background: rgba($warning-normal, 0.1);
+    color: $warning-dark;
+  }
+}
+
+.planoLabel {
+  font-size: 0.8125rem;
+  color: $gray-400;
+}
+
+.cardRight {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+  flex-shrink: 0;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border: none;
+  border-radius: 20px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  svg {
+    width: 14px;
+  }
+  &.statusIncompleto {
+    background: rgba($warning-normal, 0.1);
+    color: $warning-dark;
+  }
+
+  &.statusCompleto {
+    background: rgba($success-normal, 0.1);
+    color: $success-dark;
+  }
+}
+
+.fechadoBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  background: $gray-50;
+  color: $gray-500;
+}
+
+.arrow {
+  color: $gray-400;
+}
+
+// Help modal
+.helpContent {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: center;
+
+  h4 {
+    margin: 0;
+    font-size: 1.125rem;
+  }
+}
+
+.helpIcon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 48px;
+  height: 48px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: rgba($primary-normal, 0.1);
+  color: $primary-normal;
+}
+
+.helpDescricao {
+  font-size: 0.875rem;
+  color: $gray-500;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.helpItens {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+  padding: $gap-2;
+  background: $gray-50;
+  border-radius: 8px;
+}
+
+.helpItem {
+  font-size: 0.8125rem;
+  color: $gray-600;
+  line-height: 1.4;
+
+  strong {
+    color: $black-normal;
+  }
+}
+
+// Mobile
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 2rem;
+
+    .headerIcon {
+      padding: 1rem;
+      border-radius: 12px;
+
+      svg {
+        width: 24px;
+        height: 24px;
+      }
+    }
+
+    .headerContent {
+      h6 {
+        font-size: 1.25rem;
+      }
+
+      p {
+        font-size: 0.875rem;
+      }
+    }
+  }
+
+  .participacaoCard {
+    flex-direction: column;
+    align-items: stretch;
+    gap: $gap-2;
+    padding: $gap-2;
+  }
+
+  .cardLeft {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .cardEdital {
+    white-space: normal;
+    font-size: 0.875rem;
+  }
+
+  .cardMeta {
+    gap: 6px;
+  }
+
+  .cardRight {
+    flex-direction: column;
+    align-items: stretch;
+    padding-top: $gap-1;
+    border-top: 1px solid $gray-50;
+
+    .statusBadge,
+    .fechadoBadge {
+      justify-content: center;
+    }
+  }
+
+  .arrow {
+    display: none;
+  }
+}

@@ -8,10 +8,19 @@ import { useEffect, useState } from "react";
 import { getEditais } from "@/app/api/client/edital";
 import { getCookie, setCookie } from "cookies-next";
 
+const filterByPerfil = (items, perfil) =>
+  items.filter((item) => !item.requiredPerfil || item.requiredPerfil === perfil);
+
 const Menu = ({ onClick, itensMenu, existeEdital, gestor = false }) => {
   const pathname = usePathname();
   const { tenant, eventoSlug, edicao } = useParams();
   const [ano, setAno] = useState(null);
+  const [filteredMenu, setFilteredMenu] = useState(itensMenu);
+
+  useEffect(() => {
+    const perfil = getCookie("perfilSelecionado") ?? null;
+    setFilteredMenu(filterByPerfil(itensMenu, perfil));
+  }, [itensMenu]);
 
   useEffect(() => {
     if (gestor) {
@@ -91,7 +100,7 @@ const Menu = ({ onClick, itensMenu, existeEdital, gestor = false }) => {
 
   return (
     <ul className={styles.menu}>
-      {itensMenu.map((item, i) => {
+      {filteredMenu.map((item, i) => {
         if (item.group) {
           return renderGroup(item.group, i);
         }

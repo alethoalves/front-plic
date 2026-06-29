@@ -25,6 +25,7 @@ const ParticipacaoController = ({
   planoDeTrabalhoDetalhes,
   atingiuLimiteBolsa,
   gestorMode = false,
+  onParticipacaoCreated,
 }) => {
   const [participacaoInfo, setParticipacaoInfo] = useState(itemToEdit || null); // Inicializa com itemToEdit
   const [verifiedData, setVerifiedData] = useState(null);
@@ -38,8 +39,11 @@ const ParticipacaoController = ({
       }));
       // Chamar a função para validar a participação
       await handleValidateParticipacao(tenant, newParticipacao);
+      if (!itemToEdit && onParticipacaoCreated) {
+        onParticipacaoCreated(newParticipacao);
+      }
     },
-    [setInscricao],
+    [setInscricao, itemToEdit, onParticipacaoCreated],
   );
   const handleValidateParticipacao = async (tenantSlug, newParticipacao) => {
     try {

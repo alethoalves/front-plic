@@ -801,6 +801,12 @@ $section-gap: $gap-4;
   font-weight: 500;
 }
 
+.faItemSemConteudo {
+  font-size: 0.8125rem;
+  color: $gray-400;
+  font-style: italic;
+}
+
 .faSubgrupos {
   padding: $gap-2 $gap-2 $gap-2 $gap-3;
   display: flex;

@@ -90,8 +90,19 @@ a.linkFile{
 }
 
 .btn-error{
-    background-color: $white-light;
-    border: 1px solid $error-lighten;
+    background-color: $error-normal;
+    border: 1px solid $error-normal !important;
+    transition: all .3s ease;
+    p, .btn-icon{
+        color: $white-light;
+    }
+    &:hover{
+        opacity: 0.8;
+    }
+}
+.btn-error-outline{
+    background-color: transparent;
+    border: 1px solid $error-normal !important;
     transition: all .3s ease;
     p, .btn-icon{
         color: $error-normal;

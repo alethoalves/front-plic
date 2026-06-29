@@ -122,16 +122,20 @@ const GrupoDisplay = ({ grupo, nivel = 0 }) => {
                 )}
               </div>
               <div className={styles.faItemCampos}>
-                {item
-                  .filter((c) => c.value !== undefined && c.value !== null && c.value !== "")
-                  .map((c, ci) => (
-                    <div key={ci} className={styles.faItemCampo}>
-                      <span className={styles.faItemCampoLabel}>{c.label}</span>
-                      <span className={styles.faItemCampoValue}>
-                        {typeof c.value === "object" ? JSON.stringify(c.value) : String(c.value)}
-                      </span>
-                    </div>
-                  ))}
+                {item.filter((c) => c.value !== undefined && c.value !== null && c.value !== "").length > 0 ? (
+                  item
+                    .filter((c) => c.value !== undefined && c.value !== null && c.value !== "")
+                    .map((c, ci) => (
+                      <div key={ci} className={styles.faItemCampo}>
+                        <span className={styles.faItemCampoLabel}>{c.label}</span>
+                        <span className={styles.faItemCampoValue}>
+                          {typeof c.value === "object" ? JSON.stringify(c.value) : String(c.value)}
+                        </span>
+                      </div>
+                    ))
+                ) : (
+                  <span className={styles.faItemSemConteudo}>Sem detalhes disponíveis</span>
+                )}
               </div>
             </div>
           ))}

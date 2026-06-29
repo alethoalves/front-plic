@@ -32,6 +32,23 @@ const convertToFormData = (data) => {
 /**************************
  * PARTICIPACAO
  **************************/
+export const getMinhasParticipacoes = async (tenantSlug) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.get(
+      `/private/${tenantSlug}/minhas-participacoes`,
+      { headers }
+    );
+    return response.data.participacoes;
+  } catch (error) {
+    console.error("Erro ao obter minhas participações:", error);
+    throw error;
+  }
+};
+
 export const getParticipacoes = async (tenantSlug, idInscricao, tipos, cpf, nome, status, editalId, page = 1, limit = 300) => {
   try {
     const headers = getAuthHeadersClient();
