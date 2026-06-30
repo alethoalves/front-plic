@@ -26,10 +26,25 @@
 }
 @include responsive(s){
     .dashboard{
-        .item2{            
+        .item2{
             .content{
                 margin-left: 0;
                 padding: $gap-3 $gap-2;
+            }
+        }
+    }
+}
+
+@media print {
+    .dashboard {
+        display: block;
+        width: 100%;
+        min-height: unset;
+        .item2 {
+            .content {
+                margin-top: 0;
+                margin-left: 0;
+                padding: 0;
             }
         }
     }

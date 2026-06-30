@@ -4,22 +4,39 @@ import { useState } from "react";
 import Header from "@/components/Header";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
-import { relatorioEmailsUsuarios } from "@/app/api/client/relatorios";
+import { getCookie } from "cookies-next";
+import { relatorioEmailsUsuarios, relatorioInscricoesExcel } from "@/app/api/client/relatorios";
 
 const Page = ({ params }) => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [loadingEmails, setLoadingEmails] = useState(false);
+  const [errorEmails, setErrorEmails] = useState(null);
+  const [loadingInscricoes, setLoadingInscricoes] = useState(false);
+  const [errorInscricoes, setErrorInscricoes] = useState(null);
 
   const handleDownloadEmails = async () => {
-    setLoading(true);
-    setError(null);
+    setLoadingEmails(true);
+    setErrorEmails(null);
     try {
       await relatorioEmailsUsuarios(params.tenant);
     } catch (err) {
-      setError("Erro ao gerar o relatório. Tente novamente.");
+      setErrorEmails("Erro ao gerar o relatório. Tente novamente.");
       console.error(err);
     } finally {
-      setLoading(false);
+      setLoadingEmails(false);
+    }
+  };
+
+  const handleDownloadInscricoes = async () => {
+    setLoadingInscricoes(true);
+    setErrorInscricoes(null);
+    try {
+      const ano = getCookie("anoSelected");
+      await relatorioInscricoesExcel(params.tenant, ano);
+    } catch (err) {
+      setErrorInscricoes("Erro ao gerar o relatório. Tente novamente.");
+      console.error(err);
+    } finally {
+      setLoadingInscricoes(false);
     }
   };
 
@@ -32,22 +49,40 @@ const Page = ({ params }) => {
       />
       <div className="flex flex-column gap-3">
         <Card pt={{ content: { style: { padding: "1.5rem" } } }}>
+          <h5 className="mt-0 mb-1">Inscrições</h5>
+          <p className="mt-0 mb-3" style={{ color: "#6b7280", fontSize: "0.875rem" }}>
+            Gera uma planilha com ID, edital, status, proponente (nome e email), orientadores e alunos de todas as inscrições.
+          </p>
+          {errorInscricoes && (
+            <p className="mb-2" style={{ color: "#dc2626", fontSize: "0.875rem" }}>
+              {errorInscricoes}
+            </p>
+          )}
+          <Button
+            label="Baixar Excel"
+            icon={loadingInscricoes ? "pi pi-spin pi-spinner" : "pi pi-file-excel"}
+            className="p-button-success"
+            onClick={handleDownloadInscricoes}
+            disabled={loadingInscricoes}
+          />
+        </Card>
+        <Card pt={{ content: { style: { padding: "1.5rem" } } }}>
           <h5 className="mt-0 mb-1">Emails de Usuários</h5>
           <p className="mt-0 mb-3" style={{ color: "#6b7280", fontSize: "0.875rem" }}>
             Gera uma planilha com o nome, email e tipo (Aluno ou Orientador) de todos os usuários
             participantes. Cada combinação única de usuário e tipo é listada uma vez.
           </p>
-          {error && (
+          {errorEmails && (
             <p className="mb-2" style={{ color: "#dc2626", fontSize: "0.875rem" }}>
-              {error}
+              {errorEmails}
             </p>
           )}
           <Button
             label="Baixar Excel"
-            icon={loading ? "pi pi-spin pi-spinner" : "pi pi-file-excel"}
+            icon={loadingEmails ? "pi pi-spin pi-spinner" : "pi pi-file-excel"}
             className="p-button-success"
             onClick={handleDownloadEmails}
-            disabled={loading}
+            disabled={loadingEmails}
           />
         </Card>
       </div>

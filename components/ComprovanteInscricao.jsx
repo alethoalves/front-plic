@@ -345,7 +345,6 @@ const ComprovanteInscricao = ({ tenant, idInscricao }) => {
   const [loading, setLoading] = useState(true);
   const [inscricao, setInscricao] = useState(null);
   const [notFound, setNotFound] = useState(false);
-  const [generatingPDF, setGeneratingPDF] = useState(false);
   const documentRef = useRef(null);
 
   useEffect(() => {
@@ -362,45 +361,7 @@ const ComprovanteInscricao = ({ tenant, idInscricao }) => {
     fetchData();
   }, [tenant, idInscricao]);
 
-  const generatePDF = async () => {
-    if (!documentRef.current) return;
-    setGeneratingPDF(true);
-    try {
-      const html2canvas = (await import("html2canvas")).default;
-      const jsPDF = (await import("jspdf")).default;
-
-      const canvas = await html2canvas(documentRef.current, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: "#ffffff",
-        logging: false,
-      });
-
-      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      const pdfW = pdf.internal.pageSize.getWidth();
-      const pdfH = pdf.internal.pageSize.getHeight();
-      const totalH = (canvas.height / canvas.width) * pdfW;
-      const imgData = canvas.toDataURL("image/jpeg", 0.97);
-
-      pdf.addImage(imgData, "JPEG", 0, 0, pdfW, totalH);
-      let remaining = totalH - pdfH;
-      let offset = -pdfH;
-      while (remaining > 0) {
-        pdf.addPage();
-        pdf.addImage(imgData, "JPEG", 0, offset, pdfW, totalH);
-        offset -= pdfH;
-        remaining -= pdfH;
-      }
-
-      const proto = String(inscricao.id).padStart(6, "0");
-      pdf.save(`comprovante-${proto}.pdf`);
-    } catch (err) {
-      console.error("Erro ao gerar PDF:", err);
-    } finally {
-      setGeneratingPDF(false);
-    }
-  };
+  const generatePDF = () => window.print();
 
   if (loading)
     return (
@@ -421,13 +382,9 @@ const ComprovanteInscricao = ({ tenant, idInscricao }) => {
   return (
     <div className={styles.root}>
       {/* Toolbar */}
-      <div className={styles.toolbar}>
-        <Button
-          icon={RiPrinterLine}
-          onClick={generatePDF}
-          disabled={generatingPDF}
-        >
-          {generatingPDF ? "Gerando PDF..." : "Baixar PDF"}
+      <div className={`${styles.toolbar} no-print`}>
+        <Button icon={RiPrinterLine} onClick={generatePDF}>
+          Baixar PDF
         </Button>
       </div>
 

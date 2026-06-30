@@ -29,13 +29,29 @@
 }
 @include responsive(s){
     .dashboard{
-        
-        .item2{    
-                   
+
+        .item2{
+
             .content{
                 margin-top: $gap-3;
                 margin-left: 0;
                 padding: $gap-6 $gap-1;
+            }
+        }
+    }
+}
+
+@media print {
+    .dashboard {
+        display: block;
+        width: 100%;
+        min-height: unset;
+        .item2 {
+            .content {
+                margin-top: 0;
+                margin-left: 0;
+                padding: 0;
+                display: block;
             }
         }
     }

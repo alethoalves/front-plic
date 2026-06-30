@@ -31,15 +31,17 @@ const Layout = async ({ children, params }) => {
   }
   return (
     <div className={styles.dashboard}>
-      <div className={styles.item1}>
+      <div className={`${styles.item1} no-print`}>
         <SideNav pathLogo={pathLogo} menuType="gestor" />
       </div>
       <div className={styles.item2}>
-        <NavBar
-          slug={params.tenant}
-          anoSelected={params.ano}
-          menuType="gestor"
-        />
+        <div className="no-print">
+          <NavBar
+            slug={params.tenant}
+            anoSelected={params.ano}
+            menuType="gestor"
+          />
+        </div>
         <div className={styles.content}>{children}</div>
       </div>
     </div>
