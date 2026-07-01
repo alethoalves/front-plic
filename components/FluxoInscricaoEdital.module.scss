@@ -187,6 +187,14 @@ $shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
     .statusBannerTitle { color: $error-dark; }
   }
 
+  &.bannerSent {
+    background: rgba($success-normal, 0.06);
+    border-color: rgba($success-normal, 0.3);
+
+    .statusBannerIcon { color: $success-normal; }
+    .statusBannerTitle { color: $success-dark; }
+  }
+
 @keyframes pulseReady {
   0%, 100% { border-color: rgba($error-normal, 0.25); }
   50% { border-color: rgba($error-normal, 0.6); }

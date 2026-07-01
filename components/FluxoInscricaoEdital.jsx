@@ -901,7 +901,7 @@ const FluxoInscricaoEdital = ({
           {(() => {
             if (inscricao.status === "enviada") {
               return (
-                <div className={`${styles.statusBanner} ${styles.bannerReady}`}>
+                <div className={`${styles.statusBanner} ${styles.bannerSent}`}>
                   <div className={styles.statusBannerHeader}>
                     <span className={styles.statusBannerIcon}>
                       <RiCheckboxCircleLine size={22} />
