@@ -899,6 +899,23 @@ const FluxoInscricaoEdital = ({
 
           {/* Banner de Status da Inscrição */}
           {(() => {
+            if (inscricao.status === "enviada") {
+              return (
+                <div className={`${styles.statusBanner} ${styles.bannerReady}`}>
+                  <div className={styles.statusBannerHeader}>
+                    <span className={styles.statusBannerIcon}>
+                      <RiCheckboxCircleLine size={22} />
+                    </span>
+                    <div>
+                      <p className={styles.statusBannerTitle}>
+                        Inscrição enviada com sucesso!
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
             const checks = computeChecks();
             const allDone = checks.every((c) => c.done);
             const pendingCount = checks.filter(
