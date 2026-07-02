@@ -48,7 +48,7 @@ export const middleware = async (request) => {
 
   let urlToGestor = new URL(request.url);
   let ano = getCookie("anoSelected",{ cookies });
-  const editaisData = await getEditais(tenant);
+  const editaisData = tenant ? await getEditais(tenant) : null;
   
   if (!editaisData?.length>0) {
     urlToGestor.pathname = `/${tenant}/gestor/configuracoes/editais`
