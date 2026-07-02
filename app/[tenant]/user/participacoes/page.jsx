@@ -39,7 +39,9 @@ const Page = ({ params }) => {
       setLoading(true);
       try {
         const response = await getMinhasParticipacoes(params.tenant);
-        const data = response || [];
+        const data = (response || []).filter(
+          (p) => p.inscricao?.proponenteId !== p.user?.id,
+        );
         setParticipacoes(data);
 
         const anosUnicos = [
