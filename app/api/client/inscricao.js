@@ -130,7 +130,7 @@ export const getInscricaoUserById = async (tenantSlug,inscricaoId) => {
   try {
     const headers = getAuthHeadersClient();
     if (!headers) return false;
-    const response = await req.get(`/private/${tenantSlug}/getInscricaoUserById/${inscricaoId}`, 
+    const response = await req.get(`/private/${tenantSlug}/getInscricaoUserById/${inscricaoId}`,
       {headers}
     );
     return response.data.inscricao;

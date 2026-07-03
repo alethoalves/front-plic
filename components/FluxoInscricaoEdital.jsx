@@ -75,6 +75,7 @@ const FluxoInscricaoEdital = ({
   const [deletingParticipacaoId, setDeletingParticipacaoId] = useState(null);
   const [togglingBolsaId, setTogglingBolsaId] = useState(null);
   const [confirmBolsa, setConfirmBolsa] = useState(null);
+  const [planosEmOutrosEditais, setPlanosEmOutrosEditais] = useState(0);
   const [delegationDialog, setDelegationDialog] = useState(null);
   const [copied, setCopied] = useState(false);
   const [showQuestionario, setShowQuestionario] = useState(false);
@@ -156,9 +157,10 @@ const FluxoInscricaoEdital = ({
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await getInscricaoUserById(tenant, inscricaoSelected);
-        setInscricao(response);
-        setEditalInfo(response.edital);
+        const data = await getInscricaoUserById(tenant, inscricaoSelected);
+        setInscricao(data);
+        setEditalInfo(data.edital);
+        setPlanosEmOutrosEditais(data.planosEmOutrosEditais || 0);
       } catch (error) {
         console.error("Erro ao buscar dados:", error);
         setNotFound(true);
@@ -370,10 +372,18 @@ const FluxoInscricaoEdital = ({
     ).length;
   };
 
-  // Função para verificar se atingiu o limite de planos
-  const atingiuLimitePlanos = () => {
-    if (!inscricao?.planosDeTrabalho || !editalInfo?.maxPlanos) return false;
-    return inscricao.planosDeTrabalho.length >= editalInfo.maxPlanos;
+  // Verifica se o projeto atingiu o limite de planos por projeto (edital.maxPlanos)
+  const atingiuLimitePlanosNoProjeto = (inscricaoProjetoItem) => {
+    if (!editalInfo?.maxPlanos) return false;
+    return getPlanosPorProjeto(inscricaoProjetoItem).length >= editalInfo.maxPlanos;
+  };
+
+  // Verifica se o proponente atingiu o limite global entre todos os editais (tenant.maxPlanosPorProponente)
+  const atingiuLimitePlanosGlobal = () => {
+    const maxGlobal = inscricao?.edital?.tenant?.maxPlanosPorProponente;
+    if (!maxGlobal) return false;
+    const totalGlobal = (inscricao?.planosDeTrabalho?.length || 0) + planosEmOutrosEditais;
+    return totalGlobal >= maxGlobal;
   };
 
   // Função para verificar se atingiu o limite de bolsas
@@ -1184,9 +1194,14 @@ const FluxoInscricaoEdital = ({
                       <span>Planos de Trabalho</span>
                     </div>
                     <div className={styles.counterValue}>
-                      {inscricao.planosDeTrabalho?.length || 0} /{" "}
-                      {editalInfo?.maxPlanos || 0}
+                      {(inscricao.planosDeTrabalho?.length || 0) + planosEmOutrosEditais} /{" "}
+                      {inscricao?.edital?.tenant?.maxPlanosPorProponente || 0}
                     </div>
+                    {planosEmOutrosEditais > 0 && (
+                      <div className={styles.counterNote}>
+                        {inscricao.planosDeTrabalho?.length || 0} neste edital + {planosEmOutrosEditais} em outros
+                      </div>
+                    )}
                   </div>
                   <div className={styles.counterCard}>
                     <div className={styles.counterHeader}>
@@ -1246,14 +1261,14 @@ const FluxoInscricaoEdital = ({
                     {/* Contadores por projeto */}
                     <div className={styles.projetoCounters}>
                       <div
-                        className={`${styles.projetoCounter} ${getPlanosPorProjeto(item).length >= (editalInfo?.maxPlanosPorProjeto || 6) ? styles.atLimit : ""}`}
+                        className={`${styles.projetoCounter} ${atingiuLimitePlanosNoProjeto(item) ? styles.atLimit : ""}`}
                       >
                         <span className={styles.projetoCounterLabel}>
                           Planos
                         </span>
                         <span className={styles.projetoCounterValue}>
                           {getPlanosPorProjeto(item).length} /{" "}
-                          {editalInfo?.maxPlanosPorProjeto || 6}
+                          {editalInfo?.maxPlanos || 0}
                         </span>
                       </div>
                       <div
@@ -1461,8 +1476,8 @@ const FluxoInscricaoEdital = ({
                         </div>
                       ))}
 
-                    {/* Botão Adicionar Plano de Trabalho - só aparece se não atingiu o limite */}
-                    {!atingiuLimitePlanos() && (
+                    {/* Botão Adicionar Plano de Trabalho */}
+                    {!atingiuLimitePlanosNoProjeto(item) && !atingiuLimitePlanosGlobal() && (
                       <button
                         className={styles.addPlanoButton}
                         onClick={() => {
@@ -1476,12 +1491,21 @@ const FluxoInscricaoEdital = ({
                       </button>
                     )}
 
-                    {atingiuLimitePlanos() && (
+                    {atingiuLimitePlanosNoProjeto(item) && (
                       <div className={styles.limitWarning}>
                         <RiAlertLine size={14} />
                         <span>
-                          Limite máximo de {editalInfo?.maxPlanos} planos de
-                          trabalho atingido
+                          Limite de {editalInfo?.maxPlanos} planos por projeto atingido
+                        </span>
+                      </div>
+                    )}
+
+                    {!atingiuLimitePlanosNoProjeto(item) && atingiuLimitePlanosGlobal() && (
+                      <div className={styles.limitWarning}>
+                        <RiAlertLine size={14} />
+                        <span>
+                          Limite global de {inscricao?.edital?.tenant?.maxPlanosPorProponente} planos
+                          atingido (soma de todos os editais)
                         </span>
                       </div>
                     )}
