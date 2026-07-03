@@ -1512,9 +1512,7 @@ const FluxoInscricaoEdital = ({
                   </div>
                 ))}
 
-                {/* Botão Vincular novo projeto - CORRIGIDO: sempre visível quando existem projetos ou não */}
-                {(!inscricao.InscricaoProjeto?.length ||
-                  inscricao.InscricaoProjeto?.length > 0) && (
+                {(inscricao.InscricaoProjeto?.length || 0) < (editalInfo?.maxProjetos || Infinity) ? (
                   <button
                     className={styles.addProjetoButton}
                     onClick={() => setIsModalOpenProjeto(true)}
@@ -1522,6 +1520,11 @@ const FluxoInscricaoEdital = ({
                     <RiFolder5Line size={20} />
                     <span>Vincular novo projeto</span>
                   </button>
+                ) : (
+                  <div className={styles.limitWarning}>
+                    <RiAlertLine size={14} />
+                    <span>Limite de {editalInfo?.maxProjetos} projetos por inscrição atingido</span>
+                  </div>
                 )}
               </div>
             )}
