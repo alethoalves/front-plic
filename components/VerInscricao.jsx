@@ -7,6 +7,7 @@ import {
 } from "@/app/api/client/inscricao";
 import { RiAlertLine } from "@remixicon/react";
 import { useRouter } from "next/navigation";
+import { parseDateBR } from "@/lib/formatarDatas";
 
 const VerInscricao = ({ inscricaoSelected, tenant, setErrors, onClose }) => {
   const [inscricao, setInscricao] = useState(null);
@@ -165,7 +166,7 @@ const VerInscricao = ({ inscricaoSelected, tenant, setErrors, onClose }) => {
                             Cronograma do projeto
                           </h6>
                           {item.projeto.CronogramaProjeto.sort(
-                            (a, b) => new Date(a.inicio) - new Date(b.inicio)
+                            (a, b) => parseDateBR(a.inicio) - parseDateBR(b.inicio)
                           ).map((atividade, i) => (
                             <div key={i} className={`${styles.value}`}>
                               <p>

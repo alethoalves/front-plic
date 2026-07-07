@@ -20,6 +20,7 @@ import NoData from "@/components/NoData";
 import Button from "@/components/Button";
 import { ProgressSpinner } from "primereact/progressspinner";
 import BlockNoteContent from "@/components/BlockNoteContent";
+import { parseDateBR } from "@/lib/formatarDatas";
 
 // ─── Field value renderer ─────────────────────────────────────────────────────
 const extractFileName = (url) => {
@@ -179,8 +180,8 @@ const FichaAvaliacaoDisplay = ({ ficha }) => {
 // ─── Cronograma ───────────────────────────────────────────────────────────────
 const Cronograma = ({ items, titulo }) => {
   if (!items?.length) return null;
-  const sorted = [...items].sort((a, b) =>
-    (a.inicio ?? "").localeCompare(b.inicio ?? "")
+  const sorted = [...items].sort(
+    (a, b) => parseDateBR(a.inicio) - parseDateBR(b.inicio)
   );
   return (
     <div className={styles.cronogramaBlock}>

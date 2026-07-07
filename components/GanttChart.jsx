@@ -2,12 +2,7 @@
 import React from "react";
 import styles from "./GanttChart.module.scss";
 import { RiDeleteBinLine } from "@remixicon/react";
-
-// Função para converter datas no formato DD/MM/AAAA para Date
-const parseDate = (dateStr) => {
-  const [day, month, year] = dateStr.split("/").map(Number);
-  return new Date(year, month - 1, day); // `month - 1` porque os meses no JS começam em 0
-};
+import { parseDateBR as parseDate } from "@/lib/formatarDatas";
 
 const GanttChart = ({ cronograma }) => {
   if (!cronograma || cronograma.length === 0) return null;
