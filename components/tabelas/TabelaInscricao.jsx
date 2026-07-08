@@ -74,6 +74,40 @@ const normalizeName = (name) => {
     .join(" ");
 };
 
+// Situação da participação (definida pela gestão do programa)
+const getStatusParticipacaoInfo = (status) => {
+  switch (status) {
+    case "APROVADA":
+      return { label: "Aprovada", severity: "success" };
+    case "ATIVA":
+    case "ativo":
+      return { label: "Ativa", severity: "success" };
+    case "EM_ANALISE":
+      return { label: "Em análise", severity: "warning" };
+    case "PENDENTE":
+      return { label: "Pendente", severity: "warning" };
+    case "RECUSADA":
+      return { label: "Recusada", severity: "danger" };
+    case "CANCELADA":
+      return { label: "Cancelada", severity: "danger" };
+    case "SUBSTITUIDA":
+      return { label: "Substituída", severity: "danger" };
+    case "INATIVA":
+    case "inativo":
+      return { label: "Inativa", severity: "danger" };
+    default:
+      return { label: status || "Em análise", severity: "info" };
+  }
+};
+
+// Situação da documentação (CV Lattes, formulários, etc.)
+const getStatusDocumentacaoInfo = (status) => {
+  if (status === "incompleto") {
+    return { label: "Documentação pendente", severity: "warning" };
+  }
+  return { label: "Documentação completa", severity: "success" };
+};
+
 const TabelaInscricao = ({ params }) => {
   const [loading, setLoading] = useState(true);
   const [itens, setItens] = useState([]);
@@ -446,7 +480,8 @@ const TabelaInscricao = ({ params }) => {
                       ?.filter((p) => p.tipo === "orientador")
                       ?.map((p) => ({
                         nome: p.user.nome,
-                        status: p.statusParticipacao,
+                        status: p.status,
+                        statusParticipacao: p.statusParticipacao,
                       })) || [];
 
                   if (orientadores.length === 0) {
@@ -471,21 +506,44 @@ const TabelaInscricao = ({ params }) => {
                             display: "flex",
                             alignItems: "center",
                             gap: "0.5rem",
+                            flexWrap: "wrap",
                           }}
                         >
                           <span>{normalizeName(orientador.nome)}</span>
                           <Tag
                             rounded
-                            severity={getSeverityByStatus(orientador.status)}
+                            severity={
+                              getStatusParticipacaoInfo(
+                                orientador.statusParticipacao,
+                              ).severity
+                            }
+                            title="Situação da participação"
                           >
-                            {formatStatusText(orientador.status)}
+                            {
+                              getStatusParticipacaoInfo(
+                                orientador.statusParticipacao,
+                              ).label
+                            }
+                          </Tag>
+                          <Tag
+                            rounded
+                            severity={
+                              getStatusDocumentacaoInfo(orientador.status)
+                                .severity
+                            }
+                            title="Situação da documentação"
+                          >
+                            {
+                              getStatusDocumentacaoInfo(orientador.status)
+                                .label
+                            }
                           </Tag>
                         </div>
                       ))}
                     </div>
                   );
                 }}
-                style={{ width: "13rem" }}
+                style={{ width: "16rem" }}
               />
               <Column
                 field="alunosString"
@@ -500,7 +558,8 @@ const TabelaInscricao = ({ params }) => {
                       ?.filter((p) => p.tipo === "aluno")
                       ?.map((p) => ({
                         nome: p.user.nome,
-                        status: p.statusParticipacao,
+                        status: p.status,
+                        statusParticipacao: p.statusParticipacao,
                       })) || [];
 
                   if (alunos.length === 0) {
@@ -525,21 +584,40 @@ const TabelaInscricao = ({ params }) => {
                             display: "flex",
                             alignItems: "center",
                             gap: "0.5rem",
+                            flexWrap: "wrap",
                           }}
                         >
                           <span>{normalizeName(aluno.nome)}</span>
                           <Tag
                             rounded
-                            severity={getSeverityByStatus(aluno.status)}
+                            severity={
+                              getStatusParticipacaoInfo(
+                                aluno.statusParticipacao,
+                              ).severity
+                            }
+                            title="Situação da participação"
                           >
-                            {formatStatusText(aluno.status)}
+                            {
+                              getStatusParticipacaoInfo(
+                                aluno.statusParticipacao,
+                              ).label
+                            }
+                          </Tag>
+                          <Tag
+                            rounded
+                            severity={
+                              getStatusDocumentacaoInfo(aluno.status).severity
+                            }
+                            title="Situação da documentação"
+                          >
+                            {getStatusDocumentacaoInfo(aluno.status).label}
                           </Tag>
                         </div>
                       ))}
                     </div>
                   );
                 }}
-                style={{ width: "13rem" }}
+                style={{ width: "16rem" }}
               />
             </DataTable>
           )}
