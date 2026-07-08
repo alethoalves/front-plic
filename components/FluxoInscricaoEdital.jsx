@@ -130,8 +130,8 @@ const FluxoInscricaoEdital = ({
   };
 
   const handleFinalizarInscricao = async () => {
-    // Se já respondeu, submete direto sem verificar questionário
-    if (inscricao?.questionarioRespondido) {
+    // Gestor enviando em nome do proponente não precisa responder o questionário
+    if (gestorMode || inscricao?.questionarioRespondido) {
       executarSubmissao();
       return;
     }

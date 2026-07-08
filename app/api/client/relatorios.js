@@ -85,6 +85,26 @@ export const relatorioProjetosExcel = async (tenantSlug, ano) => {
   URL.revokeObjectURL(url);
 };
 
+export const relatorioParticipacoesExcel = async (tenantSlug, ano) => {
+  const headers = getAuthHeadersClient();
+  if (!headers) throw new Error('Não autenticado');
+
+  const params = ano ? `?ano=${ano}` : '';
+  const response = await req.get(`/private/${tenantSlug}/relatorios/participacoes-excel${params}`, {
+    headers,
+    responseType: 'blob',
+  });
+
+  const url = URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', ano ? `participacoes_${ano}.xlsx` : 'participacoes.xlsx');
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+};
+
 export const relatorioEmailsUsuarios = async (tenantSlug) => {
   const headers = getAuthHeadersClient();
   if (!headers) throw new Error('Não autenticado');

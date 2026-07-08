@@ -5,7 +5,7 @@ import Header from "@/components/Header";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { getCookie } from "cookies-next";
-import { relatorioEmailsUsuarios, relatorioInscricoesExcel, relatorioProjetosExcel } from "@/app/api/client/relatorios";
+import { relatorioEmailsUsuarios, relatorioInscricoesExcel, relatorioProjetosExcel, relatorioParticipacoesExcel } from "@/app/api/client/relatorios";
 
 const Page = ({ params }) => {
   const [loadingEmails, setLoadingEmails] = useState(false);
@@ -14,6 +14,8 @@ const Page = ({ params }) => {
   const [errorInscricoes, setErrorInscricoes] = useState(null);
   const [loadingProjetos, setLoadingProjetos] = useState(false);
   const [errorProjetos, setErrorProjetos] = useState(null);
+  const [loadingParticipacoes, setLoadingParticipacoes] = useState(false);
+  const [errorParticipacoes, setErrorParticipacoes] = useState(null);
 
   const handleDownloadEmails = async () => {
     setLoadingEmails(true);
@@ -53,6 +55,20 @@ const Page = ({ params }) => {
       console.error(err);
     } finally {
       setLoadingProjetos(false);
+    }
+  };
+
+  const handleDownloadParticipacoes = async () => {
+    setLoadingParticipacoes(true);
+    setErrorParticipacoes(null);
+    try {
+      const ano = getCookie("anoSelected");
+      await relatorioParticipacoesExcel(params.tenant, ano);
+    } catch (err) {
+      setErrorParticipacoes("Erro ao gerar o relatório. Tente novamente.");
+      console.error(err);
+    } finally {
+      setLoadingParticipacoes(false);
     }
   };
 
@@ -98,6 +114,27 @@ const Page = ({ params }) => {
             className="p-button-success"
             onClick={handleDownloadInscricoes}
             disabled={loadingInscricoes}
+          />
+        </Card>
+        <Card pt={{ content: { style: { padding: "1.5rem" } } }}>
+          <h5 className="mt-0 mb-1">Participações</h5>
+          <p className="mt-0 mb-3" style={{ color: "#6b7280", fontSize: "0.875rem" }}>
+            Gera uma planilha com dados da inscrição (ID, status, edital, ano) e do participante
+            (nome, status da participação, tipo, solicitação de bolsa, quantidade de solicitações
+            de bolsa vinculadas, idade, titulação, ano de titulação, participação externa e
+            lotação para orientadores).
+          </p>
+          {errorParticipacoes && (
+            <p className="mb-2" style={{ color: "#dc2626", fontSize: "0.875rem" }}>
+              {errorParticipacoes}
+            </p>
+          )}
+          <Button
+            label="Baixar Excel"
+            icon={loadingParticipacoes ? "pi pi-spin pi-spinner" : "pi pi-file-excel"}
+            className="p-button-success"
+            onClick={handleDownloadParticipacoes}
+            disabled={loadingParticipacoes}
           />
         </Card>
         <Card pt={{ content: { style: { padding: "1.5rem" } } }}>
