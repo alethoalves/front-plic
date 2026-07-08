@@ -100,12 +100,22 @@ const getStatusParticipacaoInfo = (status) => {
   }
 };
 
-// Situação da documentação (CV Lattes, formulários, etc.)
-const getStatusDocumentacaoInfo = (status) => {
-  if (status === "incompleto") {
-    return { label: "Documentação pendente", severity: "warning" };
-  }
-  return { label: "Documentação completa", severity: "success" };
+const STATUS_DOCUMENTACAO_OPTIONS = [
+  { label: "Completa", value: "completa" },
+  { label: "Incompleta", value: "incompleta" },
+];
+
+// Considera a documentação da inscrição completa quando orientadores e
+// alunos vinculados já têm a documentação (CV Lattes, formulários, etc.) preenchida.
+const getStatusDocumentacaoInscricao = (participacoes) => {
+  const relevantes =
+    participacoes?.filter((p) => p.tipo === "orientador" || p.tipo === "aluno") ||
+    [];
+
+  const completa =
+    relevantes.length > 0 && relevantes.every((p) => p.status !== "incompleto");
+
+  return completa ? "completa" : "incompleta";
 };
 
 const TabelaInscricao = ({ params }) => {
@@ -148,6 +158,7 @@ const TabelaInscricao = ({ params }) => {
     global: { value: "", matchMode: FilterMatchMode.CONTAINS },
     "edital.titulo": { value: [], matchMode: FilterMatchMode.IN },
     status: { value: [], matchMode: FilterMatchMode.IN },
+    statusDocumentacao: { value: [], matchMode: FilterMatchMode.IN },
     proponente: { value: "", matchMode: FilterMatchMode.CONTAINS },
     alunosString: { value: "", matchMode: FilterMatchMode.CONTAINS },
     orientadoresString: { value: "", matchMode: FilterMatchMode.CONTAINS },
@@ -205,6 +216,9 @@ const TabelaInscricao = ({ params }) => {
                 ?.map((p) => `${p.user.nome} ${p.user.cpf}`)
                 .join(" ") || "",
             proponente: inscricao.proponente?.nome || "",
+            statusDocumentacao: getStatusDocumentacaoInscricao(
+              inscricao.participacoes,
+            ),
           };
         }) || [];
 
@@ -480,7 +494,6 @@ const TabelaInscricao = ({ params }) => {
                       ?.filter((p) => p.tipo === "orientador")
                       ?.map((p) => ({
                         nome: p.user.nome,
-                        status: p.status,
                         statusParticipacao: p.statusParticipacao,
                       })) || [];
 
@@ -517,7 +530,6 @@ const TabelaInscricao = ({ params }) => {
                                 orientador.statusParticipacao,
                               ).severity
                             }
-                            title="Situação da participação"
                           >
                             {
                               getStatusParticipacaoInfo(
@@ -525,25 +537,12 @@ const TabelaInscricao = ({ params }) => {
                               ).label
                             }
                           </Tag>
-                          <Tag
-                            rounded
-                            severity={
-                              getStatusDocumentacaoInfo(orientador.status)
-                                .severity
-                            }
-                            title="Situação da documentação"
-                          >
-                            {
-                              getStatusDocumentacaoInfo(orientador.status)
-                                .label
-                            }
-                          </Tag>
                         </div>
                       ))}
                     </div>
                   );
                 }}
-                style={{ width: "16rem" }}
+                style={{ width: "13rem" }}
               />
               <Column
                 field="alunosString"
@@ -558,7 +557,6 @@ const TabelaInscricao = ({ params }) => {
                       ?.filter((p) => p.tipo === "aluno")
                       ?.map((p) => ({
                         nome: p.user.nome,
-                        status: p.status,
                         statusParticipacao: p.statusParticipacao,
                       })) || [];
 
@@ -595,7 +593,6 @@ const TabelaInscricao = ({ params }) => {
                                 aluno.statusParticipacao,
                               ).severity
                             }
-                            title="Situação da participação"
                           >
                             {
                               getStatusParticipacaoInfo(
@@ -603,21 +600,41 @@ const TabelaInscricao = ({ params }) => {
                               ).label
                             }
                           </Tag>
-                          <Tag
-                            rounded
-                            severity={
-                              getStatusDocumentacaoInfo(aluno.status).severity
-                            }
-                            title="Situação da documentação"
-                          >
-                            {getStatusDocumentacaoInfo(aluno.status).label}
-                          </Tag>
                         </div>
                       ))}
                     </div>
                   );
                 }}
-                style={{ width: "16rem" }}
+                style={{ width: "13rem" }}
+              />
+              <Column
+                field="statusDocumentacao"
+                header="Documentação"
+                sortable
+                filter
+                filterElement={(options) =>
+                  statusClassificacaoFilterTemplate(
+                    options,
+                    STATUS_DOCUMENTACAO_OPTIONS,
+                  )
+                }
+                showFilterMenu={false}
+                filterField="statusDocumentacao"
+                body={(rowData) => (
+                  <Tag
+                    rounded
+                    severity={
+                      rowData.statusDocumentacao === "completa"
+                        ? "success"
+                        : "warning"
+                    }
+                  >
+                    {rowData.statusDocumentacao === "completa"
+                      ? "Inscrição completa"
+                      : "Inscrição incompleta"}
+                  </Tag>
+                )}
+                style={{ width: "12rem" }}
               />
             </DataTable>
           )}
