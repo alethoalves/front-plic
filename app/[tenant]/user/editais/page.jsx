@@ -201,7 +201,7 @@ const Page = ({ params }) => {
                     </div>
 
                     {/* Período de Inscrição */}
-                    {edital.inicioInscricao && edital.fimInscricao && (
+                    {false && edital.inicioInscricao && edital.fimInscricao && (
                       <div className={styles.periodoInfo}>
                         <RiCalendarEventLine size={16} />
                         <span>
