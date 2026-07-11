@@ -242,6 +242,27 @@ const Page = ({ params }) => {
 
         <div className={styles.head}>
           <div className={styles.headIcon}>
+            <RiBarChart2Line />
+          </div>
+          <div className={styles.item}>
+            <h5>Ficha de Avaliação de Projeto e Plano de Trabalho</h5>
+            <p>
+              As rubricas de projeto e plano de trabalho são compartilhadas entre
+              os editais do mesmo ano, então ficam numa página própria. Lá você
+              cria/edita a rubrica (grupos, subgrupos, pesos e escala de nota) e
+              vincula ao edital que quiser — inclusive este.
+            </p>
+            <Button
+              className="btn-secondary"
+              linkTo={`/${params.tenant}/configuracoes/gestor/fichas-avaliacao`}
+            >
+              Ir para Fichas de Avaliação
+            </Button>
+          </div>
+        </div>
+
+        <div className={styles.head}>
+          <div className={styles.headIcon}>
             <RiFileLine />
           </div>
           <div className={styles.item}>

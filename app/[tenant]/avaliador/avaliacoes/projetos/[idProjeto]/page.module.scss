@@ -115,43 +115,6 @@
             }
         }
     }
-    .values{
-        
-        display: inline-flex;
-        flex-wrap: wrap;
-        margin: $gap-1 0 $gap-2 0;
-        @include responsive(xs){
-            margin: $gap-1 0;
-        }
-        .value{
-            border: 1px solid $primary-dark;
-            width: 50px;
-            height: 50px;
-            margin-left: 4px;
-            margin-top: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: $gap-1;
-            @include responsive(xs){
-                width: 40px;
-                height: 40px;
-                
-            }
-            transition: ease .3s;
-            cursor: pointer;
-            &:hover{
-                background-color: $white-darken;
-                transform: scale(1.05);
-            }
-            &.selected{
-                background-color: $primary-dark;
-                p{
-                    color: $white-light;
-                }
-            }
-        }
-    }
 }
 
 .card {

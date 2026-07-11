@@ -3,70 +3,43 @@
 import styles from "./page.module.scss";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 
 import {
-  associarAvaliadorSubmissao,
-  desvincularAvaliadorSubmissao,
-  getResumo,
-  getSubmissoesEmAvaliacao,
-  getSubmissoesSemAvaliacao,
-} from "@/app/api/client/submissao";
-import {
-  Ri24HoursFill,
-  RiDeleteBinLine,
-  RiEditLine,
-  RiFileList3Line,
-  RiQuillPenLine,
-} from "@remixicon/react";
-import Modal from "@/components/Modal";
-import {
-  associarAvaliadorInscricaoProjeto,
-  desassociarAvaliadorInscricaoProjeto,
-  getAvaliacoesPendentes,
   getFichaAvaliacao,
   getProjetoParaAvaliar,
-  getProjetosAguardandoAvaliacao,
-  getProjetosEmAvaliacao,
   processarFichaAvaliacao,
 } from "@/app/api/client/avaliador";
-import NoData from "@/components/NoData";
+import { RiQuillPenLine } from "@remixicon/react";
 import Button from "@/components/Button";
+import { flattenRespostas, listarCriterios, calcularArvoreComNotas } from "@/lib/fichaAvaliacaoScoring";
+import FichaAvaliacaoTree from "@/components/avaliacoes/FichaAvaliacaoTree";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState({}); // Erros individuais por submissão
-  const [fichaError, setFichaError] = useState(null); // Novo estado para erros da ficha de avaliação
+  const [error, setError] = useState({});
+  const [fichaError, setFichaError] = useState(null);
   const router = useRouter();
   const [inscricaoProjeto, setInscricaoProjeto] = useState(null);
   const [fichaAvaliacao, setFichaAvaliacao] = useState(null);
-  const [selectedNotas, setSelectedNotas] = useState({});
-  const [notaTotal, setNotaTotal] = useState(0);
-  const [submissao, setSubmissao] = useState(null);
-  const [evento, setEvento] = useState(null);
-  // Função de busca dos dados ao renderizar o componente
+  const [valoresSelecionados, setValoresSelecionados] = useState(new Map());
+  const [observacao, setObservacao] = useState("");
+
   const fetchData = async () => {
     try {
       const data = await getProjetoParaAvaliar(params.tenant, params.idProjeto);
       setInscricaoProjeto(data);
 
-      // Busca a ficha de avaliação
       const fichaDeAvaliacao = await getFichaAvaliacao(
         params.tenant,
         "projeto",
         data.inscricao.edital.id
       );
       setFichaAvaliacao(fichaDeAvaliacao);
-      setEvento({
-        ...fichaDeAvaliacao,
-        notaTotal: 0,
-        observacao: "", // Inicializa a chave para armazenar o comentário
-      });
     } catch (error) {
       console.error("Erro ao buscar dados:", error);
       setFichaError(
         `Erro ao carregar a ficha de avaliação. Tente novamente. ${error.response?.data?.message}`
-      ); // Define o erro da ficha
+      );
     } finally {
       setLoading(false);
     }
@@ -76,86 +49,47 @@ const Page = ({ params }) => {
     fetchData();
   }, []);
 
-  // Função para lidar com a seleção de notas
   const handleNotaSelecionada = (criterioId, valor) => {
-    const novasNotas = {
-      ...selectedNotas,
-      [criterioId]: valor,
-    };
-    setSelectedNotas(novasNotas);
-
-    const novaNotaTotal = calcularNotaTotal(
-      fichaAvaliacao?.CriterioFormularioAvaliacao,
-      novasNotas
-    );
-    setNotaTotal(novaNotaTotal);
-    setEvento((prevEvento) => {
-      const criteriosAtualizados = prevEvento.CriterioFormularioAvaliacao.map(
-        (criterio) => {
-          if (criterio.id === criterioId) {
-            return {
-              ...criterio,
-              notaAtribuida: valor, // Adiciona a chave para armazenar a nota atribuída
-            };
-          }
-          return criterio;
-        }
-      );
-
-      return {
-        ...prevEvento,
-        CriterioFormularioAvaliacao: criteriosAtualizados,
-        notaTotal: novaNotaTotal,
-      };
+    setValoresSelecionados((prev) => {
+      const next = new Map(prev);
+      if (valor === undefined) next.delete(criterioId);
+      else next.set(criterioId, valor);
+      return next;
     });
   };
 
-  // Função para lidar com a mudança no campo de feedback
-  const handleComentarioChange = (e) => {
-    const comentario = e.target.value;
-    setEvento((prevEvento) => ({
-      ...prevEvento,
-      observacao: comentario, // Atualiza o comentário no evento
-    }));
-  };
+  const arvoreCalculada = fichaAvaliacao
+    ? calcularArvoreComNotas(fichaAvaliacao.schemaCriterios, valoresSelecionados)
+    : null;
 
-  // Função para calcular a média das notas
-  const calcularNotaTotal = (criterios, notasSelecionadas) => {
-    const totalPeso = criterios.reduce(
-      (acc, criterio) => acc + criterio.peso,
-      0
-    );
-
-    if (totalPeso === 0) return 0;
-
-    const somaNotasPonderadas = criterios.reduce((acc, criterio) => {
-      const notaSelecionada = notasSelecionadas[criterio.id] || 0;
-      return acc + notaSelecionada * criterio.peso;
-    }, 0);
-
-    return somaNotasPonderadas;
-  };
   const handleTerminarAvaliacao = async () => {
-    setLoading(true); // Inicia o estado de carregamento
-    setError({}); // Limpa erros anteriores
+    const totalCriterios = listarCriterios(fichaAvaliacao.schemaCriterios).length;
+    const respostas = flattenRespostas(arvoreCalculada.arvore);
+    if (respostas.length < totalCriterios) {
+      setError({ geral: "Preencha a nota de todos os critérios antes de terminar a avaliação." });
+      return;
+    }
+
+    setLoading(true);
+    setError({});
 
     try {
       const body = {
-        ...evento,
+        objeto: "PROJETO",
         projetoId: params.idProjeto,
+        observacao,
+        respostas,
       };
       const response = await processarFichaAvaliacao(params.tenant, body);
 
       if (response.status === "success") {
         alert("Avaliação processada com sucesso!");
-        // Redireciona ou atualiza a página se necessário
         router.push(`/${params.tenant}/avaliador/avaliacoes/projetos`);
       } else {
         setError({ geral: response.message || "Erro ao processar avaliação." });
         setLoading(false);
       }
     } catch (error) {
-      // Captura erros específicos e exibe mensagem
       setError({
         geral:
           error.response?.data?.message ||
@@ -219,57 +153,17 @@ const Page = ({ params }) => {
           <div className={styles.fichaDeAvaliacao}>
             <h5>Ficha de Avaliação</h5>
 
-            {fichaError ? ( // Se houver erro na ficha, exibe a mensagem de erro
+            {fichaError ? (
               <div className={styles.error}>
                 <p>{fichaError}</p>
               </div>
             ) : (
-              // Caso contrário, renderiza a ficha de avaliação
               <>
-                <div className={styles.quesitos}>
-                  {fichaAvaliacao?.CriterioFormularioAvaliacao?.sort(
-                    (a, b) => a.id - b.id
-                  ).map((item, index) => {
-                    const valores = Array.from(
-                      { length: item.notaMaxima - item.notaMinima + 1 },
-                      (_, i) => item.notaMinima + i
-                    );
-                    return (
-                      <div className={styles.item} key={item.id}>
-                        <div className={styles.label}>
-                          <h6>
-                            <span>{index + 1}. </span>
-                            {item.label} (Peso: {item.peso}){" "}
-                            {/* Alteração aqui */}
-                          </h6>
-                        </div>
-                        <div className={styles.instructions}>
-                          <p style={{ whiteSpace: "pre-line" }}>
-                            {item.descricao}
-                          </p>
-                        </div>
-                        <div className={styles.values}>
-                          {valores.map((valor) => (
-                            <div
-                              key={valor}
-                              value={valor}
-                              className={`${styles.value} ${
-                                selectedNotas[item.id] === valor
-                                  ? styles.selected
-                                  : ""
-                              }`}
-                              onClick={() =>
-                                handleNotaSelecionada(item.id, valor)
-                              }
-                            >
-                              <p style={{ whiteSpace: "pre-wrap" }}>{valor}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                <FichaAvaliacaoTree
+                  schemaCriterios={fichaAvaliacao?.schemaCriterios}
+                  valores={valoresSelecionados}
+                  onSelecionar={handleNotaSelecionada}
+                />
 
                 <div className={`${styles.item} mt-2`}>
                   <div className={styles.label}>
@@ -279,16 +173,16 @@ const Page = ({ params }) => {
                   <textarea
                     type="text"
                     placeholder="Escreva aqui"
-                    //value={evento?.observaocao || ""}
-                    onChange={handleComentarioChange}
+                    value={observacao}
+                    onChange={(e) => setObservacao(e.target.value)}
                   ></textarea>
                 </div>
 
-                {/* Nova div para exibir a nota final */}
                 <div className={styles.notaFinal}>
                   <h6>Nota Final:</h6>
-                  <p>{notaTotal.toFixed(2)}</p>{" "}
-                  {/* Exibe a nota com 2 casas decimais */}
+                  <p>
+                    {(arvoreCalculada?.pontosObtidos ?? 0).toFixed(2)} / {arvoreCalculada?.pontosMaximos ?? 0}
+                  </p>
                 </div>
               </>
             )}

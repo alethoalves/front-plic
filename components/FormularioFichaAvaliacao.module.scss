@@ -332,3 +332,117 @@
   color: $primary-normal;
 }
 
+/* ─── Editor em árvore (grupos/subgrupos/critérios) ─────────────────────── */
+
+.arvore {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-2;
+}
+
+.grupoItem {
+  background-color: $white-normal;
+  border: 1px solid $white-darken;
+  border-radius: $gap-1;
+  padding: $gap-2;
+}
+
+.grupoHeader {
+  display: flex;
+  align-items: center;
+  gap: $gap-1;
+}
+
+.grupoLabelInput {
+  flex: 1;
+  font-weight: 600;
+}
+
+.grupoBody {
+  margin-top: $gap-2;
+  padding-left: $gap-3;
+  display: flex;
+  flex-direction: column;
+  gap: $gap-2;
+  border-left: 2px solid $white-darken;
+}
+
+.expandBtn {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: $primary-normal;
+  flex-shrink: 0;
+}
+
+.badgePoints {
+  white-space: nowrap;
+  font-size: 0.8rem;
+  color: $primary-dark;
+  background-color: $primary-lighten;
+  padding: 2px $gap-1;
+  border-radius: 12px;
+}
+
+.pesoInput {
+  width: 70px;
+  text-align: center;
+}
+
+.addRow {
+  display: flex;
+  gap: $gap-1;
+  flex-wrap: wrap;
+}
+
+.addSmall {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px $gap-1;
+  border-radius: $gap-1;
+  cursor: pointer;
+  border: 1px dashed $primary-normal;
+  color: $primary-normal;
+  font-size: 0.85rem;
+  background-color: $white-light;
+
+  &:hover {
+    background-color: $white-normal;
+  }
+}
+
+.deleteSmall {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: $error-normal;
+  flex-shrink: 0;
+}
+
+.escalaBox {
+  margin-top: $gap-2;
+  padding: $gap-2;
+  background-color: $white-normal;
+  border-radius: $gap-1;
+  display: flex;
+  flex-direction: column;
+  gap: $gap-1;
+}
+
+.opcaoRow {
+  display: flex;
+  gap: $gap-1;
+  align-items: center;
+
+  input[type="number"] {
+    width: 70px;
+  }
+}
+

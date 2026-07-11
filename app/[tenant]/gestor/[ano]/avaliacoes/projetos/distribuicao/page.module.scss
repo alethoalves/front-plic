@@ -338,6 +338,29 @@
 .headerAvaliadoresPendente{
   margin-top: $gap-2;
 }
+.listHeaderComAcao{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $gap-2;
+  padding-right: $gap-2;
+  h6{
+    margin: 0;
+  }
+}
+.desvincularTudoBtn{
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+.progressoDesvincular{
+  display: flex;
+  align-items: center;
+  gap: $gap-1;
+  font-size: 0.8rem;
+  color: $primary-dark;
+  white-space: nowrap;
+}
 .modalActions{
   margin-top: $gap-2;
   display: flex;

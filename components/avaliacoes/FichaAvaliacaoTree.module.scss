@@ -1,0 +1,112 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+.quesitos {
+    margin-top: $gap-2;
+}
+
+.item {
+    margin-top: $gap-1;
+    .label {
+        h6 {
+            line-height: 100%;
+        }
+        margin-bottom: $gap-1;
+    }
+}
+
+.instructions {
+    margin-bottom: $gap-1;
+}
+
+.values {
+    display: inline-flex;
+    flex-wrap: wrap;
+    margin: $gap-1 0 $gap-2 0;
+    @include responsive(xs) {
+        margin: $gap-1 0;
+    }
+
+    .value {
+        border: 1px solid $warning-dark;
+        width: 50px;
+        height: 50px;
+        margin-left: 4px;
+        margin-top: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: $gap-1;
+        @include responsive(xs) {
+            width: 40px;
+            height: 40px;
+        }
+        transition: ease 0.3s;
+        cursor: pointer;
+
+        &:hover {
+            background-color: $warning-lighten;
+            transform: scale(1.05);
+        }
+
+        &.selected {
+            background-color: $warning-dark;
+            p {
+                color: $warning-lighten;
+            }
+        }
+
+        &.valueLabel {
+            width: auto;
+            height: auto;
+            min-height: 40px;
+            padding: $gap-1 $gap-2;
+            p {
+                white-space: normal;
+                text-align: center;
+            }
+        }
+    }
+}
+.grupo {
+    margin-top: $gap-2;
+    padding-left: $gap-2;
+    border-left: 2px solid $warning-dark;
+}
+
+.grupoTitulo {
+    display: flex;
+    align-items: center;
+    gap: $gap-1;
+    h6 {
+        margin: 0;
+    }
+}
+
+.subtotalBadge {
+    font-size: 12px;
+    color: $warning-darken;
+    background-color: $warning-lighten;
+    padding: 2px $gap-1;
+    border-radius: 50px;
+    white-space: nowrap;
+}
+
+.sliderRow {
+    display: flex;
+    align-items: center;
+    gap: $gap-2;
+    margin: $gap-1 0 $gap-2 0;
+    input[type="range"] {
+        flex: 1;
+    }
+}
+
+.manualInput {
+    width: 100px;
+    margin: $gap-1 0 $gap-2 0;
+    padding: $gap-1;
+    border: 1px solid $gray-50;
+    border-radius: $gap-1;
+}

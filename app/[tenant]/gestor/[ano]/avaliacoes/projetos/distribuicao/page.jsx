@@ -34,6 +34,8 @@ const Page = ({ params }) => {
   const [projetosPorAvaliador, setProjetosPorAvaliador] = useState(0);
   const [avaliadorSelecionado, setAvaliadorSelecionado] = useState(null);
   const [removendoVinculacao, setRemovendoVinculacao] = useState(null);
+  const [showConfirmDesvincularTodos, setShowConfirmDesvincularTodos] = useState(false);
+  const [desvinculandoProgresso, setDesvinculandoProgresso] = useState(null); // { atual, total } | null
   const [activeModal, setActiveModal] = useState(null);
   const [projetoSelecionado, setProjetoSelecionado] = useState(null);
   const [buscaProjeto, setBuscaProjeto] = useState("");
@@ -328,6 +330,25 @@ const Page = ({ params }) => {
       ),
     ];
     setTodasAreas(areasUnicas.map((area) => ({ label: area, value: area })));
+
+    return avaliadoresComColunasVirtuais || [];
+  };
+
+  // Recarrega avaliadores/inscrições e, se houver um avaliador selecionado no painel,
+  // re-sincroniza essa seleção com os dados frescos (senão o painel fica com um retrato
+  // desatualizado — as atribuições que acabaram de ser removidas voltariam a aparecer).
+  const recarregarERessincronizarSelecao = async () => {
+    await processarInscricoes(params.tenant, setInscricoesProjetos);
+    const avaliadoresAtualizados = await atualizarAvaliadores(
+      params.tenant,
+      setAvaliadores,
+      setTodasAreas
+    );
+    setAvaliadorSelecionado((atual) =>
+      atual
+        ? avaliadoresAtualizados.find((a) => a.id === atual.id) || null
+        : null
+    );
   };
 
   const projetosParaDistribuir = getProjetosNaoDistribuidosPorArea().length;
@@ -347,8 +368,7 @@ const Page = ({ params }) => {
       );
 
       // Atualiza os dados após a remoção bem-sucedida
-      await processarInscricoes(params.tenant, setInscricoesProjetos);
-      await atualizarAvaliadores(params.tenant, setAvaliadores, setTodasAreas);
+      await recarregarERessincronizarSelecao();
 
       showToast("success", "Sucesso", "Vinculação removida com sucesso!");
     } catch (error) {
@@ -361,6 +381,56 @@ const Page = ({ params }) => {
       showToast("error", "Erro", errorMessage);
     } finally {
       setRemovendoVinculacao(null);
+    }
+  };
+
+  const getPendentesDoAvaliadorSelecionado = () =>
+    avaliadorSelecionado?.user.InscricaoProjetoAvaliador.filter(
+      (atribuicao) => (atribuicao.inscricaoProjeto?.FichaAvaliacao?.length || 0) === 0
+    ) || [];
+
+  const handleDesvincularTodos = async () => {
+    const pendentes = getPendentesDoAvaliadorSelecionado();
+    setShowConfirmDesvincularTodos(false);
+    if (pendentes.length === 0) return;
+
+    const avaliadorId = avaliadorSelecionado.user.id;
+    setDesvinculandoProgresso({ atual: 0, total: pendentes.length });
+
+    let sucesso = 0;
+    const falhas = [];
+    for (const atribuicao of pendentes) {
+      try {
+        await GestorDesassociarAvaliadorInscricaoProjeto(
+          params.tenant,
+          atribuicao.inscricaoProjetoId,
+          avaliadorId
+        );
+        sucesso++;
+      } catch (error) {
+        falhas.push(
+          atribuicao.inscricaoProjeto?.projeto?.titulo || `ID ${atribuicao.inscricaoProjetoId}`
+        );
+      } finally {
+        setDesvinculandoProgresso((prev) => ({ ...prev, atual: prev.atual + 1 }));
+      }
+    }
+
+    await recarregarERessincronizarSelecao();
+    setDesvinculandoProgresso(null);
+
+    if (falhas.length === 0) {
+      showToast(
+        "success",
+        "Sucesso",
+        `${sucesso} vinculação(ões) removida(s) com sucesso!`
+      );
+    } else {
+      showToast(
+        "warn",
+        "Concluído com erros",
+        `${sucesso} removida(s); ${falhas.length} falharam (${falhas.join(", ")}).`
+      );
     }
   };
 
@@ -546,6 +616,37 @@ const Page = ({ params }) => {
               disabled={isProcessing}
             >
               {isProcessing ? "Processando..." : "Confirmar"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+      <Modal
+        isOpen={showConfirmDesvincularTodos}
+        onClose={() => setShowConfirmDesvincularTodos(false)}
+        size="small"
+      >
+        <div className={style.modalAssociacao}>
+          <h5 className="mb-2">Desvincular todos os projetos?</h5>
+          <p>
+            Isso vai remover a vinculação de{" "}
+            <strong>{avaliadorSelecionado?.user.nome}</strong> com{" "}
+            <strong>{getPendentesDoAvaliadorSelecionado().length}</strong>{" "}
+            projeto(s) ainda não avaliado(s). Essa ação não afeta projetos já
+            avaliados por ele(a).
+          </p>
+
+          <div className={style.modalActions}>
+            <Button
+              className="button btn-secondary"
+              onClick={() => setShowConfirmDesvincularTodos(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              className="button btn-primary"
+              onClick={handleDesvincularTodos}
+            >
+              Desvincular tudo
             </Button>
           </div>
         </div>
@@ -957,7 +1058,25 @@ const Page = ({ params }) => {
               <div className={style.scrollableContainer}>
                 {avaliadorSelecionado ? (
                   <>
-                    <h6 className="mt-2 ml-2 mb-2">Aguardando avaliação</h6>
+                    <div className={`${style.listHeaderComAcao} mt-2 mb-2`}>
+                      <h6 className="ml-2">Aguardando avaliação</h6>
+                      {desvinculandoProgresso ? (
+                        <span className={style.progressoDesvincular}>
+                          <i className="pi pi-spinner pi-spin" />
+                          Desvinculando {desvinculandoProgresso.atual}/
+                          {desvinculandoProgresso.total}...
+                        </span>
+                      ) : (
+                        getPendentesDoAvaliadorSelecionado().length > 0 && (
+                          <Button
+                            className={`button btn-secondary ${style.desvincularTudoBtn}`}
+                            onClick={() => setShowConfirmDesvincularTodos(true)}
+                          >
+                            Desvincular tudo
+                          </Button>
+                        )
+                      )}
+                    </div>
                     <ul>
                       {avaliadorSelecionado.user.InscricaoProjetoAvaliador.filter(
                         (atribuicao) =>
@@ -992,6 +1111,12 @@ const Page = ({ params }) => {
                                   <i
                                     className="pi pi-spinner pi-spin"
                                     style={{ marginLeft: "10px" }}
+                                  />
+                                ) : desvinculandoProgresso ? (
+                                  <RiDeleteBinLine
+                                    className={style.deleteIcon}
+                                    style={{ opacity: 0.4, cursor: "not-allowed" }}
+                                    title="Aguarde a desvinculação em massa terminar"
                                   />
                                 ) : (
                                   <RiDeleteBinLine

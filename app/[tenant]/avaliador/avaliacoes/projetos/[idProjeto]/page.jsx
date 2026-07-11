@@ -10,7 +10,6 @@ import {
   processarFichaAvaliacao,
 } from "@/app/api/client/avaliador";
 import Button from "@/components/Button";
-import { getEdital } from "@/app/api/client/edital";
 import { ScrollPanel } from "primereact/scrollpanel";
 import { Card } from "primereact/card";
 import { Fieldset } from "primereact/fieldset";
@@ -18,6 +17,8 @@ import { Accordion, AccordionTab } from "primereact/accordion";
 import GanttChart from "@/components/GanttChart";
 import { Timeline } from "primereact/timeline";
 import BlockNoteContent from "@/components/BlockNoteContent";
+import FichaAvaliacaoTree from "@/components/avaliacoes/FichaAvaliacaoTree";
+import { calcularArvoreComNotas, flattenRespostas, listarCriterios } from "@/lib/fichaAvaliacaoScoring";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(true);
@@ -26,11 +27,10 @@ const Page = ({ params }) => {
   const router = useRouter();
   const [inscricaoProjeto, setInscricaoProjeto] = useState(null);
   const [fichaAvaliacao, setFichaAvaliacao] = useState(null);
-  const [selectedNotas, setSelectedNotas] = useState({});
-  const [notaTotal, setNotaTotal] = useState(0);
-  const [evento, setEvento] = useState(null);
+  const [valoresProjeto, setValoresProjeto] = useState(new Map());
+  const [observacaoProjeto, setObservacaoProjeto] = useState("");
   const [fichaPlano, setFichaPlano] = useState(null);
-  const [avaliacoesPlano, setAvaliacoesPlano] = useState({});
+  const [avaliacoesPlano, setAvaliacoesPlano] = useState({}); // { [planoId]: { valores: Map, observacao } }
   const [currentStep, setCurrentStep] = useState(0); // 0 = projeto, 1+ = planos
   const [planosCount, setPlanosCount] = useState(0);
   const [expandedCards, setExpandedCards] = useState({});
@@ -70,12 +70,6 @@ const Page = ({ params }) => {
           throw err; // repropaga outros erros
         }
       }
-
-      setEvento({
-        ...fichaProjeto,
-        notaTotal: 0,
-        observacao: "",
-      });
     } catch (error) {
       console.error("Erro ao buscar dados:", error);
       setFichaError(
@@ -91,109 +85,79 @@ const Page = ({ params }) => {
   }, []);
 
   const handleNotaSelecionada = (criterioId, valor) => {
-    const novasNotas = {
-      ...selectedNotas,
-      [criterioId]: valor,
-    };
-    setSelectedNotas(novasNotas);
+    setValoresProjeto((prev) => {
+      const next = new Map(prev);
+      if (valor === undefined) next.delete(criterioId);
+      else next.set(criterioId, valor);
+      return next;
+    });
+  };
 
-    const novaNotaTotal = calcularNotaTotal(
-      fichaAvaliacao?.CriterioFormularioAvaliacao,
-      novasNotas
-    );
-    setNotaTotal(novaNotaTotal);
-    setEvento((prevEvento) => {
-      const criteriosAtualizados = prevEvento?.CriterioFormularioAvaliacao?.map(
-        (criterio) => {
-          if (criterio.id === criterioId) {
-            return {
-              ...criterio,
-              notaAtribuida: valor,
-            };
-          }
-          return criterio;
-        }
-      );
+  const handleNotaPlanoSelecionada = (planoId, criterioId, valor) => {
+    setAvaliacoesPlano((prev) => {
+      const prevPlano = prev[planoId] || { valores: new Map(), observacao: "" };
+      const novosValores = new Map(prevPlano.valores);
+      if (valor === undefined) novosValores.delete(criterioId);
+      else novosValores.set(criterioId, valor);
 
       return {
-        ...prevEvento,
-        CriterioFormularioAvaliacao: criteriosAtualizados,
-        notaTotal: novaNotaTotal,
+        ...prev,
+        [planoId]: { ...prevPlano, valores: novosValores },
       };
     });
   };
 
-  const handleComentarioChange = (e) => {
-    const comentario = e.target.value;
-    setEvento((prevEvento) => ({
-      ...prevEvento,
-      observacao: comentario,
+  const handleComentarioPlanoChange = (planoId, comentario) => {
+    setAvaliacoesPlano((prev) => ({
+      ...prev,
+      [planoId]: {
+        ...(prev[planoId] || { valores: new Map() }),
+        observacao: comentario,
+      },
     }));
   };
 
-  const calcularNotaTotal = (criterios, notasSelecionadas) => {
-    const totalPeso = criterios.reduce(
-      (acc, criterio) => acc + criterio.peso,
-      0
-    );
-
-    if (totalPeso === 0) return 0;
-
-    const somaNotasPonderadas = criterios.reduce((acc, criterio) => {
-      const notaSelecionada = notasSelecionadas[criterio.id] || 0;
-      return acc + notaSelecionada * criterio.peso;
-    }, 0);
-    return somaNotasPonderadas;
-  };
+  const arvoreProjetoCalculada = fichaAvaliacao
+    ? calcularArvoreComNotas(fichaAvaliacao.schemaCriterios, valoresProjeto)
+    : null;
 
   const handleTerminarAvaliacao = async () => {
+    const totalCriteriosProjeto = listarCriterios(fichaAvaliacao.schemaCriterios).length;
+    const respostasProjeto = flattenRespostas(arvoreProjetoCalculada.arvore);
+    if (respostasProjeto.length < totalCriteriosProjeto) {
+      setError({ geral: "Preencha a nota de todos os critérios do projeto antes de terminar a avaliação." });
+      setCurrentStep(0);
+      return;
+    }
+
+    let avaliacoesPlanoFormatted = [];
+    if (fichaPlano) {
+      const totalCriteriosPlano = listarCriterios(fichaPlano.schemaCriterios).length;
+      for (const plano of inscricaoProjeto.projeto.planosDeTrabalho) {
+        const estado = avaliacoesPlano[plano.id] || { valores: new Map(), observacao: "" };
+        const arvorePlano = calcularArvoreComNotas(fichaPlano.schemaCriterios, estado.valores);
+        const respostasPlano = flattenRespostas(arvorePlano.arvore);
+        if (respostasPlano.length < totalCriteriosPlano) {
+          setError({ geral: `Preencha a nota de todos os critérios do plano "${plano.titulo}" antes de terminar a avaliação.` });
+          return;
+        }
+        avaliacoesPlanoFormatted.push({
+          planoId: Number(plano.id),
+          observacao: estado.observacao,
+          respostas: respostasPlano,
+        });
+      }
+    }
+
     setLoading(true);
     setError({});
 
     try {
-      const avaliacoesPlanoFormatted = Object.entries(avaliacoesPlano).map(
-        ([planoId, plano]) => {
-          const criterios = fichaPlano.CriterioFormularioAvaliacao.map(
-            (criterio) => ({
-              id: criterio.id,
-              label: criterio.label,
-              descricao: criterio.descricao,
-              ordem: criterio.ordem,
-              peso: criterio.peso,
-              notaMinima: criterio.notaMinima,
-              notaMaxima: criterio.notaMaxima,
-              notaAtribuida: plano.selectedNotas?.[criterio.id],
-            })
-          );
-
-          return {
-            planoId: Number(planoId),
-            notaTotal: plano.notaTotal,
-            observacao: plano.observacao,
-            CriterioFormularioAvaliacao: criterios,
-          };
-        }
-      );
-
-      const criteriosProjeto = fichaAvaliacao.CriterioFormularioAvaliacao.map(
-        (criterio) => ({
-          id: criterio.id,
-          label: criterio.label,
-          descricao: criterio.descricao,
-          ordem: criterio.ordem,
-          peso: criterio.peso,
-          notaMinima: criterio.notaMinima,
-          notaMaxima: criterio.notaMaxima,
-          notaAtribuida: selectedNotas?.[criterio.id],
-        })
-      );
-
       const body = {
         projetoId: params.idProjeto,
         objeto: "PROJETO",
-        notaTotal,
-        observacao: evento.observacao,
-        CriterioFormularioAvaliacao: criteriosProjeto,
+        observacao: observacaoProjeto,
+        respostas: respostasProjeto,
         avaliacoesPlano: avaliacoesPlanoFormatted,
       };
 
@@ -214,45 +178,6 @@ const Page = ({ params }) => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleNotaPlanoSelecionada = (planoId, criterioId, valor) => {
-    setAvaliacoesPlano((prev) => {
-      const prevPlano = prev[planoId] || {
-        selectedNotas: {},
-        notaTotal: 0,
-        observacao: "",
-      };
-
-      const novasNotas = {
-        ...prevPlano.selectedNotas,
-        [criterioId]: valor,
-      };
-
-      const novaNotaTotal = calcularNotaTotal(
-        fichaPlano?.CriterioFormularioAvaliacao || [],
-        novasNotas
-      );
-
-      return {
-        ...prev,
-        [planoId]: {
-          ...prevPlano,
-          selectedNotas: novasNotas,
-          notaTotal: novaNotaTotal,
-        },
-      };
-    });
-  };
-
-  const handleComentarioPlanoChange = (planoId, comentario) => {
-    setAvaliacoesPlano((prev) => ({
-      ...prev,
-      [planoId]: {
-        ...prev[planoId],
-        observacao: comentario,
-      },
-    }));
   };
 
   const handleNext = () => {
@@ -365,7 +290,6 @@ const Page = ({ params }) => {
 
       {/*
         === FICHA DE AVALIAÇÃO DO PROJETO ===
-        (Permanece idêntica à sua lógica original, pois não estamos colapsando esses blocos)
       */}
 
       <div className={styles.fichaDeAvaliacao}>
@@ -377,45 +301,11 @@ const Page = ({ params }) => {
           </div>
         ) : (
           <>
-            <div className={styles.quesitos}>
-              {fichaAvaliacao?.CriterioFormularioAvaliacao?.sort(
-                (a, b) => a.id - b.id
-              ).map((item, index) => {
-                const valores = Array.from(
-                  { length: item.notaMaxima - item.notaMinima + 1 },
-                  (_, i) => item.notaMinima + i
-                );
-                return (
-                  <div className={styles.item} key={item.id}>
-                    <div className={styles.label}>
-                      <h6>
-                        <span>{index + 1}. </span>
-                        {item.label} (Peso: {item.peso})
-                      </h6>
-                    </div>
-                    <div className={styles.instructions}>
-                      <p style={{ whiteSpace: "pre-line" }}>{item.descricao}</p>
-                    </div>
-                    <div className={styles.values}>
-                      {valores.map((valor) => (
-                        <div
-                          key={valor}
-                          value={valor}
-                          className={`${styles.value} ${
-                            selectedNotas[item.id] === valor
-                              ? styles.selected
-                              : ""
-                          }`}
-                          onClick={() => handleNotaSelecionada(item.id, valor)}
-                        >
-                          <p style={{ whiteSpace: "pre-wrap" }}>{valor}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <FichaAvaliacaoTree
+              schemaCriterios={fichaAvaliacao?.schemaCriterios}
+              valores={valoresProjeto}
+              onSelecionar={handleNotaSelecionada}
+            />
 
             <div className={`${styles.item} mt-2`}>
               <div className={styles.label}>
@@ -424,13 +314,16 @@ const Page = ({ params }) => {
               <textarea
                 type="text"
                 placeholder="Escreva aqui"
-                onChange={handleComentarioChange}
+                value={observacaoProjeto}
+                onChange={(e) => setObservacaoProjeto(e.target.value)}
               ></textarea>
             </div>
 
             <div className={styles.notaFinal}>
               <h6>Nota Final:</h6>
-              <p>{notaTotal.toFixed(2)}</p>
+              <p>
+                {(arvoreProjetoCalculada?.pontosObtidos ?? 0).toFixed(2)} / {arvoreProjetoCalculada?.pontosMaximos ?? 0}
+              </p>
             </div>
           </>
         )}
@@ -440,7 +333,10 @@ const Page = ({ params }) => {
 
   const renderPlanoStep = () => {
     const plano = inscricaoProjeto?.projeto?.planosDeTrabalho[currentStep - 1];
-    const planoNotas = avaliacoesPlano[plano.id]?.selectedNotas || {};
+    const estadoPlano = avaliacoesPlano[plano.id] || { valores: new Map(), observacao: "" };
+    const arvorePlanoCalculada = fichaPlano
+      ? calcularArvoreComNotas(fichaPlano.schemaCriterios, estadoPlano.valores)
+      : null;
 
     return (
       <div className={styles.navContent} key={plano.id}>
@@ -531,57 +427,14 @@ const Page = ({ params }) => {
           </div>
         </div>
 
-        {/* Restante do código permanece igual */}
         <div className={styles.fichaDeAvaliacao}>
           <h5>Ficha de Avaliação do Plano</h5>
-          {fichaPlano?.CriterioFormularioAvaliacao?.length > 0 ? (
-            <div className={styles.quesitos}>
-              {fichaPlano.CriterioFormularioAvaliacao.sort(
-                (a, b) => a.id - b.id
-              ).map((criterio, index) => {
-                const valores = Array.from(
-                  { length: criterio.notaMaxima - criterio.notaMinima + 1 },
-                  (_, i) => criterio.notaMinima + i
-                );
-
-                return (
-                  <div className={styles.item} key={criterio.id}>
-                    <div className={styles.label}>
-                      <h6>
-                        <span>{index + 1}. </span>
-                        {criterio.label} (Peso: {criterio.peso})
-                      </h6>
-                    </div>
-                    <div className={styles.instructions}>
-                      <p style={{ whiteSpace: "pre-line" }}>
-                        {criterio.descricao}
-                      </p>
-                    </div>
-                    <div className={styles.values}>
-                      {valores.map((valor) => (
-                        <div
-                          key={valor}
-                          className={`${styles.value} ${
-                            planoNotas[criterio.id] === valor
-                              ? styles.selected
-                              : ""
-                          }`}
-                          onClick={() =>
-                            handleNotaPlanoSelecionada(
-                              plano.id,
-                              criterio.id,
-                              valor
-                            )
-                          }
-                        >
-                          <p>{valor}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+          {fichaPlano?.schemaCriterios?.length > 0 ? (
+            <FichaAvaliacaoTree
+              schemaCriterios={fichaPlano.schemaCriterios}
+              valores={estadoPlano.valores}
+              onSelecionar={(criterioId, valor) => handleNotaPlanoSelecionada(plano.id, criterioId, valor)}
+            />
           ) : (
             <p style={{ fontStyle: "italic", color: "#888" }}>
               Nenhum critério de avaliação definido.
@@ -595,7 +448,7 @@ const Page = ({ params }) => {
             <textarea
               type="text"
               placeholder="Escreva aqui"
-              value={avaliacoesPlano[plano.id]?.observacao || ""}
+              value={estadoPlano.observacao || ""}
               onChange={(e) =>
                 handleComentarioPlanoChange(plano.id, e.target.value)
               }
@@ -604,7 +457,9 @@ const Page = ({ params }) => {
 
           <div className={styles.notaFinal}>
             <h6>Nota Final:</h6>
-            <p>{avaliacoesPlano[plano.id]?.notaTotal?.toFixed(2) || "0.00"}</p>
+            <p>
+              {(arvorePlanoCalculada?.pontosObtidos ?? 0).toFixed(2)} / {arvorePlanoCalculada?.pontosMaximos ?? 0}
+            </p>
           </div>
         </div>
       </div>

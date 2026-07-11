@@ -62,6 +62,28 @@ import {
   deleteFichaAvaliacao,
 } from "@/app/api/client/avaliador";
 import { Dialog } from "primereact/dialog";
+import { rotuloValor } from "@/lib/fichaAvaliacaoScoring";
+
+/** Renderiza (somente leitura) a árvore de respostas salva em FichaAvaliacao.respostas. */
+const renderRespostasFicha = (nos) =>
+  (nos || []).map((no) =>
+    no.tipo === "grupo" ? (
+      <div key={no.id} className={styles.quesito}>
+        <p className={styles.label}>
+          <strong>{no.label}</strong> ({no.pontosObtidos}/{no.pontosMaximos} pts)
+        </p>
+        <div style={{ paddingLeft: 12 }}>{renderRespostasFicha(no.itens)}</div>
+      </div>
+    ) : (
+      <div key={no.id} className={styles.quesito}>
+        <p className={styles.label}>{no.label}</p>
+        <p className={styles.nota}>
+          Resposta: {rotuloValor(no.escala, no.valorSelecionado)}
+          <strong> | Pontos: {no.pontosObtidos}/{no.peso}</strong>
+        </p>
+      </div>
+    )
+  );
 
 const FormGestorProjetoCreateOrEdit = ({
   tenantSlug,
@@ -481,18 +503,7 @@ const FormGestorProjetoCreateOrEdit = ({
                     <strong>{ficha.observacao}</strong>
                   </p>
                 </div>
-                {ficha.RegistroFichaAvaliacao?.map((registro) => (
-                  <div key={registro.id} className={styles.quesito}>
-                    <p className={styles.label}>{registro.label}</p>
-                    <p className={styles.nota}>
-                      Peso: {registro.peso} | Nota: {registro.nota}
-                      <strong>
-                        {" "}
-                        | Nota final: {registro.nota * registro.peso}
-                      </strong>
-                    </p>
-                  </div>
-                ))}
+                {renderRespostasFicha(ficha.respostas)}
               </div>
             )}
           </div>

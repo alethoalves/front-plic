@@ -241,9 +241,16 @@ const Page = ({ params }) => {
                       <div className={styles.info}>
                         <p className={styles.area}>
                           {item?.projeto?.area?.area || "sem área"} -{" "}
-                          {item?.projeto?.inscricao?.edital?.tenant?.sigla.toUpperCase()}{" "}
-                          - {item?.inscricao?.edital?.titulo.toUpperCase()}
+                          {item?.inscricao?.edital?.titulo?.toUpperCase()}
                         </p>
+                        {item?.inscricao?.edital?.tenant?.sigla && (
+                          <p className={styles.tenant}>
+                            {item.inscricao.edital.tenant.sigla.toUpperCase()}
+                          </p>
+                        )}
+                        {item?.inscricao?.edital?.ano && (
+                          <p className={styles.ano}>{item.inscricao.edital.ano}</p>
+                        )}
                       </div>
                       <div className={styles.submissaoData}>
                         <h6>{item?.projeto?.titulo}</h6>
@@ -333,6 +340,14 @@ const Page = ({ params }) => {
                         {item?.projeto?.area?.area || "sem área"} - Edital{" "}
                         {item?.inscricao?.edital?.titulo}
                       </p>
+                      {item?.inscricao?.edital?.tenant?.sigla && (
+                        <p className={styles.tenant}>
+                          {item.inscricao.edital.tenant.sigla.toUpperCase()}
+                        </p>
+                      )}
+                      {item?.inscricao?.edital?.ano && (
+                        <p className={styles.ano}>{item.inscricao.edital.ano}</p>
+                      )}
                     </div>
                     {false && (
                       <div className={styles.info}>

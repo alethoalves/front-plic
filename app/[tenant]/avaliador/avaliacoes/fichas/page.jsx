@@ -5,6 +5,28 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getFichasAvaliacaoProjeto } from "@/app/api/client/avaliador";
 import NoData from "@/components/NoData";
+import { rotuloValor } from "@/lib/fichaAvaliacaoScoring";
+
+/** Renderiza (somente leitura) a árvore de respostas salva em FichaAvaliacao.respostas. */
+const renderRespostas = (nos) =>
+  (nos || []).map((no) =>
+    no.tipo === "grupo" ? (
+      <div key={no.id} className={styles.quesito}>
+        <p className={styles.label}>
+          <strong>{no.label}</strong> ({no.pontosObtidos}/{no.pontosMaximos} pts)
+        </p>
+        {renderRespostas(no.itens)}
+      </div>
+    ) : (
+      <div key={no.id} className={styles.quesito}>
+        <p className={styles.label}>{no.label}</p>
+        <p className={styles.nota}>
+          Resposta: {rotuloValor(no.escala, no.valorSelecionado)}
+          <strong> | Pontos: {no.pontosObtidos}/{no.peso}</strong>
+        </p>
+      </div>
+    )
+  );
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
@@ -85,18 +107,7 @@ const Page = ({ params }) => {
                           <strong>{item.observacao}</strong>
                         </p>
                       </div>
-                      {item.RegistroFichaAvaliacao?.map((registro) => (
-                        <div key={registro.id} className={styles.quesito}>
-                          <p className={styles.label}>{registro.label}</p>
-                          <p className={styles.nota}>
-                            Peso: {registro.peso} | Nota: {registro.nota}
-                            <strong>
-                              {" "}
-                              | Nota final: {registro.nota * registro.peso}
-                            </strong>
-                          </p>
-                        </div>
-                      ))}
+                      {renderRespostas(item.respostas)}
                     </div>
 
                     {/* Renderiza fichas de planos de trabalho */}
@@ -139,27 +150,7 @@ const Page = ({ params }) => {
                                   </p>
                                 </div>
 
-                                {plano.RegistroFichaAvaliacao?.map(
-                                  (registro) => (
-                                    <div
-                                      key={registro.id}
-                                      className={styles.quesito}
-                                    >
-                                      <p className={styles.label}>
-                                        {registro.label}
-                                      </p>
-                                      <p className={styles.nota}>
-                                        Peso: {registro.peso} | Nota:{" "}
-                                        {registro.nota}
-                                        <strong>
-                                          {" "}
-                                          | Nota final:{" "}
-                                          {registro.nota * registro.peso}
-                                        </strong>
-                                      </p>
-                                    </div>
-                                  )
-                                )}
+                                {renderRespostas(plano.respostas)}
                                 <div className={styles.quesito}>
                                   <p className={styles.label}>
                                     Observação:
