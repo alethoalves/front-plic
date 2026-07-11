@@ -36,6 +36,8 @@ const Page = ({ params }) => {
   const [removendoVinculacao, setRemovendoVinculacao] = useState(null);
   const [showConfirmDesvincularTodos, setShowConfirmDesvincularTodos] = useState(false);
   const [desvinculandoProgresso, setDesvinculandoProgresso] = useState(null); // { atual, total } | null
+  const [showConfirmDesvincularTodosGeral, setShowConfirmDesvincularTodosGeral] = useState(false);
+  const [desvinculandoProgressoGeral, setDesvinculandoProgressoGeral] = useState(null); // { atual, total } | null
   const [activeModal, setActiveModal] = useState(null);
   const [projetoSelecionado, setProjetoSelecionado] = useState(null);
   const [buscaProjeto, setBuscaProjeto] = useState("");
@@ -389,36 +391,41 @@ const Page = ({ params }) => {
       (atribuicao) => (atribuicao.inscricaoProjeto?.FichaAvaliacao?.length || 0) === 0
     ) || [];
 
-  const handleDesvincularTodos = async () => {
-    const pendentes = getPendentesDoAvaliadorSelecionado();
-    setShowConfirmDesvincularTodos(false);
-    if (pendentes.length === 0) return;
+  const getTodasPendentesGeral = () =>
+    avaliadores.flatMap((avaliador) =>
+      avaliador.user.InscricaoProjetoAvaliador.filter(
+        (atribuicao) => (atribuicao.inscricaoProjeto?.FichaAvaliacao?.length || 0) === 0
+      ).map((atribuicao) => ({
+        inscricaoProjetoId: atribuicao.inscricaoProjetoId,
+        avaliadorId: avaliador.user.id,
+        label: `${atribuicao.inscricaoProjeto?.projeto?.titulo || "Projeto sem título"} (${avaliador.user.nome})`,
+      }))
+    );
 
-    const avaliadorId = avaliadorSelecionado.user.id;
-    setDesvinculandoProgresso({ atual: 0, total: pendentes.length });
-
+  // Desvincula uma lista de { inscricaoProjetoId, avaliadorId, label } sequencialmente,
+  // reportando progresso a cada item (não aborta no primeiro erro — segue e reporta no final).
+  const desvincularEmLote = async (items, setProgresso) => {
+    setProgresso({ atual: 0, total: items.length });
     let sucesso = 0;
     const falhas = [];
-    for (const atribuicao of pendentes) {
+    for (const item of items) {
       try {
         await GestorDesassociarAvaliadorInscricaoProjeto(
           params.tenant,
-          atribuicao.inscricaoProjetoId,
-          avaliadorId
+          item.inscricaoProjetoId,
+          item.avaliadorId
         );
         sucesso++;
       } catch (error) {
-        falhas.push(
-          atribuicao.inscricaoProjeto?.projeto?.titulo || `ID ${atribuicao.inscricaoProjetoId}`
-        );
+        falhas.push(item.label);
       } finally {
-        setDesvinculandoProgresso((prev) => ({ ...prev, atual: prev.atual + 1 }));
+        setProgresso((prev) => ({ ...prev, atual: prev.atual + 1 }));
       }
     }
+    return { sucesso, falhas };
+  };
 
-    await recarregarERessincronizarSelecao();
-    setDesvinculandoProgresso(null);
-
+  const reportarResultadoDesvinculacao = (sucesso, falhas) => {
     if (falhas.length === 0) {
       showToast(
         "success",
@@ -432,6 +439,37 @@ const Page = ({ params }) => {
         `${sucesso} removida(s); ${falhas.length} falharam (${falhas.join(", ")}).`
       );
     }
+  };
+
+  const handleDesvincularTodos = async () => {
+    const pendentes = getPendentesDoAvaliadorSelecionado();
+    setShowConfirmDesvincularTodos(false);
+    if (pendentes.length === 0) return;
+
+    const avaliadorId = avaliadorSelecionado.user.id;
+    const items = pendentes.map((atribuicao) => ({
+      inscricaoProjetoId: atribuicao.inscricaoProjetoId,
+      avaliadorId,
+      label: atribuicao.inscricaoProjeto?.projeto?.titulo || `ID ${atribuicao.inscricaoProjetoId}`,
+    }));
+
+    const { sucesso, falhas } = await desvincularEmLote(items, setDesvinculandoProgresso);
+
+    await recarregarERessincronizarSelecao();
+    setDesvinculandoProgresso(null);
+    reportarResultadoDesvinculacao(sucesso, falhas);
+  };
+
+  const handleDesvincularTodosGeral = async () => {
+    const pendentes = getTodasPendentesGeral();
+    setShowConfirmDesvincularTodosGeral(false);
+    if (pendentes.length === 0) return;
+
+    const { sucesso, falhas } = await desvincularEmLote(pendentes, setDesvinculandoProgressoGeral);
+
+    await recarregarERessincronizarSelecao();
+    setDesvinculandoProgressoGeral(null);
+    reportarResultadoDesvinculacao(sucesso, falhas);
   };
 
   return (
@@ -645,6 +683,36 @@ const Page = ({ params }) => {
             <Button
               className="button btn-primary"
               onClick={handleDesvincularTodos}
+            >
+              Desvincular tudo
+            </Button>
+          </div>
+        </div>
+      </Modal>
+      <Modal
+        isOpen={showConfirmDesvincularTodosGeral}
+        onClose={() => setShowConfirmDesvincularTodosGeral(false)}
+        size="small"
+      >
+        <div className={style.modalAssociacao}>
+          <h5 className="mb-2">Desvincular todas as avaliações pendentes?</h5>
+          <p>
+            Isso vai remover a vinculação de{" "}
+            <strong>{getTodasPendentesGeral().length}</strong> atribuições
+            ainda não avaliadas, de <strong>todos os avaliadores</strong>.
+            Essa ação não afeta projetos já avaliados.
+          </p>
+
+          <div className={style.modalActions}>
+            <Button
+              className="button btn-secondary"
+              onClick={() => setShowConfirmDesvincularTodosGeral(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              className="button btn-primary"
+              onClick={handleDesvincularTodosGeral}
             >
               Desvincular tudo
             </Button>
@@ -1067,6 +1135,7 @@ const Page = ({ params }) => {
                           {desvinculandoProgresso.total}...
                         </span>
                       ) : (
+                        !desvinculandoProgressoGeral &&
                         getPendentesDoAvaliadorSelecionado().length > 0 && (
                           <Button
                             className={`button btn-secondary ${style.desvincularTudoBtn}`}
@@ -1112,7 +1181,7 @@ const Page = ({ params }) => {
                                     className="pi pi-spinner pi-spin"
                                     style={{ marginLeft: "10px" }}
                                   />
-                                ) : desvinculandoProgresso ? (
+                                ) : desvinculandoProgresso || desvinculandoProgressoGeral ? (
                                   <RiDeleteBinLine
                                     className={style.deleteIcon}
                                     style={{ opacity: 0.4, cursor: "not-allowed" }}
@@ -1209,7 +1278,26 @@ const Page = ({ params }) => {
           </div>
         </Card>
         <Card className={`mb-4 p-2`}>
-          <h5 className="mb-2">Avaliações pendentes (geral)</h5>
+          <div className={style.listHeaderComAcao}>
+            <h5 className="mb-2">Avaliações pendentes (geral)</h5>
+            {desvinculandoProgressoGeral ? (
+              <span className={style.progressoDesvincular}>
+                <i className="pi pi-spinner pi-spin" />
+                Desvinculando {desvinculandoProgressoGeral.atual}/
+                {desvinculandoProgressoGeral.total}...
+              </span>
+            ) : (
+              !desvinculandoProgresso &&
+              getTodasPendentesGeral().length > 0 && (
+                <Button
+                  className={`button btn-secondary ${style.desvincularTudoBtn}`}
+                  onClick={() => setShowConfirmDesvincularTodosGeral(true)}
+                >
+                  Desvincular tudo
+                </Button>
+              )
+            )}
+          </div>
           <div className={style.distribuicao}>
             <div className={`${style.distribuicaoCard} ${style.projetos}`}>
               <div className={style.scrollableContainer}>
@@ -1264,6 +1352,12 @@ const Page = ({ params }) => {
                               <i
                                 className="pi pi-spinner pi-spin"
                                 style={{ marginLeft: "10px" }}
+                              />
+                            ) : desvinculandoProgresso || desvinculandoProgressoGeral ? (
+                              <RiDeleteBinLine
+                                className={style.deleteIcon}
+                                style={{ opacity: 0.4, cursor: "not-allowed" }}
+                                title="Aguarde a desvinculação em massa terminar"
                               />
                             ) : (
                               <RiDeleteBinLine
