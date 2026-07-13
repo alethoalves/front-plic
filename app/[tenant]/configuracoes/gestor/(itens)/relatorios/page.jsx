@@ -120,9 +120,9 @@ const Page = ({ params }) => {
           <h5 className="mt-0 mb-1">Participações</h5>
           <p className="mt-0 mb-3" style={{ color: "#6b7280", fontSize: "0.875rem" }}>
             Gera uma planilha com dados da inscrição (ID, status, edital, ano) e do participante
-            (nome, status da participação, tipo, solicitação de bolsa, quantidade de solicitações
-            de bolsa vinculadas, idade, titulação, ano de titulação, participação externa e
-            lotação para orientadores).
+            (nome, email, status da participação, tipo, solicitação de bolsa, quantidade de
+            solicitações de bolsa vinculadas, idade, titulação, ano de titulação, participação
+            externa e lotação para orientadores).
           </p>
           {errorParticipacoes && (
             <p className="mb-2" style={{ color: "#dc2626", fontSize: "0.875rem" }}>
