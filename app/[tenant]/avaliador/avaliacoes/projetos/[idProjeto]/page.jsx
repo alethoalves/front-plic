@@ -242,11 +242,22 @@ const Page = ({ params }) => {
     fetchData();
   }, []);
 
+  // `valoresProjeto`/`avaliacoesPlano[id].valores` guardam, por critério,
+  // { valorSelecionado, comentario? } — os handlers de nota e de comentário mesclam
+  // no registro existente para não perder um enquanto o outro é editado.
   const handleNotaSelecionada = (criterioId, valor) => {
     setValoresProjeto((prev) => {
       const next = new Map(prev);
       if (valor === undefined) next.delete(criterioId);
-      else next.set(criterioId, valor);
+      else next.set(criterioId, { ...next.get(criterioId), valorSelecionado: valor });
+      return next;
+    });
+  };
+
+  const handleComentarioSelecionado = (criterioId, comentario) => {
+    setValoresProjeto((prev) => {
+      const next = new Map(prev);
+      next.set(criterioId, { ...next.get(criterioId), comentario });
       return next;
     });
   };
@@ -256,7 +267,20 @@ const Page = ({ params }) => {
       const prevPlano = prev[planoId] || { valores: new Map() };
       const novosValores = new Map(prevPlano.valores);
       if (valor === undefined) novosValores.delete(criterioId);
-      else novosValores.set(criterioId, valor);
+      else novosValores.set(criterioId, { ...novosValores.get(criterioId), valorSelecionado: valor });
+
+      return {
+        ...prev,
+        [planoId]: { ...prevPlano, valores: novosValores },
+      };
+    });
+  };
+
+  const handleComentarioPlanoSelecionado = (planoId, criterioId, comentario) => {
+    setAvaliacoesPlano((prev) => {
+      const prevPlano = prev[planoId] || { valores: new Map() };
+      const novosValores = new Map(prevPlano.valores);
+      novosValores.set(criterioId, { ...novosValores.get(criterioId), comentario });
 
       return {
         ...prev,
@@ -480,6 +504,7 @@ const Page = ({ params }) => {
               schemaCriterios={fichaAvaliacao?.schemaCriterios}
               valores={valoresProjeto}
               onSelecionar={handleNotaSelecionada}
+              onComentar={handleComentarioSelecionado}
             />
 
             <div className={styles.notaFinal}>
@@ -596,6 +621,9 @@ const Page = ({ params }) => {
               valores={estadoPlano.valores}
               onSelecionar={(criterioId, valor) =>
                 handleNotaPlanoSelecionada(plano.id, criterioId, valor)
+              }
+              onComentar={(criterioId, comentario) =>
+                handleComentarioPlanoSelecionado(plano.id, criterioId, comentario)
               }
             />
           ) : (

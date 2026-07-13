@@ -24,6 +24,9 @@ const renderRespostas = (nos) =>
           Resposta: {rotuloValor(no.escala, no.valorSelecionado)}
           <strong> | Pontos: {no.pontosObtidos}/{no.peso}</strong>
         </p>
+        {no.comentario && (
+          <p className={styles.nota}>Comentário: {no.comentario}</p>
+        )}
       </div>
     )
   );

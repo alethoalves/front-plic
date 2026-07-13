@@ -16,7 +16,7 @@ const gerarPassos = (min, max, step = 1) => {
  * escolhendo o widget certo por escala (Sim/Não, rótulos, pills numéricas, slider ou nota
  * manual). Compartilhado entre as telas de preenchimento de projeto e de plano de trabalho.
  */
-const NoFicha = ({ no, index, valores, onSelecionar }) => {
+const NoFicha = ({ no, index, valores, onSelecionar, onComentar }) => {
   if (no.tipo === "grupo") {
     const { pontosObtidos, pontosMaximos } = calcularArvoreComNotas(no.itens, valores);
     return (
@@ -28,14 +28,25 @@ const NoFicha = ({ no, index, valores, onSelecionar }) => {
           </span>
         </div>
         {no.itens.map((filho, i) => (
-          <NoFicha key={filho.id} no={filho} index={i + 1} valores={valores} onSelecionar={onSelecionar} />
+          <NoFicha
+            key={filho.id}
+            no={filho}
+            index={i + 1}
+            valores={valores}
+            onSelecionar={onSelecionar}
+            onComentar={onComentar}
+          />
         ))}
       </div>
     );
   }
 
-  const valorAtual = valores.get(no.id);
+  const valorAtual = valores.get(no.id)?.valorSelecionado;
+  const comentarioAtual = valores.get(no.id)?.comentario ?? "";
   const { min, max } = resolverMinMax(no.escala);
+  // Comentário é opcional, mas só faz sentido oferecê-lo quando a nota escolhida
+  // ainda não é a nota máxima do critério (peso cheio já não precisa de justificativa).
+  const notaDiferenteDoMaximo = typeof valorAtual === "number" && valorAtual !== max;
 
   return (
     <div className={styles.item}>
@@ -109,15 +120,31 @@ const NoFicha = ({ no, index, valores, onSelecionar }) => {
           onChange={(e) => onSelecionar(no.id, e.target.value === "" ? undefined : Number(e.target.value))}
         />
       )}
+
+      {notaDiferenteDoMaximo && (
+        <textarea
+          className={styles.comentario}
+          placeholder="Comentário (opcional) — nota diferente do máximo"
+          value={comentarioAtual}
+          onChange={(e) => onComentar(no.id, e.target.value)}
+        />
+      )}
     </div>
   );
 };
 
-/** `schemaCriterios`: árvore da rubrica. `valores`: Map<criterioId, valor>. */
-const FichaAvaliacaoTree = ({ schemaCriterios, valores, onSelecionar }) => (
+/** `schemaCriterios`: árvore da rubrica. `valores`: Map<criterioId, {valorSelecionado, comentario?}>. */
+const FichaAvaliacaoTree = ({ schemaCriterios, valores, onSelecionar, onComentar }) => (
   <div className={styles.quesitos}>
     {(schemaCriterios || []).map((no, index) => (
-      <NoFicha key={no.id} no={no} index={index + 1} valores={valores} onSelecionar={onSelecionar} />
+      <NoFicha
+        key={no.id}
+        no={no}
+        index={index + 1}
+        valores={valores}
+        onSelecionar={onSelecionar}
+        onComentar={onComentar}
+      />
     ))}
   </div>
 );
