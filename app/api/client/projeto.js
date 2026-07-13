@@ -230,7 +230,7 @@ export const unlinkProjetoFromInscricao = async (tenantSlug, idInscricao, idProj
     throw error;
   }
 };
-export const getInscricaoProjetoByTenant = async (tenantSlug, status) => {
+export const getInscricaoProjetoByTenant = async (tenantSlug, status, ano) => {
   try {
       const headers = getAuthHeadersClient();
       if (!headers) {
@@ -241,6 +241,9 @@ export const getInscricaoProjetoByTenant = async (tenantSlug, status) => {
       const params = {};
       if (status) {
           params.status = status; // Adiciona o status como query parameter, se fornecido
+      }
+      if (ano) {
+          params.ano = ano; // Adiciona o ano como query parameter, se fornecido
       }
 
       // Faz a requisição GET com os query parameters

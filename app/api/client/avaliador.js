@@ -88,22 +88,119 @@ export const toggleStatusAvaliadorAno = async (payload) => {
   }
 };
 
-export const aceitarConviteAvaliador = async (
-  token,
-  cpf,
-  areasSelecionadas,
-  email
-) => {
+// link geral de avaliador: verifica CPF+data de nascimento e diz pro front pra onde ir
+export const verificarElegibilidadeAvaliador = async (tenantSlug, ano, { cpf, dtNascimento }) => {
   try {
-    // rota pública não precisa de cabeçalhos de autenticação
     const { data } = await req.post(
-      `/public/aceitar-convite/avaliador/${token}`,
-      { cpf, areasSelecionadas,email } // body
+      `/public/${tenantSlug}/avaliador/${ano}/verificar-elegibilidade`,
+      { cpf, dtNascimento }
     );
-
-    return data;                // { status: 'success', message, … }
+    return data;                           // { status, elegibilidade, motivoRecusa? }
   } catch (error) {
-    console.error('Erro ao aceitar convite:', error);
+    console.error("Erro ao verificar elegibilidade de avaliador:", error);
+    throw error;
+  }
+};
+
+// registra o pedido de análise do Lattes (cria o usuário se ainda não existir)
+export const solicitarAnaliseLattes = async (tenantSlug, ano, payload) => {
+  try {
+    const { data } = await req.post(
+      `/public/${tenantSlug}/avaliador/${ano}/solicitar-lattes`,
+      payload
+    );
+    return data;
+  } catch (error) {
+    console.error("Erro ao solicitar análise de Lattes:", error);
+    throw error;
+  }
+};
+
+// vincula direto o usuário autenticado como avaliador do tenant/ano (caminho rápido, doutorado já confirmado)
+export const vincularAvaliadorDireto = async (tenantSlug, ano) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+
+    const { data } = await req.post(
+      `/private/${tenantSlug}/avaliador/vincular-direto`,
+      { ano },
+      { headers }
+    );
+    return data;                           // { status, message, ano }
+  } catch (error) {
+    console.error("Erro ao vincular avaliador direto:", error);
+    throw error;
+  }
+};
+
+// lista as solicitações de análise de Lattes de um tenant/ano, para o gestor decidir
+export const getSolicitacoesLattes = async (tenantSlug, ano) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+
+    const { data } = await req.get(
+      `/private/${tenantSlug}/avaliador/solicitacoes-lattes?ano=${ano}`,
+      { headers }
+    );
+    return data.solicitacoes;
+  } catch (error) {
+    console.error("Erro ao listar solicitações de Lattes:", error);
+    throw error;
+  }
+};
+
+// gestor aprova ou recusa uma solicitação de análise de Lattes
+export const decidirSolicitacaoLattes = async (tenantSlug, id, { aprovado, motivoRecusa, anoTitulacao }) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+
+    const { data } = await req.post(
+      `/private/${tenantSlug}/avaliador/solicitacoes-lattes/${id}/decidir`,
+      { aprovado, motivoRecusa, anoTitulacao },
+      { headers }
+    );
+    return data;                           // { status, mensagem }
+  } catch (error) {
+    console.error("Erro ao decidir solicitação de Lattes:", error);
+    throw error;
+  }
+};
+
+// regera a mensagem pronta (aprovado/recusado) de uma solicitação já decidida, sem mudar nada
+export const reenviarMensagemSolicitacaoLattes = async (tenantSlug, id) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+
+    const { data } = await req.post(
+      `/private/${tenantSlug}/avaliador/solicitacoes-lattes/${id}/reenviar-mensagem`,
+      {},
+      { headers }
+    );
+    return data;                           // { status, mensagem, celular }
+  } catch (error) {
+    console.error("Erro ao reenviar mensagem de solicitação de Lattes:", error);
+    throw error;
+  }
+};
+
+// vincula o usuário já autenticado (login/cadastro real por CPF) ao convite pelo token
+export const vincularConviteAvaliador = async (tenantSlug, token) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+
+    const { data } = await req.post(
+      `/private/${tenantSlug}/avaliador/convite/${token}/vincular`,
+      {},
+      { headers }
+    );
+    return data;                           // { status, message, ano, userId }
+  } catch (error) {
+    console.error('Erro ao vincular avaliador ao convite:', error);
     throw error;
   }
 };
@@ -166,19 +263,23 @@ export const getAvaliacoesPendentes = async (
   }
 };
 
-export const getProjetosAguardandoAvaliacao = async (tenantSlug, areasIds = []) => {
+export const getProjetosAguardandoAvaliacao = async (tenantSlug, areasIds = [], ano = null) => {
   try {
       const headers = getAuthHeadersClient();
       if (!headers) {
           return false;
       }
 
-      // Verifica se há áreas passadas e constrói a URL com query params, se necessário
-      let url = `/private/${tenantSlug}/avaliador/getProjetosAguardandoAvaliacao`;
+      // Verifica se há áreas e/ou ano passados e constrói a URL com query params, se necessário
+      const params = new URLSearchParams();
       if (areasIds.length > 0) {
-          const query = areasIds.join(','); // Transforma o array de IDs em uma string separada por vírgulas
-          url += `?areas=${query}`; // Adiciona os query params à URL
+          params.set('areas', areasIds.join(',')); // Transforma o array de IDs em uma string separada por vírgulas
       }
+      if (ano) {
+          params.set('ano', ano);
+      }
+      const query = params.toString();
+      const url = `/private/${tenantSlug}/avaliador/getProjetosAguardandoAvaliacao${query ? `?${query}` : ''}`;
 
       const response = await req.get(url, { headers });
       return response.data.submissoes;
@@ -203,21 +304,34 @@ export const getProjetoParaAvaliar = async (tenantSlug,inscricaoProjetoId ) => {
       throw error;
   }
 };
-export const getProjetosEmAvaliacao = async (tenantSlug) => {
+export const getProjetosEmAvaliacao = async (tenantSlug, ano = null) => {
   try {
 
     const headers = getAuthHeadersClient();
     if (!headers) {
       return false;
     }
-    const response = await req.get(
-      `/private/${tenantSlug}/avaliador/getProjetosEmAvaliacao`,
-      { headers }
-    );
+    const url = `/private/${tenantSlug}/avaliador/getProjetosEmAvaliacao${ano ? `?ano=${ano}` : ''}`;
+    const response = await req.get(url, { headers });
     return response.data.submissoes;
-      
+
   } catch (error) {
       console.error("Erro ao atualizar campo:", error);
+      throw error;
+  }
+};
+
+export const getEstatisticasAvaliador = async (tenantSlug, ano = null) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const url = `/private/${tenantSlug}/avaliador/getEstatisticasAvaliador${ano ? `?ano=${ano}` : ''}`;
+    const response = await req.get(url, { headers });
+    return response.data.estatisticas;
+  } catch (error) {
+      console.error("Erro ao buscar estatísticas do avaliador:", error);
       throw error;
   }
 };

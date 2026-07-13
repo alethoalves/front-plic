@@ -1,0 +1,55 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+.logo{
+    max-width: 300px;
+    min-width: 180px;
+    height: 100px;
+    position: relative;
+    margin: $gap-2 0;
+
+            img{
+                border-radius: $gap-2;
+                object-fit: contain;
+                object-position: left center;
+            }
+}
+.main{
+    background-color: $white-normal;
+    min-height: 100vh;
+    display: flex;
+    overflow: auto;
+
+    .content{
+        min-height: 100vh;
+        margin: 0 auto;
+        padding: $gap-2;
+        width: 900px;
+
+        .box{
+            margin-top: $gap-2;
+            box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+            border: 1px solid $gray-50;
+            border-radius: $gap-1;
+            display: flex;
+            flex-direction: column;
+            background: $white-light;
+            margin-bottom: $gap-2;
+            .header{
+                padding: $gap-3;
+                border-top-left-radius: $gap-1;
+                border-top-right-radius: $gap-1;
+                h4{
+                    color: $white-darken;
+                    text-align: center;
+                    color: $primary-darken;
+                }
+            }
+            .titleError{
+                h4{
+                    color: $error-normal;
+                }
+            }
+        }
+    }
+}

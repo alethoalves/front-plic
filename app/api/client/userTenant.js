@@ -55,3 +55,55 @@ export const upsertUserTenantAluno = async (tenantSlug, userId, ano, data) => {
     throw error;
   }
 };
+
+export const getOpcoesLotacao = async (tenantSlug) => {
+  try {
+    const headers = getAuthHeadersClient();
+    const response = await req.get(`/private/${tenantSlug}/user-tenant/opcoes-lotacao`, { headers });
+    return response.data.lotacoes;
+  } catch (error) {
+    console.error("Erro ao buscar opções de lotação:", error);
+    throw error;
+  }
+};
+
+export const upsertUserTenantLotacao = async (tenantSlug, userId, ano, lotacaoId) => {
+  try {
+    const headers = getAuthHeadersClient();
+    const response = await req.put(
+      `/private/${tenantSlug}/user-tenant/${userId}/${ano}/lotacao`,
+      { lotacaoId },
+      { headers }
+    );
+    return response.data.userTenant;
+  } catch (error) {
+    console.error("Erro ao salvar lotação:", error);
+    throw error;
+  }
+};
+
+export const getUserAreas = async (tenantSlug, userId) => {
+  try {
+    const headers = getAuthHeadersClient();
+    const response = await req.get(`/private/${tenantSlug}/user-tenant/${userId}/areas`, { headers });
+    return response.data.areaIds;
+  } catch (error) {
+    console.error("Erro ao buscar áreas do usuário:", error);
+    throw error;
+  }
+};
+
+export const upsertUserAreas = async (tenantSlug, userId, areaIds) => {
+  try {
+    const headers = getAuthHeadersClient();
+    const response = await req.put(
+      `/private/${tenantSlug}/user-tenant/${userId}/areas`,
+      { areaIds },
+      { headers }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao salvar áreas do usuário:", error);
+    throw error;
+  }
+};

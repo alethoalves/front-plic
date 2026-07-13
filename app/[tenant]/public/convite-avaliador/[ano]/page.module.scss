@@ -1,0 +1,106 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+.logo{
+    max-width: 300px;
+    min-width: 180px;
+    height: 100px;
+    position: relative;
+    margin: $gap-2 0;
+
+            img{
+                border-radius: $gap-2;
+                object-fit: contain;
+                object-position: left center;
+            }
+}
+.main{
+    background-color: $white-normal;
+    min-height: 100vh;
+    display: flex;
+    overflow: auto;
+
+    .content{
+        min-height: 100vh;
+        margin: 0 auto;
+        padding: $gap-2 0;
+        width: 416px;
+        @include responsive(xs){
+            width: calc(100vw - 32px);
+        }
+
+        .box{
+            margin-top: $gap-2;
+            box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+            border: 1px solid $gray-50;
+            border-radius: $gap-1;
+            display: flex;
+            flex-direction: column;
+            background: $white-light;
+            margin-bottom: $gap-2;
+            .header{
+                padding: $gap-3;
+                border-top-left-radius: $gap-1;
+                border-top-right-radius: $gap-1;
+                h4{
+                    color: $white-darken;
+                    text-align: center;
+                    color: $primary-darken;
+                }
+            }
+            .boxContent{
+                background-color: $white-light;
+                padding: 0 $gap-3 $gap-3 $gap-3;
+                border-bottom-left-radius: $gap-1;
+                border-bottom-right-radius: $gap-1;
+            }
+        }
+        .errorMsg{
+            background-color: $error-light;
+            border-radius: $gap-1;
+            margin-top: $gap-1;
+            p{
+                color: $white-light;
+                padding: $gap-1 $gap-2;
+            }
+        }
+        form{
+            width: 100%;
+            margin: 0 auto;
+        }
+        .signinWrapper{
+            width: 100%;
+            margin: 0 auto;
+        }
+        .suporteWhatsapp{
+            width: 100%;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            gap: $gap-2;
+            margin-top: $gap-2;
+            padding: $gap-2 $gap-3;
+            border-radius: $gap-1;
+            background-color: $success-lighten;
+            border: 1px solid $success-normal;
+            text-decoration: none;
+            transition: opacity .3s ease;
+            &:hover{
+                opacity: 0.85;
+            }
+            svg{
+                width: 32px;
+                height: 32px;
+                color: $success-dark;
+                flex-shrink: 0;
+            }
+            p{
+                color: $primary-darken;
+                margin: 0;
+            }
+        }
+        .suporteWhatsappTitulo{
+            font-weight: 700;
+        }
+    }
+}

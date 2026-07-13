@@ -72,7 +72,7 @@ const Page = ({ params }) => {
           setTodasAreas
         );
         await getAvaliadoresComProjetosPendentes(params.tenant, params.ano);
-        await processarInscricoes(params.tenant, setInscricoesProjetos);
+        await processarInscricoes(params.tenant, setInscricoesProjetos, params.ano);
       } catch (error) {
         console.error("Erro ao carregar dados:", error);
       }
@@ -86,7 +86,8 @@ const Page = ({ params }) => {
       try {
         const response = await getInscricaoProjetoByTenant(
           params.tenant,
-          "enviada"
+          "enviada",
+          params.ano
         );
         const projetosNaoDistribuidos = response.filter(
           (projeto) => projeto.statusAvaliacao === "AGUARDANDO_AVALIACAO"
@@ -228,7 +229,7 @@ const Page = ({ params }) => {
         }
       }
 
-      await processarInscricoes(params.tenant, setInscricoesProjetos);
+      await processarInscricoes(params.tenant, setInscricoesProjetos, params.ano);
       await atualizarAvaliadores(params.tenant, setAvaliadores, setTodasAreas);
 
       setAvaliadoresList([]);
@@ -251,10 +252,11 @@ const Page = ({ params }) => {
     }
   };
 
-  const processarInscricoes = async (tenant, setInscricoesProjetos) => {
+  const processarInscricoes = async (tenant, setInscricoesProjetos, ano) => {
     const inscricoesProjetos = await getInscricaoProjetoByTenant(
       tenant,
-      "enviada"
+      "enviada",
+      ano
     );
 
     const inscricoesComColunasVirtuais = inscricoesProjetos.map((inscricao) => {
@@ -340,7 +342,7 @@ const Page = ({ params }) => {
   // re-sincroniza essa seleção com os dados frescos (senão o painel fica com um retrato
   // desatualizado — as atribuições que acabaram de ser removidas voltariam a aparecer).
   const recarregarERessincronizarSelecao = async () => {
-    await processarInscricoes(params.tenant, setInscricoesProjetos);
+    await processarInscricoes(params.tenant, setInscricoesProjetos, params.ano);
     const avaliadoresAtualizados = await atualizarAvaliadores(
       params.tenant,
       setAvaliadores,
@@ -562,7 +564,8 @@ const Page = ({ params }) => {
                       // Atualiza os dados
                       await processarInscricoes(
                         params.tenant,
-                        setInscricoesProjetos
+                        setInscricoesProjetos,
+                        params.ano
                       );
                       await atualizarAvaliadores(
                         params.tenant,
@@ -607,7 +610,8 @@ const Page = ({ params }) => {
 
                     await processarInscricoes(
                       params.tenant,
-                      setInscricoesProjetos
+                      setInscricoesProjetos,
+                      params.ano
                     );
                     await atualizarAvaliadores(
                       params.tenant,

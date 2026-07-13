@@ -22,16 +22,31 @@ import { classNames } from "primereact/utils";
 import {
   enviarConvitesAvaliadores,
   toggleStatusAvaliadorAno,
+  getSolicitacoesLattes,
+  decidirSolicitacaoLattes,
+  reenviarMensagemSolicitacaoLattes,
 } from "@/app/api/client/avaliador";
 import { renderStatusTagWithJustificativa } from "@/lib/tagUtils";
 import { Calendar } from "primereact/calendar";
-import { InputTextarea } from "primereact/inputtextarea";
 import { getTenantBySlug } from "@/app/api/client/tenant";
 import { Editor } from "primereact/editor";
 import { InputMask } from "primereact/inputmask";
+import { Tag } from "primereact/tag";
 import montarMensagemConviteAvaliador from "@/lib/montarMensagemConviteAvaliador";
 
+const SOLICITACAO_STATUS_LABELS = {
+  PENDENTE: { label: "Pendente", severity: "warning" },
+  APROVADO: { label: "Aprovado", severity: "success" },
+  RECUSADO: { label: "Recusado", severity: "danger" },
+};
+
+const ABAS = [
+  { id: "avaliadores", label: "Avaliadores" },
+  { id: "lattes", label: "Solicitações Lattes" },
+];
+
 const Page = ({ params }) => {
+  const [abaAtiva, setAbaAtiva] = useState("avaliadores");
   const [todasAreas, setTodasAreas] = useState([]);
   const [avaliadores, setAvaliadores] = useState([]);
 
@@ -393,6 +408,105 @@ const Page = ({ params }) => {
     setInviteModalOpen(true);
   };
 
+  // link geral de avaliador do ano (sem token pessoal — mesmo link pra todo mundo)
+  const linkGeralAvaliador =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/${params.tenant}/public/convite-avaliador/${params.ano}`
+      : "";
+
+  const copiarLinkGeral = async () => {
+    try {
+      await navigator.clipboard.writeText(linkGeralAvaliador);
+      showToast("success", "Copiado", "Link copiado para a área de transferência.");
+    } catch (err) {
+      console.error(err);
+      showToast("error", "Erro", "Não foi possível copiar o link.");
+    }
+  };
+
+  // fila de solicitações de análise de Lattes (quem ainda não tem doutorado confirmado)
+  const [solicitacoesLattes, setSolicitacoesLattes] = useState([]);
+  const [loadingSolicitacoes, setLoadingSolicitacoes] = useState(true);
+  const [decisaoResultado, setDecisaoResultado] = useState(null); // { mensagem, celular }
+
+  const fetchSolicitacoesLattes = useCallback(async () => {
+    setLoadingSolicitacoes(true);
+    try {
+      const resp = await getSolicitacoesLattes(params.tenant, Number(params.ano));
+      setSolicitacoesLattes(resp || []);
+    } catch (err) {
+      console.error(err);
+      showToast("error", "Erro", "Falha ao carregar as solicitações de Lattes.");
+    } finally {
+      setLoadingSolicitacoes(false);
+    }
+  }, [params.tenant, params.ano]);
+
+  useEffect(() => {
+    fetchSolicitacoesLattes();
+  }, [fetchSolicitacoesLattes]);
+
+  const enviarDecisao = async (solicitacao, payload) => {
+    try {
+      const resp = await decidirSolicitacaoLattes(params.tenant, solicitacao.id, payload);
+      setDecisaoResultado(resp?.mensagem ? { mensagem: resp.mensagem, celular: resp.celular } : null);
+      await fetchSolicitacoesLattes();
+      showToast(
+        "success",
+        payload.aprovado ? "Solicitação aprovada" : "Solicitação recusada",
+        "Copie a mensagem pra avisar o avaliador."
+      );
+    } catch (err) {
+      console.error(err);
+      showToast("error", "Erro", err.response?.data?.message || "Falha ao decidir a solicitação");
+    }
+  };
+
+  // modal "Ano de conclusão do doutorado" (aprovação)
+  const [solicitacaoParaAprovar, setSolicitacaoParaAprovar] = useState(null);
+  const [anoTitulacaoInput, setAnoTitulacaoInput] = useState("");
+
+  const abrirModalAprovar = (solicitacao) => {
+    setAnoTitulacaoInput("");
+    setSolicitacaoParaAprovar(solicitacao);
+    setSolicitacaoSelecionada(null);
+  };
+
+  const confirmarAprovacao = async () => {
+    const anoTitulacao = parseInt(anoTitulacaoInput, 10);
+    const anoAtual = new Date().getFullYear();
+    if (!anoTitulacao || anoTitulacao < 1950 || anoTitulacao > anoAtual) {
+      showToast("error", "Ano inválido", `Informe um ano entre 1950 e ${anoAtual}.`);
+      return;
+    }
+    await enviarDecisao(solicitacaoParaAprovar, { aprovado: true, anoTitulacao });
+    setSolicitacaoParaAprovar(null);
+  };
+
+  const handleRecusarSolicitacao = async (solicitacao) => {
+    const jaEstavaAprovado = solicitacao.status === "APROVADO";
+    const aviso = jaEstavaAprovado
+      ? "Isso não remove o Cargo de avaliador já concedido — pra tirar o acesso, remova o cargo dele na aba \"Avaliadores\". Motivo da recusa (opcional):"
+      : "Motivo da recusa (opcional):";
+    const motivoRecusa = window.prompt(aviso) || undefined;
+    await enviarDecisao(solicitacao, { aprovado: false, motivoRecusa });
+    setSolicitacaoSelecionada(null);
+  };
+
+  // modal de detalhe/edição (clique na linha) — reenviar mensagem ou reabrir a decisão
+  const [solicitacaoSelecionada, setSolicitacaoSelecionada] = useState(null);
+
+  const handleReenviarMensagem = async (solicitacao) => {
+    try {
+      const resp = await reenviarMensagemSolicitacaoLattes(params.tenant, solicitacao.id);
+      setDecisaoResultado(resp?.mensagem ? { mensagem: resp.mensagem, celular: resp.celular } : null);
+      setSolicitacaoSelecionada(null);
+    } catch (err) {
+      console.error(err);
+      showToast("error", "Erro", err.response?.data?.message || "Falha ao gerar a mensagem.");
+    }
+  };
+
   return (
     <>
       <Modal isOpen={inviteModalOpen} onClose={() => setInviteModalOpen(false)}>
@@ -613,6 +727,146 @@ const Page = ({ params }) => {
           />
         </div>
       </Modal>
+      <Modal isOpen={!!decisaoResultado} onClose={() => setDecisaoResultado(null)}>
+        <h4>Mensagem pronta pra enviar</h4>
+        <p>Copie e envie pro avaliador, ou abra direto no WhatsApp dele.</p>
+        <div className="mt-2 mb-2" style={{ whiteSpace: "pre-wrap" }}>
+          {decisaoResultado?.mensagem}
+        </div>
+        <div className="flex justify-content-end gap-1">
+          <Button
+            label="Copiar mensagem"
+            icon="pi pi-copy"
+            className="p-button-secondary"
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(decisaoResultado?.mensagem || "");
+                showToast("success", "Copiado", "Mensagem copiada para a área de transferência.");
+              } catch (err) {
+                console.error(err);
+                showToast("error", "Erro", "Não foi possível copiar a mensagem.");
+              }
+            }}
+          />
+          {decisaoResultado?.celular ? (
+            <a
+              href={`https://wa.me/55${decisaoResultado.celular.replace(/\D/g, "")}?text=${encodeURIComponent(
+                decisaoResultado.mensagem || ""
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button label="Abrir no WhatsApp" icon="pi pi-whatsapp" />
+            </a>
+          ) : (
+            <span className="text-sm text-color-secondary">
+              Avaliador sem celular cadastrado.
+            </span>
+          )}
+        </div>
+      </Modal>
+      <Modal isOpen={!!solicitacaoParaAprovar} onClose={() => setSolicitacaoParaAprovar(null)}>
+        <h4>Aprovar avaliador</h4>
+        <p>
+          Informe o ano de conclusão do doutorado de{" "}
+          {solicitacaoParaAprovar?.user?.nome}.
+        </p>
+        <div className="mt-2">
+          <label className="mb-1">Ano de conclusão do doutorado:</label>
+          <InputText
+            style={{ width: "100%" }}
+            keyfilter="int"
+            maxLength={4}
+            value={anoTitulacaoInput}
+            onChange={(e) => setAnoTitulacaoInput(e.target.value)}
+            autoFocus
+          />
+        </div>
+        <div className="flex justify-content-end mt-2">
+          <Button label="Confirmar aprovação" icon="pi pi-check" onClick={confirmarAprovacao} />
+        </div>
+      </Modal>
+      <Modal isOpen={!!solicitacaoSelecionada} onClose={() => setSolicitacaoSelecionada(null)}>
+        <h4>{solicitacaoSelecionada?.user?.nome}</h4>
+        <p>CPF: {solicitacaoSelecionada?.user?.cpf}</p>
+        <p>E-mail: {solicitacaoSelecionada?.user?.email}</p>
+        <p>
+          <a href={solicitacaoSelecionada?.linkLattes} target="_blank" rel="noreferrer">
+            Abrir Currículo Lattes
+          </a>
+        </p>
+        <p className="mt-1">
+          Status:{" "}
+          {solicitacaoSelecionada &&
+            (() => {
+              const info = SOLICITACAO_STATUS_LABELS[solicitacaoSelecionada.status] ?? {
+                label: solicitacaoSelecionada.status,
+                severity: "info",
+              };
+              return <Tag value={info.label} severity={info.severity} />;
+            })()}
+        </p>
+        {solicitacaoSelecionada?.motivoRecusa && (
+          <p className="mt-1">Motivo da recusa: {solicitacaoSelecionada.motivoRecusa}</p>
+        )}
+
+        <div className="flex-space gap-1 mt-3">
+          {solicitacaoSelecionada?.status === "PENDENTE" && (
+            <>
+              <Button
+                label="Aprovar"
+                icon="pi pi-check"
+                className="p-button-success"
+                onClick={() => abrirModalAprovar(solicitacaoSelecionada)}
+              />
+              <Button
+                label="Recusar"
+                icon="pi pi-times"
+                className="p-button-danger"
+                onClick={() => handleRecusarSolicitacao(solicitacaoSelecionada)}
+              />
+            </>
+          )}
+          {solicitacaoSelecionada?.status === "APROVADO" && (
+            <>
+              <Button
+                label="Reverter aprovação (engano)"
+                icon="pi pi-undo"
+                className="p-button-danger"
+                onClick={() => handleRecusarSolicitacao(solicitacaoSelecionada)}
+              />
+              <Button
+                label="Reenviar mensagem"
+                icon="pi pi-send"
+                className="p-button-secondary"
+                onClick={() => handleReenviarMensagem(solicitacaoSelecionada)}
+              />
+            </>
+          )}
+          {solicitacaoSelecionada?.status === "RECUSADO" && (
+            <>
+              <Button
+                label="Aprovar mesmo assim"
+                icon="pi pi-check"
+                className="p-button-success"
+                onClick={() => abrirModalAprovar(solicitacaoSelecionada)}
+              />
+              <Button
+                label="Reenviar mensagem"
+                icon="pi pi-send"
+                className="p-button-secondary"
+                onClick={() => handleReenviarMensagem(solicitacaoSelecionada)}
+              />
+            </>
+          )}
+        </div>
+        {solicitacaoSelecionada?.status === "APROVADO" && (
+          <p className="mt-2 text-sm text-color-secondary">
+            Reverter aqui só corrige o registro da solicitação — pra tirar o
+            acesso de fato, remova o cargo dele na aba &quot;Avaliadores&quot;.
+          </p>
+        )}
+      </Modal>
       {renderModalContent()}
       <Toast ref={toast} /> {/* Componente Toast */}
       <main>
@@ -622,9 +876,13 @@ const Page = ({ params }) => {
               <RiSettings5Line />
             </div>
             <ul>
-              <li onClick={abrirModalConvite} className={style.enviar}>
-                <Button icon="pi pi-send">
-                  <p style={{ color: "#fff" }}>
+              <li
+                className={style.enviar}
+                style={{ cursor: "not-allowed" }}
+                title="Envio de e-mail pelo sistema está indisponível no momento."
+              >
+                <Button icon="pi pi-send" disabled>
+                  <p>
                     Enviar{" "}
                     {selectedCount > 0 && (
                       <span className={style.badge}>{selectedCount}</span>
@@ -635,7 +893,34 @@ const Page = ({ params }) => {
               </li>
             </ul>
           </div>
+          <div className="mt-2">
+            <label className="mb-1">Link de convite do avaliador ({params.ano}):</label>
+            <div className="flex-space gap-1">
+              <InputText style={{ width: "100%" }} value={linkGeralAvaliador} readOnly />
+              <Button icon="pi pi-copy" label="Copiar" onClick={copiarLinkGeral} />
+            </div>
+            <p className="mt-1 text-sm text-color-secondary">
+              Mesmo link pra todo mundo — envie por e-mail ou compartilhe em grupos
+              de WhatsApp. Quem já tem doutorado confirmado vira avaliador na hora;
+              quem não tem cai na fila de "Solicitações Lattes" abaixo.
+            </p>
+          </div>
         </Card>
+
+        <div className={style.abas}>
+          {ABAS.map((aba) => (
+            <button
+              key={aba.id}
+              type="button"
+              className={`${style.aba} ${abaAtiva === aba.id ? style.abaAtiva : ""}`}
+              onClick={() => setAbaAtiva(aba.id)}
+            >
+              {aba.label}
+            </button>
+          ))}
+        </div>
+
+        {abaAtiva === "avaliadores" && (
         <Card className="custom-card">
           {loading ? (
             <div className="pr-2 pl-2 pb-2 pt-2">
@@ -781,6 +1066,91 @@ const Page = ({ params }) => {
             </>
           )}
         </Card>
+        )}
+
+        {abaAtiva === "lattes" && (
+          <Card className="custom-card">
+            {loadingSolicitacoes ? (
+              <div className="pr-2 pl-2 pb-2 pt-2">
+                <ProgressBar mode="indeterminate" style={{ height: "6px" }} />
+              </div>
+            ) : (
+              <>
+                <h5 className="pt-2 pl-2 pr-2">Solicitações de análise de Lattes</h5>
+                <p className="pl-2 pr-2 text-sm text-color-secondary">
+                  Clique numa linha pra ver detalhes, reenviar a mensagem ou
+                  corrigir uma decisão.
+                </p>
+                <DataTable
+                  value={solicitacoesLattes}
+                  paginator
+                  rows={10}
+                  rowsPerPageOptions={[10, 20, 50]}
+                  scrollable
+                  dataKey="id"
+                  emptyMessage="Nenhuma solicitação ainda."
+                  onRowClick={(e) => setSolicitacaoSelecionada(e.data)}
+                  rowClassName="clickable-row"
+                >
+                  <Column field="user.nome" header="Nome" sortable />
+                  <Column field="user.cpf" header="CPF" />
+                  <Column field="user.email" header="E-mail" />
+                  <Column
+                    header="Lattes"
+                    body={(row) => (
+                      <a
+                        href={row.linkLattes}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Abrir Lattes
+                      </a>
+                    )}
+                  />
+                  <Column
+                    header="Status"
+                    field="status"
+                    sortable
+                    body={(row) => {
+                      const info = SOLICITACAO_STATUS_LABELS[row.status] ?? { label: row.status, severity: "info" };
+                      return <Tag value={info.label} severity={info.severity} />;
+                    }}
+                  />
+                  <Column
+                    header="Ações"
+                    body={(row) =>
+                      row.status === "PENDENTE" ? (
+                        <div className="flex-space gap-1">
+                          <Button
+                            icon="pi pi-check"
+                            className="p-button-success p-button-sm"
+                            label="Aprovar"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              abrirModalAprovar(row);
+                            }}
+                          />
+                          <Button
+                            icon="pi pi-times"
+                            className="p-button-danger p-button-sm"
+                            label="Recusar"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRecusarSolicitacao(row);
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        "—"
+                      )
+                    }
+                  />
+                </DataTable>
+              </>
+            )}
+          </Card>
+        )}
       </main>
     </>
   );

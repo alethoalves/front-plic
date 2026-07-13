@@ -1,5 +1,4 @@
-import SideNav from "@/components/SideNav";
-import NavBar from "@/components/NavBar";
+import NavBarAvaliadorTenant from "@/components/NavBarAvaliadorTenant";
 
 import styles from "./layout.module.scss";
 import { headers } from "next/headers";
@@ -11,13 +10,8 @@ const Layout = ({ children, params }) => {
 
   return (
     <div className={styles.dashboard}>
-      <div className={styles.item1}>
-        <SideNav pathLogo={pathLogo} menuType="avaliadorTenant" />
-      </div>
-      <div className={styles.item2}>
-        <NavBar slug={params.tenant} />
-        <div className={styles.content}>{children}</div>
-      </div>
+      <NavBarAvaliadorTenant pathLogo={pathLogo} slug={params.tenant} />
+      <div className={styles.content}>{children}</div>
     </div>
   );
 };

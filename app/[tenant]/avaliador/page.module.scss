@@ -4,6 +4,7 @@
 
 .main{
     max-width: 990px;
+    margin: 0 auto;
 }
 
 .menu{
@@ -40,4 +41,114 @@
         display: flex;
         align-items: center;
     }
+}
+
+// ================ EXPLICAÇÃO "COMO FUNCIONA" ================
+.explicacao{
+    margin-bottom: $gap-3;
+}
+.explicacaoHeader{
+    display:flex;
+    align-items:flex-start;
+    gap: $gap-2;
+    margin-bottom: $gap-2;
+}
+.explicacaoIcon{
+    flex-shrink:0;
+    margin-top: 2px;
+    color: $primary-normal;
+}
+.explicacaoTitulo{
+    margin:0 0 4px;
+    font-size:1.05rem;
+    font-weight:600;
+    color: $gray-800;
+}
+.explicacaoSubtitulo{
+    margin:0;
+    font-size:0.875rem;
+    color:$gray-500;
+}
+
+// padrão de lista numerada (mesmo espírito de components/FluxoInscricaoEdital.module.scss .delegationSteps)
+.comoFuncionaBox{
+    padding:$gap-3;
+    background:$gray-50;
+    border-radius:8px;
+    border:1px solid $gray-200;
+    margin-bottom:$gap-2;
+}
+.comoFuncionaLista{
+    margin:0;
+    padding:0 0 0 20px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    font-size:0.875rem;
+    color:$gray-600;
+    line-height:1.5;
+    strong{ color:$gray-800; }
+}
+
+// card verde sugerindo um modo de avaliação (mesma família visual do .impedimentos, cores $success-*)
+.sugestaoModo{
+    display:flex;
+    gap:$gap-2;
+    padding:$gap-3;
+    background-color: $success-lighten;
+    border:1px solid $success-normal;
+    border-radius:10px;
+    margin-bottom:$gap-2;
+}
+.sugestaoModoIcon{
+    flex-shrink:0;
+    margin-top:2px;
+    color:$success-dark;
+}
+.sugestaoModoContent{ flex:1; }
+.sugestaoModoTitulo{
+    margin:0 0 6px;
+    color:$success-dark;
+    font-size:0.95rem;
+    font-weight:600;
+}
+.sugestaoModoTexto{
+    margin:0;
+    color:$gray-700;
+    font-size:0.85rem;
+    line-height:1.4;
+}
+
+// mesmo padrão visual de app/[tenant]/user/planos/page.module.scss .alertaImportante
+.impedimentos{
+    display:flex;
+    gap:$gap-2;
+    padding:$gap-3;
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    border:1px solid #f59e0b;
+    border-radius:10px;
+}
+.impedimentosIcon{
+    flex-shrink:0;
+    margin-top:2px;
+    color:#d97706;
+}
+.impedimentosContent{ flex:1; }
+.impedimentosTitulo{
+    margin:0 0 6px;
+    color:#92400e;
+    font-size:0.95rem;
+    font-weight:600;
+}
+.impedimentosTexto{
+    margin:0 0 8px;
+    color:#92400e;
+    font-size:0.85rem;
+    line-height:1.4;
+    &:last-child{ margin-bottom:0; }
+}
+.impedimentosListaRegras{
+    margin:0 0 8px;
+    padding-left:1.1rem;
+    li{ margin-bottom:6px; color:#92400e; font-size:0.85rem; line-height:1.4; }
 }

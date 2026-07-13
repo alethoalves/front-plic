@@ -10,7 +10,7 @@ import styles from "./TabelaPlanoDeTrabalho.module.scss";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { InputText } from "primereact/inputtext";
-import { FilterMatchMode, FilterOperator } from "primereact/api";
+import { FilterMatchMode } from "primereact/api";
 import { Card } from "primereact/card";
 import { ProgressBar } from "primereact/progressbar";
 import { Button } from "primereact/button";
@@ -59,7 +59,6 @@ const TabelaPlanoDeTrabalho = ({ params }) => {
     useState([]);
   const [showJustificativaModal, setShowJustificativaModal] = useState(false);
   const [justificativaAtual, setJustificativaAtual] = useState("");
-  const [filteredItens, setFilteredItens] = useState(null);
 
   // REFS
   const toast = useRef(null);
@@ -68,7 +67,8 @@ const TabelaPlanoDeTrabalho = ({ params }) => {
   // FILTROS
   const [filters, setFilters] = useState({
     global: { value: "", matchMode: FilterMatchMode.CONTAINS },
-    "inscricao.edital.titulo": {
+    id: { value: "", matchMode: FilterMatchMode.CONTAINS },
+    "inscricao.status": {
       value: [],
       matchMode: FilterMatchMode.IN,
     },
@@ -76,28 +76,41 @@ const TabelaPlanoDeTrabalho = ({ params }) => {
       value: [],
       matchMode: FilterMatchMode.IN,
     },
-    alunosString: {
-      value: "", // Adicione value padrão
+    "inscricao.edital.titulo": {
+      value: [],
+      matchMode: FilterMatchMode.IN,
+    },
+    titulo: { value: "", matchMode: FilterMatchMode.CONTAINS },
+    "inscricaoProjeto.projeto.area.area": {
+      value: "",
       matchMode: FilterMatchMode.CONTAINS,
     },
+    "area.area": { value: "", matchMode: FilterMatchMode.CONTAINS },
     orientadoresString: {
       value: "", // Adicione value padrão
       matchMode: FilterMatchMode.CONTAINS,
     },
-    mediaNotas: {
-      operator: FilterOperator.AND,
-      constraints: [{ value: undefined, matchMode: FilterMatchMode.EQUALS }], // null → undefined
+    alunosString: {
+      value: "", // Adicione value padrão
+      matchMode: FilterMatchMode.CONTAINS,
     },
-    avaliadores: {
-      operator: FilterOperator.AND,
-      constraints: [{ value: undefined, matchMode: FilterMatchMode.CONTAINS }],
-    },
-    id: {
-      operator: FilterOperator.AND,
-      constraints: [{ value: undefined, matchMode: FilterMatchMode.EQUALS }],
-    },
-    // ... repita para todos os outros filtros com constraints
     notaTotal: {
+      value: [undefined, undefined],
+      matchMode: "nota_intervalo",
+    },
+    notaProjeto: {
+      value: [undefined, undefined],
+      matchMode: "nota_intervalo",
+    },
+    notaPlano: {
+      value: [undefined, undefined],
+      matchMode: "nota_intervalo",
+    },
+    notaOrientador: {
+      value: [undefined, undefined],
+      matchMode: "nota_intervalo",
+    },
+    notaAluno: {
       value: [undefined, undefined],
       matchMode: "nota_intervalo",
     },
@@ -292,7 +305,7 @@ const TabelaPlanoDeTrabalho = ({ params }) => {
 
               <DataTable
                 ref={dataTableRef}
-                value={filteredItens ?? itens}
+                value={itens}
                 paginator
                 rows={10}
                 rowsPerPageOptions={[10, 20, 50]}
@@ -310,7 +323,6 @@ const TabelaPlanoDeTrabalho = ({ params }) => {
                 filters={filters}
                 onFilter={(e) => {
                   setFilters(e.filters);
-                  setFilteredItens(e.filteredValue || itens);
                   setSelectedItems([]); // limpa a seleção com os novos filtros aplicados
                 }}
                 filterDisplay="row"
@@ -328,6 +340,7 @@ const TabelaPlanoDeTrabalho = ({ params }) => {
                   field="id"
                   header="ID_Plano"
                   sortable
+                  filter
                   filterPlaceholder="Filtrar por id"
                   filterField="id"
                 />
@@ -386,9 +399,32 @@ const TabelaPlanoDeTrabalho = ({ params }) => {
                   field="titulo"
                   header="Título do Plano de Trabalho"
                   sortable
+                  filter
                   filterPlaceholder="Filtrar por nome"
                   filterField="titulo"
                   style={{ maxWidth: "20rem" }}
+                />
+                <Column
+                  field="inscricaoProjeto.projeto.area.area"
+                  header="Área do Projeto"
+                  sortable
+                  filter
+                  filterPlaceholder="Filtrar por área"
+                  filterField="inscricaoProjeto.projeto.area.area"
+                  body={(rowData) =>
+                    rowData.inscricaoProjeto?.projeto?.area?.area || "-"
+                  }
+                  style={{ width: "12rem" }}
+                />
+                <Column
+                  field="area.area"
+                  header="Área do Plano"
+                  sortable
+                  filter
+                  filterPlaceholder="Filtrar por área"
+                  filterField="area.area"
+                  body={(rowData) => rowData.area?.area || "-"}
+                  style={{ width: "12rem" }}
                 />
                 <Column
                   field="orientadoresString"
@@ -425,7 +461,10 @@ const TabelaPlanoDeTrabalho = ({ params }) => {
                   field="notaProjeto"
                   header="Nota Projeto"
                   sortable
+                  filter
                   filterField="notaProjeto"
+                  filterElement={notaRowFilterTemplate}
+                  filterMatchMode="nota_intervalo"
                   dataType="numeric"
                   body={(rowData) => rowData.notaProjeto}
                   style={{ textAlign: "center", width: "8rem" }}
@@ -435,7 +474,10 @@ const TabelaPlanoDeTrabalho = ({ params }) => {
                   field="notaPlano"
                   header="Nota Plano"
                   sortable
+                  filter
                   filterField="notaPlano"
+                  filterElement={notaRowFilterTemplate}
+                  filterMatchMode="nota_intervalo"
                   dataType="numeric"
                   body={(rowData) => rowData.notaPlano}
                   style={{ textAlign: "center", width: "8rem" }}
@@ -444,7 +486,10 @@ const TabelaPlanoDeTrabalho = ({ params }) => {
                   field="notaOrientador"
                   header="Nota Orientador"
                   sortable
+                  filter
                   filterField="notaOrientador"
+                  filterElement={notaRowFilterTemplate}
+                  filterMatchMode="nota_intervalo"
                   dataType="numeric"
                   body={(rowData) => rowData.notaOrientador}
                   style={{ textAlign: "center", width: "8rem" }}
@@ -453,7 +498,10 @@ const TabelaPlanoDeTrabalho = ({ params }) => {
                   field="notaAluno"
                   header="Nota Aluno"
                   sortable
+                  filter
                   filterField="notaAluno"
+                  filterElement={notaRowFilterTemplate}
+                  filterMatchMode="nota_intervalo"
                   dataType="numeric"
                   body={(rowData) => rowData.notaAluno}
                   style={{ textAlign: "center", width: "8rem" }}

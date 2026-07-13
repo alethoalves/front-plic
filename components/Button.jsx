@@ -10,6 +10,7 @@ const Button = ({
   onClick,
   linkTo,
   disabled,
+  title,
   loading = false, // Adicione a nova prop loading
 }) => {
   return (
@@ -20,6 +21,7 @@ const Button = ({
           className={`button ${className} ${disabled ? "disabled-link" : ""}`}
           type={type}
           onClick={onClick}
+          title={title}
           disabled={disabled || loading} // Desabilita também quando loading
         >
           {loading ? (
@@ -40,6 +42,7 @@ const Button = ({
           className={`button ${className}`}
           type={type}
           onClick={onClick}
+          title={title}
           disabled={disabled || loading} // Desabilita também quando loading
         >
           <>

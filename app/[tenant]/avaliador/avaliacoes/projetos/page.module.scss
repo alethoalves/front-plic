@@ -2,6 +2,33 @@
 @import "/styles/partials/layout";
 @import "/styles/partials/spacing";
 
+.abas {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid rgba(#000, 0.1);
+    margin-bottom: $gap-2;
+}
+.aba {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    padding: $gap-2 $gap-3;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: $gray-500;
+    transition: color 0.15s, border-color 0.15s;
+    &:hover {
+        color: $primary-normal;
+    }
+    &.abaAtiva {
+        color: $primary-normal;
+        border-bottom-color: $primary-normal;
+        font-weight: 700;
+    }
+}
+
 .noData, .minhasAvaliacoes{
     width: 100%;
     border: 1px dashed $warning-dark;
@@ -12,7 +39,7 @@
     border: 1px solid $error-light;
     padding: $gap-2 $gap-3;
     @include responsive(s){
-        padding: $gap-1 $gap-2; 
+        padding: $gap-1 $gap-2;
     }
     border-radius: $gap-1;
     background-color: $error-lighten;
@@ -24,6 +51,18 @@
     top: 80px;
     backdrop-filter: blur(10px); /* Aplique o desfoque */
   -webkit-backdrop-filter: blur(10px); /* Para suporte ao Safari */
+}
+.avisoInfo{
+    display:flex;
+    align-items:center;
+    gap: $gap-2;
+    border:1px solid $primary-light;
+    background-color: rgba($primary-normal, 0.06);
+    border-radius:$gap-1;
+    padding:$gap-2 $gap-3;
+    margin-bottom:$gap-2;
+    svg{ color:$primary-normal; flex-shrink:0;width: 14px; }
+    p{ margin:0; color:$gray-700; }
 }
 .waiting{
     border: 1px solid $success-normal;
@@ -48,31 +87,85 @@
         margin-bottom: $gap-2;
     }
 }
-.logo{
-    width: auto;
-    flex: 1;
-    height: 50px;
+.suporteWhatsapp{
+    width: 100%;
+    box-sizing: border-box;
     display: flex;
     align-items: center;
-    justify-content: center;
-    margin-right: $gap-1;
-    position: relative;
-    img{
-        object-fit: contain;
-        object-position: left center;
+    gap: $gap-2;
+    margin-bottom: $gap-2;
+    padding: $gap-2 $gap-3;
+    border-radius: $gap-1;
+    background-color: $success-lighten;
+    border: 1px solid $success-normal;
+    text-decoration: none;
+    transition: opacity .3s ease;
+    &:hover{
+        opacity: 0.85;
+    }
+    svg{
+        width: 32px;
+        height: 32px;
+        color: $success-dark;
+        flex-shrink: 0;
+    }
+    p{
+        color: $primary-darken;
+        margin: 0;
     }
 }
-.instituicao{
-    
+.suporteWhatsappTitulo{
+    font-weight: 700;
+}
+.areasInteresse{
     border: 1px solid $gray-50;
-    padding: $gap-2;
     border-radius: $gap-1;
+    padding: $gap-2;
     margin-bottom: $gap-2;
-    transition: ease .3s;
-    
-    .descricao{
-        margin-top: $gap-1;
-    }
+}
+.areaTags{
+    display: flex;
+    flex-wrap: wrap;
+    gap: $gap-1;
+}
+.areaTag{
+    border: 1px solid $primary-light;
+    padding: 2px 10px;
+    border-radius: $gap-1;
+    color: $primary-light;
+    font-size: 12px;
+}
+.sorteioSection{
+    border: 1px solid $gray-50;
+    border-radius: $gap-1;
+    padding: $gap-2;
+    margin-bottom: $gap-2;
+}
+.editarAreasBtn{
+    display: inline-flex;
+    flex-shrink: 0;
+}
+.areaFiltroSelect{
+    width: 100%;
+}
+.areaOption{
+    display: flex;
+    align-items: center;
+    gap: $gap-1;
+    width: 100%;
+}
+.areaOptionStar{
+    width: 14px;
+    height: 14px;
+    color: $warning-dark;
+    flex-shrink: 0;
+}
+.areaOptionLabel{
+    flex: 1;
+}
+.areaOptionCount{
+    color: $gray-400;
+    font-size: 12px;
 }
 .totais{
     padding: $gap-2;
@@ -86,9 +179,6 @@
         
     }
     .total{
-        &.selected{
-            background-color: $white-darken;
-        }
         cursor: pointer;
         border-radius: $gap-1;
         display: inline-flex;
@@ -146,92 +236,16 @@
             background-color: $success-normal;
         }
     }
-    
+    .total.somenteLeitura{
+        cursor: default;
+        &:hover{
+            box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+            transform: none;
+        }
+    }
+
 }
 
-.header{
-    padding:  $gap-2;
-    border-bottom: 1px solid $gray-50;
-    h5{
-        color: $gray-600;
-        font-size: 18px;
-    }
-}
-.dashboard{
-margin-bottom: $gap-2;
-display: flex;
-flex-wrap: wrap;
-}
-.subsessao{
-    @include responsive(xs){
-        flex: 1;
-    }
-    width:fit-content;
-    padding: $gap-2;
-    border: 1px solid $gray-50;
-    cursor: pointer;
-    transition: ease .3s;
-    &:hover{
-        border: 1px solid $primary-light;
-        box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
-        transform: scaleX(1.01);
-    }
-    border-radius: $gap-1;
-    
-    margin: $gap-1;
-    &:first-child{
-        margin-left: 0;
-    }
-    display: flex;
-    
-    align-items: center;
-    //justify-content:space-between ;
-    @include responsive (xs){
-        display: flex;
-        flex-direction: column;
-        align-items:flex-start;
-        
-    }
-    .description{
-        &:not(:last-child){
-            margin-right: $gap-2;
-        }
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        @include responsive(xs){
-            flex-direction:row;
-            margin-bottom: $gap-1;
-        }
-        .infoBoxDescription{
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            @include responsive(xs){
-                align-items: flex-start;
-            }
-            p{
-                margin-bottom: 0;
-            }
-            h6{
-                white-space: nowrap;
-                @include responsive(xs){
-                   font-size: 12px;
-                }
-            }
-        }
-        .icon{
-            @include responsive(xs){
-                margin-right: $gap-2;
-                width: 18px;
-            }
-            
-        }
-        p{
-            font-size: 12px;
-        }
-    }
-}
 .squares{
     padding: 4px;
     .square{
@@ -325,27 +339,28 @@ flex-wrap: wrap;
                     color: $primary-light;
                     font-size: 10px;
                 }
-                .ano{
-                    border: 1px solid $gray-300;
+                .planos{
+                    border: 1px solid $success-normal;
                     padding: 2px 8px;
                     border-radius: 4px;
-                    color: $gray-500;
+                    color: $success-dark;
                     font-size: 10px;
-                    margin-left: 6px;
-                }
-                .tenant{
-                    border: 1px solid $gray-300;
-                    padding: 2px 8px;
-                    border-radius: 4px;
-                    color: $gray-500;
-                    font-size: 10px;
-                    font-weight: 600;
                     margin-left: 6px;
                 }
             }
             .submissaoData{
                 .participacoes{
                     font-size: 12px;
+                }
+            }
+        }
+        &.squareBloqueado{
+            opacity: 0.5;
+            pointer-events: none;
+            .squareContent{
+                cursor: default;
+                &:hover{
+                    border: 1px solid transparent;
                 }
             }
         }

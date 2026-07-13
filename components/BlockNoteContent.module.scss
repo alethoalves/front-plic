@@ -1,3 +1,7 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
 .blockNoteContent {
   font-size: 0.8rem;
   line-height: 1.6;
@@ -36,11 +40,16 @@
 }
 
 .bnChecked {
-  color: green;
+  color: $success-normal;
 }
 
 .bnUnchecked {
-  color: #888;
+  color: $gray-400;
+}
+
+.bnCheckedText {
+  text-decoration: line-through;
+  color: $gray-400;
 }
 
 .bnChildrenWrap {
@@ -54,4 +63,101 @@
   border-radius: 3px;
   padding: 0.1em 0.3em;
   font-size: 0.9em;
+}
+
+.bnLink {
+  color: $primary-normal;
+  text-decoration: underline;
+  word-break: break-word;
+
+  &:hover {
+    color: $primary-dark;
+  }
+}
+
+.bnQuote {
+  margin: 0.4em 0;
+  padding-left: 0.9em;
+  border-left: 3px solid $gray-200;
+  color: $gray-500;
+  font-style: italic;
+}
+
+.bnCodeBlock {
+  margin: 0.4em 0;
+  padding: $gap-1;
+  background: $gray-800;
+  color: $white-light;
+  border-radius: 6px;
+  overflow-x: auto;
+  font-family: monospace;
+  font-size: 0.85em;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.bnTableWrap {
+  overflow-x: auto;
+  margin: 0.4em 0;
+}
+
+.bnTable {
+  border-collapse: collapse;
+  width: 100%;
+
+  td,
+  th {
+    border: 1px solid $gray-200;
+    padding: 0.3em 0.6em;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: $gray-25;
+    font-weight: 700;
+  }
+}
+
+.bnFileBlock {
+  margin: 0.4em 0;
+}
+
+.bnMedia {
+  max-width: 100%;
+  border-radius: 6px;
+  display: block;
+}
+
+.bnAudio {
+  width: 100%;
+}
+
+.bnFileLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  color: $primary-normal;
+  text-decoration: underline;
+
+  &:hover {
+    color: $primary-dark;
+  }
+}
+
+.bnCaption {
+  margin: 0.2em 0 0;
+  font-size: 0.85em;
+  color: $gray-500;
+}
+
+.bnPageBreak {
+  margin: 0.6em 0;
+  border: none;
+  border-top: 2px dotted $gray-200;
+}
+
+.bnEmpty {
+  font-style: italic;
+  color: $gray-400;
 }

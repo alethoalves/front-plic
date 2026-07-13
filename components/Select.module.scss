@@ -43,9 +43,34 @@
 .select .label{
     margin-bottom: $gap-1;
     p{
-        color: $black-dark;  
+        color: $black-dark;
     }
-       
+
+}
+
+.selectInput{
+    height: $gap-5;
+    width: 100%;
+    padding: 14px;
+    border: 1px solid $primary-normal;
+    border-radius: 4px;
+    background-color: $white-light;
+    color: $black-light;
+    cursor: pointer;
+    &:hover{
+        border-color: $primary-normal;
+    }
+    &:focus{
+        outline: 1px solid $primary-normal;
+        border: 1px solid $primary-normal;
+        background-color: $white-normal;
+    }
+    &:disabled{
+        background-color: $white-dark;
+        outline: 1px solid $white-dark;
+        border: 1px solid $white-dark;
+        cursor: default;
+    }
 }
 .selectedOption {
     background-color: $white-light;

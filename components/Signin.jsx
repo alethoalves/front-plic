@@ -30,8 +30,11 @@ import { signin } from "@/app/api/client/auth";
 import BuscadorBack from "./BuscadorBack";
 import { verificarCodAvaliador } from "@/app/api/client/conviteEvento";
 import Link from "next/link";
-import { cadastrarAvaliador } from "@/app/api/client/avaliador";
+import { cadastrarAvaliador, vincularConviteAvaliador, vincularAvaliadorDireto } from "@/app/api/client/avaliador";
 import { getEditais } from "@/app/api/client/edital";
+import { getUserTenant, getUserAreas } from "@/app/api/client/userTenant";
+import LotacaoSelector from "./Formularios/LotacaoSelector";
+import AreaSelector from "./Formularios/AreaSelector";
 
 const Auth = ({
   slug,
@@ -39,6 +42,9 @@ const Auth = ({
   isAvaliador = false,
   isStudio = false,
   isRoot = false,
+  tokenConvite = null,
+  avaliadorOnboardingAno = null,
+  cpfInicial = "",
 }) => {
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -56,7 +62,58 @@ const Auth = ({
     avaliador: false,
     gestor: false,
   });
+  const [precisaLotacao, setPrecisaLotacao] = useState(false);
+  const [precisaArea, setPrecisaArea] = useState(false);
+  const [onboardingContext, setOnboardingContext] = useState(null); // { userId, ano }
   const router = useRouter();
+
+  // checa o que ainda falta pro avaliador completar o perfil (lotação, depois
+  // área) e mostra a próxima etapa pendente; quando não falta mais nada, entra.
+  const avancarOnboardingAvaliador = async (userId, ano) => {
+    try {
+      const userTenant = await getUserTenant(slug, userId, ano);
+      if (!userTenant || !userTenant.lotacaoId) {
+        setOnboardingContext({ userId, ano });
+        setPrecisaLotacao(true);
+        setPrecisaArea(false);
+        return;
+      }
+
+      const areaIds = await getUserAreas(slug, userId);
+      if (!areaIds || areaIds.length === 0) {
+        setOnboardingContext({ userId, ano });
+        setPrecisaLotacao(false);
+        setPrecisaArea(true);
+        return;
+      }
+
+      router.push(`/${slug}/avaliador`);
+    } catch (error) {
+      console.error("Erro ao verificar perfil do avaliador:", error);
+      setErrorMessage(
+        error.response?.data?.message ?? "Erro ao concluir o vínculo com a instituição."
+      );
+    }
+  };
+
+  const finalizarVinculoAvaliador = async () => {
+    try {
+      const vinculo = tokenConvite
+        ? await vincularConviteAvaliador(slug, tokenConvite)
+        : await vincularAvaliadorDireto(slug, avaliadorOnboardingAno);
+      if (!vinculo || vinculo.status !== "success") {
+        setErrorMessage(vinculo?.message ?? "Não foi possível vincular o avaliador.");
+        return;
+      }
+      const { userId, ano } = vinculo;
+      await avancarOnboardingAvaliador(userId, ano);
+    } catch (error) {
+      console.error("Erro ao vincular avaliador:", error);
+      setErrorMessage(
+        error.response?.data?.message ?? "Erro ao concluir o vínculo com a instituição."
+      );
+    }
+  };
 
   const handlePerfilSelecionado = async (perfil) => {
     setCookie("perfilSelecionado", perfil, { maxAge: 60 * 60 * 24 * 7 }); // Expira em 7 dias
@@ -106,6 +163,11 @@ const Auth = ({
       const response = await signin({ ...data, step: tela });
 
       if (response.perfis) {
+        if (tokenConvite || avaliadorOnboardingAno) {
+          await finalizarVinculoAvaliador();
+          return;
+        }
+
         const user = response.perfis?.some(
           (item) => item.tenant === "plic" && item.cargo === "user"
         );
@@ -170,7 +232,7 @@ const Auth = ({
   const { control, handleSubmit, reset } = useForm({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      cpf: "",
+      cpf: cpfInicial,
       nome: "",
       senha: "",
       dtNascimento: "",
@@ -294,7 +356,24 @@ const Auth = ({
         </>
       )}
 
-      {!escolherPerfil && !showInputToken && (
+      {(tokenConvite || avaliadorOnboardingAno) && precisaLotacao && onboardingContext && (
+        <LotacaoSelector
+          tenant={slug}
+          userId={onboardingContext.userId}
+          ano={onboardingContext.ano}
+          onSaved={() => avancarOnboardingAvaliador(onboardingContext.userId, onboardingContext.ano)}
+        />
+      )}
+
+      {(tokenConvite || avaliadorOnboardingAno) && precisaArea && onboardingContext && (
+        <AreaSelector
+          tenant={slug}
+          userId={onboardingContext.userId}
+          onSaved={() => avancarOnboardingAvaliador(onboardingContext.userId, onboardingContext.ano)}
+        />
+      )}
+
+      {!((tokenConvite || avaliadorOnboardingAno) && (precisaLotacao || precisaArea)) && !escolherPerfil && !showInputToken && (
         <form onSubmit={handleSubmit(handleFormSubmit)}>
           <div className={styles.form}>
             <div className={styles.formInput}>

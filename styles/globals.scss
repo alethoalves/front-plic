@@ -24,9 +24,15 @@ a{
 text-decoration: none;
 font-family: var(--font-lato);
 }
+.printOnly {
+  display: none;
+}
 @media print {
   .no-print {
     display: none !important;
+  }
+  .printOnly {
+    display: block !important;
   }
 }
 .hideForPdf {

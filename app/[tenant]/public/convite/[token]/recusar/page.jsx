@@ -2,22 +2,14 @@
 import Image from "next/image";
 import styles from "./page.module.scss";
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { conviteAvaliadorSchema } from "@/lib/zodSchemas/conviteAvaliadorSchema";
-import {
-  consultarConviteByToken,
-  recusarConvitePorToken,
-} from "@/app/api/client/avaliador";
+import { recusarConvitePorToken } from "@/app/api/client/avaliador";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
   const [convite, setConvite] = useState();
   const [tenant, setTenant] = useState();
-
   const [errorMessage, setErrorMessage] = useState();
 
-  //BUSCA DE DADOS AO RENDERIZAR O COMPONENTE
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -26,22 +18,16 @@ const Page = ({ params }) => {
         setConvite(convite);
         setTenant(convite.tenant);
       } catch (error) {
-        console.error("Erro ao buscar eventos:", error);
-        setErrorMessage(error.response.data.message);
+        console.error("Erro ao recusar convite:", error);
+        setErrorMessage(
+          error.response?.data?.message ?? "Não foi possível registrar a recusa."
+        );
       } finally {
         setLoading(false);
       }
     };
     fetchData();
-  }, [params.eventoSlug]);
-
-  const { control, handleSubmit, reset } = useForm({
-    resolver: zodResolver(conviteAvaliadorSchema),
-    defaultValues: {
-      cpf: "",
-      dtNascimento: "",
-    },
-  });
+  }, [params.token]);
 
   return (
     <main className={styles.main}>
@@ -62,12 +48,11 @@ const Page = ({ params }) => {
                 sizes="300 500 700"
               />
             ) : (
-              /* enquanto carrega pode exibir um skeleton, spinner ou nada */
-              <div style={{ height: 120 }} /> // placeholder
+              <div style={{ height: 120 }} />
             )}
           </div>
 
-          <div className={`${styles.box} }`}>
+          <div className={styles.box}>
             <div className={`${styles.header} ${styles.titleError}`}>
               <h4>Tudo bem, quem sabe da próxima vez!</h4>
             </div>
@@ -76,7 +61,7 @@ const Page = ({ params }) => {
       )}
       {!loading && !convite && (
         <div className={styles.content}>
-          <p>Token não encontrado.</p>
+          <p>{errorMessage || "Token não encontrado."}</p>
         </div>
       )}
     </main>

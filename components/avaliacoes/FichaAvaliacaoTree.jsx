@@ -53,7 +53,12 @@ const NoFicha = ({ no, index, valores, onSelecionar }) => {
 
       {(no.escala.tipo === "binaria" || no.escala.tipo === "likert") && (
         <div className={styles.values}>
-          {no.escala.opcoes.map((op) => (
+          {/* Critério binário (0/1): mostra "Sim" (valor 1) antes de "Não" (valor 0),
+              independente da ordem cadastrada na rubrica. */}
+          {(no.escala.tipo === "binaria"
+            ? [...no.escala.opcoes].sort((a, b) => b.valor - a.valor)
+            : no.escala.opcoes
+          ).map((op) => (
             <div
               key={op.valor}
               className={`${styles.value} ${styles.valueLabel} ${valorAtual === op.valor ? styles.selected : ""}`}
