@@ -1,13 +1,17 @@
 "use client";
 
 import styles from "./FichaAvaliacaoTree.module.scss";
-import { calcularArvoreComNotas, resolverMinMax } from "@/lib/fichaAvaliacaoScoring";
+import {
+  calcularArvoreComNotas,
+  resolverMinMax,
+} from "@/lib/fichaAvaliacaoScoring";
 
 /** Gera a lista de valores de min a max (passo `step`) pra escalas numéricas/slider em pills. */
 const gerarPassos = (min, max, step = 1) => {
   const passos = [];
   const n = Math.round((max - min) / step);
-  for (let i = 0; i <= n; i++) passos.push(Math.round((min + i * step) * 100) / 100);
+  for (let i = 0; i <= n; i++)
+    passos.push(Math.round((min + i * step) * 100) / 100);
   return passos;
 };
 
@@ -18,7 +22,10 @@ const gerarPassos = (min, max, step = 1) => {
  */
 const NoFicha = ({ no, index, valores, onSelecionar, onComentar }) => {
   if (no.tipo === "grupo") {
-    const { pontosObtidos, pontosMaximos } = calcularArvoreComNotas(no.itens, valores);
+    const { pontosObtidos, pontosMaximos } = calcularArvoreComNotas(
+      no.itens,
+      valores,
+    );
     return (
       <div className={styles.grupo}>
         <div className={styles.grupoTitulo}>
@@ -46,7 +53,8 @@ const NoFicha = ({ no, index, valores, onSelecionar, onComentar }) => {
   const { min, max } = resolverMinMax(no.escala);
   // Comentário é opcional, mas só faz sentido oferecê-lo quando a nota escolhida
   // ainda não é a nota máxima do critério (peso cheio já não precisa de justificativa).
-  const notaDiferenteDoMaximo = typeof valorAtual === "number" && valorAtual !== max;
+  const notaDiferenteDoMaximo =
+    typeof valorAtual === "number" && valorAtual !== max;
 
   return (
     <div className={styles.item}>
@@ -117,14 +125,19 @@ const NoFicha = ({ no, index, valores, onSelecionar, onComentar }) => {
           max={max}
           step={no.escala.step || "any"}
           value={valorAtual ?? ""}
-          onChange={(e) => onSelecionar(no.id, e.target.value === "" ? undefined : Number(e.target.value))}
+          onChange={(e) =>
+            onSelecionar(
+              no.id,
+              e.target.value === "" ? undefined : Number(e.target.value),
+            )
+          }
         />
       )}
 
       {notaDiferenteDoMaximo && (
         <textarea
           className={styles.comentario}
-          placeholder="Comentário (opcional) — nota diferente do máximo"
+          placeholder="Justificativa (opcional)"
           value={comentarioAtual}
           onChange={(e) => onComentar(no.id, e.target.value)}
         />
@@ -134,7 +147,12 @@ const NoFicha = ({ no, index, valores, onSelecionar, onComentar }) => {
 };
 
 /** `schemaCriterios`: árvore da rubrica. `valores`: Map<criterioId, {valorSelecionado, comentario?}>. */
-const FichaAvaliacaoTree = ({ schemaCriterios, valores, onSelecionar, onComentar }) => (
+const FichaAvaliacaoTree = ({
+  schemaCriterios,
+  valores,
+  onSelecionar,
+  onComentar,
+}) => (
   <div className={styles.quesitos}>
     {(schemaCriterios || []).map((no, index) => (
       <NoFicha
