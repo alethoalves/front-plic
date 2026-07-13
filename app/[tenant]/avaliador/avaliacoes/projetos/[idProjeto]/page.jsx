@@ -28,6 +28,7 @@ import {
   calcularArvoreComNotas,
   flattenRespostas,
   listarCriterios,
+  arvoreParaValores,
 } from "@/lib/fichaAvaliacaoScoring";
 
 // Extrai o valor de uma Resposta no mesmo formato usado tanto pela visão
@@ -225,6 +226,32 @@ const Page = ({ params }) => {
           setFichaPlano(null);
         } else {
           throw err; // repropaga outros erros
+        }
+      }
+
+      // Se o avaliador chegou aqui a partir do botão "Editar avaliação" (tela
+      // de fichas), pré-popula o formulário com os valores da ficha antiga
+      // que acabou de ser excluída, em vez de começar em branco.
+      const chaveRascunho = `rascunhoAvaliacao:${params.tenant}:${params.idProjeto}`;
+      const rascunhoBruto = sessionStorage.getItem(chaveRascunho);
+      if (rascunhoBruto) {
+        try {
+          const rascunho = JSON.parse(rascunhoBruto);
+          if (rascunho.projeto) {
+            setValoresProjeto(arvoreParaValores(rascunho.projeto));
+          }
+          if (rascunho.planos?.length) {
+            setAvaliacoesPlano(
+              Object.fromEntries(
+                rascunho.planos.map((p) => [
+                  p.planoId,
+                  { valores: arvoreParaValores(p.respostas) },
+                ]),
+              ),
+            );
+          }
+        } finally {
+          sessionStorage.removeItem(chaveRascunho);
         }
       }
     } catch (error) {

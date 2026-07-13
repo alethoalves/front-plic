@@ -401,9 +401,27 @@ export const deleteFichaAvaliacao = async (tenantSlug,fichaId ) => {
       { headers }
     );
     return response.data;
-      
+
   } catch (error) {
       console.error("Erro ao buscar fichas:", error);
+      throw error;
+  }
+};
+
+export const avaliadorRefazerAvaliacao = async (tenantSlug, fichaId) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.delete(
+      `/private/${tenantSlug}/avaliador/fichaAvaliacao/${fichaId}`,
+      { headers }
+    );
+    return response.data;
+
+  } catch (error) {
+      console.error("Erro ao editar avaliação:", error);
       throw error;
   }
 };

@@ -437,6 +437,55 @@ flex-wrap: wrap;
     color: $primary-normal;
 }
 
+.acoesCard{
+    display: flex;
+    justify-content: flex-end;
+    padding: 4px $gap-1 $gap-1;
+}
+
+.confirmModal {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+
+    h4 {
+        margin: 0;
+        font-size: 1.125rem;
+    }
+
+    > p {
+        font-size: 0.9375rem;
+        color: $gray-600;
+        line-height: 1.5;
+        margin: 0;
+    }
+}
+
+.confirmModalIcon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 56px;
+    height: 56px;
+    margin: 0 auto;
+    border-radius: 50%;
+    background: rgba($warning-normal, 0.15);
+    color: $warning-dark;
+}
+
+.confirmModalActions {
+    display: flex;
+    justify-content: center;
+    gap: $gap-3;
+    margin-top: $gap-2;
+
+    :global(.button) {
+        width: auto;
+        padding: 0 24px;
+    }
+}
+
 
 
 
