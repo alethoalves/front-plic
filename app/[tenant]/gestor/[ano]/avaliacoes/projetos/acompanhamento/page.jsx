@@ -1,6 +1,6 @@
 "use client";
 // HOOKS
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 // ESTILO E ÍCONES
 import styles from "./page.module.scss";
@@ -32,10 +32,29 @@ const Page = ({ params }) => {
   const [projetos, setProjetos] = useState([]);
   const [inscricoesProjetos, setInscricoesProjetos] = useState([]);
   const toast = useRef();
-  const processarInscricoes = async (tenant, setInscricoesProjetos) => {
+
+  // Mesmo filtro usado em app/[tenant]/gestor/[ano]/inscricoes/page.jsx: só conta
+  // planos de inscrições efetivamente enviadas (exclui rascunhos), pra bater com
+  // o número mostrado lá.
+  const itensEnviados = useMemo(
+    () => itens.filter((item) => item.inscricao?.status === "enviada"),
+    [itens],
+  );
+
+  // Só planos com pelo menos uma ficha de avaliação (do projeto ou do próprio
+  // plano) entram no histograma de notas — senão o notaTotal=0 de quem ainda
+  // nem foi avaliado se mistura com nota real baixa e o gráfico parece ter
+  // dados de avaliação que não existem.
+  const itensAvaliados = useMemo(
+    () => itensEnviados.filter((item) => item.qtdFichas > 0 || item.qtdFichasPlano > 0),
+    [itensEnviados],
+  );
+
+  const processarInscricoes = async (tenant, setInscricoesProjetos, ano) => {
     const inscricoesProjetos = await getInscricaoProjetoByTenant(
       tenant,
-      "enviada"
+      "enviada",
+      ano
     );
 
     const inscricoesComColunasVirtuais = inscricoesProjetos.map((inscricao) => {
@@ -79,7 +98,7 @@ const Page = ({ params }) => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        await processarInscricoes(params.tenant, setInscricoesProjetos);
+        await processarInscricoes(params.tenant, setInscricoesProjetos, params.ano);
         // Restante do seu código de fetch inicial...
       } catch (error) {
         console.error("Erro ao carregar dados:", error);
@@ -89,10 +108,10 @@ const Page = ({ params }) => {
     };
 
     fetchData();
-  }, [params.tenant]);
+  }, [params.tenant, params.ano]);
 
   const prepareStatusChartData = useCallback(() => {
-    if (itens.length === 0) return;
+    if (itensEnviados.length === 0) return;
 
     // Contar os status dos projetos
     const statusCount = {
@@ -101,7 +120,7 @@ const Page = ({ params }) => {
       AVALIADA: 0,
     };
 
-    itens.forEach((item) => {
+    itensEnviados.forEach((item) => {
       const status =
         item.inscricaoProjeto?.statusAvaliacao ||
         item.statusAvaliacao ||
@@ -131,7 +150,7 @@ const Page = ({ params }) => {
         },
       ],
     });
-  }, [itens]);
+  }, [itensEnviados]);
 
   const statusChartOptions = {
     responsive: true,
@@ -164,10 +183,10 @@ const Page = ({ params }) => {
     outliers: 0,
   });
   const prepareComboChartData = useCallback(() => {
-    if (itens.length === 0) return;
+    if (itensAvaliados.length === 0) return;
 
     // Definir intervalos (bins) para as notas totais (0-100 ou outro range adequado)
-    const maxNota = Math.max(...itens.map((item) => item.notaTotal), 10);
+    const maxNota = Math.max(...itensAvaliados.map((item) => item.notaTotal), 10);
     const binSize = maxNota <= 20 ? 2 : 5;
     const bins = [];
     for (let i = 0; i <= maxNota + binSize; i += binSize) {
@@ -181,7 +200,7 @@ const Page = ({ params }) => {
 
     // Contar quantos planos estão em cada intervalo de nota TOTAL
     const histogram = new Array(bins.length - 1).fill(0);
-    itens.forEach((item) => {
+    itensAvaliados.forEach((item) => {
       const notaTotal = item.notaTotal;
       for (let i = 0; i < bins.length - 1; i++) {
         if (notaTotal >= bins[i] && notaTotal < bins[i + 1]) {
@@ -196,7 +215,7 @@ const Page = ({ params }) => {
     });
 
     // Calcular estatísticas
-    const notas = itens.map((item) => item.notaTotal);
+    const notas = itensAvaliados.map((item) => item.notaTotal);
     const media = notas.reduce((a, b) => a + b, 0) / notas.length;
     const desvioPadrao = Math.sqrt(
       notas.reduce((sq, n) => sq + Math.pow(n - media, 2), 0) / notas.length
@@ -248,7 +267,7 @@ const Page = ({ params }) => {
 
     // Armazena as estatísticas para uso nos tooltips
     setChartStats({ media, desvioPadrao });
-  }, [itens]);
+  }, [itensAvaliados]);
   const comboChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -269,7 +288,7 @@ const Page = ({ params }) => {
             }
             if (context.dataset.type === "bar") {
               label += `${context.raw} planos (${(
-                (context.raw / itens.length) *
+                (context.raw / itensAvaliados.length) *
                 100
               ).toFixed(1)}%)`;
             } else if (context.dataset.label === "Média") {
@@ -283,7 +302,7 @@ const Page = ({ params }) => {
             const stats = [
               `Média: ${chartStats.media.toFixed(2)}`,
               `Desvio Padrão: ${chartStats.desvioPadrao.toFixed(2)}`,
-              `Total de Planos: ${itens.length}`,
+              `Total de Planos: ${itensAvaliados.length}`,
             ];
             return stats;
           },
@@ -309,7 +328,7 @@ const Page = ({ params }) => {
   useEffect(() => {
     prepareComboChartData();
     prepareStatusChartData(); // Adicione esta linha
-  }, [itens, prepareComboChartData]);
+  }, [itensAvaliados, prepareComboChartData]);
 
   // Função para calcular a diferença entre notas máximas e mínimas
   const calcularDiferencaNotas = (fichas) => {
@@ -527,11 +546,13 @@ const Page = ({ params }) => {
                 <span className="font-bold">
                   Desvio Padrão: {chartStats.desvioPadrao.toFixed(2)}
                 </span>
-                <span className="font-bold">Total: {itens.length} planos</span>
+                <span className="font-bold">
+                  Total: {itensAvaliados.length} planos avaliados
+                </span>
               </div>
             </div>
           ) : (
-            <p>Carregando gráfico...</p>
+            <p>{loading ? "Carregando gráfico..." : "Nenhum plano avaliado ainda."}</p>
           )}
         </Card>
         <Card className="mb-4 p-2">

@@ -91,7 +91,7 @@ const AvaliacoesProjetos = ({
       setLoading(true);
       setError(null);
       try {
-        await processarInscricoes(params.tenant, setInscricoesProjetos);
+        await processarInscricoes(params.tenant, setInscricoesProjetos, params.ano);
       } catch (error) {
         console.error("Erro ao buscar inscrições de projetos:", error);
         setError("Erro ao buscar inscrições de projetos.");
@@ -100,7 +100,7 @@ const AvaliacoesProjetos = ({
       }
     };
     fetchData();
-  }, [params.tenant]);
+  }, [params.tenant, params.ano]);
 
   // Filtro global
   const onGlobalFilterChange = (e) => {
@@ -454,7 +454,11 @@ const AvaliacoesProjetos = ({
                 tenantSlug={params.tenant}
                 idInscricao={selectedInscricao.idInscricao}
                 onSuccess={() =>
-                  processarInscricoes(params.tenant, setInscricoesProjetos)
+                  processarInscricoes(
+                    params.tenant,
+                    setInscricoesProjetos,
+                    params.ano,
+                  )
                 }
                 onClose={closeModal}
               />

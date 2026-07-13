@@ -136,6 +136,9 @@ const Page = ({ params }) => {
   const getAvaliadoresPorArea = () => {
     if (!areaSelecionada) return [];
 
+    // Projetos "Sem área definida" podem ser avaliados por qualquer avaliador.
+    if (areaSelecionada === "Sem área definida") return avaliadores;
+
     return avaliadores.filter((avaliador) =>
       avaliador.user.userArea.some((ua) => ua.area.area === areaSelecionada)
     );
@@ -867,12 +870,14 @@ const Page = ({ params }) => {
                         avaliadores
                           .filter(
                             (avaliador) =>
-                              // Filtra por área do projeto
-                              avaliador.user.userArea.some(
-                                (ua) =>
-                                  ua.area.area ===
-                                  projetoSelecionado.projeto.area?.area
-                              ) &&
+                              // Sem área definida no projeto: mostra todos os
+                              // avaliadores. Senão, filtra pelos da mesma área.
+                              (!projetoSelecionado.projeto.area ||
+                                avaliador.user.userArea.some(
+                                  (ua) =>
+                                    ua.area.area ===
+                                    projetoSelecionado.projeto.area?.area
+                                )) &&
                               // Exclui já associados
                               !projetoSelecionado.InscricaoProjetoAvaliador?.some(
                                 (ipa) => ipa.avaliadorId === avaliador.user.id
