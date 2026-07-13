@@ -8,7 +8,13 @@ import { Notification } from "@/components/Notification";
 import { getAreas } from "@/app/api/client/area";
 import { upsertUserAreas } from "@/app/api/client/userTenant";
 
-const AreaSelector = ({ tenant, userId, onSaved, initialAreaIds = [] }) => {
+// Referência estável: um array `[]` literal como valor padrão de parâmetro é
+// recriado a cada render, o que fazia o useEffect abaixo (que depende dessa
+// referência) disparar `reset` a cada render — inclusive logo depois do
+// usuário marcar uma área, desfazendo a seleção imediatamente.
+const AREA_IDS_VAZIO = [];
+
+const AreaSelector = ({ tenant, userId, onSaved, initialAreaIds = AREA_IDS_VAZIO }) => {
   const [opcoes, setOpcoes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
