@@ -110,6 +110,7 @@ const FormCampo = ({ tenantSlug, formularioId, initialData, campos = [], onClose
       tipo:            "",
       maxChar:         "200",
       obrigatorio:     "true",
+      ocultarDoAvaliador: "false",
       ordem:           "1",
       tipoFile:        "",
       userTenantField: "",
@@ -132,6 +133,7 @@ const FormCampo = ({ tenantSlug, formularioId, initialData, campos = [], onClose
       setValue("tipoFile",        initialData.tipoFile ?? "");
       setValue("maxChar",         initialData.maxChar?.toString() ?? "200");
       setValue("obrigatorio",     initialData.obrigatorio ? "true" : "false");
+      setValue("ocultarDoAvaliador", initialData.ocultarDoAvaliador ? "true" : "false");
       setValue("ordem",           initialData.ordem?.toString() ?? "1");
       setValue("userTenantField", initialData.userTenantField ?? "");
       setOptions(initialData.opcoes?.map((o) => o.label) ?? []);
@@ -346,6 +348,13 @@ const FormCampo = ({ tenantSlug, formularioId, initialData, campos = [], onClose
               control={control}
               name="obrigatorio"
               label="Campo obrigatório"
+              inputType="checkbox"
+              disabled={loading}
+            />
+            <Input
+              control={control}
+              name="ocultarDoAvaliador"
+              label="Ocultar essa resposta da tela do avaliador"
               inputType="checkbox"
               disabled={loading}
             />
