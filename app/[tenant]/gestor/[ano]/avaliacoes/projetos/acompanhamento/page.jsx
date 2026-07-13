@@ -17,8 +17,7 @@ import { Chart } from "primereact/chart";
 import { getAllPlanoDeTrabalhosByTenant } from "@/app/api/client/planoDeTrabalho";
 import calcularMedia from "@/lib/calcularMedia";
 import { Toast } from "primereact/toast";
-import AvaliacoesProjetos from "@/components/avaliacoes/AvaliacoesProjetos";
-import { getInscricaoProjetoByTenant } from "@/app/api/client/projeto";
+import TabelaPlanoDeTrabalhoAcompanhamento from "@/components/tabelas/TabelaPlanoDeTrabalhoAcompanhamento";
 
 const Page = ({ params }) => {
   // ESTADOS
@@ -29,8 +28,6 @@ const Page = ({ params }) => {
   const [chartData, setChartData] = useState({});
   const [comboChartData, setComboChartData] = useState({});
   const [statusChartData, setStatusChartData] = useState({});
-  const [projetos, setProjetos] = useState([]);
-  const [inscricoesProjetos, setInscricoesProjetos] = useState([]);
   const toast = useRef();
 
   // Mesmo filtro usado em app/[tenant]/gestor/[ano]/inscricoes/page.jsx: só conta
@@ -50,65 +47,6 @@ const Page = ({ params }) => {
     [itensEnviados],
   );
 
-  const processarInscricoes = async (tenant, setInscricoesProjetos, ano) => {
-    const inscricoesProjetos = await getInscricaoProjetoByTenant(
-      tenant,
-      "enviada",
-      ano
-    );
-
-    const inscricoesComColunasVirtuais = inscricoesProjetos.map((inscricao) => {
-      const quantidadeFichas = inscricao.FichaAvaliacao?.length || 0;
-      const notaMedia =
-        quantidadeFichas > 0
-          ? (
-              inscricao.FichaAvaliacao.reduce(
-                (sum, ficha) => sum + (ficha.notaTotal || 0),
-                0
-              ) / quantidadeFichas
-            ).toFixed(2)
-          : "N/A";
-
-      const avaliadores = inscricao.InscricaoProjetoAvaliador.map(
-        (avaliador) => avaliador.avaliador.nome
-      ).join(", ");
-
-      const quantidadeAvaliadores =
-        inscricao.InscricaoProjetoAvaliador?.length || 0;
-
-      const notas = inscricao.FichaAvaliacao.map(
-        (ficha) => ficha.notaTotal || 0
-      );
-      const diferencaNotas =
-        notas.length > 0 ? Math.max(...notas) - Math.min(...notas) : "N/A";
-
-      return {
-        ...inscricao,
-        quantidadeFichas,
-        notaMedia,
-        avaliadores,
-        quantidadeAvaliadores,
-        diferencaNotas,
-      };
-    });
-
-    setInscricoesProjetos(inscricoesComColunasVirtuais || []);
-  };
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        await processarInscricoes(params.tenant, setInscricoesProjetos, params.ano);
-        // Restante do seu código de fetch inicial...
-      } catch (error) {
-        console.error("Erro ao carregar dados:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [params.tenant, params.ano]);
 
   const prepareStatusChartData = useCallback(() => {
     if (itensEnviados.length === 0) return;
@@ -578,16 +516,8 @@ const Page = ({ params }) => {
             <p>Carregando gráfico...</p>
           )}
         </Card>
-        <Card className="mb-4 p-2">
-          <h5 className="mb-2">Avaliações de Projetos</h5>
-          <AvaliacoesProjetos
-            params={params}
-            setProjetosSelecionados={setProjetos}
-            processarInscricoes={processarInscricoes}
-            inscricoesProjetos={inscricoesProjetos}
-            setInscricoesProjetos={setInscricoesProjetos}
-          />
-        </Card>
+        <h5 className="mb-2 mt-2">Planos de Trabalho</h5>
+        <TabelaPlanoDeTrabalhoAcompanhamento params={params} />
       </main>
       <Toast ref={toast} />
     </>

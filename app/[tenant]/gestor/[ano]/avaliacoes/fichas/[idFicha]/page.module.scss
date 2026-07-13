@@ -1,0 +1,75 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+.navContent {
+    padding: $gap-2;
+}
+
+.noData {
+    padding: $gap-4;
+}
+
+.quesitos {
+    padding: $gap-2;
+
+    .quesito {
+        border-bottom: 1px solid $white-darken;
+
+        .label {
+            padding: 4px $gap-1;
+        }
+
+        .nota {
+            text-align: right;
+            padding: 4px $gap-1;
+            margin-bottom: $gap-1;
+        }
+    }
+}
+
+.squares {
+    .square {
+        border: 1px solid $gray-50;
+        border-radius: $gap-1;
+        padding: 3px;
+
+        &:not(:last-child) {
+            margin-bottom: $gap-1;
+        }
+
+        .squareContent {
+            background-color: $white-dark;
+            padding: $gap-1;
+            border-radius: 6px;
+
+            .info {
+                display: flex;
+                margin-bottom: 6px;
+
+                .area {
+                    border: 1px solid $primary-light;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    color: $primary-light;
+                    font-size: 10px;
+                }
+            }
+        }
+
+        &.squareWarning {
+            .squareContent {
+                background-color: $warning-lighten;
+
+                .area {
+                    border: 1px solid $warning-darken;
+                    color: $warning-darken;
+                }
+            }
+        }
+    }
+}
+
+.subPlanos {
+    padding: $gap-1;
+}

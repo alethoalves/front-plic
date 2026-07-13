@@ -373,6 +373,22 @@ export const getFichasAvaliacaoProjeto = async (tenantSlug ) => {
       throw error;
   }
 };
+export const getFichaAvaliacaoDetalheGestor = async (tenantSlug, idFicha) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.get(
+      `/private/${tenantSlug}/gestor/fichaAvaliacao/${idFicha}`,
+      { headers }
+    );
+    return response.data.ficha;
+  } catch (error) {
+    console.error("Erro ao buscar detalhe da ficha:", error);
+    throw error;
+  }
+};
 export const deleteFichaAvaliacao = async (tenantSlug,fichaId ) => {
   try {
 

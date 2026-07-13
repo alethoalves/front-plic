@@ -92,6 +92,7 @@ const FormGestorProjetoCreateOrEdit = ({
   onClose,
   onSuccess,
   onUpdateProjeto,
+  permitirDesvincular = true,
 }) => {
   //ESTADOS
   const [loading, setLoading] = useState(false);
@@ -681,13 +682,15 @@ const FormGestorProjetoCreateOrEdit = ({
                     optionValue="value"
                   />
                 </div>
-                <Button
-                  className="btn-error mt-2"
-                  onClick={() => setDisplayUnlinkDialog(true)}
-                  disabled={loading}
-                >
-                  Desvincular Projeto
-                </Button>
+                {permitirDesvincular && (
+                  <Button
+                    className="btn-error mt-2"
+                    onClick={() => setDisplayUnlinkDialog(true)}
+                    disabled={loading}
+                  >
+                    Desvincular Projeto
+                  </Button>
+                )}
               </div>
             </div>
             <div className={styles.box}>

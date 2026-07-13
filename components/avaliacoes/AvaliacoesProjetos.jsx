@@ -4,15 +4,16 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { InputText } from "primereact/inputtext";
 import { FilterMatchMode, FilterOperator } from "primereact/api";
-import { Card } from "primereact/card";
 import { Button } from "primereact/button";
 import { Message } from "primereact/message";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { MultiSelect } from "primereact/multiselect";
+import { Tag } from "primereact/tag";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import { Tooltip } from "primereact/tooltip";
 import { getInscricaoProjetoByTenant } from "@/app/api/client/projeto";
+import { getSeverityByStatus, formatStatusText } from "@/lib/tagUtils";
 import Modal from "@/components/Modal"; // Importe o componente Modal personalizado
 import ModalInscricao from "@/components/ModalInscricao"; // Importe o componente ModalInscricao
 import FormGestorProjetoCreateOrEdit from "@/components/Formularios/FormGestorProjetoCreateOrEdit";
@@ -232,173 +233,200 @@ const AvaliacoesProjetos = ({
   return (
     <>
       <main>
-        <Card className="custom-card">
-          {loading ? (
-            <div className="pr-2 pl-2">
-              <ProgressBar mode="indeterminate" style={{ height: "6px" }} />
-            </div>
-          ) : (
-            <>
-              <DataTable
-                ref={dataTableRef}
-                value={inscricoesFiltradas}
-                paginator
-                rows={10}
-                rowsPerPageOptions={[10, 20, 50]}
-                scrollable
-                selectionMode={"checkbox"}
-                selection={selectedProjetos}
-                onSelectionChange={(e) => {
-                  setSelectedProjetos(e.value);
-                  setProjetosSelecionados(e.value);
+        {loading ? (
+          <div className="pr-2 pl-2">
+            <ProgressBar mode="indeterminate" style={{ height: "6px" }} />
+          </div>
+        ) : (
+          <>
+            <DataTable
+              ref={dataTableRef}
+              value={inscricoesFiltradas}
+              paginator
+              rows={10}
+              rowsPerPageOptions={[10, 20, 50]}
+              scrollable
+              selectionMode={"checkbox"}
+              selection={selectedProjetos}
+              onSelectionChange={(e) => {
+                setSelectedProjetos(e.value);
+                setProjetosSelecionados(e.value);
+              }}
+              dataKey="id"
+              header={renderHeader()}
+              filters={filters}
+              filterDisplay="menu"
+              globalFilterFields={[
+                "inscricao.edital.titulo",
+                "inscricao.edital.ano",
+                "projeto.titulo",
+                "projeto.area.area",
+                "inscricao.proponente.nome",
+                "statusAvaliacao",
+                "quantidadeFichas", // Adicionar o campo de filtro global
+                "quantidadeAvaliadores", // Adicionar o campo de filtro global
+                "notaMedia", // Adicionar o campo de filtro global
+                "diferencaNotas", // Adicionar o campo de filtro global
+              ]}
+              emptyMessage="Nenhum dado encontrado."
+              rowClassName="clickable-row"
+              onRowClick={(e) => {
+                handleRowClick(e);
+              }}
+              paginatorRight={paginatorRight} // Adicione o botão de download aquiç
+            >
+              {/* Colunas existentes */}
+              <Column
+                selectionMode="multiple"
+                headerStyle={{ width: "3em" }}
+                onClick={(e) => {
+                  // Impede a propagação do evento para evitar a seleção da linha
+                  e.originalEvent.stopPropagation();
                 }}
-                dataKey="id"
-                header={renderHeader()}
-                filters={filters}
-                filterDisplay="menu"
-                globalFilterFields={[
-                  "inscricao.edital.titulo",
-                  "inscricao.edital.ano",
-                  "projeto.titulo",
-                  "projeto.area.area",
-                  "inscricao.proponente.nome",
-                  "statusAvaliacao",
-                  "quantidadeFichas", // Adicionar o campo de filtro global
-                  "quantidadeAvaliadores", // Adicionar o campo de filtro global
-                  "notaMedia", // Adicionar o campo de filtro global
-                  "diferencaNotas", // Adicionar o campo de filtro global
-                ]}
-                emptyMessage="Nenhum dado encontrado."
-                rowClassName="clickable-row"
-                onRowClick={(e) => {
-                  handleRowClick(e);
-                }}
-                paginatorRight={paginatorRight} // Adicione o botão de download aquiç
-              >
-                {/* Colunas existentes */}
+                frozen
+              />
+              <Column
+                field="inscricao.edital.titulo"
+                header="Edital"
+                sortable
+                filter
+                filterPlaceholder="Filtrar por título"
+              />
+              {false && (
                 <Column
-                  selectionMode="multiple"
-                  headerStyle={{ width: "3em" }}
-                  onClick={(e) => {
-                    // Impede a propagação do evento para evitar a seleção da linha
-                    e.originalEvent.stopPropagation();
-                  }}
-                  frozen
-                />
-                <Column
-                  field="inscricao.edital.titulo"
-                  header="Edital"
+                  field="inscricao.edital.ano"
+                  header="Ano"
                   sortable
                   filter
-                  filterPlaceholder="Filtrar por título"
+                  filterPlaceholder="Filtrar por ano"
                 />
-                {false && (
-                  <Column
-                    field="inscricao.edital.ano"
-                    header="Ano"
-                    sortable
-                    filter
-                    filterPlaceholder="Filtrar por ano"
-                  />
+              )}
+              {false && (
+                <Column
+                  field="projeto.id"
+                  header="ID Projeto"
+                  sortable
+                  filter
+                  filterPlaceholder="Filtrar por ID"
+                />
+              )}
+              {/* Nova coluna: statusAvaliacao */}
+              <Column
+                field="statusAvaliacao"
+                header="Status Avaliação"
+                sortable
+                filter
+                filterPlaceholder="Filtrar por status"
+                body={(rowData) => (
+                  <Tag rounded severity={getSeverityByStatus(rowData.statusAvaliacao)}>
+                    {formatStatusText(rowData.statusAvaliacao)}
+                  </Tag>
                 )}
-                {false && (
-                  <Column
-                    field="projeto.id"
-                    header="ID Projeto"
-                    sortable
-                    filter
-                    filterPlaceholder="Filtrar por ID"
-                  />
+              />
+              <Column
+                field="projeto.titulo"
+                header="Título do Projeto"
+                sortable
+                filter
+                filterPlaceholder="Filtrar por título"
+                style={{ maxWidth: "300px" }}
+                body={(rowData) => (
+                  <div
+                    className="custom-tooltip"
+                    style={{
+                      maxWidth: "300px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                    data-pr-tooltip={rowData.projeto.titulo}
+                    data-pr-position="top"
+                  >
+                    {rowData.projeto.titulo}
+                  </div>
                 )}
-                {/* Nova coluna: statusAvaliacao */}
+              />
+              <Column
+                field="projeto.area.area"
+                header="Área do Projeto"
+                sortable
+                filter
+                filterPlaceholder="Filtrar por área"
+                body={(rowData) => rowData.projeto.area?.area || "N/A"}
+              />
+              {acompanhamento && (
                 <Column
-                  field="statusAvaliacao"
-                  header="Status Avaliação"
-                  sortable
-                  filter
-                  filterPlaceholder="Filtrar por status"
-                />
-                <Column
-                  field="projeto.titulo"
-                  header="Título do Projeto"
-                  sortable
-                  filter
-                  filterPlaceholder="Filtrar por título"
-                  style={{ maxWidth: "300px" }}
-                  body={(rowData) => (
-                    <div
-                      className="custom-tooltip"
-                      style={{
-                        maxWidth: "300px",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                      data-pr-tooltip={rowData.projeto.titulo}
-                      data-pr-position="top"
-                    >
-                      {rowData.projeto.titulo}
-                    </div>
-                  )}
-                />
-                <Column
-                  field="projeto.area.area"
-                  header="Área do Projeto"
-                  sortable
-                  filter
-                  filterPlaceholder="Filtrar por área"
-                  body={(rowData) => rowData.projeto.area?.area || "N/A"}
-                />
-                {acompanhamento && (
-                  <Column
-                    field="quantidadeFichas"
-                    header="Qtd. Fichas"
-                    sortable
-                    filter
-                    filterPlaceholder="Filtrar por quantidade"
-                    filterField="quantidadeFichas" // Adicionar o campo de filtro
-                  />
-                )}
-                <Column
-                  field="quantidadeAvaliadores"
-                  header="Qtd. Avaliadores"
+                  field="quantidadeFichas"
+                  header="Qtd. Fichas"
                   sortable
                   filter
                   filterPlaceholder="Filtrar por quantidade"
-                  filterField="quantidadeAvaliadores" // Adicionar o campo de filtro
+                  filterField="quantidadeFichas" // Adicionar o campo de filtro
                 />
-                {acompanhamento && (
-                  <Column
-                    field="notaMedia"
-                    header="Nota Média"
-                    sortable
-                    filter
-                    filterPlaceholder="Filtrar por nota média"
-                    filterField="notaMedia" // Adicionar o campo de filtro
-                  />
-                )}
-                {acompanhamento && (
-                  <Column
-                    field="diferencaNotas"
-                    header="Diferença de Notas"
-                    sortable
-                    filter
-                    filterPlaceholder="Filtrar por diferença"
-                    filterField="diferencaNotas" // Adicionar o campo de filtro
-                    body={(rowData) =>
-                      typeof rowData.diferencaNotas === "number"
-                        ? rowData.diferencaNotas.toFixed(2)
-                        : rowData.diferencaNotas
-                    }
-                  />
-                )}
-
+              )}
+              <Column
+                field="quantidadeAvaliadores"
+                header="Qtd. Avaliadores"
+                sortable
+                filter
+                filterPlaceholder="Filtrar por quantidade"
+                filterField="quantidadeAvaliadores" // Adicionar o campo de filtro
+              />
+              {acompanhamento && (
                 <Column
-                  field="avaliadores"
-                  header="Avaliadores"
+                  field="notaMedia"
+                  header="Nota Média"
                   sortable
                   filter
-                  filterPlaceholder="Filtrar por avaliadores"
+                  filterPlaceholder="Filtrar por nota média"
+                  filterField="notaMedia" // Adicionar o campo de filtro
+                />
+              )}
+              {acompanhamento && (
+                <Column
+                  field="diferencaNotas"
+                  header="Diferença de Notas"
+                  sortable
+                  filter
+                  filterPlaceholder="Filtrar por diferença"
+                  filterField="diferencaNotas" // Adicionar o campo de filtro
+                  body={(rowData) =>
+                    typeof rowData.diferencaNotas === "number"
+                      ? rowData.diferencaNotas.toFixed(2)
+                      : rowData.diferencaNotas
+                  }
+                />
+              )}
+
+              <Column
+                field="avaliadores"
+                header="Avaliadores"
+                sortable
+                filter
+                filterPlaceholder="Filtrar por avaliadores"
+                body={(rowData) => (
+                  <div
+                    className="custom-tooltip"
+                    style={{
+                      maxWidth: "300px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                    data-pr-tooltip={rowData.avaliadores}
+                    data-pr-position="top"
+                  >
+                    {rowData.avaliadores}
+                  </div>
+                )}
+              />
+              {false && (
+                <Column
+                  field="inscricao.proponente.nome"
+                  header="Proponente"
+                  sortable
+                  filter
+                  filterPlaceholder="Filtrar por proponente"
                   body={(rowData) => (
                     <div
                       className="custom-tooltip"
@@ -408,43 +436,19 @@ const AvaliacoesProjetos = ({
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
                       }}
-                      data-pr-tooltip={rowData.avaliadores}
+                      data-pr-tooltip={rowData.inscricao.proponente.nome}
                       data-pr-position="top"
                     >
-                      {rowData.avaliadores}
+                      {rowData.inscricao.proponente.nome}
                     </div>
                   )}
                 />
-                {false && (
-                  <Column
-                    field="inscricao.proponente.nome"
-                    header="Proponente"
-                    sortable
-                    filter
-                    filterPlaceholder="Filtrar por proponente"
-                    body={(rowData) => (
-                      <div
-                        className="custom-tooltip"
-                        style={{
-                          maxWidth: "300px",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
-                        data-pr-tooltip={rowData.inscricao.proponente.nome}
-                        data-pr-position="top"
-                      >
-                        {rowData.inscricao.proponente.nome}
-                      </div>
-                    )}
-                  />
-                )}
-              </DataTable>
+              )}
+            </DataTable>
 
-              <Tooltip target=".custom-tooltip" />
-            </>
-          )}
-        </Card>
+            <Tooltip target=".custom-tooltip" />
+          </>
+        )}
         {/* Modal personalizado para exibir detalhes da inscrição */}
         <Modal isOpen={isModalOpen} onClose={closeModal}>
           {selectedInscricao && (
