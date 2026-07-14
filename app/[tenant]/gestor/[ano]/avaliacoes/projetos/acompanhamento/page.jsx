@@ -4,7 +4,14 @@ import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 // ESTILO E ÍCONES
 import styles from "./page.module.scss";
-import { RiEditLine } from "@remixicon/react";
+import {
+  RiEditLine,
+  RiCalendarEventLine,
+  RiSpeedUpLine,
+  RiFileListLine,
+  RiUserFollowLine,
+  RiUserStarLine,
+} from "@remixicon/react";
 // COMPONENTES
 import Header from "@/components/Header";
 import Modal from "@/components/Modal";
@@ -12,11 +19,18 @@ import FormNewInscricao from "@/components/Formularios/FormNewInscricao";
 // PRIMEREACT
 import { Card } from "primereact/card";
 import { Chart } from "primereact/chart";
+import { Calendar } from "primereact/calendar";
+import { InputNumber } from "primereact/inputnumber";
+import { Tag } from "primereact/tag";
 
 // FUNÇÕES
 import { getAllPlanoDeTrabalhosByTenant } from "@/app/api/client/planoDeTrabalho";
+import { getCargos } from "@/app/api/client/cargo";
 import calcularMedia from "@/lib/calcularMedia";
+import preverConclusaoAvaliacoes from "@/lib/preverConclusaoAvaliacoes";
+import { formatarData } from "@/lib/formatarDatas";
 import { Toast } from "primereact/toast";
+import { getCookie, setCookie } from "cookies-next";
 import TabelaPlanoDeTrabalhoAcompanhamento from "@/components/tabelas/TabelaPlanoDeTrabalhoAcompanhamento";
 
 const Page = ({ params }) => {
@@ -27,7 +41,8 @@ const Page = ({ params }) => {
   const [itens, setItens] = useState([]);
   const [chartData, setChartData] = useState({});
   const [comboChartData, setComboChartData] = useState({});
-  const [statusChartData, setStatusChartData] = useState({});
+  const [avaliadores, setAvaliadores] = useState(null);
+  const [loadingAvaliadores, setLoadingAvaliadores] = useState(true);
   const toast = useRef();
 
   // Mesmo filtro usado em app/[tenant]/gestor/[ano]/inscricoes/page.jsx: só conta
@@ -43,73 +58,222 @@ const Page = ({ params }) => {
   // nem foi avaliado se mistura com nota real baixa e o gráfico parece ter
   // dados de avaliação que não existem.
   const itensAvaliados = useMemo(
-    () => itensEnviados.filter((item) => item.qtdFichas > 0 || item.qtdFichasPlano > 0),
+    () =>
+      itensEnviados.filter(
+        (item) => item.qtdFichas > 0 || item.qtdFichasPlano > 0,
+      ),
     [itensEnviados],
   );
 
+  // Um Projeto pode ter vários Planos de Trabalho vinculados (mesma
+  // inscricaoProjeto). Dedupe por id do projeto (mesma chave usada em
+  // gestor/[ano]/inscricoes/page.jsx pro card "Projetos") — o backend só
+  // faz `select` em inscricaoProjeto, sem incluir `inscricaoProjeto.id`,
+  // então a chave precisa vir de `inscricaoProjeto.projeto.id`.
+  const projetosUnicos = useMemo(() => {
+    const mapa = new Map();
+    itensEnviados.forEach((item) => {
+      const inscricaoProjeto = item.inscricaoProjeto;
+      const projetoId = inscricaoProjeto?.projeto?.id;
+      if (!projetoId || mapa.has(projetoId)) return;
+      mapa.set(projetoId, inscricaoProjeto);
+    });
+    return Array.from(mapa.values());
+  }, [itensEnviados]);
 
-  const prepareStatusChartData = useCallback(() => {
-    if (itensEnviados.length === 0) return;
-
-    // Contar os status dos projetos
-    const statusCount = {
+  // O status de avaliação de um Plano de Trabalho nunca passa por
+  // "EM_AVALIACAO" isoladamente: a avaliação de projeto e planos é enviada
+  // junta (processarFichaAvaliacao no backend), e o campo próprio do Plano só
+  // muda de null (Aguardando) pra AVALIADA, no mesmo instante em que o
+  // Projeto pai é concluído. Por isso, pra saber a fase real de um Plano,
+  // usamos o status do Projeto pai (mesma lógica do gráfico de pizza
+  // anterior), caindo pro campo próprio só se o item não tiver projeto.
+  const statusStats = useMemo(() => {
+    const vazio = () => ({
+      total: 0,
       AGUARDANDO_AVALIACAO: 0,
       EM_AVALIACAO: 0,
       AVALIADA: 0,
-    };
+    });
+    const projetos = vazio();
+    const planos = vazio();
+
+    projetosUnicos.forEach((inscricaoProjeto) => {
+      const status = inscricaoProjeto.statusAvaliacao || "AGUARDANDO_AVALIACAO";
+      projetos.total++;
+      projetos[status] = (projetos[status] || 0) + 1;
+    });
 
     itensEnviados.forEach((item) => {
       const status =
         item.inscricaoProjeto?.statusAvaliacao ||
         item.statusAvaliacao ||
         "AGUARDANDO_AVALIACAO";
-
-      if (statusCount.hasOwnProperty(status)) {
-        statusCount[status]++;
-      } else {
-        // Caso haja um status não previsto
-        statusCount["AGUARDANDO_AVALIACAO"]++;
-      }
+      planos.total++;
+      planos[status] = (planos[status] || 0) + 1;
     });
 
-    const backgroundColors = [
-      "#FF6384", // AGUARDANDO_AVALIACAO - Vermelho
-      "#36A2EB", // EM_AVALIACAO - Azul
-      "#4BC0C0", // AVALIADA - Verde
-    ];
+    return { projetos, planos };
+  }, [projetosUnicos, itensEnviados]);
 
-    setStatusChartData({
-      labels: ["Aguardando Avaliação", "Em Avaliação", "Avaliado"],
-      datasets: [
-        {
-          data: Object.values(statusCount),
-          backgroundColor: backgroundColors,
-          hoverBackgroundColor: backgroundColors.map((color) => `${color}CC`),
-        },
-      ],
+  // Previsão baseada só em Projetos: projeto e todos os planos vinculados
+  // são avaliados no mesmo evento (mesma submissão), então o Plano termina
+  // junto com o Projeto ao qual pertence — não faz sentido somar Projetos e
+  // Planos como unidades independentes de ritmo/pendência.
+  const previsaoConclusao = useMemo(() => {
+    const datasConclusao = projetosUnicos
+      .filter(
+        (inscricaoProjeto) => inscricaoProjeto.statusAvaliacao === "AVALIADA",
+      )
+      .map((inscricaoProjeto) => {
+        const fichas = inscricaoProjeto.FichaAvaliacao || [];
+        if (fichas.length === 0) return null;
+        return fichas.reduce(
+          (maisRecente, ficha) =>
+            new Date(ficha.createdAt) > new Date(maisRecente)
+              ? ficha.createdAt
+              : maisRecente,
+          fichas[0].createdAt,
+        );
+      })
+      .filter(Boolean);
+
+    const pendentes =
+      statusStats.projetos.AGUARDANDO_AVALIACAO +
+      statusStats.projetos.EM_AVALIACAO;
+
+    return preverConclusaoAvaliacoes(datasConclusao, pendentes);
+  }, [projetosUnicos, statusStats]);
+
+  // Data prevista de divulgação do resultado provisório e o "colchão" de
+  // dias necessário depois de concluídas as avaliações — só interessam a
+  // este gestor/tenant/ano, não precisam de backend: ficam em cookie.
+  const cookieKeyDataDivulgacao = `previsaoDivulgacao_${params.tenant}_${params.ano}`;
+  const cookieKeyDiasDivulgacao = `previsaoDiasDivulgacao_${params.tenant}_${params.ano}`;
+
+  const [dataDivulgacaoPrevista, setDataDivulgacaoPrevista] = useState(null);
+  const [diasNecessariosDivulgacao, setDiasNecessariosDivulgacao] = useState(5);
+
+  useEffect(() => {
+    const cookieData = getCookie(cookieKeyDataDivulgacao);
+    if (cookieData) {
+      const parsed = new Date(cookieData);
+      if (!isNaN(parsed)) setDataDivulgacaoPrevista(parsed);
+    }
+    const cookieDias = getCookie(cookieKeyDiasDivulgacao);
+    if (cookieDias !== undefined && cookieDias !== null && cookieDias !== "") {
+      const parsedDias = parseInt(cookieDias, 10);
+      if (!isNaN(parsedDias)) setDiasNecessariosDivulgacao(parsedDias);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.tenant, params.ano]);
+
+  const handleChangeDataDivulgacao = (novaData) => {
+    setDataDivulgacaoPrevista(novaData);
+    if (novaData) {
+      setCookie(cookieKeyDataDivulgacao, novaData.toISOString(), {
+        maxAge: 60 * 60 * 24 * 365,
+      });
+    }
+  };
+
+  const handleChangeDiasDivulgacao = (novoValor) => {
+    const valor = novoValor ?? 0;
+    setDiasNecessariosDivulgacao(valor);
+    setCookie(cookieKeyDiasDivulgacao, String(valor), {
+      maxAge: 60 * 60 * 24 * 365,
     });
+  };
+
+  // Data em que o resultado provisório realisticamente ficaria pronto para
+  // divulgar (previsão de conclusão das avaliações + dias de preparo) — não
+  // depende da data-alvo que o gestor definiu, só do ritmo atual.
+  const dataEstimadaDivulgacao = useMemo(() => {
+    if (!previsaoConclusao.temDadosSuficientes) return null;
+    const data = new Date(previsaoConclusao.dataPrevista);
+    data.setDate(data.getDate() + (diasNecessariosDivulgacao || 0));
+    return data;
+  }, [previsaoConclusao, diasNecessariosDivulgacao]);
+
+  // Compara a estimativa real com a data que o gestor pretende divulgar —
+  // negativo = atraso, positivo = antecipação.
+  const comparativoDivulgacao = useMemo(() => {
+    if (!dataEstimadaDivulgacao || !dataDivulgacaoPrevista) return null;
+
+    const diffDias = Math.round(
+      (dataDivulgacaoPrevista - dataEstimadaDivulgacao) / (1000 * 60 * 60 * 24),
+    );
+
+    return { diffDias, emAtraso: diffDias < 0 };
+  }, [dataEstimadaDivulgacao, dataDivulgacaoPrevista]);
+
+  // Orientadores únicos (por cpf) do tenant/ano, a partir das participações
+  // tipo "orientador" já filtradas pelo backend em inscricao.participacoes.
+  const orientadoresPorCpf = useMemo(() => {
+    const mapa = new Map();
+    itensEnviados.forEach((item) => {
+      item.inscricao?.participacoes?.forEach((p) => {
+        if (p.user?.cpf && !mapa.has(p.user.cpf)) {
+          mapa.set(p.user.cpf, p.user.nome);
+        }
+      });
+    });
+    return mapa;
   }, [itensEnviados]);
 
-  const statusChartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: "right",
-      },
-      tooltip: {
-        callbacks: {
-          label: function (context) {
-            const label = context.label || "";
-            const value = context.raw || 0;
-            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-            const percentage = Math.round((value / total) * 100);
-            return `${label}: ${value} (${percentage}%)`;
-          },
-        },
-      },
-    },
-  };
+  const avaliadoresConfirmados = useMemo(
+    () =>
+      (avaliadores || []).filter(
+        (a) => a.user?.avaliadorAnoStatus === "CONFIRMADO",
+      ),
+    [avaliadores],
+  );
+
+  // Soma das fichas de projeto que esse avaliador já enviou, somando todas
+  // as atribuições dele (InscricaoProjetoAvaliador já vem filtrado por
+  // avaliadorId no backend de getCargos).
+  const contarProjetosAvaliados = (avaliador) =>
+    (avaliador.user?.InscricaoProjetoAvaliador || []).reduce(
+      (total, ipa) =>
+        total + (ipa.inscricaoProjeto?.FichaAvaliacao?.length || 0),
+      0,
+    );
+
+  // Orientadores que também são avaliadores confirmados no ano (cruzamento
+  // por cpf, já que orientador e avaliador são o mesmo User) — separa o
+  // pool de avaliadores em "orientadores" vs "ad hoc" (quem avalia sem
+  // orientar nenhum Plano de Trabalho no ano).
+  const engajamentoOrientadores = useMemo(() => {
+    const orientadoresAvaliadores = avaliadoresConfirmados.filter((a) =>
+      orientadoresPorCpf.has(a.user?.cpf),
+    );
+
+    return {
+      totalOrientadores: orientadoresPorCpf.size,
+      orientadoresAvaliadores,
+      qtdAdHoc: avaliadoresConfirmados.length - orientadoresAvaliadores.length,
+    };
+  }, [avaliadoresConfirmados, orientadoresPorCpf]);
+
+  // Média de projetos avaliados por avaliador confirmado (orientador ou
+  // ad hoc), independente de quantos ainda não avaliaram nada.
+  const mediaAvaliacoesPorAvaliador = useMemo(() => {
+    if (avaliadoresConfirmados.length === 0) return 0;
+    const total = avaliadoresConfirmados.reduce(
+      (soma, avaliador) => soma + contarProjetosAvaliados(avaliador),
+      0,
+    );
+    return total / avaliadoresConfirmados.length;
+  }, [avaliadoresConfirmados]);
+
+  // Média "ideal" = total de projetos que precisam de avaliação (não muda
+  // conforme o trabalho avança) dividido pela quantidade de avaliadores
+  // confirmados — quantos cada um deveria avaliar para dar conta de tudo,
+  // se o total fosse dividido igualmente entre todos desde o início.
+  const mediaIdealPorAvaliador = useMemo(() => {
+    if (avaliadoresConfirmados.length === 0) return 0;
+    return statusStats.projetos.total / avaliadoresConfirmados.length;
+  }, [statusStats, avaliadoresConfirmados]);
 
   // Estados para o gráfico dinâmico
   const [chartStats, setChartStats] = useState({
@@ -124,7 +288,10 @@ const Page = ({ params }) => {
     if (itensAvaliados.length === 0) return;
 
     // Definir intervalos (bins) para as notas totais (0-100 ou outro range adequado)
-    const maxNota = Math.max(...itensAvaliados.map((item) => item.notaTotal), 10);
+    const maxNota = Math.max(
+      ...itensAvaliados.map((item) => item.notaTotal),
+      10,
+    );
     const binSize = maxNota <= 20 ? 2 : 5;
     const bins = [];
     for (let i = 0; i <= maxNota + binSize; i += binSize) {
@@ -156,7 +323,7 @@ const Page = ({ params }) => {
     const notas = itensAvaliados.map((item) => item.notaTotal);
     const media = notas.reduce((a, b) => a + b, 0) / notas.length;
     const desvioPadrao = Math.sqrt(
-      notas.reduce((sq, n) => sq + Math.pow(n - media, 2), 0) / notas.length
+      notas.reduce((sq, n) => sq + Math.pow(n - media, 2), 0) / notas.length,
     );
 
     // Curva normal teórica (opcional)
@@ -265,7 +432,6 @@ const Page = ({ params }) => {
   };
   useEffect(() => {
     prepareComboChartData();
-    prepareStatusChartData(); // Adicione esta linha
   }, [itensAvaliados, prepareComboChartData]);
 
   // Função para calcular a diferença entre notas máximas e mínimas
@@ -384,7 +550,7 @@ const Page = ({ params }) => {
     try {
       const itens = await getAllPlanoDeTrabalhosByTenant(
         params.tenant,
-        params.ano || null
+        params.ano || null,
       );
       const itensComCamposVirtuais = itens.map((item) => {
         const notaProjeto =
@@ -403,7 +569,7 @@ const Page = ({ params }) => {
           mediaNotas: notaProjeto,
           avaliadores:
             item.projeto?.InscricaoProjeto[0]?.InscricaoProjetoAvaliador?.map(
-              (a) => a.avaliador?.nome
+              (a) => a.avaliador?.nome,
             )
               .filter(Boolean)
               .join("; ") || "Nenhum avaliador",
@@ -419,8 +585,8 @@ const Page = ({ params }) => {
           notaProjeto: notaProjeto, // Convertendo para float com 2 casas decimais
           diferencaNotasProjeto: parseFloat(
             calcularDiferencaNotas(
-              item.projeto?.InscricaoProjeto[0]?.FichaAvaliacao
-            ).toFixed(4)
+              item.projeto?.InscricaoProjeto[0]?.FichaAvaliacao,
+            ).toFixed(4),
           ),
           notaPlano: parseFloat(notaPlano.toFixed(4)),
           notaOrientador: parseFloat(notaOrientador.toFixed(4)),
@@ -441,6 +607,28 @@ const Page = ({ params }) => {
   useEffect(() => {
     fetchInitialData();
   }, [params.tenant, fetchInitialData]);
+
+  // Avaliadores confirmados no ano — fonte separada de getAllPlanoDeTrabalhosByTenant,
+  // usada pra seção de Participação e Engajamento de Orientadores.
+  const fetchAvaliadores = useCallback(async () => {
+    setLoadingAvaliadores(true);
+    try {
+      const cargos = await getCargos(params.tenant, {
+        cargo: "avaliador",
+        ano: params.ano,
+      });
+      setAvaliadores(cargos || []);
+    } catch (error) {
+      console.error("Erro ao buscar avaliadores:", error);
+      setAvaliadores([]);
+    } finally {
+      setLoadingAvaliadores(false);
+    }
+  }, [params.tenant, params.ano]);
+
+  useEffect(() => {
+    fetchAvaliadores();
+  }, [fetchAvaliadores]);
 
   useEffect(() => {
     processChartData();
@@ -490,32 +678,305 @@ const Page = ({ params }) => {
               </div>
             </div>
           ) : (
-            <p>{loading ? "Carregando gráfico..." : "Nenhum plano avaliado ainda."}</p>
+            <p>
+              {loading
+                ? "Carregando gráfico..."
+                : "Nenhum plano avaliado ainda."}
+            </p>
           )}
         </Card>
         <Card className="mb-4 p-2">
           <h5 className="mb-2">Status de Avaliação dos Projetos e Planos</h5>
-          {Object.keys(statusChartData).length > 0 ? (
+          {itensEnviados.length > 0 ? (
             <>
-              <div style={{ height: "300px" }}>
-                <Chart
-                  type="pie"
-                  data={statusChartData}
-                  options={statusChartOptions}
-                />
+              <h6 className={styles.grupoLabel}>Projetos</h6>
+              <div className={`${styles.dashboard} mb-2`}>
+                <div className={styles.card_style1}>
+                  <div className={styles.left}>
+                    <h5>{statusStats.projetos.total}</h5>
+                  </div>
+                  <div className={styles.right}>
+                    <h6>Total</h6>
+                  </div>
+                </div>
+                <div className={styles.card_style1}>
+                  <div className={styles.left}>
+                    <h5>{statusStats.projetos.AGUARDANDO_AVALIACAO}</h5>
+                  </div>
+                  <div className={styles.right}>
+                    <h6>Aguardando Avaliação</h6>
+                  </div>
+                </div>
+                <div className={styles.card_style1}>
+                  <div className={styles.left}>
+                    <h5>{statusStats.projetos.EM_AVALIACAO}</h5>
+                  </div>
+                  <div className={styles.right}>
+                    <h6>Em Avaliação</h6>
+                  </div>
+                </div>
+                <div className={styles.card_style1}>
+                  <div className={styles.left}>
+                    <h5>{statusStats.projetos.AVALIADA}</h5>
+                  </div>
+                  <div className={styles.right}>
+                    <h6>Avaliado</h6>
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-content-center gap-4 mt-3">
-                {statusChartData.labels.map((label, index) => (
-                  <span key={index} className="font-bold">
-                    {label}: {statusChartData.datasets[0].data[index]}
-                  </span>
-                ))}
+
+              <h6 className={`${styles.grupoLabel} mt-3`}>
+                Planos de Trabalho
+              </h6>
+              <div className={`${styles.dashboard} mb-2`}>
+                <div className={styles.card_style1}>
+                  <div className={styles.left}>
+                    <h5>{statusStats.planos.total}</h5>
+                  </div>
+                  <div className={styles.right}>
+                    <h6>Total</h6>
+                  </div>
+                </div>
+                <div className={styles.card_style1}>
+                  <div className={styles.left}>
+                    <h5>{statusStats.planos.AGUARDANDO_AVALIACAO}</h5>
+                  </div>
+                  <div className={styles.right}>
+                    <h6>Aguardando Avaliação</h6>
+                  </div>
+                </div>
+                <div className={styles.card_style1}>
+                  <div className={styles.left}>
+                    <h5>{statusStats.planos.EM_AVALIACAO}</h5>
+                  </div>
+                  <div className={styles.right}>
+                    <h6>Em Avaliação</h6>
+                  </div>
+                </div>
+                <div className={styles.card_style1}>
+                  <div className={styles.left}>
+                    <h5>{statusStats.planos.AVALIADA}</h5>
+                  </div>
+                  <div className={styles.right}>
+                    <h6>Avaliado</h6>
+                  </div>
+                </div>
               </div>
             </>
           ) : (
-            <p>Carregando gráfico...</p>
+            <p>
+              {loading ? "Carregando dados..." : "Nenhum plano encontrado."}
+            </p>
           )}
         </Card>
+
+        <Card className="mb-4 p-2">
+          <h5 className="mb-2">Previsão de Conclusão das Avaliações</h5>
+
+          <div className={`${styles.statTilesRow} mb-2`}>
+            <div className={styles.statColuna}>
+              <div className={styles.statSplit}>
+                <div className={styles.statSplitHeader}>
+                  <RiUserStarLine />
+                  <p>Média de avaliações por avaliador</p>
+                </div>
+                <div className={styles.statSplitBody}>
+                  <div className={styles.statSplitMetade}>
+                    <p>Média Ideal</p>
+                    <h4>{Math.round(mediaIdealPorAvaliador)}</h4>
+                    <p>projetos por avaliador</p>
+                  </div>
+                  <div className={styles.statSplitMetade}>
+                    <p>Média Real</p>
+                    <h4>{Math.round(mediaAvaliacoesPorAvaliador)}</h4>
+                    <p>projetos por avaliador</p>
+                  </div>
+                </div>
+              </div>
+
+              {previsaoConclusao.temDadosSuficientes && (
+                <div className={styles.statHero}>
+                  <RiCalendarEventLine />
+                  <div>
+                    <p>Estimativa de divulgação do resultado provisório</p>
+                    <h4
+                      className={
+                        comparativoDivulgacao?.emAtraso
+                          ? styles.textoAtraso
+                          : undefined
+                      }
+                    >
+                      {formatarData(dataEstimadaDivulgacao)}
+                    </h4>
+
+                    <div className={styles.statHeroDivulgacao}>
+                      <p>
+                        <span>Conclusão das avaliações</span>
+                        <strong>
+                          {formatarData(previsaoConclusao.dataPrevista)}
+                        </strong>
+                      </p>
+                      <p>
+                        <span>Divulgação prevista</span>
+                        <strong>
+                          {dataDivulgacaoPrevista
+                            ? formatarData(dataDivulgacaoPrevista)
+                            : "Não definida"}
+                        </strong>
+                      </p>
+                      <p>
+                        <span>Dias de atraso</span>
+                        <Tag
+                          value={
+                            !comparativoDivulgacao
+                              ? "—"
+                              : comparativoDivulgacao.emAtraso
+                                ? `${Math.abs(comparativoDivulgacao.diffDias)} ${
+                                    Math.abs(comparativoDivulgacao.diffDias) === 1
+                                      ? "dia"
+                                      : "dias"
+                                  }`
+                                : "0 dias"
+                          }
+                          severity={
+                            !comparativoDivulgacao
+                              ? undefined
+                              : comparativoDivulgacao.emAtraso
+                                ? "danger"
+                                : "success"
+                          }
+                        />
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {previsaoConclusao.temDadosSuficientes && (
+              <div className={styles.statTiles}>
+                <div className={styles.statTile}>
+                  <RiSpeedUpLine />
+                  <div>
+                    <h5>{previsaoConclusao.taxaPorDia}</h5>
+                    <p>projetos avaliados por dia</p>
+                  </div>
+                </div>
+                <div className={styles.statTile}>
+                  <RiFileListLine />
+                  <div>
+                    <h5>{previsaoConclusao.pendentes}</h5>
+                    <p>projetos pendentes</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {!previsaoConclusao.temDadosSuficientes && (
+            <p>
+              Ainda não há avaliações de projeto concluídas suficientes para
+              calcular uma previsão (é necessário pelo menos 2 dias distintos
+              com projetos avaliados).
+            </p>
+          )}
+          <p className={styles.statNota}>
+            Baseado no ritmo de conclusão de Projetos — um Plano de Trabalho só
+            é avaliado quando o projeto e todos os planos vinculados a ele são
+            avaliados juntos, então os Planos terminam na mesma data do Projeto
+            ao qual pertencem. Estimativa a partir do ritmo histórico, não uma
+            garantia.
+          </p>
+
+          <h6 className={`${styles.grupoLabel} mb-1`}>
+            Divulgação do Resultado Provisório
+          </h6>
+          <div className={styles.divulgacaoInputs}>
+            <div className={styles.divulgacaoCampo}>
+              <label htmlFor="dataDivulgacaoPrevista">
+                Data prevista para divulgação
+              </label>
+              <Calendar
+                inputId="dataDivulgacaoPrevista"
+                value={dataDivulgacaoPrevista}
+                onChange={(e) => handleChangeDataDivulgacao(e.value)}
+                showIcon
+                dateFormat="dd/mm/yy"
+              />
+            </div>
+            <div className={styles.divulgacaoCampo}>
+              <label htmlFor="diasNecessariosDivulgacao">
+                Dias necessários após concluir as avaliações
+              </label>
+              <InputNumber
+                inputId="diasNecessariosDivulgacao"
+                value={diasNecessariosDivulgacao}
+                onValueChange={(e) => handleChangeDiasDivulgacao(e.value)}
+                min={0}
+                mode="decimal"
+                useGrouping={false}
+              />
+            </div>
+          </div>
+        </Card>
+        <Card className="mb-4 p-2">
+          <h5 className="mb-2">Participação e Engajamento de Orientadores</h5>
+          {loadingAvaliadores ? (
+            <p>Carregando dados de avaliadores...</p>
+          ) : avaliadoresConfirmados.length === 0 ? (
+            <p>Nenhum avaliador confirmado no ano selecionado.</p>
+          ) : (
+            <>
+              <div className={`${styles.statTilesRow} mb-2`}>
+                <div className={styles.statHero}>
+                  <RiUserFollowLine />
+                  <div>
+                    <p>Disponibilizados como avaliadores</p>
+                    <h4>
+                      {engajamentoOrientadores.orientadoresAvaliadores.length}{" "}
+                      de {engajamentoOrientadores.totalOrientadores}
+                    </h4>
+                    <p className={styles.statHeroSub}>
+                      {engajamentoOrientadores.totalOrientadores > 0
+                        ? (
+                            (engajamentoOrientadores.orientadoresAvaliadores
+                              .length /
+                              engajamentoOrientadores.totalOrientadores) *
+                            100
+                          ).toFixed(0)
+                        : 0}
+                      % dos orientadores do ano confirmaram participação como
+                      avaliador
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <h6 className={styles.grupoLabel}>Composição dos avaliadores</h6>
+              <div className={styles.dashboard}>
+                <div className={styles.card_style1}>
+                  <div className={styles.left}>
+                    <h5>
+                      {engajamentoOrientadores.orientadoresAvaliadores.length}
+                    </h5>
+                  </div>
+                  <div className={styles.right}>
+                    <h6>Avaliadores-Orientadores</h6>
+                  </div>
+                </div>
+                <div className={styles.card_style1}>
+                  <div className={styles.left}>
+                    <h5>{engajamentoOrientadores.qtdAdHoc}</h5>
+                  </div>
+                  <div className={styles.right}>
+                    <h6>Avaliadores Ad Hoc</h6>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </Card>
+
         <h5 className="mb-2 mt-2">Planos de Trabalho</h5>
         <TabelaPlanoDeTrabalhoAcompanhamento params={params} />
       </main>

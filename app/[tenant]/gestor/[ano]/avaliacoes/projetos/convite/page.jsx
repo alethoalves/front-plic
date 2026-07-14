@@ -15,7 +15,12 @@ import { saveAs } from "file-saver";
 import Modal from "@/components/Modal";
 import CPFVerificationForm from "@/components/Formularios/CPFVerificationForm";
 import NewCargo from "@/components/Formularios/NewCargo";
-import { RiDeleteBinLine, RiSettings5Line } from "@remixicon/react";
+import {
+  RiDeleteBinLine,
+  RiSettings5Line,
+  RiArchiveLine,
+  RiArchiveFill,
+} from "@remixicon/react";
 import { ProgressBar } from "primereact/progressbar";
 import Header from "@/components/Header";
 import { classNames } from "primereact/utils";
@@ -428,6 +433,13 @@ const Page = ({ params }) => {
   const [solicitacoesLattes, setSolicitacoesLattes] = useState([]);
   const [loadingSolicitacoes, setLoadingSolicitacoes] = useState(true);
   const [decisaoResultado, setDecisaoResultado] = useState(null); // { mensagem, celular }
+  // Aprovados já aparecem na aba "Avaliadores" (viraram Cargo), então somem
+  // daqui. Recusados ficam ocultos por padrão pra não poluir a fila de quem
+  // ainda precisa de decisão — o ícone de arquivo alterna a exibição deles.
+  const [mostrarRecusados, setMostrarRecusados] = useState(false);
+  const solicitacoesLattesExibidas = solicitacoesLattes.filter(
+    (s) => s.status !== "APROVADO" && (mostrarRecusados || s.status !== "RECUSADO")
+  );
 
   const fetchSolicitacoesLattes = useCallback(async () => {
     setLoadingSolicitacoes(true);
@@ -902,7 +914,7 @@ const Page = ({ params }) => {
             <p className="mt-1 text-sm text-color-secondary">
               Mesmo link pra todo mundo — envie por e-mail ou compartilhe em grupos
               de WhatsApp. Quem já tem doutorado confirmado vira avaliador na hora;
-              quem não tem cai na fila de "Solicitações Lattes" abaixo.
+              quem não tem cai na fila de &quot;Solicitações Lattes&quot; abaixo.
             </p>
           </div>
         </Card>
@@ -1076,13 +1088,30 @@ const Page = ({ params }) => {
               </div>
             ) : (
               <>
-                <h5 className="pt-2 pl-2 pr-2">Solicitações de análise de Lattes</h5>
+                <div className="flex-space pt-2 pl-2 pr-2">
+                  <h5 className="m-0">Solicitações de análise de Lattes</h5>
+                  <div
+                    className={`${style.icon} cursor-pointer`}
+                    title={
+                      mostrarRecusados
+                        ? "Ocultar solicitações negadas"
+                        : "Mostrar solicitações negadas"
+                    }
+                    onClick={() => setMostrarRecusados((v) => !v)}
+                  >
+                    {mostrarRecusados ? <RiArchiveFill /> : <RiArchiveLine />}
+                  </div>
+                </div>
                 <p className="pl-2 pr-2 text-sm text-color-secondary">
                   Clique numa linha pra ver detalhes, reenviar a mensagem ou
-                  corrigir uma decisão.
+                  corrigir uma decisão. Aprovados aparecem na aba
+                  &quot;Avaliadores&quot;.
+                  {mostrarRecusados
+                    ? " Solicitações negadas estão visíveis."
+                    : " Solicitações negadas estão ocultas."}
                 </p>
                 <DataTable
-                  value={solicitacoesLattes}
+                  value={solicitacoesLattesExibidas}
                   paginator
                   rows={10}
                   rowsPerPageOptions={[10, 20, 50]}
