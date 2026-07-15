@@ -30,6 +30,14 @@ import {
   listarCriterios,
   arvoreParaValores,
 } from "@/lib/fichaAvaliacaoScoring";
+import { parseDateBR } from "@/lib/formatarDatas";
+
+// Mesmo critério de ordenação usado pelo GanttChart (components/GanttChart.jsx)
+// para exibir as atividades do cronograma em ordem cronológica de início.
+const ordenarCronograma = (cronograma) =>
+  [...(cronograma || [])].sort(
+    (a, b) => parseDateBR(a.inicio) - parseDateBR(b.inicio),
+  );
 
 // Extrai o valor de uma Resposta no mesmo formato usado tanto pela visão
 // interativa (Accordion) quanto pelo documento estático de impressão/PDF.
@@ -116,7 +124,7 @@ const RespostasCorridas = ({ respostas, cronograma, cronogramaTitulo }) => (
             </tr>
           </thead>
           <tbody>
-            {cronograma.map((c, i) => (
+            {ordenarCronograma(cronograma).map((c, i) => (
               <tr key={i}>
                 <td>{c.inicio}</td>
                 <td>{c.fim}</td>
@@ -405,12 +413,13 @@ const Page = ({ params }) => {
   const handleBack = () => {
     setCurrentStep((prev) => prev - 1);
   };
-  const cronogramaEvents =
-    inscricaoProjeto?.projeto?.CronogramaProjeto?.map((item) => ({
-      status: item.atividade,
-      date: `${item.inicio} – ${item.fim}`,
-      icon: "pi pi-calendar",
-    })) || [];
+  const cronogramaEvents = ordenarCronograma(
+    inscricaoProjeto?.projeto?.CronogramaProjeto,
+  ).map((item) => ({
+    status: item.atividade,
+    date: `${item.inicio} – ${item.fim}`,
+    icon: "pi pi-calendar",
+  }));
 
   // Ações de navegação da ficha (Voltar / Próximo Plano / Terminar Avaliação)
   // — ficam na coluna da Ficha de Avaliação, tanto na etapa do projeto quanto
@@ -579,12 +588,13 @@ const Page = ({ params }) => {
       ? calcularArvoreComNotas(fichaPlano.schemaCriterios, estadoPlano.valores)
       : null;
 
-    const cronogramaPlanoEvents =
-      plano.CronogramaPlanoDeTrabalho?.map((item) => ({
-        status: item.atividade,
-        date: `${item.inicio} – ${item.fim}`,
-        icon: "pi pi-calendar",
-      })) || [];
+    const cronogramaPlanoEvents = ordenarCronograma(
+      plano.CronogramaPlanoDeTrabalho,
+    ).map((item) => ({
+      status: item.atividade,
+      date: `${item.inicio} – ${item.fim}`,
+      icon: "pi pi-calendar",
+    }));
 
     return (
       <div className={styles.navContent} key={plano.id}>
