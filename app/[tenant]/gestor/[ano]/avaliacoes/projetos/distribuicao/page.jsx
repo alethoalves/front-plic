@@ -909,11 +909,8 @@ const Page = ({ params }) => {
                                 </p>
                                 <p className={style.projetosInfo}>
                                   Projetos atribuídos:{" "}
-                                  {avaliador.user.InscricaoProjetoAvaliador.filter(
-                                    (ipa) =>
-                                      ipa.inscricaoProjeto.inscricao.edital
-                                        .tenant.sigla === params.tenant
-                                  )?.length || 0}
+                                  {avaliador.user.InscricaoProjetoAvaliador
+                                    ?.length || 0}
                                 </p>
                               </div>
                             </li>
@@ -1056,11 +1053,8 @@ const Page = ({ params }) => {
                           <h6>
                             {avaliador.user.nome}{" "}
                             <span>
-                              {avaliador.user.InscricaoProjetoAvaliador.filter(
-                                (ipa) =>
-                                  ipa.inscricaoProjeto.inscricao.edital.tenant
-                                    .sigla === params.tenant
-                              ).length || 0}
+                              {avaliador.user.InscricaoProjetoAvaliador
+                                ?.length || 0}
                             </span>
                           </h6>
                           <p>
@@ -1105,11 +1099,8 @@ const Page = ({ params }) => {
                         <h6>
                           {avaliador.user.nome}{" "}
                           <span>
-                            {avaliador.user.InscricaoProjetoAvaliador.filter(
-                              (ipa) =>
-                                ipa.inscricaoProjeto.inscricao.edital.tenant
-                                  .sigla === params.tenant
-                            ).length || 0}
+                            {avaliador.user.InscricaoProjetoAvaliador
+                              ?.length || 0}
                           </span>
                         </h6>
                         <p>
