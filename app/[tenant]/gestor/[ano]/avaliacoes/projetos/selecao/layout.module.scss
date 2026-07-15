@@ -1,0 +1,19 @@
+@import "./styles/partials/colors";
+@import "./styles/partials/layout";
+@import "./styles/partials/spacing";
+
+.main{
+    width: 100%;
+}
+.content{
+    display: flex;
+    flex-direction: column;
+    gap: $gap-2;
+    @include responsive(s){
+        flex-direction: column;
+    }
+}
+.navContent{
+    flex: 1;
+    min-width: 0;
+}

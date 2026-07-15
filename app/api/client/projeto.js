@@ -295,3 +295,91 @@ export const updateInscricaoProjeto = async (
     throw error;
   }
 };
+
+export const atribuirNotaManual = async (
+  tenantSlug,
+  inscricaoProjetoIds,
+  nota,
+  justificativa
+) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.put(
+      `/private/${tenantSlug}/inscricaoProjeto/atribuirNotaManual`,
+      { inscricaoProjetoIds, nota, justificativa },
+      { headers }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao atribuir nota manual:", error);
+    throw error;
+  }
+};
+
+export const alterarStatusAvaliacao = async (
+  tenantSlug,
+  inscricaoProjetoIds,
+  status
+) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.put(
+      `/private/${tenantSlug}/inscricaoProjeto/alterarStatusAvaliacao`,
+      { inscricaoProjetoIds, status },
+      { headers }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao alterar status de avaliação:", error);
+    throw error;
+  }
+};
+
+export const bloquearAvaliacaoProjeto = async (
+  tenantSlug,
+  inscricaoProjetoIds,
+  justificativa
+) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.put(
+      `/private/${tenantSlug}/inscricaoProjeto/bloquearAvaliacao`,
+      { inscricaoProjetoIds, justificativa },
+      { headers }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao bloquear avaliação do projeto:", error);
+    throw error;
+  }
+};
+
+export const desbloquearAvaliacaoProjeto = async (
+  tenantSlug,
+  inscricaoProjetoIds
+) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.put(
+      `/private/${tenantSlug}/inscricaoProjeto/desbloquearAvaliacao`,
+      { inscricaoProjetoIds },
+      { headers }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao desbloquear avaliação do projeto:", error);
+    throw error;
+  }
+};

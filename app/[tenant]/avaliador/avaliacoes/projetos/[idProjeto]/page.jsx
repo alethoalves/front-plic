@@ -8,6 +8,7 @@ import {
   RiArrowRightLine,
   RiListUnordered,
   RiFileTextLine,
+  RiAlertLine,
 } from "@remixicon/react";
 import {
   getFichaAvaliacao,
@@ -16,7 +17,6 @@ import {
 } from "@/app/api/client/avaliador";
 import Button from "@/components/Button";
 import { ScrollPanel } from "primereact/scrollpanel";
-import { Card } from "primereact/card";
 import { Fieldset } from "primereact/fieldset";
 import { Accordion, AccordionTab } from "primereact/accordion";
 import { ProgressSpinner } from "primereact/progressspinner";
@@ -330,11 +330,12 @@ const Page = ({ params }) => {
   };
 
   const handleTerminarAvaliacao = async () => {
+    const bloqueado = inscricaoProjeto?.bloqueadoAvaliacao === true;
     const totalCriteriosProjeto = listarCriterios(
       fichaAvaliacao.schemaCriterios,
     ).length;
     const respostasProjeto = flattenRespostas(arvoreProjetoCalculada.arvore);
-    if (respostasProjeto.length < totalCriteriosProjeto) {
+    if (!bloqueado && respostasProjeto.length < totalCriteriosProjeto) {
       showError(
         "Preencha a nota de todos os critérios do projeto antes de terminar a avaliação.",
       );
@@ -375,7 +376,7 @@ const Page = ({ params }) => {
       const body = {
         projetoId: params.idProjeto,
         objeto: "PROJETO",
-        respostas: respostasProjeto,
+        respostas: bloqueado ? [] : respostasProjeto,
         avaliacoesPlano: avaliacoesPlanoFormatted,
       };
 
@@ -525,7 +526,19 @@ const Page = ({ params }) => {
       <div className={`${styles.fichaDeAvaliacao} no-print`}>
         <h5>Ficha de Avaliação do Projeto</h5>
 
-        {fichaError ? null : (
+        {fichaError ? null : inscricaoProjeto?.bloqueadoAvaliacao ? (
+          <>
+            <div className={styles.bloqueioCard}>
+              <RiAlertLine size={22} className={styles.bloqueioIcon} />
+              <div>
+                <h6>Avaliação deste projeto bloqueada pelo gestor</h6>
+                <p>{inscricaoProjeto.justificativaBloqueio}</p>
+              </div>
+            </div>
+
+            {renderFichaAcoes()}
+          </>
+        ) : (
           <>
             <FichaAvaliacaoTree
               schemaCriterios={fichaAvaliacao?.schemaCriterios}

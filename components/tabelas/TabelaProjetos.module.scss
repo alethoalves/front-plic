@@ -1,0 +1,56 @@
+@import "./styles/partials/colors";
+@import "./styles/partials/layout";
+@import "./styles/partials/spacing";
+
+.main{
+    width: 100%;
+}
+.configIcon{
+    width: 24px;
+    height: 24px;
+    color: $primary-normal;
+    cursor: pointer;
+    flex-shrink: 0;
+    &:hover{
+        color: $primary-dark;
+    }
+}
+.configModal{
+    .camposList{
+        list-style: none;
+        max-height: 320px;
+        overflow-y: auto;
+    }
+}
+.acaoLote{
+    padding: $gap-1 $gap-2;
+    background-color: $white-darken;
+    border-radius: $gap-1;
+}
+.menuAcoes{
+    ul{
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: $gap-1;
+        li{
+            cursor: pointer;
+            padding: $gap-2;
+            border-radius: $gap-1;
+            border: 1px solid $primary-light;
+
+            &:hover{
+                background-color: $white-darken;
+            }
+        }
+    }
+}
+.formNotaManual{
+    label{
+        display: block;
+        font-weight: 600;
+    }
+}
+.tagClicavel{
+    cursor: pointer;
+}
