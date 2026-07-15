@@ -26,7 +26,6 @@ import { Tag } from "primereact/tag";
 // FUNÇÕES
 import { getAllPlanoDeTrabalhosByTenant } from "@/app/api/client/planoDeTrabalho";
 import { getCargos } from "@/app/api/client/cargo";
-import calcularMedia from "@/lib/calcularMedia";
 import preverConclusaoAvaliacoes from "@/lib/preverConclusaoAvaliacoes";
 import { formatarData } from "@/lib/formatarDatas";
 import { Toast } from "primereact/toast";
@@ -53,15 +52,21 @@ const Page = ({ params }) => {
     [itens],
   );
 
-  // Só planos com pelo menos uma ficha de avaliação (do projeto ou do próprio
-  // plano) entram no histograma de notas — senão o notaTotal=0 de quem ainda
-  // nem foi avaliado se mistura com nota real baixa e o gráfico parece ter
-  // dados de avaliação que não existem.
+  // Só planos com o Projeto pai já concluído (AVALIADA) entram no histograma
+  // de notas — não basta ter ficha (avaliação pode estar parcial, com só
+  // parte dos avaliadores tendo enviado) nem existir nota (o gestor pode
+  // atribuir nota manual antes de fechar o status). Sem esse filtro, notas
+  // parciais/incompletas se misturam com notas finais reais e o gráfico
+  // mostra distribuição de dados que ainda vão mudar.
   const itensAvaliados = useMemo(
     () =>
-      itensEnviados.filter(
-        (item) => item.qtdFichas > 0 || item.qtdFichasPlano > 0,
-      ),
+      itensEnviados.filter((item) => {
+        const status =
+          item.inscricaoProjeto?.statusAvaliacao ||
+          item.statusAvaliacao ||
+          "AGUARDANDO_AVALIACAO";
+        return status === "AVALIADA";
+      }),
     [itensEnviados],
   );
 
@@ -553,9 +558,13 @@ const Page = ({ params }) => {
         params.ano || null,
       );
       const itensComCamposVirtuais = itens.map((item) => {
-        const notaProjeto =
-          calcularMedia(item.inscricaoProjeto?.FichaAvaliacao || []) || 0;
-        const notaPlano = calcularMedia(item.FichaAvaliacao || []) || 0;
+        // notaProjeto/notaPlano vêm das colunas persistidas no PlanoDeTrabalho
+        // (mantidas em sincronia pelo backend tanto por processarFichaAvaliacao
+        // quanto por atribuirNotaManual), não recalculadas a partir das fichas
+        // aqui — o gestor pode atribuir nota manual sem nenhuma FichaAvaliacao
+        // existir, e recalcular via calcularMedia perderia esse valor.
+        const notaProjeto = item.notaProjeto || 0;
+        const notaPlano = item.notaPlano || 0;
         const notaOrientador = item.notaOrientador || 0;
         const mediaAlunos = item.notaAluno || 0;
         const mediaRA = calcularMediaRA(item.participacoes) || 0;
