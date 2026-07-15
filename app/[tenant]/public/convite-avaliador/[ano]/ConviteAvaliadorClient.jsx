@@ -36,8 +36,9 @@ const SuporteWhatsapp = () => (
 const ConviteAvaliadorClient = ({ tenant, ano, pathLogo }) => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [resultado, setResultado] = useState(null); // { elegibilidade, motivoRecusa?, telefoneTenant? }
+  const [resultado, setResultado] = useState(null); // { elegibilidade, motivoRecusa?, telefoneTenant?, precisaCompletarCadastro? }
   const [dadosInformados, setDadosInformados] = useState(null); // { cpf, dtNascimento }
+  const [cadastroCompleto, setCadastroCompleto] = useState(false);
 
   const { control, handleSubmit } = useForm({
     resolver: zodResolver(elegibilidadeAvaliadorSchema),
@@ -77,6 +78,13 @@ const ConviteAvaliadorClient = ({ tenant, ano, pathLogo }) => {
 
   let conteudo;
 
+  // usuário já existe mas ainda não completou o cadastro (sem senha, status=false) —
+  // reaproveita o mesmo "Primeiro Acesso" do login normal antes de liberar o pedido do Lattes
+  const precisaCompletarCadastroAntes =
+    resultado?.elegibilidade === "precisa_lattes" &&
+    resultado?.precisaCompletarCadastro &&
+    !cadastroCompleto;
+
   // apto: já tem doutorado confirmado -> login/cadastro real, vira avaliador direto
   if (resultado?.elegibilidade === "apto") {
     conteudo = (
@@ -86,6 +94,17 @@ const ConviteAvaliadorClient = ({ tenant, ano, pathLogo }) => {
           pathLogo={pathLogo}
           avaliadorOnboardingAno={Number(ano)}
           cpfInicial={dadosInformados?.cpf}
+        />
+      </div>
+    );
+  } else if (precisaCompletarCadastroAntes) {
+    conteudo = (
+      <div className={styles.signinWrapper}>
+        <Signin
+          slug={tenant}
+          pathLogo={pathLogo}
+          cpfInicial={dadosInformados?.cpf}
+          onCadastroCompleto={() => setCadastroCompleto(true)}
         />
       </div>
     );
@@ -184,9 +203,10 @@ const ConviteAvaliadorClient = ({ tenant, ano, pathLogo }) => {
     );
   }
 
-  // no caminho "apto" o conteúdo é o <Signin>, que já desenha a própria logo —
+  // nos caminhos que renderizam <Signin> o conteúdo já desenha a própria logo —
   // não repete aqui pra não duplicar
-  const mostrarLogoPropria = resultado?.elegibilidade !== "apto";
+  const mostrarLogoPropria =
+    resultado?.elegibilidade !== "apto" && !precisaCompletarCadastroAntes;
 
   return (
     <div className={styles.content}>

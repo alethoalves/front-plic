@@ -45,6 +45,7 @@ const Auth = ({
   tokenConvite = null,
   avaliadorOnboardingAno = null,
   cpfInicial = "",
+  onCadastroCompleto = null,
 }) => {
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -165,6 +166,11 @@ const Auth = ({
       if (response.perfis) {
         if (tokenConvite || avaliadorOnboardingAno) {
           await finalizarVinculoAvaliador();
+          return;
+        }
+
+        if (onCadastroCompleto) {
+          onCadastroCompleto();
           return;
         }
 
