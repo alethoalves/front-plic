@@ -3,6 +3,7 @@
 import styles from "./page.module.scss";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Tag } from "primereact/tag";
 import {
   getFichasAvaliacaoProjeto,
   avaliadorRefazerAvaliacao,
@@ -13,23 +14,41 @@ import Button from "@/components/Button";
 import { RiErrorWarningLine, RiEditLine } from "@remixicon/react";
 import { rotuloValor } from "@/lib/fichaAvaliacaoScoring";
 
+// Severidade do Tag de resposta a partir da fração de pontos obtidos — funciona
+// pra qualquer tipo de escala (binária, likert, numérica...), já que não depende
+// do texto do rótulo, só da proporção pontosObtidos/peso.
+const severidadePontos = (pontosObtidos, peso) => {
+  if (!peso) return "info";
+  const fracao = pontosObtidos / peso;
+  if (fracao >= 1) return "success";
+  if (fracao <= 0) return "danger";
+  return "warning";
+};
+
 /** Renderiza (somente leitura) a árvore de respostas salva em FichaAvaliacao.respostas. */
 const renderRespostas = (nos) =>
   (nos || []).map((no) =>
     no.tipo === "grupo" ? (
-      <div key={no.id} className={styles.quesito}>
-        <p className={styles.label}>
-          <strong>{no.label}</strong> ({no.pontosObtidos}/{no.pontosMaximos} pts)
-        </p>
-        {renderRespostas(no.itens)}
+      <div key={no.id} className={styles.grupo}>
+        <div className={styles.grupoHeader}>
+          <p className={styles.grupoLabel}>{no.label}</p>
+          <p className={styles.grupoPontos}>
+            {no.pontosObtidos}/{no.pontosMaximos} pts
+          </p>
+        </div>
+        <div className={styles.grupoItens}>{renderRespostas(no.itens)}</div>
       </div>
     ) : (
-      <div key={no.id} className={styles.quesito}>
-        <p className={styles.label}>{no.label}</p>
-        <p className={styles.nota}>
-          Resposta: {rotuloValor(no.escala, no.valorSelecionado)}
-          <strong> | Pontos: {no.pontosObtidos}/{no.peso}</strong>
-        </p>
+      <div key={no.id} className={styles.criterio}>
+        <p className={styles.criterioPergunta}>{no.label}</p>
+        <div className={styles.criterioResposta}>
+          <Tag rounded severity={severidadePontos(no.pontosObtidos, no.peso)}>
+            {rotuloValor(no.escala, no.valorSelecionado)}
+          </Tag>
+          <span className={styles.respostaPontos}>
+            {no.pontosObtidos}/{no.peso} pts
+          </span>
+        </div>
       </div>
     )
   );
@@ -183,18 +202,18 @@ const Page = ({ params }) => {
                 {mostrarNotas[item.id] && (
                   <>
                     <div className={styles.quesitos}>
-                      <div className={styles.quesito}>
-                        <p className={`${styles.label} text-align-right`}>
-                          <strong>Nota Final: {item.notaTotal}</strong>
+                      <div className={styles.notaFinalBox}>
+                        <p className={styles.notaFinalLabel}>Nota Final</p>
+                        <p className={styles.notaFinalValor}>
+                          {item.notaTotal}
                         </p>
                       </div>
-                      <div className={styles.quesito}>
-                        <p className={styles.label}>
-                          Observação:
-                          <br />
-                          <strong>{item.observacao}</strong>
-                        </p>
-                      </div>
+                      {item.observacao && (
+                        <div className={styles.observacao}>
+                          <p className={styles.observacaoLabel}>Observação</p>
+                          <p>{item.observacao}</p>
+                        </div>
+                      )}
                       {renderRespostas(item.respostas)}
                     </div>
 
@@ -228,24 +247,24 @@ const Page = ({ params }) => {
 
                             {mostrarNotas[plano.id] && (
                               <div className={styles.quesitos}>
-                                <div className={styles.quesito}>
-                                  <p
-                                    className={`${styles.label} text-align-right`}
-                                  >
-                                    <strong>
-                                      Nota Final: {plano.notaTotal}
-                                    </strong>
+                                <div className={styles.notaFinalBox}>
+                                  <p className={styles.notaFinalLabel}>
+                                    Nota Final
+                                  </p>
+                                  <p className={styles.notaFinalValor}>
+                                    {plano.notaTotal}
                                   </p>
                                 </div>
 
                                 {renderRespostas(plano.respostas)}
-                                <div className={styles.quesito}>
-                                  <p className={styles.label}>
-                                    Observação:
-                                    <br />
-                                    <strong>{plano.observacao}</strong>
-                                  </p>
-                                </div>
+                                {plano.observacao && (
+                                  <div className={styles.observacao}>
+                                    <p className={styles.observacaoLabel}>
+                                      Observação
+                                    </p>
+                                    <p>{plano.observacao}</p>
+                                  </div>
+                                )}
                               </div>
                             )}
                           </div>

@@ -12,20 +12,126 @@
 
 .quesitos {
     padding: $gap-2;
+}
 
-    .quesito {
-        border-bottom: 1px solid $white-darken;
+// Nota Final — resumo em destaque, separado do resto por uma linha.
+.notaFinalBox {
+    display: flex;
+    align-items: baseline;
+    justify-content: flex-end;
+    gap: $gap-1;
+    padding: $gap-1 $gap-2 $gap-2;
+    margin-bottom: $gap-2;
+    border-bottom: 2px solid $gray-100;
 
-        .label {
-            padding: 4px $gap-1;
-        }
-
-        .nota {
-            text-align: right;
-            padding: 4px $gap-1;
-            margin-bottom: $gap-1;
-        }
+    .notaFinalLabel {
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        color: $gray-500;
+        font-size: 13px;
     }
+
+    .notaFinalValor {
+        font-family: var(--font-kanit);
+        font-size: 22px;
+        font-weight: 700;
+        color: $primary-dark;
+        line-height: 1;
+    }
+}
+
+// Observação — só aparece quando tem conteúdo (ver page.jsx), então já vem
+// destacada como uma nota à parte, não misturada com os quesitos.
+.observacao {
+    background-color: $white-dark;
+    border-radius: $gap-1;
+    padding: $gap-1 $gap-2;
+    margin-bottom: $gap-2;
+
+    .observacaoLabel {
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        color: $gray-500;
+        font-size: 12px;
+        margin-bottom: 4px;
+    }
+}
+
+// Um "grupo" é uma macro-categoria de critérios (ex: "A1. Problema e
+// objetivos — 10 pontos"). Header destacado + filhos recuados, pra ficar
+// claro visualmente que os critérios abaixo pertencem a ele.
+.grupo {
+    &:not(:last-child) {
+        margin-bottom: $gap-3;
+    }
+}
+
+.grupoHeader {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: $gap-1 $gap-2;
+    padding: $gap-1 $gap-2;
+    background-color: $white-dark;
+    border-left: 3px solid $primary-light;
+    border-radius: 4px;
+    margin-bottom: $gap-1;
+
+    .grupoLabel {
+        font-weight: 700;
+        color: $gray-700;
+    }
+
+    .grupoPontos {
+        white-space: nowrap;
+        font-weight: 600;
+        color: $primary-dark;
+    }
+}
+
+.grupoItens {
+    padding-left: $gap-2;
+    border-left: 2px solid $gray-50;
+    margin-left: 4px;
+}
+
+// Um "critério" é a pergunta individual (folha da árvore).
+.criterio {
+    padding: $gap-2;
+
+    &:not(:last-child) {
+        border-bottom: 1px solid $white-darken;
+    }
+}
+
+.criterioPergunta {
+    margin-bottom: $gap-1;
+}
+
+.criterioResposta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: $gap-1;
+}
+
+.respostaPontos {
+    font-weight: 700;
+    color: $gray-600;
+    white-space: nowrap;
+}
+
+.criterioComentario {
+    font-style: italic;
+    color: $gray-500;
+    background-color: $white-dark;
+    border-radius: 4px;
+    padding: 6px $gap-1;
+    margin-top: $gap-1;
 }
 
 .squares {
@@ -40,19 +146,27 @@
 
         .squareContent {
             background-color: $white-dark;
-            padding: $gap-1;
+            padding: $gap-2;
             border-radius: 6px;
 
             .info {
                 display: flex;
-                margin-bottom: 6px;
+                margin-bottom: $gap-1;
 
                 .area {
                     border: 1px solid $primary-light;
-                    padding: 2px 8px;
+                    padding: 3px 10px;
                     border-radius: 4px;
                     color: $primary-light;
-                    font-size: 10px;
+                    font-size: 11px;
+                    font-weight: 600;
+                    letter-spacing: 0.3px;
+                }
+            }
+
+            .submissaoData {
+                h6 {
+                    margin-bottom: 4px;
                 }
             }
         }
@@ -72,4 +186,15 @@
 
 .subPlanos {
     padding: $gap-1;
+    margin-top: $gap-3;
+    border-top: 1px dashed $gray-100;
+
+    h6 {
+        margin-top: $gap-2;
+        margin-bottom: $gap-2;
+    }
+
+    .square:not(:last-child) {
+        margin-bottom: $gap-2;
+    }
 }

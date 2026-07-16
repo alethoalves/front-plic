@@ -13,26 +13,32 @@ import { InputText } from "primereact/inputtext";
 import { FilterMatchMode } from "primereact/api";
 import { Card } from "primereact/card";
 import { ProgressBar } from "primereact/progressbar";
-import { Button } from "primereact/button";
-import { InputNumber } from "primereact/inputnumber";
+import { Dropdown } from "primereact/dropdown";
 import { Toast } from "primereact/toast";
 import { FilterService } from "primereact/api";
-import { Dialog } from "primereact/dialog";
+
+// COMPONENTES
+import Button from "@/components/Button";
 
 // SERVIÇOS
-import {
-  aplicarNotaCorte,
-  getAllPlanoDeTrabalhosByTenant,
-} from "@/app/api/client/planoDeTrabalho";
-import { handleDefinirNotaCorte } from "@/lib/notaCorteUtils";
+import { getAllPlanoDeTrabalhosByTenant } from "@/app/api/client/planoDeTrabalho";
+import { alterarStatusAvaliacao } from "@/app/api/client/projeto";
+import { formatStatusText } from "@/lib/tagUtils";
 import {
   editalRowFilterTemplate,
   notaRowFilterTemplate,
-  statusClassificacaoBodyTemplate,
-  statusClassificacaoFilterTemplate,
 } from "@/lib/tableTemplates";
 import Modal from "../Modal";
 import ProjetoAvaliacaoResumo from "../ProjetoAvaliacaoResumo";
+
+// Mesmo conjunto de status de avaliação usado em "Alterar status" na tela de
+// Seleção de Projetos (TabelaProjetos.jsx) — é o mesmo campo, propagado da
+// mesma forma (InscricaoProjeto -> todos os PlanoDeTrabalho do projeto).
+const STATUS_AVALIACAO_OPCOES = [
+  "AGUARDANDO_AVALIACAO",
+  "EM_AVALIACAO",
+  "AVALIADA",
+].map((status) => ({ label: formatStatusText(status), value: status }));
 
 // Registra filtro personalizado para intervalo de notas
 FilterService.register("nota_intervalo", (value, filters) => {
@@ -51,14 +57,12 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
   const [itens, setItens] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
   const [globalFilterValue, setGlobalFilterValue] = useState("");
-  const [notaCorte, setNotaCorte] = useState(0);
-  const [isLoadingNotaCorte, setIsLoadingNotaCorte] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [editaisDisponiveis, setEditaisDisponiveis] = useState([]);
-  const [statusClassificacaoDisponiveis, setStatusClassificacaoDisponiveis] =
-    useState([]);
-  const [showJustificativaModal, setShowJustificativaModal] = useState(false);
-  const [justificativaAtual, setJustificativaAtual] = useState("");
+  const [areasProjetoDisponiveis, setAreasProjetoDisponiveis] = useState([]);
+  const [areasPlanoDisponiveis, setAreasPlanoDisponiveis] = useState([]);
+  const [activeModal, setActiveModal] = useState(null);
+  const [novoStatus, setNovoStatus] = useState(null);
+  const [salvandoStatus, setSalvandoStatus] = useState(false);
 
   // REFS
   const toast = useRef(null);
@@ -68,11 +72,7 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
   const [filters, setFilters] = useState({
     global: { value: "", matchMode: FilterMatchMode.CONTAINS },
     id: { value: "", matchMode: FilterMatchMode.CONTAINS },
-    "inscricao.status": {
-      value: [],
-      matchMode: FilterMatchMode.IN,
-    },
-    statusClassificacao: {
+    "inscricaoProjeto.statusAvaliacao": {
       value: [],
       matchMode: FilterMatchMode.IN,
     },
@@ -82,10 +82,10 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
     },
     titulo: { value: "", matchMode: FilterMatchMode.CONTAINS },
     "inscricaoProjeto.projeto.area.area": {
-      value: "",
-      matchMode: FilterMatchMode.CONTAINS,
+      value: [],
+      matchMode: FilterMatchMode.IN,
     },
-    "area.area": { value: "", matchMode: FilterMatchMode.CONTAINS },
+    "area.area": { value: [], matchMode: FilterMatchMode.IN },
     orientadoresString: {
       value: "", // Adicione value padrão
       matchMode: FilterMatchMode.CONTAINS,
@@ -172,18 +172,30 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
         }) || [];
       setItens(itensProcessados);
 
-      setStatusClassificacaoDisponiveis([
-        { label: "Em análise", value: "EM_ANALISE" },
-        { label: "Classificado", value: "CLASSIFICADO" },
-        { label: "Desclassificado", value: "DESCLASSIFICADO" },
-      ]);
-
       const editaisUnicos = [
         ...new Set(itens.map((item) => item.inscricao?.edital?.titulo)),
       ].filter(Boolean);
 
       setEditaisDisponiveis(
         editaisUnicos.map((edital) => ({ label: edital, value: edital }))
+      );
+
+      const areasProjetoUnicas = [
+        ...new Set(
+          itens.map((item) => item.inscricaoProjeto?.projeto?.area?.area)
+        ),
+      ].filter(Boolean);
+
+      setAreasProjetoDisponiveis(
+        areasProjetoUnicas.map((area) => ({ label: area, value: area }))
+      );
+
+      const areasPlanoUnicas = [
+        ...new Set(itens.map((item) => item.area?.area)),
+      ].filter(Boolean);
+
+      setAreasPlanoDisponiveis(
+        areasPlanoUnicas.map((area) => ({ label: area, value: area }))
       );
     } catch (error) {
       console.error("Erro ao buscar dados:", error);
@@ -203,27 +215,49 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
   }, [params.tenant, params.ano]);
 
   // FUNÇÕES DE MANIPULAÇÃO
-  const handleDefinirNotaCorteWrapper = async () => {
-    await handleDefinirNotaCorte({
-      notaCorte,
-      selectedItems,
-      params,
-      aplicarNotaCorteApi: aplicarNotaCorte,
-      fetchInitialData,
-      setIsLoadingNotaCorte,
-      setProgress,
-      setNotaCorte,
-      setSelectedItems,
-      toast, // Passando a referência diretamente, sem o .current
-    });
+  const abrirMenuAcoes = () => setActiveModal("menuAcoes");
+
+  const fecharModalAcao = () => {
+    setActiveModal(null);
+    setNovoStatus(null);
   };
 
-  // TEMPLATES DE COLUNAS
+  // Ids únicos de InscricaoProjeto (projeto pai) por trás dos planos
+  // selecionados. Um mesmo projeto pode ter vários planos de trabalho
+  // (irmãos) selecionados ao mesmo tempo — o status é alterado por
+  // projeto, não por plano.
+  const inscricaoProjetoIdsSelecionados = [
+    ...new Set(
+      selectedItems.map((item) => item.inscricaoProjeto?.id).filter(Boolean)
+    ),
+  ];
 
-  const openJustificativaModal = (rowData) => {
-    if (rowData.justificativa) {
-      setJustificativaAtual(rowData.justificativa);
-      setShowJustificativaModal(true);
+  const confirmarAlterarStatus = async () => {
+    setSalvandoStatus(true);
+    try {
+      await alterarStatusAvaliacao(
+        params.tenant,
+        inscricaoProjetoIdsSelecionados,
+        novoStatus
+      );
+      toast.current?.show({
+        severity: "success",
+        summary: "Sucesso",
+        detail: "Status atualizado com sucesso.",
+        life: 3000,
+      });
+      await fetchInitialData();
+      setSelectedItems([]);
+      fecharModalAcao();
+    } catch (error) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Erro",
+        detail: "Falha ao alterar o status.",
+        life: 3000,
+      });
+    } finally {
+      setSalvandoStatus(false);
     }
   };
 
@@ -285,53 +319,15 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
             <>
               {selectedItems.length > 0 && (
                 <div
-                  className={`flex flex-column gap-3 mt-1 ${styles.notaCorte}`}
+                  className={`flex align-items-center gap-2 mb-2 ${styles.acaoLote}`}
                 >
-                  <div className="flex align-items-center gap-2">
-                    <span>Definir nota de corte de</span>
-                    <InputNumber
-                      value={notaCorte ?? 0}
-                      onValueChange={(e) => setNotaCorte(e.value ?? 0)}
-                      mode="decimal"
-                      min={0}
-                      max={100}
-                      placeholder="Nota"
-                      className="w-8rem mt-1"
-                    />
-                    <span>
-                      para os {selectedItems.length} itens selecionados
-                    </span>
-                    <Button
-                      label={
-                        isLoadingNotaCorte ? (
-                          <>
-                            <i className="pi pi-spinner pi-spin mr-2"></i>
-                            Processando...
-                          </>
-                        ) : (
-                          "Confirmar"
-                        )
-                      }
-                      icon={!isLoadingNotaCorte && "pi pi-check"}
-                      className="p-button-success mt-1"
-                      onClick={handleDefinirNotaCorteWrapper}
-                      disabled={isLoadingNotaCorte}
-                    />
-                    {isLoadingNotaCorte && (
-                      <div className="mt-2">
-                        <ProgressBar
-                          value={progress}
-                          style={{ height: "6px" }}
-                          showValue={false}
-                        />
-                        <small className="block text-center mt-1">
-                          {progress}% completo (
-                          {Math.round((selectedItems.length * progress) / 100)}{" "}
-                          de {selectedItems.length} itens)
-                        </small>
-                      </div>
-                    )}
-                  </div>
+                  <span>
+                    {selectedItems.length} plano(s) de trabalho
+                    selecionado(s)
+                  </span>
+                  <Button className="button btn-primary" onClick={abrirMenuAcoes}>
+                    Executar Ação
+                  </Button>
                 </div>
               )}
 
@@ -377,43 +373,19 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
                   filterField="id"
                 />
                 <Column
-                  field="inscricao.status"
-                  header="Status Inscrição"
+                  field="inscricaoProjeto.statusAvaliacao"
+                  header="Status Avaliação"
                   sortable
                   filter
                   filterElement={(options) =>
-                    statusClassificacaoFilterTemplate(options, [
-                      { label: "Pendente", value: "pendente" },
-                      { label: "Enviada", value: "enviada" },
-                      { label: "Aprovada", value: "aprovada" },
-                    ])
+                    editalRowFilterTemplate(options, STATUS_AVALIACAO_OPCOES)
                   }
                   showFilterMenu={false}
-                  filterField="inscricao.status"
-                  body={(rowData) => rowData.inscricao.status}
-                  style={{ width: "12rem" }}
-                />
-                <Column
-                  field="statusClassificacao"
-                  header="Status Classificação do Plano"
-                  sortable
-                  filter
-                  filterElement={(options) =>
-                    statusClassificacaoFilterTemplate(
-                      options,
-                      statusClassificacaoDisponiveis
-                    )
-                  }
-                  showFilterMenu={false}
-                  filterField="statusClassificacao"
+                  filterField="inscricaoProjeto.statusAvaliacao"
                   body={(rowData) =>
-                    statusClassificacaoBodyTemplate(
-                      rowData,
-                      styles,
-                      openJustificativaModal
-                    )
+                    rowData.inscricaoProjeto?.statusAvaliacao || "-"
                   }
-                  style={{ width: "12rem" }}
+                  style={{ width: "14rem" }}
                 />
                 <Column
                   field="inscricao.edital.titulo"
@@ -428,6 +400,18 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
                 />
 
                 <Column
+                  field="inscricaoProjeto.projeto.titulo"
+                  header="Nome do Projeto"
+                  sortable
+                  filter
+                  filterPlaceholder="Filtrar por nome"
+                  filterField="inscricaoProjeto.projeto.titulo"
+                  body={(rowData) =>
+                    rowData.inscricaoProjeto?.projeto?.titulo || "-"
+                  }
+                  style={{ maxWidth: "20rem" }}
+                />
+                <Column
                   field="titulo"
                   header="Título do Plano de Trabalho"
                   sortable
@@ -441,7 +425,10 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
                   header="Área do Projeto"
                   sortable
                   filter
-                  filterPlaceholder="Filtrar por área"
+                  filterElement={(options) =>
+                    editalRowFilterTemplate(options, areasProjetoDisponiveis)
+                  }
+                  showFilterMenu={false}
                   filterField="inscricaoProjeto.projeto.area.area"
                   body={(rowData) =>
                     rowData.inscricaoProjeto?.projeto?.area?.area || "-"
@@ -453,7 +440,10 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
                   header="Área do Plano"
                   sortable
                   filter
-                  filterPlaceholder="Filtrar por área"
+                  filterElement={(options) =>
+                    editalRowFilterTemplate(options, areasPlanoDisponiveis)
+                  }
+                  showFilterMenu={false}
                   filterField="area.area"
                   body={(rowData) => rowData.area?.area || "-"}
                   style={{ width: "12rem" }}
@@ -595,16 +585,62 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
           )}
         </Card>
       </main>
-      <Dialog
-        header="Justificativa de Desclassificação"
-        visible={showJustificativaModal}
-        style={{ width: "50vw" }}
-        onHide={() => setShowJustificativaModal(false)}
-      >
-        <div style={{ whiteSpace: "pre-line", paddingBottom: "20px" }}>
-          {justificativaAtual}
-        </div>
-      </Dialog>
+      <Modal isOpen={activeModal !== null} onClose={fecharModalAcao} size="small">
+        {(() => {
+          switch (activeModal) {
+            case "menuAcoes":
+              return (
+                <div className={styles.menuAcoes}>
+                  <h5 className="mb-2">Executar ação</h5>
+                  <ul>
+                    <li onClick={() => setActiveModal("alterarStatus")}>
+                      <p>Alterar status</p>
+                    </li>
+                  </ul>
+                </div>
+              );
+            case "alterarStatus":
+              return (
+                <div className={styles.formNotaManual}>
+                  <h5 className="mb-2">Alterar status</h5>
+                  <p className="mb-2">
+                    O novo status substituirá o status atual d
+                    {inscricaoProjetoIdsSelecionados.length > 1 ? "os" : "o"}{" "}
+                    {inscricaoProjetoIdsSelecionados.length} projeto(s)
+                    vinculado(s) aos planos de trabalho selecionados — e será
+                    propagado para TODOS os planos de trabalho desses
+                    projetos, não apenas para os que estão selecionados
+                    agora.
+                  </p>
+                  <label htmlFor="novoStatus">Status</label>
+                  <Dropdown
+                    inputId="novoStatus"
+                    value={novoStatus}
+                    options={STATUS_AVALIACAO_OPCOES}
+                    onChange={(e) => setNovoStatus(e.value)}
+                    placeholder="Selecione o status"
+                    className="w-100 mt-1"
+                  />
+                  <div className="flex justify-content-end gap-2 mt-3">
+                    <Button className="button btn-secondary" onClick={fecharModalAcao}>
+                      Cancelar
+                    </Button>
+                    <Button
+                      className="button btn-primary"
+                      onClick={confirmarAlterarStatus}
+                      loading={salvandoStatus}
+                      disabled={!novoStatus}
+                    >
+                      Confirmar
+                    </Button>
+                  </div>
+                </div>
+              );
+            default:
+              return null;
+          }
+        })()}
+      </Modal>
       <Toast ref={toast} />
     </>
   );

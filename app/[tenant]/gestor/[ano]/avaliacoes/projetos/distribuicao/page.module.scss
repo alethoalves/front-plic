@@ -261,6 +261,84 @@
   top: 0;
   z-index: 1;
 }
+
+.listToolbar {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: $gap-1;
+  padding: $gap-1;
+  background: $gray-25;
+  border-bottom: 1px solid $white-darken;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.searchBox {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+
+  .searchIcon {
+    position: absolute;
+    left: 8px;
+    width: 16px;
+    height: 16px;
+    color: $gray-500;
+    pointer-events: none;
+  }
+
+  :global(.p-inputtext) {
+    width: 100%;
+    padding-left: 30px;
+  }
+}
+
+.toolbarDropdowns {
+  display: flex;
+  gap: $gap-1;
+  width: 100%;
+
+  @include responsive(xs) {
+    flex-direction: column;
+  }
+}
+
+.sortDropdown {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: $white-darken;
+  color: $gray-500;
+  white-space: nowrap;
+}
+
+.badgeAvaliadas {
+  background: rgba($success-normal, 0.15);
+  color: $success-dark;
+}
+
+.badgePendentes {
+  background: rgba($warning-normal, 0.2);
+  color: $warning-dark;
+}
 .deleteIcon {
     cursor: pointer;
     color: #ff4d4f;
@@ -279,7 +357,7 @@
 // Adicione estas classes ao seu arquivo SCSS
 
 .distribuicaoCard {
-    height: 320px;
+    height: 360px;
     display: flex;
     flex-direction: column;
     

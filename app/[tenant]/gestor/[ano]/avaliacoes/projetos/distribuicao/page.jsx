@@ -9,7 +9,7 @@ import {
 } from "@/app/api/client/avaliador";
 import { getCargos } from "@/app/api/client/cargo";
 import { Card } from "primereact/card";
-import { RiSettings5Line, RiTimeLine } from "@remixicon/react";
+import { RiSettings5Line, RiTimeLine, RiSearchLine } from "@remixicon/react";
 import { Checkbox } from "primereact/checkbox";
 import { RiDeleteBinLine } from "@remixicon/react";
 import { GestorDesassociarAvaliadorInscricaoProjeto } from "@/app/api/client/avaliador";
@@ -21,6 +21,33 @@ import NotificarAvaliador from "@/components/NotificarAvaliador";
 import Button from "@/components/Button";
 import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
+import { getCookie, setCookie } from "cookies-next";
+
+// Busca/ordenação persistidos em cookie por tenant+ano (mesmo padrão de
+// app/[tenant]/gestor/[ano]/avaliacoes/projetos/acompanhamento/page.jsx),
+// pra o gestor não perder os filtros ao recarregar a página. `null` (ex.:
+// "Todas as áreas") vira string vazia no cookie e volta a virar `null` na leitura.
+const usePersistedFiltro = (tenant, ano, chave, valorInicial) => {
+  const cookieKey = `distribuicao_${chave}_${tenant}_${ano}`;
+  const [valor, setValor] = useState(valorInicial);
+
+  useEffect(() => {
+    const cookieValor = getCookie(cookieKey);
+    if (cookieValor !== undefined) {
+      setValor(cookieValor === "" ? null : cookieValor);
+    }
+  }, [cookieKey]);
+
+  const atualizarValor = (novoValor) => {
+    setValor(novoValor);
+    setCookie(cookieKey, novoValor === null ? "" : novoValor, {
+      maxAge: 60 * 60 * 24 * 365,
+    });
+  };
+
+  return [valor, atualizarValor];
+};
+
 const Page = ({ params }) => {
   const [avaliadoresList, setAvaliadoresList] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -34,20 +61,313 @@ const Page = ({ params }) => {
   const [projetosPorAvaliador, setProjetosPorAvaliador] = useState(0);
   const [avaliadorSelecionado, setAvaliadorSelecionado] = useState(null);
   const [removendoVinculacao, setRemovendoVinculacao] = useState(null);
-  const [showConfirmDesvincularTodos, setShowConfirmDesvincularTodos] = useState(false);
+  const [showConfirmDesvincularTodos, setShowConfirmDesvincularTodos] =
+    useState(false);
   const [desvinculandoProgresso, setDesvinculandoProgresso] = useState(null); // { atual, total } | null
-  const [showConfirmDesvincularTodosGeral, setShowConfirmDesvincularTodosGeral] = useState(false);
-  const [desvinculandoProgressoGeral, setDesvinculandoProgressoGeral] = useState(null); // { atual, total } | null
+  const [
+    showConfirmDesvincularTodosGeral,
+    setShowConfirmDesvincularTodosGeral,
+  ] = useState(false);
+  const [desvinculandoProgressoGeral, setDesvinculandoProgressoGeral] =
+    useState(null); // { atual, total } | null
   const [activeModal, setActiveModal] = useState(null);
   const [projetoSelecionado, setProjetoSelecionado] = useState(null);
-  const [buscaProjeto, setBuscaProjeto] = useState("");
-  const [areaFiltro, setAreaFiltro] = useState(null);
+  const { tenant, ano } = params;
+  const [buscaProjeto, setBuscaProjeto] = usePersistedFiltro(
+    tenant,
+    ano,
+    "buscaProjeto",
+    "",
+  );
+  const [areaFiltro, setAreaFiltro] = usePersistedFiltro(
+    tenant,
+    ano,
+    "areaFiltro",
+    null,
+  );
+  const [ordenarProjeto, setOrdenarProjeto] = usePersistedFiltro(
+    tenant,
+    ano,
+    "ordenarProjeto",
+    "padrao",
+  );
+  const [buscaAvaliadorProjeto, setBuscaAvaliadorProjeto] = usePersistedFiltro(
+    tenant,
+    ano,
+    "buscaAvaliadorProjeto",
+    "",
+  );
+  const [ordenarAvaliadorProjeto, setOrdenarAvaliadorProjeto] =
+    usePersistedFiltro(tenant, ano, "ordenarAvaliadorProjeto", "nome-asc");
+  const [buscaArea, setBuscaArea] = usePersistedFiltro(
+    tenant,
+    ano,
+    "buscaArea",
+    "",
+  );
+  const [ordenarArea, setOrdenarArea] = usePersistedFiltro(
+    tenant,
+    ano,
+    "ordenarArea",
+    "nome-asc",
+  );
+  const [buscaAvaliadorArea, setBuscaAvaliadorArea] = usePersistedFiltro(
+    tenant,
+    ano,
+    "buscaAvaliadorArea",
+    "",
+  );
+  const [ordenarAvaliadorArea, setOrdenarAvaliadorArea] = usePersistedFiltro(
+    tenant,
+    ano,
+    "ordenarAvaliadorArea",
+    "nome-asc",
+  );
+  const [buscaAvaliadorGeral, setBuscaAvaliadorGeral] = usePersistedFiltro(
+    tenant,
+    ano,
+    "buscaAvaliadorGeral",
+    "",
+  );
+  const [ordenarAvaliadorGeral, setOrdenarAvaliadorGeral] = usePersistedFiltro(
+    tenant,
+    ano,
+    "ordenarAvaliadorGeral",
+    "nome-asc",
+  );
+  const [buscaPendenteGeral, setBuscaPendenteGeral] = usePersistedFiltro(
+    tenant,
+    ano,
+    "buscaPendenteGeral",
+    "",
+  );
+  const [ordenarPendenteGeral, setOrdenarPendenteGeral] = usePersistedFiltro(
+    tenant,
+    ano,
+    "ordenarPendenteGeral",
+    "tempo-desc",
+  );
   const [avaliadoresProjetoSelecionado, setAvaliadoresProjetoSelecionado] =
     useState([]);
   const [showModalAssociacao, setShowModalAssociacao] = useState(false);
+
+  const OPCOES_ORDENACAO_AVALIADOR = [
+    { label: "Nome (A-Z)", value: "nome-asc" },
+    { label: "Nome (Z-A)", value: "nome-desc" },
+    { label: "Área (A-Z)", value: "area-asc" },
+    { label: "Mais fichas atribuídas", value: "atribuidas-desc" },
+    { label: "Menos fichas atribuídas", value: "atribuidas-asc" },
+    { label: "Mais fichas avaliadas", value: "avaliadas-desc" },
+    { label: "Menos fichas avaliadas", value: "avaliadas-asc" },
+    { label: "Mais pendentes", value: "pendentes-desc" },
+    { label: "Menos pendentes", value: "pendentes-asc" },
+  ];
+
+  const OPCOES_ORDENACAO_AREA = [
+    { label: "Nome (A-Z)", value: "nome-asc" },
+    { label: "Nome (Z-A)", value: "nome-desc" },
+    { label: "Mais projetos pendentes", value: "pendentes-desc" },
+    { label: "Menos projetos pendentes", value: "pendentes-asc" },
+  ];
+
+  const OPCOES_ORDENACAO_PROJETO = [
+    { label: "Padrão", value: "padrao" },
+    { label: "Título (A-Z)", value: "titulo-asc" },
+    { label: "Título (Z-A)", value: "titulo-desc" },
+    { label: "Área (A-Z)", value: "area-asc" },
+    { label: "Mais avaliadores atribuídos", value: "avaliadores-desc" },
+    { label: "Menos avaliadores atribuídos", value: "avaliadores-asc" },
+  ];
+
+  const OPCOES_ORDENACAO_PENDENTE_GERAL = [
+    { label: "Mais antigo primeiro", value: "tempo-desc" },
+    { label: "Mais recente primeiro", value: "tempo-asc" },
+    { label: "Avaliador (A-Z)", value: "avaliador-asc" },
+    { label: "Projeto (A-Z)", value: "projeto-asc" },
+  ];
+
+  const normalizar = (valor) => (valor || "").toString().toLowerCase();
+
+  const filtrarAvaliadoresPorBusca = (lista, termo) => {
+    if (!termo) return lista;
+    const termoNormalizado = normalizar(termo);
+    return lista.filter((avaliador) => {
+      const nomeMatch = normalizar(avaliador.user.nome).includes(
+        termoNormalizado,
+      );
+      const areaMatch = avaliador.user.userArea.some((ua) =>
+        normalizar(ua.area.area).includes(termoNormalizado),
+      );
+      return nomeMatch || areaMatch;
+    });
+  };
+
+  const ordenarAvaliadores = (lista, criterio) => {
+    const [campo, direcao] = criterio.split("-");
+    const multiplicador = direcao === "desc" ? -1 : 1;
+
+    return [...lista].sort((a, b) => {
+      switch (campo) {
+        case "nome":
+          return (
+            multiplicador *
+            a.user.nome.localeCompare(b.user.nome, "pt-BR", {
+              sensitivity: "base",
+            })
+          );
+        case "area": {
+          const areaA = a.user.userArea[0]?.area?.area || "";
+          const areaB = b.user.userArea[0]?.area?.area || "";
+          return (
+            multiplicador *
+            areaA.localeCompare(areaB, "pt-BR", { sensitivity: "base" })
+          );
+        }
+        case "atribuidas":
+          return (
+            multiplicador *
+            ((a.projetosAtribuidos || 0) - (b.projetosAtribuidos || 0))
+          );
+        case "avaliadas":
+          return (
+            multiplicador *
+            ((a.projetosAvaliados || 0) - (b.projetosAvaliados || 0))
+          );
+        case "pendentes":
+          return (
+            multiplicador *
+            ((a.projetosPendentes || 0) - (b.projetosPendentes || 0))
+          );
+        default:
+          return 0;
+      }
+    });
+  };
+
+  const filtrarAreasPorBusca = (lista, termo) => {
+    if (!termo) return lista;
+    const termoNormalizado = normalizar(termo);
+    return lista.filter((item) =>
+      normalizar(item.area).includes(termoNormalizado),
+    );
+  };
+
+  const ordenarAreas = (lista, criterio) => {
+    const [campo, direcao] = criterio.split("-");
+    const multiplicador = direcao === "desc" ? -1 : 1;
+
+    return [...lista].sort((a, b) => {
+      if (campo === "pendentes") {
+        return multiplicador * (a.count - b.count);
+      }
+      return (
+        multiplicador *
+        a.area.localeCompare(b.area, "pt-BR", { sensitivity: "base" })
+      );
+    });
+  };
+
+  const ordenarProjetos = (lista, criterio) => {
+    if (criterio === "padrao") return lista;
+    const [campo, direcao] = criterio.split("-");
+    const multiplicador = direcao === "desc" ? -1 : 1;
+
+    return [...lista].sort((a, b) => {
+      switch (campo) {
+        case "titulo":
+          return (
+            multiplicador *
+            (a.projeto?.titulo || "").localeCompare(
+              b.projeto?.titulo || "",
+              "pt-BR",
+              {
+                sensitivity: "base",
+              },
+            )
+          );
+        case "area": {
+          const areaA = a.projeto.area?.area || "";
+          const areaB = b.projeto.area?.area || "";
+          return (
+            multiplicador *
+            areaA.localeCompare(areaB, "pt-BR", { sensitivity: "base" })
+          );
+        }
+        case "avaliadores":
+          return (
+            multiplicador *
+            ((a.InscricaoProjetoAvaliador?.length || 0) -
+              (b.InscricaoProjetoAvaliador?.length || 0))
+          );
+        default:
+          return 0;
+      }
+    });
+  };
+
+  const filtrarPendentesGeralPorBusca = (lista, termo) => {
+    if (!termo) return lista;
+    const termoNormalizado = normalizar(termo);
+    return lista.filter(
+      ({ atribuicao, avaliador }) =>
+        normalizar(avaliador.user.nome).includes(termoNormalizado) ||
+        normalizar(atribuicao.inscricaoProjeto?.projeto?.titulo).includes(
+          termoNormalizado,
+        ),
+    );
+  };
+
+  const ordenarPendentesGeral = (lista, criterio) => {
+    const [campo, direcao] = criterio.split("-");
+
+    if (campo === "tempo") {
+      const multiplicador = direcao === "asc" ? -1 : 1;
+      return [...lista].sort(
+        (a, b) =>
+          multiplicador *
+          (new Date(a.atribuicao.createdAt) - new Date(b.atribuicao.createdAt)),
+      );
+    }
+    if (campo === "avaliador") {
+      return [...lista].sort((a, b) =>
+        a.avaliador.user.nome.localeCompare(b.avaliador.user.nome, "pt-BR", {
+          sensitivity: "base",
+        }),
+      );
+    }
+    if (campo === "projeto") {
+      return [...lista].sort((a, b) =>
+        (a.atribuicao.inscricaoProjeto?.projeto?.titulo || "").localeCompare(
+          b.atribuicao.inscricaoProjeto?.projeto?.titulo || "",
+          "pt-BR",
+          { sensitivity: "base" },
+        ),
+      );
+    }
+    return lista;
+  };
+
+  const renderBadgesAvaliador = (avaliador) => (
+    <div className={style.badges}>
+      <span className={style.badge}>
+        Atribuídas:{" "}
+        {avaliador.projetosAtribuidos ??
+          avaliador.user.InscricaoProjetoAvaliador?.length ??
+          0}
+      </span>
+      <span className={`${style.badge} ${style.badgeAvaliadas}`}>
+        Avaliadas: {avaliador.projetosAvaliados ?? 0}
+      </span>
+      {(avaliador.projetosPendentes ?? 0) > 0 && (
+        <span className={`${style.badge} ${style.badgePendentes}`}>
+          Pendentes: {avaliador.projetosPendentes}
+        </span>
+      )}
+    </div>
+  );
   const handleSelecionarAvaliador = (avaliador) => {
     const isSelected = avaliadoresProjetoSelecionado.some(
-      (a) => a.id === avaliador.id
+      (a) => a.id === avaliador.id,
     );
 
     if (!isSelected) {
@@ -58,7 +378,7 @@ const Page = ({ params }) => {
       setShowModalAssociacao(true);
     } else {
       setAvaliadoresProjetoSelecionado(
-        avaliadoresProjetoSelecionado.filter((a) => a.id !== avaliador.id)
+        avaliadoresProjetoSelecionado.filter((a) => a.id !== avaliador.id),
       );
     }
   };
@@ -69,10 +389,14 @@ const Page = ({ params }) => {
         await atualizarAvaliadores(
           params.tenant,
           setAvaliadores,
-          setTodasAreas
+          setTodasAreas,
         );
         await getAvaliadoresComProjetosPendentes(params.tenant, params.ano);
-        await processarInscricoes(params.tenant, setInscricoesProjetos, params.ano);
+        await processarInscricoes(
+          params.tenant,
+          setInscricoesProjetos,
+          params.ano,
+        );
       } catch (error) {
         console.error("Erro ao carregar dados:", error);
       }
@@ -87,10 +411,10 @@ const Page = ({ params }) => {
         const response = await getInscricaoProjetoByTenant(
           params.tenant,
           "enviada",
-          params.ano
+          params.ano,
         );
         const projetosNaoDistribuidos = response.filter(
-          (projeto) => projeto.statusAvaliacao === "AGUARDANDO_AVALIACAO"
+          (projeto) => projeto.statusAvaliacao === "AGUARDANDO_AVALIACAO",
         );
 
         const areasAgrupadas = projetosNaoDistribuidos.reduce(
@@ -102,14 +426,14 @@ const Page = ({ params }) => {
             acc[area]++;
             return acc;
           },
-          {}
+          {},
         );
 
         const areasArray = Object.entries(areasAgrupadas).map(
           ([area, count]) => ({
             area,
             count,
-          })
+          }),
         );
 
         setAreasComProjetos(areasArray);
@@ -129,7 +453,7 @@ const Page = ({ params }) => {
       (projeto) =>
         projeto.statusAvaliacao === "AGUARDANDO_AVALIACAO" &&
         (projeto.projeto.area?.area === areaSelecionada ||
-          (areaSelecionada === "Sem área definida" && !projeto.projeto.area))
+          (areaSelecionada === "Sem área definida" && !projeto.projeto.area)),
     );
   };
 
@@ -140,7 +464,7 @@ const Page = ({ params }) => {
     if (areaSelecionada === "Sem área definida") return avaliadores;
 
     return avaliadores.filter((avaliador) =>
-      avaliador.user.userArea.some((ua) => ua.area.area === areaSelecionada)
+      avaliador.user.userArea.some((ua) => ua.area.area === areaSelecionada),
     );
   };
 
@@ -180,7 +504,7 @@ const Page = ({ params }) => {
         showToast(
           "warn",
           "Aviso",
-          "Nenhum projeto não distribuído encontrado para esta área"
+          "Nenhum projeto não distribuído encontrado para esta área",
         );
         return;
       }
@@ -198,7 +522,7 @@ const Page = ({ params }) => {
 
       const response = await atribuicaoDeProjetosPeloGestor(
         params.tenant,
-        body
+        body,
       );
       if (response) {
         const { resultados } = response;
@@ -211,7 +535,7 @@ const Page = ({ params }) => {
             sucesso.length === resultados.length
               ? "Atribuição concluída"
               : "Atribuição parcial",
-            `${sucesso.length} de ${resultados.length} projeto(s) atribuídos com sucesso.`
+            `${sucesso.length} de ${resultados.length} projeto(s) atribuídos com sucesso.`,
           );
         }
 
@@ -222,7 +546,7 @@ const Page = ({ params }) => {
             showToast(
               "error",
               `Falha na atribuição do projeto ID ${r.inscricaoProjetoId}`,
-              conflitosDetalhados
+              conflitosDetalhados,
             );
           });
         }
@@ -232,7 +556,11 @@ const Page = ({ params }) => {
         }
       }
 
-      await processarInscricoes(params.tenant, setInscricoesProjetos, params.ano);
+      await processarInscricoes(
+        params.tenant,
+        setInscricoesProjetos,
+        params.ano,
+      );
       await atualizarAvaliadores(params.tenant, setAvaliadores, setTodasAreas);
 
       setAvaliadoresList([]);
@@ -259,7 +587,7 @@ const Page = ({ params }) => {
     const inscricoesProjetos = await getInscricaoProjetoByTenant(
       tenant,
       "enviada",
-      ano
+      ano,
     );
 
     const inscricoesComColunasVirtuais = inscricoesProjetos.map((inscricao) => {
@@ -269,20 +597,20 @@ const Page = ({ params }) => {
           ? (
               inscricao.FichaAvaliacao.reduce(
                 (sum, ficha) => sum + (ficha.notaTotal || 0),
-                0
+                0,
               ) / quantidadeFichas
             ).toFixed(2)
           : "N/A";
 
       const avaliadores = inscricao.InscricaoProjetoAvaliador.map(
-        (avaliador) => avaliador.avaliador.nome
+        (avaliador) => avaliador.avaliador.nome,
       ).join(", ");
 
       const quantidadeAvaliadores =
         inscricao.InscricaoProjetoAvaliador?.length || 0;
 
       const notas = inscricao.FichaAvaliacao.map(
-        (ficha) => ficha.notaTotal || 0
+        (ficha) => ficha.notaTotal || 0,
       );
       const diferencaNotas =
         notas.length > 0 ? Math.max(...notas) - Math.min(...notas) : "N/A";
@@ -300,19 +628,26 @@ const Page = ({ params }) => {
     setInscricoesProjetos(inscricoesComColunasVirtuais || []);
   };
 
+  // Conta quantos dos projetos atribuídos a ESTE avaliador já têm uma
+  // ficha enviada por ele (não basta o projeto ter fichas de outros
+  // avaliadores — por isso o filtro por avaliadorId, igual à checagem
+  // já feita mais abaixo para o painel do avaliador selecionado).
   const calcularProjetosAvaliados = (avaliador) => {
     return avaliador.user.InscricaoProjetoAvaliador.reduce(
-      (total, inscricao) => {
-        return total + (inscricao.inscricaoProjeto.FichaAvaliacao?.length || 0);
+      (total, atribuicao) => {
+        const jaAvaliou = atribuicao.inscricaoProjeto?.FichaAvaliacao?.some(
+          (ficha) => ficha.avaliadorId === avaliador.user.id,
+        );
+        return total + (jaAvaliou ? 1 : 0);
       },
-      0
+      0,
     );
   };
 
   const atualizarAvaliadores = async (
     tenant,
     setAvaliadores,
-    setTodasAreas
+    setTodasAreas,
   ) => {
     const avaliadores = await getCargos(tenant, {
       cargo: "avaliador",
@@ -321,19 +656,25 @@ const Page = ({ params }) => {
 
     const avaliadoresComColunasVirtuais = avaliadores
       .filter((a) => a.user.avaliadorAnoStatus === "CONFIRMADO")
-      .map((avaliador) => ({
-        ...avaliador,
-        projetosAvaliados: calcularProjetosAvaliados(avaliador),
-        projetosAtribuidos: avaliador.user.InscricaoProjetoAvaliador.length,
-      }));
+      .map((avaliador) => {
+        const projetosAvaliados = calcularProjetosAvaliados(avaliador);
+        const projetosAtribuidos =
+          avaliador.user.InscricaoProjetoAvaliador.length;
+        return {
+          ...avaliador,
+          projetosAvaliados,
+          projetosAtribuidos,
+          projetosPendentes: projetosAtribuidos - projetosAvaliados,
+        };
+      });
 
     setAvaliadores(avaliadoresComColunasVirtuais || []);
 
     const areasUnicas = [
       ...new Set(
         avaliadores.flatMap((avaliador) =>
-          avaliador.user.userArea.map((ua) => ua.area.area)
-        )
+          avaliador.user.userArea.map((ua) => ua.area.area),
+        ),
       ),
     ];
     setTodasAreas(areasUnicas.map((area) => ({ label: area, value: area })));
@@ -349,12 +690,12 @@ const Page = ({ params }) => {
     const avaliadoresAtualizados = await atualizarAvaliadores(
       params.tenant,
       setAvaliadores,
-      setTodasAreas
+      setTodasAreas,
     );
     setAvaliadorSelecionado((atual) =>
       atual
         ? avaliadoresAtualizados.find((a) => a.id === atual.id) || null
-        : null
+        : null,
     );
   };
 
@@ -362,7 +703,7 @@ const Page = ({ params }) => {
   const podeAtribuir = avaliadoresList.length > 0 && projetosParaDistribuir > 0;
   const handleDesassociarAvaliador = async (
     inscricaoProjetoId,
-    avaliadorId
+    avaliadorId,
   ) => {
     // Armazena o ID da vinculação que está sendo removida
     setRemovendoVinculacao(inscricaoProjetoId);
@@ -371,7 +712,7 @@ const Page = ({ params }) => {
       await GestorDesassociarAvaliadorInscricaoProjeto(
         params.tenant,
         inscricaoProjetoId,
-        avaliadorId
+        avaliadorId,
       );
 
       // Atualiza os dados após a remoção bem-sucedida
@@ -393,18 +734,20 @@ const Page = ({ params }) => {
 
   const getPendentesDoAvaliadorSelecionado = () =>
     avaliadorSelecionado?.user.InscricaoProjetoAvaliador.filter(
-      (atribuicao) => (atribuicao.inscricaoProjeto?.FichaAvaliacao?.length || 0) === 0
+      (atribuicao) =>
+        (atribuicao.inscricaoProjeto?.FichaAvaliacao?.length || 0) === 0,
     ) || [];
 
   const getTodasPendentesGeral = () =>
     avaliadores.flatMap((avaliador) =>
       avaliador.user.InscricaoProjetoAvaliador.filter(
-        (atribuicao) => (atribuicao.inscricaoProjeto?.FichaAvaliacao?.length || 0) === 0
+        (atribuicao) =>
+          (atribuicao.inscricaoProjeto?.FichaAvaliacao?.length || 0) === 0,
       ).map((atribuicao) => ({
         inscricaoProjetoId: atribuicao.inscricaoProjetoId,
         avaliadorId: avaliador.user.id,
         label: `${atribuicao.inscricaoProjeto?.projeto?.titulo || "Projeto sem título"} (${avaliador.user.nome})`,
-      }))
+      })),
     );
 
   // Desvincula uma lista de { inscricaoProjetoId, avaliadorId, label } sequencialmente,
@@ -418,7 +761,7 @@ const Page = ({ params }) => {
         await GestorDesassociarAvaliadorInscricaoProjeto(
           params.tenant,
           item.inscricaoProjetoId,
-          item.avaliadorId
+          item.avaliadorId,
         );
         sucesso++;
       } catch (error) {
@@ -435,13 +778,13 @@ const Page = ({ params }) => {
       showToast(
         "success",
         "Sucesso",
-        `${sucesso} vinculação(ões) removida(s) com sucesso!`
+        `${sucesso} vinculação(ões) removida(s) com sucesso!`,
       );
     } else {
       showToast(
         "warn",
         "Concluído com erros",
-        `${sucesso} removida(s); ${falhas.length} falharam (${falhas.join(", ")}).`
+        `${sucesso} removida(s); ${falhas.length} falharam (${falhas.join(", ")}).`,
       );
     }
   };
@@ -455,10 +798,15 @@ const Page = ({ params }) => {
     const items = pendentes.map((atribuicao) => ({
       inscricaoProjetoId: atribuicao.inscricaoProjetoId,
       avaliadorId,
-      label: atribuicao.inscricaoProjeto?.projeto?.titulo || `ID ${atribuicao.inscricaoProjetoId}`,
+      label:
+        atribuicao.inscricaoProjeto?.projeto?.titulo ||
+        `ID ${atribuicao.inscricaoProjetoId}`,
     }));
 
-    const { sucesso, falhas } = await desvincularEmLote(items, setDesvinculandoProgresso);
+    const { sucesso, falhas } = await desvincularEmLote(
+      items,
+      setDesvinculandoProgresso,
+    );
 
     await recarregarERessincronizarSelecao();
     setDesvinculandoProgresso(null);
@@ -470,7 +818,10 @@ const Page = ({ params }) => {
     setShowConfirmDesvincularTodosGeral(false);
     if (pendentes.length === 0) return;
 
-    const { sucesso, falhas } = await desvincularEmLote(pendentes, setDesvinculandoProgressoGeral);
+    const { sucesso, falhas } = await desvincularEmLote(
+      pendentes,
+      setDesvinculandoProgressoGeral,
+    );
 
     await recarregarERessincronizarSelecao();
     setDesvinculandoProgressoGeral(null);
@@ -526,7 +877,7 @@ const Page = ({ params }) => {
               onClick={() => {
                 // Remove o último avaliador selecionado (que acionou o modal)
                 setAvaliadoresProjetoSelecionado(
-                  avaliadoresProjetoSelecionado.slice(0, -1)
+                  avaliadoresProjetoSelecionado.slice(0, -1),
                 );
                 setShowModalAssociacao(false);
               }}
@@ -550,7 +901,7 @@ const Page = ({ params }) => {
 
                   const response = await atribuicaoDeProjetosPeloGestor(
                     params.tenant,
-                    body
+                    body,
                   );
 
                   // Verifica se a resposta tem a estrutura de resultados
@@ -561,19 +912,19 @@ const Page = ({ params }) => {
                       showToast(
                         "success",
                         "Associação realizada",
-                        `Avaliador associado ao projeto com sucesso!`
+                        `Avaliador associado ao projeto com sucesso!`,
                       );
 
                       // Atualiza os dados
                       await processarInscricoes(
                         params.tenant,
                         setInscricoesProjetos,
-                        params.ano
+                        params.ano,
                       );
                       await atualizarAvaliadores(
                         params.tenant,
                         setAvaliadores,
-                        setTodasAreas
+                        setTodasAreas,
                       );
 
                       // Limpa seleções
@@ -595,12 +946,12 @@ const Page = ({ params }) => {
                       showToast(
                         "error",
                         `Falha na associação do projeto ID ${resultado.inscricaoProjetoId}`,
-                        mensagemErro
+                        mensagemErro,
                       );
 
                       // Remove o avaliador em caso de erro
                       setAvaliadoresProjetoSelecionado(
-                        avaliadoresProjetoSelecionado.slice(0, -1)
+                        avaliadoresProjetoSelecionado.slice(0, -1),
                       );
                     }
                   } else if (response) {
@@ -608,18 +959,18 @@ const Page = ({ params }) => {
                     showToast(
                       "success",
                       "Associação realizada",
-                      `Avaliador associado ao projeto com sucesso!`
+                      `Avaliador associado ao projeto com sucesso!`,
                     );
 
                     await processarInscricoes(
                       params.tenant,
                       setInscricoesProjetos,
-                      params.ano
+                      params.ano,
                     );
                     await atualizarAvaliadores(
                       params.tenant,
                       setAvaliadores,
-                      setTodasAreas
+                      setTodasAreas,
                     );
 
                     setAvaliadoresProjetoSelecionado([]);
@@ -628,7 +979,7 @@ const Page = ({ params }) => {
                 } catch (error) {
                   // Remove o avaliador em caso de erro
                   setAvaliadoresProjetoSelecionado(
-                    avaliadoresProjetoSelecionado.slice(0, -1)
+                    avaliadoresProjetoSelecionado.slice(0, -1),
                   );
 
                   // Tratamento de erros de rede ou outros erros inesperados
@@ -644,7 +995,7 @@ const Page = ({ params }) => {
                     showToast(
                       "error",
                       `Falha na associação do projeto ID ${resultado.inscricaoProjetoId}`,
-                      mensagemErro
+                      mensagemErro,
                     );
                   } else {
                     const errorMessage =
@@ -705,9 +1056,9 @@ const Page = ({ params }) => {
           <h5 className="mb-2">Desvincular todas as avaliações pendentes?</h5>
           <p>
             Isso vai remover a vinculação de{" "}
-            <strong>{getTodasPendentesGeral().length}</strong> atribuições
-            ainda não avaliadas, de <strong>todos os avaliadores</strong>.
-            Essa ação não afeta projetos já avaliados.
+            <strong>{getTodasPendentesGeral().length}</strong> atribuições ainda
+            não avaliadas, de <strong>todos os avaliadores</strong>. Essa ação
+            não afeta projetos já avaliados.
           </p>
 
           <div className={style.modalActions}>
@@ -747,44 +1098,51 @@ const Page = ({ params }) => {
           <div className={`${style.distribuicao}`}>
             <div className={`${style.distribuicaoCard} ${style.projetos}`}>
               <div className={style.scrollableContainer}>
-                {/* Adicionando os filtros */}
-                <div className={style.filtrosContainer}>
-                  {/* Input de busca por nome do projeto ou orientador */}
-                  <span
-                    className="p-input-icon-left"
-                    style={{ width: "100%", marginBottom: "1rem" }}
-                  >
+                <div className={style.listToolbar}>
+                  <span className={style.searchBox}>
+                    <RiSearchLine className={style.searchIcon} />
                     <InputText
                       placeholder="Buscar projeto ou orientador..."
-                      style={{ width: "100%" }}
+                      value={buscaProjeto}
                       onChange={(e) => setBuscaProjeto(e.target.value)}
                     />
                   </span>
 
-                  {/* Select para filtrar por área */}
-                  <Dropdown
-                    value={areaFiltro}
-                    options={[
-                      { label: "Todas as áreas", value: null },
-                      ...todasAreas.map((area) => ({
-                        label: area.label,
-                        value: area.value,
-                      })),
-                    ]}
-                    optionLabel="label"
-                    optionValue="value"
-                    onChange={(e) => {
-                      setAreaFiltro(e.value); // agora e.value é null, string, etc.
-                      setProjetoSelecionado(null); // continua resetando o projeto selecionado
-                    }}
-                    placeholder="Filtrar por área"
-                    style={{ width: "100%", marginBottom: "1rem" }}
-                  />
+                  <div className={style.toolbarDropdowns}>
+                    <Dropdown
+                      value={areaFiltro}
+                      options={[
+                        { label: "Todas as áreas", value: null },
+                        ...todasAreas.map((area) => ({
+                          label: area.label,
+                          value: area.value,
+                        })),
+                      ]}
+                      optionLabel="label"
+                      optionValue="value"
+                      onChange={(e) => {
+                        setAreaFiltro(e.value); // agora e.value é null, string, etc.
+                        setProjetoSelecionado(null); // continua resetando o projeto selecionado
+                      }}
+                      placeholder="Filtrar por área"
+                      className={style.sortDropdown}
+                    />
+
+                    <Dropdown
+                      value={ordenarProjeto}
+                      options={OPCOES_ORDENACAO_PROJETO}
+                      optionLabel="label"
+                      optionValue="value"
+                      onChange={(e) => setOrdenarProjeto(e.value)}
+                      placeholder="Ordenar por"
+                      className={style.sortDropdown}
+                    />
+                  </div>
                 </div>
 
                 <ul>
-                  {inscricoesProjetos
-                    .filter((projeto) => {
+                  {ordenarProjetos(
+                    inscricoesProjetos.filter((projeto) => {
                       // Filtro por status
                       const statusMatch =
                         projeto.statusAvaliacao === "AGUARDANDO_AVALIACAO";
@@ -808,45 +1166,46 @@ const Page = ({ params }) => {
                           : projeto.projeto.area?.area === areaFiltro);
 
                       return statusMatch && buscaMatch && areaMatch;
-                    })
-                    .map((projeto, index) => (
-                      <li
-                        key={index}
-                        onClick={() => {
-                          setAvaliadorSelecionado(null);
-                          setProjetoSelecionado(projeto);
-                          setAvaliadoresProjetoSelecionado([]); // Limpa seleção ao mudar projeto
-                        }}
-                        className={
-                          projetoSelecionado?.id === projeto.id
-                            ? style.selected
-                            : ""
-                        }
-                      >
-                        <div className={style.content}>
-                          <h6>
-                            {projeto.projeto?.titulo || "Projeto sem título"} -
-                            ID {projeto.id}
-                          </h6>
+                    }),
+                    ordenarProjeto,
+                  ).map((projeto, index) => (
+                    <li
+                      key={index}
+                      onClick={() => {
+                        setAvaliadorSelecionado(null);
+                        setProjetoSelecionado(projeto);
+                        setAvaliadoresProjetoSelecionado([]); // Limpa seleção ao mudar projeto
+                      }}
+                      className={
+                        projetoSelecionado?.id === projeto.id
+                          ? style.selected
+                          : ""
+                      }
+                    >
+                      <div className={style.content}>
+                        <h6>
+                          {projeto.projeto?.titulo || "Projeto sem título"} - ID{" "}
+                          {projeto.id}
+                        </h6>
+                        <p>
+                          <strong>Área:</strong>{" "}
+                          {projeto.projeto.area?.area || "Sem área definida"}
+                        </p>
+                        {projeto.inscricao?.proponente?.nome && (
                           <p>
-                            <strong>Área:</strong>{" "}
-                            {projeto.projeto.area?.area || "Sem área definida"}
+                            <strong>Orientador:</strong>{" "}
+                            {projeto.inscricao?.proponente?.nome}
                           </p>
-                          {projeto.inscricao?.proponente?.nome && (
-                            <p>
-                              <strong>Orientador:</strong>{" "}
-                              {projeto.inscricao?.proponente?.nome}
-                            </p>
-                          )}
-                          {projeto.InscricaoProjetoAvaliador?.length > 0 && (
-                            <p>
-                              <strong>Avaliadores atribuídos:</strong>{" "}
-                              {projeto.InscricaoProjetoAvaliador.length}
-                            </p>
-                          )}
-                        </div>
-                      </li>
-                    ))}
+                        )}
+                        {projeto.InscricaoProjetoAvaliador?.length > 0 && (
+                          <p>
+                            <strong>Avaliadores atribuídos:</strong>{" "}
+                            {projeto.InscricaoProjetoAvaliador.length}
+                          </p>
+                        )}
+                      </div>
+                    </li>
+                  ))}
                 </ul>
               </div>
             </div>
@@ -859,6 +1218,30 @@ const Page = ({ params }) => {
                       <p>Selecione avaliadores para este projeto:</p>
                     </div>
 
+                    <div className={style.listToolbar}>
+                      <span className={style.searchBox}>
+                        <RiSearchLine className={style.searchIcon} />
+                        <InputText
+                          placeholder="Buscar avaliador ou área..."
+                          value={buscaAvaliadorProjeto}
+                          onChange={(e) =>
+                            setBuscaAvaliadorProjeto(e.target.value)
+                          }
+                        />
+                      </span>
+                      <div className={style.toolbarDropdowns}>
+                        <Dropdown
+                          value={ordenarAvaliadorProjeto}
+                          options={OPCOES_ORDENACAO_AVALIADOR}
+                          optionLabel="label"
+                          optionValue="value"
+                          onChange={(e) => setOrdenarAvaliadorProjeto(e.value)}
+                          placeholder="Ordenar por"
+                          className={style.sortDropdown}
+                        />
+                      </div>
+                    </div>
+
                     <ul>
                       {avaliadores.length === 0 ? (
                         <li>
@@ -867,54 +1250,53 @@ const Page = ({ params }) => {
                           </div>
                         </li>
                       ) : (
-                        avaliadores
-                          .filter(
-                            (avaliador) =>
-                              // Sem área definida no projeto: mostra todos os
-                              // avaliadores. Senão, filtra pelos da mesma área.
-                              (!projetoSelecionado.projeto.area ||
-                                avaliador.user.userArea.some(
-                                  (ua) =>
-                                    ua.area.area ===
-                                    projetoSelecionado.projeto.area?.area
-                                )) &&
-                              // Exclui já associados
-                              !projetoSelecionado.InscricaoProjetoAvaliador?.some(
-                                (ipa) => ipa.avaliadorId === avaliador.user.id
-                              )
-                          )
-                          .map((avaliador, index) => (
-                            <li
-                              key={index}
-                              onClick={() =>
-                                handleSelecionarAvaliador(avaliador)
-                              }
-                              style={{ cursor: "pointer" }}
-                            >
-                              <div className={style.checkbox}></div>
-                              <div className={style.content}>
-                                <h6>{avaliador.user.nome}</h6>
-                                <p>
-                                  <strong>
-                                    {avaliador.user.userArea[0]?.area?.area ||
-                                      "Sem área"}
-                                  </strong>
-                                  {avaliador.user.userArea.length > 1 && (
-                                    <span>
-                                      {" "}
-                                      +{avaliador.user.userArea.length - 1}{" "}
-                                      outras áreas
-                                    </span>
-                                  )}
-                                </p>
-                                <p className={style.projetosInfo}>
-                                  Projetos atribuídos:{" "}
-                                  {avaliador.user.InscricaoProjetoAvaliador
-                                    ?.length || 0}
-                                </p>
-                              </div>
-                            </li>
-                          ))
+                        ordenarAvaliadores(
+                          filtrarAvaliadoresPorBusca(
+                            avaliadores.filter(
+                              (avaliador) =>
+                                // Sem área definida no projeto: mostra todos os
+                                // avaliadores. Senão, filtra pelos da mesma área.
+                                (!projetoSelecionado.projeto.area ||
+                                  avaliador.user.userArea.some(
+                                    (ua) =>
+                                      ua.area.area ===
+                                      projetoSelecionado.projeto.area?.area,
+                                  )) &&
+                                // Exclui já associados
+                                !projetoSelecionado.InscricaoProjetoAvaliador?.some(
+                                  (ipa) =>
+                                    ipa.avaliadorId === avaliador.user.id,
+                                ),
+                            ),
+                            buscaAvaliadorProjeto,
+                          ),
+                          ordenarAvaliadorProjeto,
+                        ).map((avaliador, index) => (
+                          <li
+                            key={index}
+                            onClick={() => handleSelecionarAvaliador(avaliador)}
+                            style={{ cursor: "pointer" }}
+                          >
+                            <div className={style.checkbox}></div>
+                            <div className={style.content}>
+                              <h6>{avaliador.user.nome}</h6>
+                              <p>
+                                <strong>
+                                  {avaliador.user.userArea[0]?.area?.area ||
+                                    "Sem área"}
+                                </strong>
+                                {avaliador.user.userArea.length > 1 && (
+                                  <span>
+                                    {" "}
+                                    +{avaliador.user.userArea.length - 1} outras
+                                    áreas
+                                  </span>
+                                )}
+                              </p>
+                              {renderBadgesAvaliador(avaliador)}
+                            </div>
+                          </li>
+                        ))
                       )}
                     </ul>
                   </>
@@ -953,9 +1335,33 @@ const Page = ({ params }) => {
           <div className={`${style.distribuicao}`}>
             <div className={`${style.distribuicaoCard} ${style.projetos}`}>
               <div className={style.scrollableContainer}>
+                <div className={style.listToolbar}>
+                  <span className={style.searchBox}>
+                    <RiSearchLine className={style.searchIcon} />
+                    <InputText
+                      placeholder="Buscar área..."
+                      value={buscaArea}
+                      onChange={(e) => setBuscaArea(e.target.value)}
+                    />
+                  </span>
+                  <div className={style.toolbarDropdowns}>
+                    <Dropdown
+                      value={ordenarArea}
+                      options={OPCOES_ORDENACAO_AREA}
+                      optionLabel="label"
+                      optionValue="value"
+                      onChange={(e) => setOrdenarArea(e.value)}
+                      placeholder="Ordenar por"
+                      className={style.sortDropdown}
+                    />
+                  </div>
+                </div>
                 <ul>
                   {areasComProjetos.length > 0 ? (
-                    areasComProjetos.map((item, index) => (
+                    ordenarAreas(
+                      filtrarAreasPorBusca(areasComProjetos, buscaArea),
+                      ordenarArea,
+                    ).map((item, index) => (
                       <li
                         key={index}
                         onClick={() => setAreaSelecionada(item.area)}
@@ -983,6 +1389,27 @@ const Page = ({ params }) => {
 
             <div className={`${style.distribuicaoCard} ${style.avaliadores}`}>
               <div className={style.scrollableContainer}>
+                <div className={style.listToolbar}>
+                  <span className={style.searchBox}>
+                    <RiSearchLine className={style.searchIcon} />
+                    <InputText
+                      placeholder="Buscar avaliador ou área..."
+                      value={buscaAvaliadorArea}
+                      onChange={(e) => setBuscaAvaliadorArea(e.target.value)}
+                    />
+                  </span>
+                  <div className={style.toolbarDropdowns}>
+                    <Dropdown
+                      value={ordenarAvaliadorArea}
+                      options={OPCOES_ORDENACAO_AVALIADOR}
+                      optionLabel="label"
+                      optionValue="value"
+                      onChange={(e) => setOrdenarAvaliadorArea(e.value)}
+                      placeholder="Ordenar por"
+                      className={style.sortDropdown}
+                    />
+                  </div>
+                </div>
                 {areaSelecionada && getAvaliadoresPorArea().length > 0 && (
                   <div className="flex align-items-center pl-2 pt-2 pr-2 mb-2">
                     <Checkbox onChange={handleSelectAll} checked={checked} />
@@ -1003,19 +1430,25 @@ const Page = ({ params }) => {
                       </div>
                     </li>
                   ) : (
-                    getAvaliadoresPorArea().map((avaliador, index) => (
+                    ordenarAvaliadores(
+                      filtrarAvaliadoresPorBusca(
+                        getAvaliadoresPorArea(),
+                        buscaAvaliadorArea,
+                      ),
+                      ordenarAvaliadorArea,
+                    ).map((avaliador, index) => (
                       <li
                         key={index}
                         onClick={(e) => {
                           if (e.target.tagName !== "INPUT") {
                             const isChecked = avaliadoresList.some(
-                              (a) => a.id === avaliador.id
+                              (a) => a.id === avaliador.id,
                             );
                             if (isChecked) {
                               setAvaliadoresList(
                                 avaliadoresList.filter(
-                                  (a) => a.id !== avaliador.id
-                                )
+                                  (a) => a.id !== avaliador.id,
+                                ),
                               );
                             } else {
                               setAvaliadoresList([
@@ -1038,27 +1471,24 @@ const Page = ({ params }) => {
                               } else {
                                 setAvaliadoresList(
                                   avaliadoresList.filter(
-                                    (a) => a.id !== avaliador.id
-                                  )
+                                    (a) => a.id !== avaliador.id,
+                                  ),
                                 );
                               }
                             }}
                             checked={avaliadoresList.some(
-                              (a) => a.id === avaliador.id
+                              (a) => a.id === avaliador.id,
                             )}
                             onClick={(e) => e.stopPropagation()}
                           />
                         </div>
                         <div className={style.content}>
-                          <h6>
-                            {avaliador.user.nome}{" "}
-                            <span>
-                              {avaliador.user.InscricaoProjetoAvaliador
-                                ?.length || 0}
-                            </span>
-                          </h6>
+                          <h6>{avaliador.user.nome}</h6>
                           <p>
-                            <strong>{areaSelecionada || "Sem área"}</strong>
+                            <strong>
+                              {avaliador.user.userArea[0]?.area?.area ||
+                                "Sem área"}
+                            </strong>
                             {avaliador.user.userArea.length > 1 && (
                               <span>
                                 {" "}
@@ -1067,6 +1497,7 @@ const Page = ({ params }) => {
                               </span>
                             )}
                           </p>
+                          {renderBadgesAvaliador(avaliador)}
                         </div>
                       </li>
                     ))
@@ -1081,8 +1512,35 @@ const Page = ({ params }) => {
           <div className={`${style.distribuicao}`}>
             <div className={`${style.distribuicaoCard} ${style.avaliadores}`}>
               <div className={style.scrollableContainer}>
+                <div className={style.listToolbar}>
+                  <span className={style.searchBox}>
+                    <RiSearchLine className={style.searchIcon} />
+                    <InputText
+                      placeholder="Buscar avaliador ou área..."
+                      value={buscaAvaliadorGeral}
+                      onChange={(e) => setBuscaAvaliadorGeral(e.target.value)}
+                    />
+                  </span>
+                  <div className={style.toolbarDropdowns}>
+                    <Dropdown
+                      value={ordenarAvaliadorGeral}
+                      options={OPCOES_ORDENACAO_AVALIADOR}
+                      optionLabel="label"
+                      optionValue="value"
+                      onChange={(e) => setOrdenarAvaliadorGeral(e.value)}
+                      placeholder="Ordenar por"
+                      className={style.sortDropdown}
+                    />
+                  </div>
+                </div>
                 <ul>
-                  {avaliadores.map((avaliador, index) => (
+                  {ordenarAvaliadores(
+                    filtrarAvaliadoresPorBusca(
+                      avaliadores,
+                      buscaAvaliadorGeral,
+                    ),
+                    ordenarAvaliadorGeral,
+                  ).map((avaliador, index) => (
                     <li
                       key={index}
                       onClick={() => {
@@ -1096,13 +1554,7 @@ const Page = ({ params }) => {
                       style={{ cursor: "pointer" }}
                     >
                       <div className={style.content}>
-                        <h6>
-                          {avaliador.user.nome}{" "}
-                          <span>
-                            {avaliador.user.InscricaoProjetoAvaliador
-                              ?.length || 0}
-                          </span>
-                        </h6>
+                        <h6>{avaliador.user.nome}</h6>
                         <p>
                           <strong>
                             {avaliador.user.userArea[0]?.area?.area ||
@@ -1115,6 +1567,7 @@ const Page = ({ params }) => {
                             </span>
                           )}
                         </p>
+                        {renderBadgesAvaliador(avaliador)}
                       </div>
                     </li>
                   ))}
@@ -1151,15 +1604,15 @@ const Page = ({ params }) => {
                         (atribuicao) =>
                           (atribuicao.inscricaoProjeto?.FichaAvaliacao
                             ?.length || 0) === 0 &&
-                          removendoVinculacao !== atribuicao.inscricaoProjetoId
+                          removendoVinculacao !== atribuicao.inscricaoProjetoId,
                       )
                         .sort(
                           (a, b) =>
-                            new Date(a.createdAt) - new Date(b.createdAt)
+                            new Date(a.createdAt) - new Date(b.createdAt),
                         )
                         .map((atribuicao, idx) => {
                           const tempo = calcularTempoDesdeAtribuicao(
-                            atribuicao.createdAt
+                            atribuicao.createdAt,
                           );
                           return (
                             <li key={idx}>
@@ -1181,10 +1634,14 @@ const Page = ({ params }) => {
                                     className="pi pi-spinner pi-spin"
                                     style={{ marginLeft: "10px" }}
                                   />
-                                ) : desvinculandoProgresso || desvinculandoProgressoGeral ? (
+                                ) : desvinculandoProgresso ||
+                                  desvinculandoProgressoGeral ? (
                                   <RiDeleteBinLine
                                     className={style.deleteIcon}
-                                    style={{ opacity: 0.4, cursor: "not-allowed" }}
+                                    style={{
+                                      opacity: 0.4,
+                                      cursor: "not-allowed",
+                                    }}
                                     title="Aguarde a desvinculação em massa terminar"
                                   />
                                 ) : (
@@ -1194,7 +1651,7 @@ const Page = ({ params }) => {
                                       e.stopPropagation();
                                       handleDesassociarAvaliador(
                                         atribuicao.inscricaoProjetoId,
-                                        avaliadorSelecionado.user.id
+                                        avaliadorSelecionado.user.id,
                                       );
                                     }}
                                     title="Remover vinculação"
@@ -1211,23 +1668,23 @@ const Page = ({ params }) => {
                       {inscricoesProjetos.filter((inscricao) =>
                         inscricao.FichaAvaliacao?.some(
                           (ficha) =>
-                            ficha.avaliadorId === avaliadorSelecionado.user.id
-                        )
+                            ficha.avaliadorId === avaliadorSelecionado.user.id,
+                        ),
                       ).length > 0 ? (
                         inscricoesProjetos
                           .filter((inscricao) =>
                             inscricao.FichaAvaliacao?.some(
                               (ficha) =>
                                 ficha.avaliadorId ===
-                                avaliadorSelecionado.user.id
-                            )
+                                avaliadorSelecionado.user.id,
+                            ),
                           )
                           .map((inscricao, idx) => {
                             const fichasDoAvaliador =
                               inscricao.FichaAvaliacao?.filter(
                                 (ficha) =>
                                   ficha.avaliadorId ===
-                                  avaliadorSelecionado.user.id
+                                  avaliadorSelecionado.user.id,
                               ) || [];
 
                             return (
@@ -1246,7 +1703,7 @@ const Page = ({ params }) => {
                                       <p>
                                         <strong>Sua nota:</strong>{" "}
                                         {fichasDoAvaliador[0].notaTotal.toFixed(
-                                          2
+                                          2,
                                         )}
                                       </p>
                                       <p>
@@ -1280,108 +1737,111 @@ const Page = ({ params }) => {
         <Card className={`mb-4 p-2`}>
           <div className={style.listHeaderComAcao}>
             <h5 className="mb-2">Avaliações pendentes (geral)</h5>
-            {desvinculandoProgressoGeral ? (
-              <span className={style.progressoDesvincular}>
-                <i className="pi pi-spinner pi-spin" />
-                Desvinculando {desvinculandoProgressoGeral.atual}/
-                {desvinculandoProgressoGeral.total}...
-              </span>
-            ) : (
-              !desvinculandoProgresso &&
-              getTodasPendentesGeral().length > 0 && (
-                <Button
-                  className={`button btn-secondary ${style.desvincularTudoBtn}`}
-                  onClick={() => setShowConfirmDesvincularTodosGeral(true)}
-                >
-                  Desvincular tudo
-                </Button>
-              )
-            )}
           </div>
           <div className={style.distribuicao}>
             <div className={`${style.distribuicaoCard} ${style.projetos}`}>
               <div className={style.scrollableContainer}>
+                <div className={style.listToolbar}>
+                  <span className={style.searchBox}>
+                    <RiSearchLine className={style.searchIcon} />
+                    <InputText
+                      placeholder="Buscar avaliador ou projeto..."
+                      value={buscaPendenteGeral}
+                      onChange={(e) => setBuscaPendenteGeral(e.target.value)}
+                    />
+                  </span>
+                  <div className={style.toolbarDropdowns}>
+                    <Dropdown
+                      value={ordenarPendenteGeral}
+                      options={OPCOES_ORDENACAO_PENDENTE_GERAL}
+                      optionLabel="label"
+                      optionValue="value"
+                      onChange={(e) => setOrdenarPendenteGeral(e.value)}
+                      placeholder="Ordenar por"
+                      className={style.sortDropdown}
+                    />
+                  </div>
+                </div>
                 <ul>
-                  {avaliadores
-                    .flatMap((avaliador) =>
-                      avaliador.user.InscricaoProjetoAvaliador.filter(
-                        (atribuicao) =>
-                          (atribuicao.inscricaoProjeto?.FichaAvaliacao
-                            ?.length || 0) === 0
-                      ).map((atribuicao) => ({
-                        atribuicao,
-                        avaliador,
-                      }))
-                    )
-                    .sort(
-                      (a, b) =>
-                        new Date(a.atribuicao.createdAt) -
-                        new Date(b.atribuicao.createdAt)
-                    )
-                    .map(({ atribuicao, avaliador }, idx) => {
-                      const tempo = calcularTempoDesdeAtribuicao(
-                        atribuicao.createdAt
-                      );
-                      const projetoTitulo =
-                        atribuicao.inscricaoProjeto?.projeto?.titulo ||
-                        "Projeto sem título";
-                      const projetoId = atribuicao.inscricaoProjeto?.id;
+                  {ordenarPendentesGeral(
+                    filtrarPendentesGeralPorBusca(
+                      avaliadores.flatMap((avaliador) =>
+                        avaliador.user.InscricaoProjetoAvaliador.filter(
+                          (atribuicao) =>
+                            (atribuicao.inscricaoProjeto?.FichaAvaliacao
+                              ?.length || 0) === 0,
+                        ).map((atribuicao) => ({
+                          atribuicao,
+                          avaliador,
+                        })),
+                      ),
+                      buscaPendenteGeral,
+                    ),
+                    ordenarPendenteGeral,
+                  ).map(({ atribuicao, avaliador }, idx) => {
+                    const tempo = calcularTempoDesdeAtribuicao(
+                      atribuicao.createdAt,
+                    );
+                    const projetoTitulo =
+                      atribuicao.inscricaoProjeto?.projeto?.titulo ||
+                      "Projeto sem título";
+                    const projetoId = atribuicao.inscricaoProjeto?.id;
 
-                      return (
-                        <li key={idx}>
-                          <div
-                            className={`${style.content} ${style.contentAvaliacoesPendentes}`}
-                          >
-                            <div className={style.time}>
-                              <RiTimeLine />
-                              <p className={style.timeInfo}>Aguardando há:</p>
-                              <h6>{tempo.display}</h6>
-                            </div>
-                            <div className={style.headerAvaliadoresPendente}>
-                              <h6>
-                                {projetoTitulo} - ID {projetoId}
-                              </h6>
-                              <p className={style.timeInfo}>
-                                <strong>Avaliador:</strong>{" "}
-                                {avaliador.user.nome}
-                              </p>
-                            </div>
+                    return (
+                      <li key={idx}>
+                        <div
+                          className={`${style.content} ${style.contentAvaliacoesPendentes}`}
+                        >
+                          <div className={style.time}>
+                            <RiTimeLine />
+                            <p className={style.timeInfo}>Aguardando há:</p>
+                            <h6>{tempo.display}</h6>
                           </div>
-                          <div className={style.actions}>
-                            {removendoVinculacao === projetoId ? (
-                              <i
-                                className="pi pi-spinner pi-spin"
-                                style={{ marginLeft: "10px" }}
-                              />
-                            ) : desvinculandoProgresso || desvinculandoProgressoGeral ? (
-                              <RiDeleteBinLine
-                                className={style.deleteIcon}
-                                style={{ opacity: 0.4, cursor: "not-allowed" }}
-                                title="Aguarde a desvinculação em massa terminar"
-                              />
-                            ) : (
-                              <RiDeleteBinLine
-                                className={style.deleteIcon}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDesassociarAvaliador(
-                                    projetoId,
-                                    avaliador.user.id
-                                  );
-                                }}
-                                title="Remover vinculação"
-                              />
-                            )}
+                          <div className={style.headerAvaliadoresPendente}>
+                            <h6>
+                              {projetoTitulo} - ID {projetoId}
+                            </h6>
+                            <p className={style.timeInfo}>
+                              <strong>Avaliador:</strong> {avaliador.user.nome}
+                            </p>
                           </div>
-                        </li>
-                      );
-                    })}
+                        </div>
+                        <div className={style.actions}>
+                          {removendoVinculacao === projetoId ? (
+                            <i
+                              className="pi pi-spinner pi-spin"
+                              style={{ marginLeft: "10px" }}
+                            />
+                          ) : desvinculandoProgresso ||
+                            desvinculandoProgressoGeral ? (
+                            <RiDeleteBinLine
+                              className={style.deleteIcon}
+                              style={{ opacity: 0.4, cursor: "not-allowed" }}
+                              title="Aguarde a desvinculação em massa terminar"
+                            />
+                          ) : (
+                            <RiDeleteBinLine
+                              className={style.deleteIcon}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDesassociarAvaliador(
+                                  projetoId,
+                                  avaliador.user.id,
+                                );
+                              }}
+                              title="Remover vinculação"
+                            />
+                          )}
+                        </div>
+                      </li>
+                    );
+                  })}
                 </ul>
                 {avaliadores.every((av) =>
                   av.user.InscricaoProjetoAvaliador.every(
                     (ap) =>
-                      (ap.inscricaoProjeto?.FichaAvaliacao?.length || 0) > 0
-                  )
+                      (ap.inscricaoProjeto?.FichaAvaliacao?.length || 0) > 0,
+                  ),
                 ) && (
                   <div className={style.content}>
                     <h6>Nenhuma avaliação pendente encontrada</h6>
