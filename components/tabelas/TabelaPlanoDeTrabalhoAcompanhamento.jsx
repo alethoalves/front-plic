@@ -81,6 +81,10 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
       matchMode: FilterMatchMode.IN,
     },
     titulo: { value: "", matchMode: FilterMatchMode.CONTAINS },
+    "inscricaoProjeto.projeto.titulo": {
+      value: "",
+      matchMode: FilterMatchMode.CONTAINS,
+    },
     "inscricaoProjeto.projeto.area.area": {
       value: [],
       matchMode: FilterMatchMode.IN,
@@ -114,6 +118,13 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
       value: [undefined, undefined],
       matchMode: "nota_intervalo",
     },
+    quantidadeFichas: { value: "", matchMode: FilterMatchMode.CONTAINS },
+    quantidadeAvaliadores: {
+      value: "",
+      matchMode: FilterMatchMode.CONTAINS,
+    },
+    diferencaNotas: { value: "", matchMode: FilterMatchMode.CONTAINS },
+    avaliadoresString: { value: "", matchMode: FilterMatchMode.CONTAINS },
   });
   const fetchInitialData = async () => {
     setLoading(true);
