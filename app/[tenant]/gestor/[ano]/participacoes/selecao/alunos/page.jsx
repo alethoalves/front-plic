@@ -286,6 +286,7 @@ const Page = ({ params }) => {
     totalNotasExtras: { value: [undefined, undefined], matchMode: "intervalo_numerico" },
     quantidadeNotasExtras: { value: [undefined, undefined], matchMode: "intervalo_numerico" },
     notaTotalGeral: { value: [undefined, undefined], matchMode: "intervalo_numerico" },
+    solicitacoesBolsaCpf: { value: [undefined, undefined], matchMode: "intervalo_numerico" },
   });
 
   const fetchData = async () => {
@@ -334,6 +335,17 @@ const Page = ({ params }) => {
       });
       setEditaisFormInfo([...editaisMap.values()]);
 
+      // Quantas participações desse CPF (nesse ano/listagem) pediram bolsa —
+      // ajuda o gestor a notar o mesmo CPF solicitando bolsa em mais de uma
+      // inscrição/edital. Conta sobre a mesma lista já filtrada (só "enviada").
+      const solicitacoesBolsaPorCpf = new Map();
+      participacoes.forEach((item) => {
+        if (!item.solicitarBolsa) return;
+        const cpf = item.user?.cpf;
+        if (!cpf) return;
+        solicitacoesBolsaPorCpf.set(cpf, (solicitacoesBolsaPorCpf.get(cpf) || 0) + 1);
+      });
+
       const normalizado = participacoes.map((item) => {
         const totalNotasExtras = (item.NotaExtraParticipacao || []).reduce(
           (soma, nota) => soma + nota.valor,
@@ -350,6 +362,7 @@ const Page = ({ params }) => {
           totalNotasExtras,
           quantidadeNotasExtras,
           notaTotalGeral: (item.fichaAvaliacao?.nota ?? 0) + totalNotasExtras,
+          solicitacoesBolsaCpf: item.user?.cpf ? solicitacoesBolsaPorCpf.get(item.user.cpf) || 0 : 0,
         };
       });
       setItens(normalizado);
@@ -1277,6 +1290,7 @@ const Page = ({ params }) => {
       style={{ width: "8rem" }}
     />,
     <Column key="solicitarBolsa" field="solicitarBolsa" header="Bolsa Solicitada" sortable filter filterElement={(options) => statusClassificacaoFilterTemplate(options, BOLSA_OPTIONS)} showFilterMenu={false} body={(rowData) => (rowData.solicitarBolsa ? "Sim" : "Não")} style={{ width: "8rem" }} />,
+    <Column key="solicitacoesBolsaCpf" field="solicitacoesBolsaCpf" header="Bolsas Solicitadas (CPF)" sortable filter filterElement={inteiroRowFilterTemplate} filterMatchMode="intervalo_numerico" dataType="numeric" showFilterMenu={false} style={{ textAlign: "center", width: "7rem" }} />,
     <Column key="fichaAvaliacao.nota" field="fichaAvaliacao.nota" header="Nota Total (Ficha)" sortable filter filterElement={notaRowFilterTemplate} filterMatchMode="intervalo_numerico" dataType="numeric" showFilterMenu={false} body={(rowData) => rowData.fichaAvaliacao?.nota ?? "-"} style={{ textAlign: "center", width: "7rem" }} />,
     <Column key="totalNotasExtras" field="totalNotasExtras" header="Total Notas Extras" sortable filter filterElement={notaRowFilterTemplate} filterMatchMode="intervalo_numerico" dataType="numeric" showFilterMenu={false} style={{ textAlign: "center", width: "7rem" }} />,
     <Column key="quantidadeNotasExtras" field="quantidadeNotasExtras" header="Qtd. Notas Extras" sortable filter filterElement={inteiroRowFilterTemplate} filterMatchMode="intervalo_numerico" dataType="numeric" showFilterMenu={false} style={{ textAlign: "center", width: "7rem" }} />,
