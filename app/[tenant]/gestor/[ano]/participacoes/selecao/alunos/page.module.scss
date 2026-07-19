@@ -2,9 +2,9 @@
 @import "/styles/partials/layout";
 @import "/styles/partials/spacing";
 
-// ================ HEADER DO ORIENTADOR ================
+// ================ HEADER DO MODAL DE DETALHES ================
 
-.orientadorHeader {
+.detailHeader {
   background: linear-gradient(135deg, $primary-dark 0%, $primary-darken 100%);
   padding: $gap-3;
   color: $white-light;
@@ -366,7 +366,7 @@
   min-height: 200px;
 }
 
-// ================ COLUNAS EXTRAS (FORMULÁRIO DE ORIENTADOR) ================
+// ================ COLUNAS EXTRAS (FORMULÁRIO DE ALUNO) ================
 
 .configIcon {
   width: 24px;

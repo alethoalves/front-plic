@@ -511,6 +511,51 @@ export const exportarParticipacoes = async (tenantSlug, tipo, ano) => {
   URL.revokeObjectURL(url);
 };
 
+export const baixarModeloNotasExtras = async (tenantSlug, tipo, ano) => {
+  const headers = getAuthHeadersClient();
+  if (!headers) throw new Error('Não autenticado');
+
+  const params = { tipo };
+  if (ano) params.ano = ano;
+
+  const response = await req.get(`/private/${tenantSlug}/participacoes/notas-extras/modelo`, {
+    headers,
+    params,
+    responseType: 'blob',
+  });
+
+  const url = URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', `modelo_notas_extras_${tipo}_${ano ?? 'todos'}.xlsx`);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+};
+
+export const importarNotasExtras = async (tenantSlug, tipo, ano, file) => {
+  const headers = getAuthHeadersClient();
+  if (!headers) throw new Error('Não autenticado');
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const params = { tipo };
+  if (ano) params.ano = ano;
+
+  const response = await req.post(
+    `/private/${tenantSlug}/participacoes/notas-extras/importar`,
+    formData,
+    {
+      headers: { ...headers, 'Content-Type': 'multipart/form-data' },
+      params,
+    }
+  );
+
+  return response.data;
+};
+
 export const upsertRespostasParticipacao = async (
   tenantSlug,
   payload,
@@ -539,4 +584,16 @@ export const upsertRespostasParticipacao = async (
     console.error("Erro:", error);
     throw error;
   }
+};
+
+export const editarRespostaCampoGestor = async (tenantSlug, participacaoId, campoId, valor) => {
+  const headers = getAuthHeadersClient();
+  if (!headers) throw new Error('Não autenticado');
+
+  const response = await req.put(
+    `/private/${tenantSlug}/participacoes/${participacaoId}/respostas/${campoId}/gestor`,
+    { valor },
+    { headers }
+  );
+  return response.data;
 };

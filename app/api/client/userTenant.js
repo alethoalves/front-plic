@@ -56,6 +56,21 @@ export const upsertUserTenantAluno = async (tenantSlug, userId, ano, data) => {
   }
 };
 
+export const atualizarCampoUserTenant = async (tenantSlug, userId, ano, campo, valor) => {
+  try {
+    const headers = getAuthHeadersClient();
+    const response = await req.put(
+      `/private/${tenantSlug}/user-tenant/${userId}/${ano}/campo`,
+      { campo, valor },
+      { headers }
+    );
+    return response.data.userTenant;
+  } catch (error) {
+    console.error("Erro ao atualizar campo do UserTenant:", error);
+    throw error;
+  }
+};
+
 export const getOpcoesLotacao = async (tenantSlug) => {
   try {
     const headers = getAuthHeadersClient();

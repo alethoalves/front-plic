@@ -10,7 +10,7 @@ import { RiSettings5Line } from "@remixicon/react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { InputText } from "primereact/inputtext";
-import { FilterMatchMode, FilterService } from "primereact/api";
+import { FilterMatchMode } from "primereact/api";
 import { Card } from "primereact/card";
 import { ProgressBar } from "primereact/progressbar";
 import { Toast } from "primereact/toast";
@@ -43,49 +43,17 @@ import {
   editalRowFilterTemplate,
   notaRowFilterTemplate,
 } from "@/lib/tableTemplates";
+import {
+  formatarValorCampoDinamico,
+  TIPOS_NAO_SELECIONAVEIS,
+} from "@/lib/formularioDinamico";
 
 const CHAVE_CONFIG_COLUNAS = "colunasExtraProjetoSelecao";
-// Tipos de campo que não fazem sentido (ou não são seguros) como coluna de tabela:
-// texto rico não tem representação tabular útil e não deve ter seu conteúdo bruto exposto.
-const TIPOS_NAO_SELECIONAVEIS = ["blockNote"];
 const STATUS_AVALIACAO_OPCOES = [
   "AGUARDANDO_AVALIACAO",
   "EM_AVALIACAO",
   "AVALIADA",
 ].map((status) => ({ label: formatStatusText(status), value: status }));
-
-// Formata o valor de uma Resposta (campo dinâmico) pra exibição numa célula de tabela
-const formatarValorCampoDinamico = (resposta, tipo) => {
-  if (!resposta) return "-";
-  const { value } = resposta;
-
-  if (tipo === "flag") {
-    return value === "true" || value === true ? "Sim" : "Não";
-  }
-  if (tipo === "checkbox" || tipo === "multiselect") {
-    if (typeof value !== "string") return "-";
-    try {
-      const parsed = JSON.parse(value);
-      return (Array.isArray(parsed) ? parsed : [String(parsed)]).join(", ");
-    } catch {
-      return value.split(",").map((v) => v.trim()).filter(Boolean).join(", ");
-    }
-  }
-  if (tipo === "arquivo") return value ? "Arquivo anexado" : "-";
-
-  return value || "-";
-};
-
-// Registra filtro personalizado para intervalo de notas (mesmo usado em TabelaPlanoDeTrabalho)
-FilterService.register("nota_intervalo", (value, filters) => {
-  const [min, max] = filters ?? [undefined, undefined];
-
-  if (min === undefined && max === undefined) return true;
-  if (typeof min === "number" && value < min) return false;
-  if (typeof max === "number" && value > max) return false;
-
-  return true;
-});
 
 const TabelaProjetos = ({ params }) => {
   // ESTADOS
@@ -127,11 +95,11 @@ const TabelaProjetos = ({ params }) => {
     statusAvaliacao: { value: "", matchMode: FilterMatchMode.CONTAINS },
     notaMedia: {
       value: [undefined, undefined],
-      matchMode: "nota_intervalo",
+      matchMode: "intervalo_numerico",
     },
     notaFinal: {
       value: [undefined, undefined],
-      matchMode: "nota_intervalo",
+      matchMode: "intervalo_numerico",
     },
   });
 
@@ -564,7 +532,7 @@ const TabelaProjetos = ({ params }) => {
                 filter
                 filterField="notaMedia"
                 filterElement={notaRowFilterTemplate}
-                filterMatchMode="nota_intervalo"
+                filterMatchMode="intervalo_numerico"
                 dataType="numeric"
                 body={(rowData) => rowData.notaMedia ?? "-"}
                 style={{ textAlign: "center", width: "8rem" }}
@@ -593,7 +561,7 @@ const TabelaProjetos = ({ params }) => {
                 filter
                 filterField="notaFinal"
                 filterElement={notaRowFilterTemplate}
-                filterMatchMode="nota_intervalo"
+                filterMatchMode="intervalo_numerico"
                 dataType="numeric"
                 body={(rowData) => rowData.notaFinal ?? "-"}
                 style={{ textAlign: "center", width: "8rem" }}

@@ -895,6 +895,7 @@ const EditarParticipacao = ({
                   onSave={handleSalvarFichaManual}
                   loading={loadingForm}
                   cvLattes={participacaoInfo?.user?.cvLattes}
+                  user={participacaoInfo?.user}
                   onGerarFicha={async () => {
                     const result = await gerarFichaAvaliacaoParticipacao(
                       tenant,
@@ -1340,6 +1341,7 @@ const EditarParticipacao = ({
                     onBack={() => setActiveStep(0)}
                     loading={loadingForm}
                     cvLattes={participacaoInfo?.user?.cvLattes}
+                    user={participacaoInfo?.user}
                     onVerItensNaoContabilizados={handleVerItensNaoContabilizados}
                     loadingItensNaoContabilizados={loadingItensNaoContabilizados}
                   />

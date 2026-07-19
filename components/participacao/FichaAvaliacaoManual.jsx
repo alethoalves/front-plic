@@ -174,6 +174,7 @@ const FichaAvaliacaoManual = ({
   onFileUpload,
   onGerarFicha,
   cvLattes,
+  user,
   onVerItensNaoContabilizados,
   loadingItensNaoContabilizados = false,
 }) => {
@@ -366,6 +367,15 @@ const FichaAvaliacaoManual = ({
               <a href={xmlStorageUrl} target="_blank" rel="noopener noreferrer">
                 Visualizar <RiExternalLinkLine size={14} />
               </a>
+              {user?.identificadorLattes && (
+                <a
+                  href={`https://lattes.cnpq.br/${user.identificadorLattes}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Ver no Lattes (CNPq) <RiExternalLinkLine size={14} />
+                </a>
+              )}
             </div>
           )}
         </div>

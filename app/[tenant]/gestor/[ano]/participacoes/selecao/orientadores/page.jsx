@@ -1,20 +1,33 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { InputText } from "primereact/inputtext";
 import { FilterMatchMode } from "primereact/api";
 import { Card } from "primereact/card";
 import { Message } from "primereact/message";
+import { Checkbox } from "primereact/checkbox";
 import {
   getParticipacoesByTenant,
   getParticipacao,
   aprovarParticipacoes,
   reprovarParticipacoes,
   exportarParticipacoes,
+  baixarModeloNotasExtras,
+  importarNotasExtras,
+  editarRespostaCampoGestor,
 } from "@/app/api/client/participacao";
 import { getInscricaoUserById } from "@/app/api/client/inscricao";
 import { getFormulario } from "@/app/api/client/formulario";
+import {
+  getConfiguracaoTabela,
+  upsertConfiguracaoTabela,
+} from "@/app/api/client/configuracaoTabela";
+import {
+  getOpcoesAluno,
+  getOpcoesLotacao,
+  atualizarCampoUserTenant,
+} from "@/app/api/client/userTenant";
 import { Toast } from "primereact/toast";
 import { Dialog } from "primereact/dialog";
 import { InputTextarea } from "primereact/inputtextarea";
@@ -25,10 +38,28 @@ import {
   formatStatusText,
   renderStatusTagWithJustificativa,
 } from "@/lib/tagUtils";
-import { statusClassificacaoFilterTemplate } from "@/lib/tableTemplates";
+import {
+  statusClassificacaoFilterTemplate,
+  notaRowFilterTemplate,
+  inteiroRowFilterTemplate,
+  ordenarColunasPorChave,
+} from "@/lib/tableTemplates";
 import { statusOptions } from "@/lib/statusOptions";
 import generateLattesText from "@/lib/generateLattesText";
+import { comRetry } from "@/lib/retry";
+import {
+  formatarValorCampoDinamico,
+  TIPOS_NAO_SELECIONAVEIS,
+} from "@/lib/formularioDinamico";
+import {
+  renderEditorDinamico,
+  tipoEditorParaCampoFormulario,
+  TURNO_OPTIONS,
+  SIM_NAO_OPTIONS,
+} from "@/lib/editorInlineDinamico";
 import Modal from "@/components/Modal";
+import FileInput from "@/components/FileInput";
+import CampoModalEditavel from "@/components/CampoModalEditavel";
 import {
   RiUser2Line,
   RiFileTextLine,
@@ -38,10 +69,172 @@ import {
   RiCheckboxCircleLine,
   RiCloseCircleLine,
   RiCloseLargeLine,
+  RiSettings5Line,
+  RiAddCircleLine,
+  RiEditLine,
 } from "@remixicon/react";
 import styles from "./page.module.scss";
 
 const BATCH_SIZE = 20;
+const CHAVE_CONFIG_COLUNAS = "colunasExtraOrientadorSelecao";
+const CHAVE_ORDEM_COLUNAS = "ordemColunasOrientadorSelecao";
+const CHAVE_LOCAL_FILTROS_ORDENACAO = "filtrosOrdenacaoOrientadorSelecao";
+const MENSAGEM_CAMPO_NAO_APLICAVEL = "Não se aplica a este edital";
+
+const LABELS_TITULACAO = {
+  GRADUACAO: "Graduação",
+  ESPECIALIZACAO: "Especialização",
+  MESTRADO: "Mestrado",
+  DOUTORADO: "Doutorado",
+  POS_DOUTORADO: "Pós-Doutorado",
+};
+const formatarTitulacao = (titulacao) => LABELS_TITULACAO[titulacao] || titulacao || "-";
+const TITULACAO_OPTIONS = Object.entries(LABELS_TITULACAO).map(([value, label]) => ({
+  label,
+  value,
+}));
+
+// Catálogo fixo de campos do UserTenant (dados institucionais do usuário, já filtrados
+// por tenant+ano na consulta) que o gestor pode escolher como coluna extra da tabela.
+// `campoDb`: nome exato do campo no Prisma (usado por atualizarCampoUserTenant).
+// `tipoEditor`/`opcoesKey`: definem o editor inline da célula (resolvido via
+// OPCOES_POR_CHAVE no componente). Campos sem `tipoEditor` não são editáveis.
+const USER_TENANT_CAMPOS = [
+  { id: "matricula", label: "Matrícula", getValor: (ut) => ut?.matricula || "-", campoDb: "matricula", tipoEditor: "text" },
+  { id: "curso", label: "Curso", getValor: (ut) => ut?.curso?.curso || "-", campoDb: "cursoId", tipoEditor: "select", opcoesKey: "curso" },
+  { id: "campus", label: "Campus", getValor: (ut) => ut?.campus?.campus || "-", campoDb: "campusId", tipoEditor: "select", opcoesKey: "campus" },
+  { id: "cargo", label: "Cargo", getValor: (ut) => ut?.cargo?.cargo || "-", campoDb: "cargoId", tipoEditor: "select", opcoesKey: "cargo" },
+  { id: "lotacao", label: "Lotação", getValor: (ut) => ut?.lotacao?.lotacao || "-", campoDb: "lotacaoId", tipoEditor: "select", opcoesKey: "lotacao" },
+  {
+    id: "formaIngresso",
+    label: "Forma de Ingresso",
+    getValor: (ut) => ut?.formaIngresso?.formaIngresso || "-",
+    campoDb: "formaIngressoId",
+    tipoEditor: "select",
+    opcoesKey: "formaIngresso",
+  },
+  {
+    id: "rendimentoAcademico",
+    label: "Rendimento Acadêmico",
+    getValor: (ut) => ut?.rendimentoAcademico ?? "-",
+    campoDb: "rendimentoAcademico",
+    tipoEditor: "number",
+  },
+  { id: "turno", label: "Turno", getValor: (ut) => ut?.turno || "-", campoDb: "turno", tipoEditor: "select", opcoesKey: "turno" },
+  { id: "semestre", label: "Semestre", getValor: (ut) => ut?.semestre ?? "-", campoDb: "semestre", tipoEditor: "number" },
+  {
+    id: "participacaoExterna",
+    label: "Participação Externa",
+    getValor: (ut) => (ut ? (ut.participacaoExterna ? "Sim" : "Não") : "-"),
+    campoDb: "participacaoExterna",
+    tipoEditor: "select",
+    opcoesKey: "simNao",
+  },
+  {
+    id: "instituicaoExterna",
+    label: "Instituição Externa",
+    getValor: (ut) => ut?.instituicaoExterna || "-",
+    campoDb: "instituicaoExterna",
+    tipoEditor: "text",
+  },
+  {
+    id: "historicoEscolarUrl",
+    label: "Histórico Escolar",
+    tipo: "arquivo",
+    getValor: (ut) => (ut?.historicoEscolarUrl ? "Arquivo anexado" : "-"),
+    getUrl: (ut) => ut?.historicoEscolarUrl || null,
+  },
+  { id: "banco", label: "Banco", getValor: (ut) => ut?.banco || "-", campoDb: "banco", tipoEditor: "text" },
+  { id: "agencia", label: "Agência", getValor: (ut) => ut?.agencia || "-", campoDb: "agencia", tipoEditor: "text" },
+  { id: "conta", label: "Conta", getValor: (ut) => ut?.conta || "-", campoDb: "conta", tipoEditor: "text" },
+];
+
+// Renderiza uma célula de coluna dinâmica como link clicável quando há uma URL
+// por trás do valor exibido (campo do tipo "link"/"arquivo", ou UserTenant com getUrl).
+const renderCelulaComLink = (valor, url, textoLink) => {
+  if (!url) return valor;
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={styles.externalLink}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <RiExternalLinkLine size={14} />
+      {textoLink}
+    </a>
+  );
+};
+
+// Soma os totais de alunos/bolsas por inscrição e agrega por usuário (e por usuário+edital),
+// já que um mesmo orientador pode ter várias participações (IDs diferentes) em
+// inscrições/editais diferentes — os totais "do orientador" precisam olhar pro conjunto,
+// não pra linha isolada. Deduplicado por inscricaoId pra não somar a mesma inscrição 2x.
+const computeAgregados = (participacoes, getEditalTitulo) => {
+  const anotados = participacoes.map((item) => {
+    const totalAlunosInscricao = (item.inscricao?.planosDeTrabalho || []).reduce(
+      (soma, plano) => soma + (plano.participacoes?.length || 0),
+      0
+    );
+    const totalBolsaInscricao = item.inscricao?._count?.SolicitacaoBolsa ?? 0;
+    const totalNotasExtras = (item.NotaExtraParticipacao || []).reduce(
+      (soma, nota) => soma + nota.valor,
+      0
+    );
+    const quantidadeNotasExtras = item.NotaExtraParticipacao?.length ?? 0;
+    const notaTotalGeral = (item.fichaAvaliacao?.nota ?? 0) + totalNotasExtras;
+    return {
+      ...item,
+      editalTitulo: getEditalTitulo(item),
+      totalAlunosInscricao,
+      totalBolsaInscricao,
+      totalNotasExtras,
+      quantidadeNotasExtras,
+      notaTotalGeral,
+    };
+  });
+
+  const porUsuario = new Map();
+  const porUsuarioEdital = new Map();
+
+  anotados.forEach((item) => {
+    const userId = item.user?.id ?? item.userId;
+    const inscricaoId = item.inscricao?.id;
+    const editalId = item.inscricao?.edital?.id;
+
+    if (!porUsuario.has(userId)) {
+      porUsuario.set(userId, { inscricoes: new Set(), totalAlunos: 0, totalBolsa: 0 });
+    }
+    const acumuladoUsuario = porUsuario.get(userId);
+    if (!acumuladoUsuario.inscricoes.has(inscricaoId)) {
+      acumuladoUsuario.inscricoes.add(inscricaoId);
+      acumuladoUsuario.totalAlunos += item.totalAlunosInscricao;
+      acumuladoUsuario.totalBolsa += item.totalBolsaInscricao;
+    }
+
+    const chaveUsuarioEdital = `${userId}-${editalId}`;
+    if (!porUsuarioEdital.has(chaveUsuarioEdital)) {
+      porUsuarioEdital.set(chaveUsuarioEdital, { inscricoes: new Set(), totalBolsa: 0 });
+    }
+    const acumuladoUsuarioEdital = porUsuarioEdital.get(chaveUsuarioEdital);
+    if (!acumuladoUsuarioEdital.inscricoes.has(inscricaoId)) {
+      acumuladoUsuarioEdital.inscricoes.add(inscricaoId);
+      acumuladoUsuarioEdital.totalBolsa += item.totalBolsaInscricao;
+    }
+  });
+
+  return anotados.map((item) => {
+    const userId = item.user?.id ?? item.userId;
+    const editalId = item.inscricao?.edital?.id;
+    return {
+      ...item,
+      totalAlunosUser: porUsuario.get(userId)?.totalAlunos ?? 0,
+      totalBolsaUser: porUsuario.get(userId)?.totalBolsa ?? 0,
+      totalBolsaUserEdital: porUsuarioEdital.get(`${userId}-${editalId}`)?.totalBolsa ?? 0,
+    };
+  });
+};
 
 // -------- GrupoAvaliacao (read-only) --------
 const GrupoAvaliacao = ({ grupo, nivel = 0 }) => {
@@ -125,6 +318,33 @@ const Page = ({ params }) => {
   const [showJustificativas, setShowJustificativas] = useState(false);
   const [editaisOptions, setEditaisOptions] = useState([]);
 
+  // Notas extras (planilha)
+  const [baixandoModelo, setBaixandoModelo] = useState(false);
+  const [showImportarNotasModal, setShowImportarNotasModal] = useState(false);
+  const [arquivoNotasExtras, setArquivoNotasExtras] = useState(null);
+  const [enviandoNotasExtras, setEnviandoNotasExtras] = useState(false);
+  const [errosImportacaoNotas, setErrosImportacaoNotas] = useState([]);
+
+  // Opções de dropdown pra edição inline de campos de UserTenant ligados a listas
+  const [opcoesCursos, setOpcoesCursos] = useState([]);
+  const [opcoesCampus, setOpcoesCampus] = useState([]);
+  const [opcoesCargo, setOpcoesCargo] = useState([]);
+  const [opcoesLotacao, setOpcoesLotacao] = useState([]);
+  const [opcoesFormaIngresso, setOpcoesFormaIngresso] = useState([]);
+
+  // Colunas dinâmicas (respostas do formulário de orientador, que pode variar por edital)
+  const [editaisFormInfo, setEditaisFormInfo] = useState([]);
+  const [campoPorId, setCampoPorId] = useState(new Map());
+  const [editalParaCampoIds, setEditalParaCampoIds] = useState(new Map());
+  const [gruposCamposPicker, setGruposCamposPicker] = useState([]);
+  const [colunasSelecionadas, setColunasSelecionadas] = useState([]);
+  const [userTenantSelecionadas, setUserTenantSelecionadas] = useState([]);
+  const [ordemColunas, setOrdemColunas] = useState([]);
+  const [showConfigModal, setShowConfigModal] = useState(false);
+  const [draftColunas, setDraftColunas] = useState([]);
+  const [draftUserTenantColunas, setDraftUserTenantColunas] = useState([]);
+  const [salvandoConfig, setSalvandoConfig] = useState(false);
+
   // Modal de detalhes
   const [modalVisible, setModalVisible] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -141,41 +361,151 @@ const Page = ({ params }) => {
     statusParticipacao: { value: null, matchMode: FilterMatchMode.IN },
     "user.nome": { value: null, matchMode: FilterMatchMode.CONTAINS },
     "user.cpf": { value: null, matchMode: FilterMatchMode.CONTAINS },
+    id: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    "inscricao.id": { value: null, matchMode: FilterMatchMode.CONTAINS },
+    "user.titulacao": { value: null, matchMode: FilterMatchMode.IN },
+    "user.anoTitulacao": { value: [undefined, undefined], matchMode: "intervalo_numerico" },
+    totalAlunosInscricao: { value: [undefined, undefined], matchMode: "intervalo_numerico" },
+    totalAlunosUser: { value: [undefined, undefined], matchMode: "intervalo_numerico" },
+    totalBolsaUserEdital: { value: [undefined, undefined], matchMode: "intervalo_numerico" },
+    totalBolsaUser: { value: [undefined, undefined], matchMode: "intervalo_numerico" },
+    "fichaAvaliacao.nota": { value: [undefined, undefined], matchMode: "intervalo_numerico" },
+    totalNotasExtras: { value: [undefined, undefined], matchMode: "intervalo_numerico" },
+    quantidadeNotasExtras: { value: [undefined, undefined], matchMode: "intervalo_numerico" },
+    notaTotalGeral: { value: [undefined, undefined], matchMode: "intervalo_numerico" },
   });
 
+  const fetchData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const todasParticipacoes = await getParticipacoesByTenant(
+        params.tenant,
+        "orientador",
+        params.ano
+      );
+      // Só inscrições já enviadas contam pra seleção de orientadores.
+      const participacoes = todasParticipacoes.filter(
+        (item) => item.inscricao?.status === "enviada"
+      );
+      const editaisUnicos = [
+        ...new Set(participacoes.map((item) => getEditalTitulo(item))),
+      ]
+        .filter(Boolean)
+        .map((e) => ({ label: e, value: e }));
+      setEditaisOptions(editaisUnicos);
+
+      const editaisMap = new Map();
+      participacoes.forEach((item) => {
+        const edital = item.inscricao?.edital;
+        if (edital?.id != null && !editaisMap.has(edital.id)) {
+          editaisMap.set(edital.id, {
+            id: edital.id,
+            titulo: edital.titulo,
+            formOrientadorId: edital.formOrientadorId || null,
+          });
+        }
+      });
+      setEditaisFormInfo([...editaisMap.values()]);
+
+      const normalizado = computeAgregados(participacoes, getEditalTitulo);
+      setItens(normalizado);
+      setFilteredItens(normalizado);
+    } catch (err) {
+      setError("Erro ao buscar participações de orientadores.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const participacoes = await getParticipacoesByTenant(
-          params.tenant,
-          "orientador",
-          params.ano
-        );
-        const editaisUnicos = [
-          ...new Set(participacoes.map((item) => getEditalTitulo(item))),
-        ]
-          .filter(Boolean)
-          .map((e) => ({ label: e, value: e }));
-        setEditaisOptions(editaisUnicos);
-        const normalizado = participacoes.map((item) => ({
-          ...item,
-          editalTitulo: getEditalTitulo(item),
-        }));
-        setItens(normalizado);
-        setFilteredItens(normalizado);
-      } catch (err) {
-        setError("Erro ao buscar participações de orientadores.");
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchData();
   }, [params.tenant, params.ano]);
 
-  const handleRowClick = async (event) => {
-    const row = event.data;
+  useEffect(() => {
+    const fetchOpcoes = async () => {
+      try {
+        const [opcoesAluno, lotacoes] = await Promise.all([
+          getOpcoesAluno(params.tenant),
+          getOpcoesLotacao(params.tenant),
+        ]);
+        setOpcoesCursos(opcoesAluno?.cursos || []);
+        setOpcoesCampus(opcoesAluno?.campus || []);
+        setOpcoesCargo(opcoesAluno?.cargos || []);
+        setOpcoesFormaIngresso(opcoesAluno?.formasIngresso || []);
+        setOpcoesLotacao(lotacoes || []);
+      } catch (err) {
+        console.error("Erro ao carregar opções de UserTenant:", err);
+      }
+    };
+    fetchOpcoes();
+  }, [params.tenant]);
+
+  const OPCOES_POR_CHAVE = {
+    curso: opcoesCursos,
+    campus: opcoesCampus,
+    cargo: opcoesCargo,
+    lotacao: opcoesLotacao,
+    formaIngresso: opcoesFormaIngresso,
+    turno: TURNO_OPTIONS,
+    simNao: SIM_NAO_OPTIONS,
+  };
+
+  useEffect(() => {
+    if (editaisFormInfo.length === 0) return;
+    const fetchColunasDinamicas = async () => {
+      try {
+        const formOrientadorIds = [
+          ...new Set(editaisFormInfo.map((e) => e.formOrientadorId).filter(Boolean)),
+        ];
+        const [formularios, configuracao, configuracaoOrdem] = await Promise.all([
+          Promise.all(formOrientadorIds.map((id) => getFormulario(params.tenant, id))),
+          getConfiguracaoTabela(params.tenant, CHAVE_CONFIG_COLUNAS),
+          getConfiguracaoTabela(params.tenant, CHAVE_ORDEM_COLUNAS),
+        ]);
+
+        const campoPorIdMap = new Map();
+        const editalParaCampoIdsMap = new Map();
+        const grupos = [];
+
+        editaisFormInfo.forEach((edital) => {
+          const formulario = formularios.find((f) => f?.id === edital.formOrientadorId);
+          const campos = (formulario?.campos || []).sort(
+            (a, b) => (a.ordem ?? 0) - (b.ordem ?? 0)
+          );
+          editalParaCampoIdsMap.set(edital.id, new Set(campos.map((c) => c.id)));
+          campos.forEach((campo) => {
+            if (!campoPorIdMap.has(campo.id)) campoPorIdMap.set(campo.id, campo);
+          });
+          const camposSelecionaveis = campos.filter(
+            (c) => !TIPOS_NAO_SELECIONAVEIS.includes(c.tipo)
+          );
+          if (camposSelecionaveis.length > 0) {
+            grupos.push({
+              editalId: edital.id,
+              editalTitulo: edital.titulo,
+              campos: camposSelecionaveis,
+            });
+          }
+        });
+
+        setCampoPorId(campoPorIdMap);
+        setEditalParaCampoIds(editalParaCampoIdsMap);
+        setGruposCamposPicker(grupos);
+        setColunasSelecionadas(configuracao?.campoIds || []);
+        setUserTenantSelecionadas(configuracao?.userTenantCampos || []);
+        setOrdemColunas(configuracaoOrdem?.ordem || []);
+      } catch (err) {
+        console.error("Erro ao carregar colunas dinâmicas do formulário de orientador:", err);
+      }
+    };
+    fetchColunasDinamicas();
+  }, [editaisFormInfo, params.tenant]);
+
+  // Recebe a linha diretamente (não um evento de clique do PrimeReact) — só é
+  // chamada pelo botão dedicado da última coluna, não mais pela linha inteira,
+  // pra não conflitar com o clique que abre os editores das células editáveis.
+  const handleRowClick = async (row) => {
     setModalVisible(true);
     setDetailLoading(true);
     setDetailData(null);
@@ -305,24 +635,276 @@ const Page = ({ params }) => {
     }
   };
 
+  const handleBaixarModelo = async () => {
+    setBaixandoModelo(true);
+    try {
+      await baixarModeloNotasExtras(params.tenant, "orientador", params.ano);
+    } catch (err) {
+      toast.current.show({ severity: "error", summary: "Erro", detail: "Não foi possível baixar o modelo.", life: 4000 });
+    } finally {
+      setBaixandoModelo(false);
+    }
+  };
+
+  const handleImportarNotasExtras = async () => {
+    if (!arquivoNotasExtras) {
+      toast.current.show({ severity: "warn", summary: "Aviso", detail: "Selecione um arquivo.", life: 3000 });
+      return;
+    }
+    setEnviandoNotasExtras(true);
+    setErrosImportacaoNotas([]);
+    try {
+      const resultado = await importarNotasExtras(params.tenant, "orientador", params.ano, arquivoNotasExtras);
+      toast.current.show({
+        severity: "success",
+        summary: "Sucesso",
+        detail: `${resultado.processadas} nota(s) extra(s) lançada(s).`,
+        life: 6000,
+      });
+      setShowImportarNotasModal(false);
+      setArquivoNotasExtras(null);
+      fetchData();
+    } catch (err) {
+      const erros = err.response?.data?.erros;
+      if (erros?.length) {
+        setErrosImportacaoNotas(erros);
+        toast.current.show({
+          severity: "error",
+          summary: "Planilha com erros",
+          detail: `${erros.length} linha(s) com problema. Nenhuma nota foi importada.`,
+          life: 6000,
+        });
+      } else {
+        toast.current.show({
+          severity: "error",
+          summary: "Erro",
+          detail: err.response?.data?.message || "Não foi possível importar as notas extras.",
+          life: 5000,
+        });
+      }
+    } finally {
+      setEnviandoNotasExtras(false);
+    }
+  };
+
+  // Salva a edição inline de uma célula (resposta de formulário ou campo de
+  // UserTenant). Não escreve em rowData antes de confirmar — se der erro, a
+  // célula volta sozinha ao valor antigo (o valor exibido só muda no refetch).
+  // Aplica `patch` só na linha editada (por id), em itens e filteredItens, sem
+  // recarregar a tabela inteira — evita o flash da barra de progresso a cada edição.
+  const patchLinha = (id, patch) => {
+    setItens((prev) => prev.map((item) => (item.id === id ? patch(item) : item)));
+    setFilteredItens((prev) => prev.map((item) => (item.id === id ? patch(item) : item)));
+  };
+
+  const handleCellEditComplete = async (e) => {
+    const { rowData, newValue, value, field } = e;
+    // O PrimeReact dispara esse evento sempre que sai do modo de edição (inclusive
+    // só clicando pra fora sem mudar nada) — sem essa checagem, qualquer clique de
+    // exploração na tabela dispararia um salvamento à toa.
+    if (newValue === value) return;
+    try {
+      if (field.startsWith("campo_")) {
+        const campoId = parseInt(field.replace("campo_", ""), 10);
+        await comRetry(() => editarRespostaCampoGestor(params.tenant, rowData.id, campoId, newValue));
+        const valorSalvo = Array.isArray(newValue) ? JSON.stringify(newValue) : String(newValue);
+        patchLinha(rowData.id, (item) => {
+          const respostas = item.respostas ? [...item.respostas] : [];
+          const idx = respostas.findIndex((r) => r.campoId === campoId);
+          if (idx >= 0) respostas[idx] = { ...respostas[idx], value: valorSalvo };
+          else respostas.push({ campoId, value: valorSalvo });
+          return { ...item, respostas };
+        });
+      } else if (field.startsWith("userTenant_")) {
+        const campoId = field.replace("userTenant_", "");
+        const campo = USER_TENANT_CAMPOS.find((c) => c.id === campoId);
+        if (!campo?.campoDb) return;
+        const userTenantAtualizado = await comRetry(() =>
+          atualizarCampoUserTenant(params.tenant, rowData.user?.id, params.ano, campo.campoDb, newValue)
+        );
+        patchLinha(rowData.id, (item) => ({
+          ...item,
+          user: { ...item.user, UserTenant: [userTenantAtualizado] },
+        }));
+      }
+    } catch (err) {
+      toast.current.show({
+        severity: "error",
+        summary: "Erro",
+        detail: err.response?.data?.message || "Não foi possível salvar a edição.",
+        life: 5000,
+      });
+    }
+  };
+
+  const abrirConfigModal = () => {
+    setDraftColunas(colunasSelecionadas);
+    setDraftUserTenantColunas(userTenantSelecionadas);
+    setShowConfigModal(true);
+  };
+
+  const toggleCampoDraft = (campoId, checked) => {
+    setDraftColunas((prev) =>
+      checked ? [...prev, campoId] : prev.filter((id) => id !== campoId)
+    );
+  };
+
+  const toggleUserTenantCampoDraft = (campoId, checked) => {
+    setDraftUserTenantColunas((prev) =>
+      checked ? [...prev, campoId] : prev.filter((id) => id !== campoId)
+    );
+  };
+
+  const salvarConfigColunas = async () => {
+    setSalvandoConfig(true);
+    try {
+      await upsertConfiguracaoTabela(params.tenant, CHAVE_CONFIG_COLUNAS, {
+        campoIds: draftColunas,
+        userTenantCampos: draftUserTenantColunas,
+      });
+      setColunasSelecionadas(draftColunas);
+      setUserTenantSelecionadas(draftUserTenantColunas);
+      setShowConfigModal(false);
+    } catch (err) {
+      toast.current.show({
+        severity: "error",
+        summary: "Erro",
+        detail: "Falha ao salvar a configuração de colunas.",
+        life: 3000,
+      });
+    } finally {
+      setSalvandoConfig(false);
+    }
+  };
+
+  // Salva em segundo plano (sem travar a tabela) — se falhar, mantém a ordem
+  // visual e só avisa por toast, mesmo padrão da edição inline de células.
+  const handleColReorder = (e) => {
+    const novaOrdem = e.columns.map((c) => c.props.field).filter(Boolean);
+    setOrdemColunas(novaOrdem);
+    upsertConfiguracaoTabela(params.tenant, CHAVE_ORDEM_COLUNAS, { ordem: novaOrdem }).catch(() => {
+      toast.current.show({
+        severity: "error",
+        summary: "Erro",
+        detail: "Não foi possível salvar a ordem das colunas.",
+        life: 3000,
+      });
+    });
+  };
+
+  // Filtros e ordenação (sort) são preferência pessoal do gestor, salvos só
+  // localmente no navegador (não compartilhados entre gestores, ao contrário
+  // da ordem das colunas). Guarda só esses dois pedaços do estado da tabela —
+  // nunca `columnOrder`, que já é controlado por `ordemColunas` (backend).
+  const salvarEstadoLocalTabela = (state) => {
+    try {
+      localStorage.setItem(
+        `${CHAVE_LOCAL_FILTROS_ORDENACAO}_${params.tenant}`,
+        JSON.stringify({
+          filters: state.filters,
+          sortField: state.sortField,
+          sortOrder: state.sortOrder,
+          multiSortMeta: state.multiSortMeta,
+        })
+      );
+    } catch {
+      // localStorage indisponível (modo privado, quota etc.) — ignora
+    }
+  };
+
+  // O PrimeReact sempre mexe em first/rows (paginação) quando restaura QUALQUER
+  // estado salvo, mesmo que a gente não tenha salvo esses campos — sem valor
+  // aqui, ele seta first/rows como undefined e a paginação quebra (NaN, tabela
+  // vazia). Por isso sempre devolve first/rows válidos, mesmo sem nada salvo.
+  const restaurarEstadoLocalTabela = () => {
+    try {
+      const salvo = localStorage.getItem(`${CHAVE_LOCAL_FILTROS_ORDENACAO}_${params.tenant}`);
+      return { first: 0, rows: 10, ...(salvo ? JSON.parse(salvo) : {}) };
+    } catch {
+      return { first: 0, rows: 10 };
+    }
+  };
+
+  // Achata as respostas dos campos dinâmicos e os dados de UserTenant selecionados num
+  // campo raso por linha (`campo_<id>` / `userTenant_<id>`), pra usar sort/filter nativos
+  // do PrimeReact. Como o formulário de orientador é por edital, uma linha só recebe o
+  // valor da resposta se o edital dela realmente usa o formulário dono desse campo —
+  // senão mostra uma mensagem distinta de "sem resposta". Os campos de UserTenant não
+  // dependem do edital (já vêm filtrados por tenant+ano na consulta).
+  const anexarColunasExtras = (lista) => {
+    if (colunasSelecionadas.length === 0 && userTenantSelecionadas.length === 0) return lista;
+    return lista.map((item) => {
+      const editalId = item.inscricao?.edital?.id;
+      const extras = {};
+      colunasSelecionadas.forEach((campoId) => {
+        const campo = campoPorId.get(campoId);
+        if (!campo) return;
+        const aplicavel = editalParaCampoIds.get(editalId)?.has(campoId);
+        extras[`campo_${campoId}`] = aplicavel
+          ? formatarValorCampoDinamico(
+              item.respostas?.find((r) => r.campoId === campoId),
+              campo.tipo
+            )
+          : MENSAGEM_CAMPO_NAO_APLICAVEL;
+      });
+      const userTenant = item.user?.UserTenant?.[0];
+      userTenantSelecionadas.forEach((campoId) => {
+        const campo = USER_TENANT_CAMPOS.find((c) => c.id === campoId);
+        if (!campo) return;
+        extras[`userTenant_${campoId}`] = campo.getValor(userTenant);
+      });
+      return { ...item, ...extras };
+    });
+  };
+
+  const filteredItensComCamposDinamicos = useMemo(
+    () => anexarColunasExtras(filteredItens),
+    [filteredItens, colunasSelecionadas, campoPorId, editalParaCampoIds, userTenantSelecionadas]
+  );
+
+  // Versão sobre a lista completa (não a filtrada) — usada pelo modal de
+  // detalhes, pra linha continuar aparecendo lá mesmo se estiver fora do
+  // filtro atual da tabela.
+  const itensComCamposDinamicos = useMemo(
+    () => anexarColunasExtras(itens),
+    [itens, colunasSelecionadas, campoPorId, editalParaCampoIds, userTenantSelecionadas]
+  );
+
+  const filtersEfetivos = useMemo(() => {
+    const merged = { ...filters };
+    colunasSelecionadas.forEach((campoId) => {
+      const field = `campo_${campoId}`;
+      if (!merged[field]) {
+        merged[field] = { value: null, matchMode: FilterMatchMode.CONTAINS };
+      }
+    });
+    userTenantSelecionadas.forEach((campoId) => {
+      const field = `userTenant_${campoId}`;
+      if (!merged[field]) {
+        merged[field] = { value: null, matchMode: FilterMatchMode.CONTAINS };
+      }
+    });
+    return merged;
+  }, [filters, colunasSelecionadas, userTenantSelecionadas]);
+
   const renderHeader = () => (
     <div>
       <div className="flex justify-between items-center mb-2">
         <label className="block"><p>Busque por palavra-chave:</p></label>
-        <Button
-          label="Exportar Excel"
-          icon="pi pi-download"
-          className="p-button-outlined p-button-sm"
-          onClick={handleExportar}
-          loading={loadingExportar}
+      </div>
+      <div className="flex align-items-center gap-2">
+        <InputText
+          value={globalFilterValue}
+          onChange={onGlobalFilterChange}
+          placeholder="Pesquisar..."
+          style={{ width: "100%" }}
+        />
+        <RiSettings5Line
+          className={styles.configIcon}
+          onClick={abrirConfigModal}
+          title="Configurar colunas extras"
         />
       </div>
-      <InputText
-        value={globalFilterValue}
-        onChange={onGlobalFilterChange}
-        placeholder="Pesquisar..."
-        style={{ width: "100%" }}
-      />
       {selectedItems.length > 0 && (
         <div className="flex justify-start gap-2 mt-2">
           <Button
@@ -362,11 +944,28 @@ const Page = ({ params }) => {
     if (!detailData) return null;
 
     const { participacao, formularioCampos } = detailData;
-    const { user, fichaAvaliacao, respostas, statusParticipacao, justificativa, inscricao } = participacao;
+    const {
+      user,
+      fichaAvaliacao,
+      respostas,
+      statusParticipacao,
+      justificativa,
+      inscricao,
+      NotaExtraParticipacao: notasExtras,
+    } = participacao;
+    const totalNotasExtras = (notasExtras || []).reduce((soma, n) => soma + n.valor, 0);
     const lattesMaisRecente = user?.cvLattes?.length
       ? user.cvLattes[user.cvLattes.length - 1]
       : null;
     const lattesInfo = lattesMaisRecente ? generateLattesText(lattesMaisRecente.url) : null;
+
+    // Linha "ao vivo": vem de `itens` (mesma fonte da tabela), não de um
+    // snapshot congelado — assim, quando uma edição feita aqui no modal
+    // atualiza `itens` (via handleCellEditComplete/patchLinha), essa seção
+    // reflete o valor novo sozinha, sem recarregar o modal.
+    const linhaModal = itensComCamposDinamicos.find((i) => i.id === participacao.id);
+    const salvarCampoModal = ({ field, newValue, value }) =>
+      handleCellEditComplete({ rowData: linhaModal, newValue, value, field });
 
     return (
       <>
@@ -394,6 +993,30 @@ const Page = ({ params }) => {
 
         {/* Corpo */}
         <div className={styles.modalBody}>
+
+          {/* Dados da Tabela — espelha as colunas visíveis na tabela, com
+              edição inline nas que permitem edição */}
+          {linhaModal && (
+            <div className={styles.box}>
+              <div className={styles.header}>
+                <div className={styles.icon}><RiEditLine size={18} /></div>
+                <h6>Dados da Tabela</h6>
+              </div>
+              <div className={styles.boxContent}>
+                <div className={styles.fieldGrid}>
+                  {colunasOrdenadas.map((coluna) => (
+                    <CampoModalEditavel
+                      key={coluna.key}
+                      coluna={coluna}
+                      linha={linhaModal}
+                      onSalvar={salvarCampoModal}
+                      styles={styles}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Dados Pessoais */}
           <div className={styles.box}>
@@ -447,12 +1070,36 @@ const Page = ({ params }) => {
                     <RiExternalLinkLine size={15} />
                     Visualizar CV Lattes
                   </a>
+                  {user?.identificadorLattes && (
+                    <a
+                      href={`https://lattes.cnpq.br/${user.identificadorLattes}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.externalLink}
+                    >
+                      <RiExternalLinkLine size={15} />
+                      Visualizar Lattes (CNPq)
+                    </a>
+                  )}
                 </>
               ) : (
-                <div className={styles.lattesItem}>
-                  <RiCloseCircleLine size={18} className={styles.lattesMissing} />
-                  <span>Nenhum currículo enviado</span>
-                </div>
+                <>
+                  <div className={styles.lattesItem}>
+                    <RiCloseCircleLine size={18} className={styles.lattesMissing} />
+                    <span>Nenhum currículo enviado</span>
+                  </div>
+                  {user?.identificadorLattes && (
+                    <a
+                      href={`https://lattes.cnpq.br/${user.identificadorLattes}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.externalLink}
+                    >
+                      <RiExternalLinkLine size={15} />
+                      Visualizar Lattes (CNPq)
+                    </a>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -478,6 +1125,35 @@ const Page = ({ params }) => {
               </div>
             </div>
           )}
+
+          {/* Notas Extras */}
+          <div className={styles.box}>
+            <div className={styles.header}>
+              <div className={styles.icon}><RiAddCircleLine size={18} /></div>
+              <h6>Notas Extras</h6>
+              {notasExtras?.length > 0 && (
+                <span className={styles.totalBadge}>{totalNotasExtras}</span>
+              )}
+            </div>
+            <div className={styles.boxContent}>
+              {(notasExtras?.length ?? 0) === 0 ? (
+                <p className={styles.emptyState}>Nenhuma nota extra lançada.</p>
+              ) : (
+                notasExtras.map((nota) => (
+                  <div key={nota.id} className={styles.respostaItem}>
+                    <p className={styles.respostaLabel}>
+                      {nota.valor} pt{nota.valor === 1 ? "" : "s"}
+                      {nota.user?.nome ? ` · lançada por ${nota.user.nome}` : ""}
+                      {nota.createdAt ? ` · ${new Date(nota.createdAt).toLocaleDateString("pt-BR")}` : ""}
+                    </p>
+                    {nota.observacao && (
+                      <div className={styles.respostaValue}>{nota.observacao}</div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
 
           {/* Respostas ao Formulário */}
           {formularioCampos.length > 0 && (
@@ -532,6 +1208,130 @@ const Page = ({ params }) => {
     );
   };
 
+  // Colunas fixas com `key` == `field`, reunidas com as dinâmicas num único
+  // array pra poder ordenar conforme `ordemColunas` (persistido por tenant).
+  const colunasFixas = [
+    <Column key="id" field="id" header="ID" sortable filter filterPlaceholder="Filtrar por ID" showFilterMenu={false} style={{ width: "6rem" }} />,
+    <Column key="inscricao.id" field="inscricao.id" header="ID Inscrição" sortable filter filterPlaceholder="Filtrar por ID" showFilterMenu={false} body={(rowData) => rowData.inscricao?.id ?? "-"} style={{ width: "6rem" }} />,
+    <Column key="editalTitulo" field="editalTitulo" header="Edital" sortable filter filterField="inscricao.edital.titulo" filterElement={(options) => statusClassificacaoFilterTemplate(options, editaisOptions)} body={(rowData) => rowData.inscricao?.edital?.titulo || "N/A"} showFilterMenu={false} />,
+    <Column
+      key="statusParticipacao"
+      field="statusParticipacao"
+      header="Status Participação"
+      sortable
+      filter
+      showFilterMenu={false}
+      filterElement={(options) => statusClassificacaoFilterTemplate(options, statusOptions.participacao)}
+      body={(rowData) => (
+        <div onClick={(e) => e.stopPropagation()}>
+          {renderStatusTagWithJustificativa(rowData.statusParticipacao, rowData.justificativa, {
+            onShowJustificativa: (j) => { setJustificativasAtuais(j); setShowJustificativas(true); },
+          })}
+        </div>
+      )}
+    />,
+    <Column key="user.nome" field="user.nome" header="Nome" sortable filter filterPlaceholder="Buscar por nome" filterField="user.nome" showFilterMenu={false} />,
+    <Column key="user.cpf" field="user.cpf" header="CPF" sortable filter filterPlaceholder="Buscar por CPF" filterField="user.cpf" showFilterMenu={false} style={{ minWidth: "180px" }} />,
+    <Column key="user.titulacao" field="user.titulacao" header="Titulação" sortable filter filterElement={(options) => statusClassificacaoFilterTemplate(options, TITULACAO_OPTIONS)} showFilterMenu={false} body={(rowData) => formatarTitulacao(rowData.user?.titulacao)} style={{ width: "9rem" }} />,
+    <Column key="user.anoTitulacao" field="user.anoTitulacao" header="Ano Titulação" sortable filter filterElement={inteiroRowFilterTemplate} filterMatchMode="intervalo_numerico" dataType="numeric" showFilterMenu={false} body={(rowData) => rowData.user?.anoTitulacao ?? "-"} style={{ width: "7rem" }} />,
+    <Column key="totalAlunosInscricao" field="totalAlunosInscricao" header="Alunos (Inscrição)" sortable filter filterElement={inteiroRowFilterTemplate} filterMatchMode="intervalo_numerico" dataType="numeric" showFilterMenu={false} style={{ textAlign: "center", width: "7rem" }} />,
+    <Column key="totalAlunosUser" field="totalAlunosUser" header="Alunos (Total Orientador)" sortable filter filterElement={inteiroRowFilterTemplate} filterMatchMode="intervalo_numerico" dataType="numeric" showFilterMenu={false} style={{ textAlign: "center", width: "7rem" }} />,
+    <Column key="totalBolsaUserEdital" field="totalBolsaUserEdital" header="Bolsas Solicitadas (Edital)" sortable filter filterElement={inteiroRowFilterTemplate} filterMatchMode="intervalo_numerico" dataType="numeric" showFilterMenu={false} style={{ textAlign: "center", width: "7rem" }} />,
+    <Column key="totalBolsaUser" field="totalBolsaUser" header="Bolsas Solicitadas (Total Orientador)" sortable filter filterElement={inteiroRowFilterTemplate} filterMatchMode="intervalo_numerico" dataType="numeric" showFilterMenu={false} style={{ textAlign: "center", width: "7rem" }} />,
+    <Column key="fichaAvaliacao.nota" field="fichaAvaliacao.nota" header="Nota Total (Ficha)" sortable filter filterElement={notaRowFilterTemplate} filterMatchMode="intervalo_numerico" dataType="numeric" showFilterMenu={false} body={(rowData) => rowData.fichaAvaliacao?.nota ?? "-"} style={{ textAlign: "center", width: "7rem" }} />,
+    <Column key="totalNotasExtras" field="totalNotasExtras" header="Total Notas Extras" sortable filter filterElement={notaRowFilterTemplate} filterMatchMode="intervalo_numerico" dataType="numeric" showFilterMenu={false} style={{ textAlign: "center", width: "7rem" }} />,
+    <Column key="quantidadeNotasExtras" field="quantidadeNotasExtras" header="Qtd. Notas Extras" sortable filter filterElement={inteiroRowFilterTemplate} filterMatchMode="intervalo_numerico" dataType="numeric" showFilterMenu={false} style={{ textAlign: "center", width: "7rem" }} />,
+    <Column key="notaTotalGeral" field="notaTotalGeral" header="Nota Total Geral" sortable filter filterElement={notaRowFilterTemplate} filterMatchMode="intervalo_numerico" dataType="numeric" showFilterMenu={false} style={{ textAlign: "center", width: "7rem" }} />,
+  ];
+
+  const colunasDinamicasFormulario = colunasSelecionadas.map((campoId) => {
+    const campo = campoPorId.get(campoId);
+    if (!campo) return null;
+    const field = `campo_${campoId}`;
+    const tipoEditorCampo = tipoEditorParaCampoFormulario(campo.tipo);
+    const opcoesEditorCampo =
+      campo.tipo === "flag"
+        ? SIM_NAO_OPTIONS
+        : (campo.opcoes || []).map((o) => ({ label: o.label, value: o.label }));
+    return (
+      <Column
+        key={field}
+        field={field}
+        header={campo.label}
+        sortable
+        filter
+        filterPlaceholder={`Filtrar por ${campo.label.toLowerCase()}`}
+        filterField={field}
+        showFilterMenu={false}
+        editor={
+          tipoEditorCampo
+            ? (options) => renderEditorDinamico(tipoEditorCampo, opcoesEditorCampo, options)
+            : undefined
+        }
+        editorTipo={tipoEditorCampo}
+        body={(rowData) => {
+          const valor = rowData[field];
+          if (valor === MENSAGEM_CAMPO_NAO_APLICAVEL) {
+            return <span className={styles.naoAplicavel}>{valor}</span>;
+          }
+          if (campo.tipo === "link" || campo.tipo === "arquivo") {
+            const resposta = rowData.respostas?.find((r) => r.campoId === campoId);
+            return renderCelulaComLink(
+              valor,
+              resposta?.value,
+              campo.tipo === "link" ? "Abrir link" : "Ver arquivo"
+            );
+          }
+          return valor;
+        }}
+        style={{ minWidth: "10rem" }}
+      />
+    );
+  }).filter(Boolean);
+
+  const colunasDinamicasUserTenant = userTenantSelecionadas.map((campoId) => {
+    const campo = USER_TENANT_CAMPOS.find((c) => c.id === campoId);
+    if (!campo) return null;
+    const field = `userTenant_${campoId}`;
+    const opcoesEditorCampo = campo.opcoesKey ? OPCOES_POR_CHAVE[campo.opcoesKey] : [];
+    return (
+      <Column
+        key={field}
+        field={field}
+        header={campo.label}
+        sortable
+        filter
+        filterPlaceholder={`Filtrar por ${campo.label.toLowerCase()}`}
+        filterField={field}
+        showFilterMenu={false}
+        editor={
+          campo.tipoEditor
+            ? (options) => renderEditorDinamico(campo.tipoEditor, opcoesEditorCampo, options)
+            : undefined
+        }
+        editorTipo={campo.tipoEditor}
+        body={(rowData) => {
+          const valor = rowData[field];
+          if (campo.tipo === "link" || campo.tipo === "arquivo") {
+            const userTenant = rowData.user?.UserTenant?.[0];
+            return renderCelulaComLink(
+              valor,
+              campo.getUrl?.(userTenant),
+              campo.tipo === "link" ? "Abrir link" : "Ver arquivo"
+            );
+          }
+          return valor;
+        }}
+        style={{ minWidth: "10rem" }}
+      />
+    );
+  }).filter(Boolean);
+
+  const colunasOrdenadas = ordenarColunasPorChave(
+    [...colunasFixas, ...colunasDinamicasFormulario, ...colunasDinamicasUserTenant],
+    ordemColunas
+  );
+
   return (
     <main>
       <Toast ref={toast} />
@@ -548,7 +1348,31 @@ const Page = ({ params }) => {
       </Modal>
 
       <Card className="custom-card">
-        <h5 className="pt-2 pr-2 pl-2">Seleção de Orientadores</h5>
+        <div className="flex-space pt-2 pr-2 pl-2">
+          <h5 className="m-0">Seleção de Orientadores</h5>
+          <div className="flex gap-2">
+            <Button
+              label="Baixar Modelo (Notas Extras)"
+              icon="pi pi-file-excel"
+              className="p-button-outlined p-button-sm"
+              onClick={handleBaixarModelo}
+              loading={baixandoModelo}
+            />
+            <Button
+              label="Importar Notas Extras"
+              icon="pi pi-upload"
+              className="p-button-outlined p-button-sm"
+              onClick={() => setShowImportarNotasModal(true)}
+            />
+            <Button
+              label="Exportar Excel"
+              icon="pi pi-download"
+              className="p-button-outlined p-button-sm"
+              onClick={handleExportar}
+              loading={loadingExportar}
+            />
+          </div>
+        </div>
         {loading ? (
           <div className="pr-2 pl-2 pb-2 pt-2">
             <ProgressBar mode="indeterminate" style={{ height: "6px" }} />
@@ -558,7 +1382,8 @@ const Page = ({ params }) => {
         ) : (
           <DataTable
             ref={dataTableRef}
-            value={filteredItens}
+            className={styles.tabelaQuebraCabecalho}
+            value={filteredItensComCamposDinamicos}
             paginator
             rows={10}
             rowsPerPageOptions={[10, 20, 50]}
@@ -566,76 +1391,49 @@ const Page = ({ params }) => {
             selectionMode="checkbox"
             selection={selectedItems}
             onSelectionChange={(e) => setSelectedItems(e.value)}
-            onRowClick={handleRowClick}
             dataKey="id"
             sortMode="multiple"
+            reorderableColumns
+            onColReorder={handleColReorder}
+            stateStorage="custom"
+            customSaveState={salvarEstadoLocalTabela}
+            customRestoreState={restaurarEstadoLocalTabela}
             header={renderHeader()}
-            filters={filters}
+            filters={filtersEfetivos}
             onFilter={(e) => {
               setFilters(e.filters);
               setFilteredItens(e.filteredValue || itens);
               setSelectedItems([]);
             }}
             filterDisplay="row"
-            globalFilterFields={["inscricao.edital.titulo", "user.nome", "user.cpf", "statusParticipacao"]}
+            globalFilterFields={[
+              "inscricao.edital.titulo",
+              "user.nome",
+              "user.cpf",
+              "statusParticipacao",
+              ...colunasSelecionadas.map((campoId) => `campo_${campoId}`),
+              ...userTenantSelecionadas.map((campoId) => `userTenant_${campoId}`),
+            ]}
             emptyMessage="Nenhuma participação encontrada."
             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
             currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros"
-            rowClassName={() => "cursor-pointer"}
           >
             <Column selectionMode="multiple" frozen headerStyle={{ width: "3rem" }} />
-            <Column field="id" header="ID" sortable style={{ width: "5rem" }} />
-            <Column
-              field="editalTitulo"
-              header="Edital"
-              sortable
-              filter
-              filterField="inscricao.edital.titulo"
-              filterElement={(options) => statusClassificacaoFilterTemplate(options, editaisOptions)}
-              body={(rowData) => rowData.inscricao?.edital?.titulo || "N/A"}
-              showFilterMenu={false}
-            />
-            <Column
-              field="statusParticipacao"
-              header="Status"
-              sortable
-              filter
-              showFilterMenu={false}
-              filterElement={(options) => statusClassificacaoFilterTemplate(options, statusOptions.participacao)}
-              body={(rowData) => (
-                <div onClick={(e) => e.stopPropagation()}>
-                  {renderStatusTagWithJustificativa(rowData.statusParticipacao, rowData.justificativa, {
-                    onShowJustificativa: (j) => { setJustificativasAtuais(j); setShowJustificativas(true); },
-                  })}
-                </div>
-              )}
-            />
-            <Column
-              field="user.nome"
-              header="Nome"
-              sortable
-              filter
-              filterPlaceholder="Buscar por nome"
-              filterField="user.nome"
-              showFilterMenu={false}
-            />
-            <Column
-              field="user.cpf"
-              header="CPF"
-              sortable
-              filter
-              filterPlaceholder="Buscar por CPF"
-              filterField="user.cpf"
-              showFilterMenu={false}
-              style={{ minWidth: "180px" }}
-            />
+            {colunasOrdenadas}
             <Column
               header=""
-              body={() => (
+              frozen
+              alignFrozen="right"
+              body={(rowData) => (
                 <Button
                   icon="pi pi-chevron-right"
                   className="p-button-text p-button-plain p-button-sm"
                   style={{ color: "#94a3b8" }}
+                  title="Ver detalhes"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRowClick(rowData);
+                  }}
                 />
               )}
               style={{ width: "3rem" }}
@@ -687,6 +1485,114 @@ const Page = ({ params }) => {
       >
         <div style={{ whiteSpace: "pre-line", marginBottom: 12 }}>{justificativasAtuais}</div>
       </Dialog>
+
+      {/* Modal de configuração de colunas extras (respostas do formulário de orientador) */}
+      <Modal
+        isOpen={showConfigModal}
+        onClose={() => setShowConfigModal(false)}
+        size="small"
+      >
+        <div className={styles.configModal}>
+          <h5 className="mb-2">Configurar colunas extras</h5>
+
+          <p className={styles.grupoCamposTitulo}>Respostas do formulário de orientador</p>
+          {gruposCamposPicker.length === 0 ? (
+            <p className="mb-2">Nenhum campo de formulário disponível para os editais listados.</p>
+          ) : (
+            gruposCamposPicker.map((grupo) => (
+              <div key={grupo.editalId} className={styles.grupoCampos}>
+                <p className={styles.grupoCamposSubtitulo}>{grupo.editalTitulo}</p>
+                <ul className={styles.camposList}>
+                  {grupo.campos.map((campo) => (
+                    <li key={campo.id} className="flex align-items-center gap-2 mb-2">
+                      <Checkbox
+                        inputId={`campo-${campo.id}`}
+                        checked={draftColunas.includes(campo.id)}
+                        onChange={(e) => toggleCampoDraft(campo.id, e.checked)}
+                      />
+                      <label htmlFor={`campo-${campo.id}`}>{campo.label}</label>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))
+          )}
+
+          <p className={styles.grupoCamposTitulo}>
+            Dados institucionais do usuário ({params.ano})
+          </p>
+          <ul className={styles.camposList}>
+            {USER_TENANT_CAMPOS.map((campo) => (
+              <li key={campo.id} className="flex align-items-center gap-2 mb-2">
+                <Checkbox
+                  inputId={`userTenant-${campo.id}`}
+                  checked={draftUserTenantColunas.includes(campo.id)}
+                  onChange={(e) => toggleUserTenantCampoDraft(campo.id, e.checked)}
+                />
+                <label htmlFor={`userTenant-${campo.id}`}>{campo.label}</label>
+              </li>
+            ))}
+          </ul>
+
+          <div className="flex justify-content-end gap-2 mt-3">
+            <Button
+              label="Cancelar"
+              className="p-button-text"
+              onClick={() => setShowConfigModal(false)}
+            />
+            <Button label="Salvar" onClick={salvarConfigColunas} loading={salvandoConfig} />
+          </div>
+        </div>
+      </Modal>
+
+      {/* Modal de importação de notas extras */}
+      <Modal
+        isOpen={showImportarNotasModal}
+        onClose={() => { setShowImportarNotasModal(false); setArquivoNotasExtras(null); setErrosImportacaoNotas([]); }}
+        size="small"
+      >
+        <div className={styles.configModal}>
+          <h5 className="mb-2">Importar Notas Extras</h5>
+          <p className="mb-2">
+            Baixe o modelo, preencha as colunas “Nota Extra” (número) e “Observação Nota Extra”
+            (texto, até 200 caracteres) e envie a planilha aqui. Cada envio soma uma nova nota
+            extra por participação — não substitui lançamentos anteriores. Se qualquer linha
+            estiver com problema, nenhuma nota é importada.
+          </p>
+          <FileInput
+            label="Planilha preenchida (.xlsx)"
+            onFileSelect={(file) => { setArquivoNotasExtras(file); setErrosImportacaoNotas([]); }}
+            disabled={enviandoNotasExtras}
+          />
+          {errosImportacaoNotas.length > 0 && (
+            <div className="mt-2">
+              <p className={styles.grupoCamposTitulo}>
+                {errosImportacaoNotas.length} erro(s) — nada foi importado
+              </p>
+              <ul className={styles.camposList}>
+                {errosImportacaoNotas.map((erro, i) => (
+                  <li key={i} className={styles.erroImportacao}>
+                    Linha {erro.linha} (ID {erro.id ?? "-"}): {erro.motivo}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <div className="flex justify-content-end gap-2 mt-3">
+            <Button
+              label="Cancelar"
+              className="p-button-text"
+              onClick={() => { setShowImportarNotasModal(false); setArquivoNotasExtras(null); setErrosImportacaoNotas([]); }}
+            />
+            <Button
+              label="Enviar"
+              onClick={handleImportarNotasExtras}
+              loading={enviandoNotasExtras}
+              disabled={!arquivoNotasExtras}
+            />
+          </div>
+        </div>
+      </Modal>
     </main>
   );
 };

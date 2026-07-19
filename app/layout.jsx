@@ -1,3 +1,4 @@
+import { PrimeReactProvider } from "primereact/api";
 import { lato, kanit } from "@/styles/fonts";
 import "@/styles/globals.scss";
 
@@ -25,7 +26,7 @@ const RootLayout = ({ children }) => {
         className={`${lato.variable} ${kanit.variable}`}
         suppressHydrationWarning={true}
       >
-        {children}
+        <PrimeReactProvider>{children}</PrimeReactProvider>
       </body>
     </html>
   );
