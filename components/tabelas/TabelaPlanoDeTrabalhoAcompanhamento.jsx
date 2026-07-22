@@ -58,6 +58,11 @@ const STATUS_CLASSIFICACAO_DISPONIVEIS = [
   { label: "Desclassificado", value: "DESCLASSIFICADO" },
 ];
 
+const BLOQUEIO_OPCOES = [
+  { label: "Bloqueado", value: true },
+  { label: "Não bloqueado", value: false },
+];
+
 // Registra filtro personalizado para intervalo de notas
 FilterService.register("nota_intervalo", (value, filters) => {
   const [min, max] = filters ?? [undefined, undefined];
@@ -79,6 +84,10 @@ const getInitialFilters = () => ({
     matchMode: FilterMatchMode.IN,
   },
   statusClassificacao: { value: [], matchMode: FilterMatchMode.IN },
+  "inscricaoProjeto.bloqueadoAvaliacao": {
+    value: [],
+    matchMode: FilterMatchMode.IN,
+  },
   "inscricao.edital.titulo": {
     value: [],
     matchMode: FilterMatchMode.IN,
@@ -501,7 +510,15 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
               style={{ width: "14rem" }}
             />
             <Column
+              field="inscricaoProjeto.bloqueadoAvaliacao"
               header="Bloqueio"
+              sortable
+              filter
+              filterElement={(options) =>
+                editalRowFilterTemplate(options, BLOQUEIO_OPCOES)
+              }
+              showFilterMenu={false}
+              filterField="inscricaoProjeto.bloqueadoAvaliacao"
               body={(rowData) =>
                 rowData.inscricaoProjeto?.bloqueadoAvaliacao ? (
                   <Tag
