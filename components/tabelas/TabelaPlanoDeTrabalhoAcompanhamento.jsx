@@ -17,17 +17,25 @@ import { Dropdown } from "primereact/dropdown";
 import { Toast } from "primereact/toast";
 import { FilterService } from "primereact/api";
 import { Button as PrimeButton } from "primereact/button";
+import { InputNumber } from "primereact/inputnumber";
+import { Dialog } from "primereact/dialog";
 
 // COMPONENTES
 import Button from "@/components/Button";
 
 // SERVIÇOS
-import { getAllPlanoDeTrabalhosByTenant } from "@/app/api/client/planoDeTrabalho";
+import {
+  getAllPlanoDeTrabalhosByTenant,
+  aplicarNotaCorte,
+} from "@/app/api/client/planoDeTrabalho";
 import { alterarStatusAvaliacao } from "@/app/api/client/projeto";
+import { handleDefinirNotaCorte } from "@/lib/notaCorteUtils";
 import { formatStatusText } from "@/lib/tagUtils";
 import {
   editalRowFilterTemplate,
   notaRowFilterTemplate,
+  statusClassificacaoBodyTemplate,
+  statusClassificacaoFilterTemplate,
 } from "@/lib/tableTemplates";
 import Modal from "../Modal";
 import ProjetoAvaliacaoResumo from "../ProjetoAvaliacaoResumo";
@@ -40,6 +48,14 @@ const STATUS_AVALIACAO_OPCOES = [
   "EM_AVALIACAO",
   "AVALIADA",
 ].map((status) => ({ label: formatStatusText(status), value: status }));
+
+// Mesma lista estática usada em TabelaPlanoDeTrabalho.jsx — não depende dos
+// dados carregados, por isso é constante de módulo, não state.
+const STATUS_CLASSIFICACAO_DISPONIVEIS = [
+  { label: "Em análise", value: "EM_ANALISE" },
+  { label: "Classificado", value: "CLASSIFICADO" },
+  { label: "Desclassificado", value: "DESCLASSIFICADO" },
+];
 
 // Registra filtro personalizado para intervalo de notas
 FilterService.register("nota_intervalo", (value, filters) => {
@@ -61,6 +77,7 @@ const getInitialFilters = () => ({
     value: [],
     matchMode: FilterMatchMode.IN,
   },
+  statusClassificacao: { value: [], matchMode: FilterMatchMode.IN },
   "inscricao.edital.titulo": {
     value: [],
     matchMode: FilterMatchMode.IN,
@@ -124,6 +141,11 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
   const [activeModal, setActiveModal] = useState(null);
   const [novoStatus, setNovoStatus] = useState(null);
   const [salvandoStatus, setSalvandoStatus] = useState(false);
+  const [notaCorte, setNotaCorte] = useState(0);
+  const [isLoadingNotaCorte, setIsLoadingNotaCorte] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [showJustificativaModal, setShowJustificativaModal] = useState(false);
+  const [justificativaAtual, setJustificativaAtual] = useState("");
 
   // REFS
   const toast = useRef(null);
@@ -268,6 +290,14 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
   const fecharModalAcao = () => {
     setActiveModal(null);
     setNovoStatus(null);
+    setNotaCorte(0);
+  };
+
+  const openJustificativaModal = (rowData) => {
+    if (rowData.justificativa) {
+      setJustificativaAtual(rowData.justificativa);
+      setShowJustificativaModal(true);
+    }
   };
 
   // Ids únicos de InscricaoProjeto (projeto pai) por trás dos planos
@@ -307,6 +337,22 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
     } finally {
       setSalvandoStatus(false);
     }
+  };
+
+  const handleDefinirNotaCorteWrapper = async () => {
+    await handleDefinirNotaCorte({
+      notaCorte,
+      selectedItems,
+      params,
+      aplicarNotaCorteApi: aplicarNotaCorte,
+      fetchInitialData,
+      setIsLoadingNotaCorte,
+      setProgress,
+      setNotaCorte,
+      setSelectedItems,
+      toast,
+    });
+    fecharModalAcao();
   };
 
   // HANDLERS
@@ -446,6 +492,28 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
                     rowData.inscricaoProjeto?.statusAvaliacao || "-"
                   }
                   style={{ width: "14rem" }}
+                />
+                <Column
+                  field="statusClassificacao"
+                  header="Status Classificação do Plano"
+                  sortable
+                  filter
+                  filterElement={(options) =>
+                    statusClassificacaoFilterTemplate(
+                      options,
+                      STATUS_CLASSIFICACAO_DISPONIVEIS
+                    )
+                  }
+                  showFilterMenu={false}
+                  filterField="statusClassificacao"
+                  body={(rowData) =>
+                    statusClassificacaoBodyTemplate(
+                      rowData,
+                      styles,
+                      openJustificativaModal
+                    )
+                  }
+                  style={{ width: "12rem" }}
                 />
                 <Column
                   field="inscricao.edital.titulo"
@@ -656,6 +724,9 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
                     <li onClick={() => setActiveModal("alterarStatus")}>
                       <p>Alterar status</p>
                     </li>
+                    <li onClick={() => setActiveModal("aplicarNotaCorte")}>
+                      <p>Aplicar nota de corte</p>
+                    </li>
                   </ul>
                 </div>
               );
@@ -696,11 +767,76 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
                   </div>
                 </div>
               );
+            case "aplicarNotaCorte":
+              return (
+                <div className={styles.formNotaManual}>
+                  <h5 className="mb-2">Aplicar nota de corte</h5>
+                  <p className="mb-2">
+                    Planos com nota total maior ou igual à nota de corte
+                    serão classificados; os demais, desclassificados. Isso
+                    será aplicado aos {selectedItems.length} plano(s) de
+                    trabalho selecionado(s).
+                  </p>
+                  <label htmlFor="notaCorte">Nota de corte</label>
+                  <InputNumber
+                    inputId="notaCorte"
+                    value={notaCorte}
+                    onValueChange={(e) => setNotaCorte(e.value ?? 0)}
+                    mode="decimal"
+                    min={0}
+                    max={100}
+                    placeholder="Nota"
+                    className="w-100 mt-1"
+                  />
+                  {isLoadingNotaCorte && (
+                    <div className="mt-3">
+                      <ProgressBar
+                        value={progress}
+                        style={{ height: "6px" }}
+                        showValue={false}
+                      />
+                      <small className="block text-center mt-1">
+                        {progress}% completo (
+                        {Math.round(
+                          (selectedItems.length * progress) / 100
+                        )}{" "}
+                        de {selectedItems.length} itens)
+                      </small>
+                    </div>
+                  )}
+                  <div className="flex justify-content-end gap-2 mt-3">
+                    <Button
+                      className="button btn-secondary"
+                      onClick={fecharModalAcao}
+                      disabled={isLoadingNotaCorte}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button
+                      className="button btn-primary"
+                      onClick={handleDefinirNotaCorteWrapper}
+                      loading={isLoadingNotaCorte}
+                    >
+                      Confirmar
+                    </Button>
+                  </div>
+                </div>
+              );
             default:
               return null;
           }
         })()}
       </Modal>
+      <Dialog
+        header="Justificativa de Desclassificação"
+        visible={showJustificativaModal}
+        style={{ width: "50vw" }}
+        onHide={() => setShowJustificativaModal(false)}
+      >
+        <div style={{ whiteSpace: "pre-line", paddingBottom: "20px" }}>
+          {justificativaAtual}
+        </div>
+      </Dialog>
       <Toast ref={toast} />
     </>
   );

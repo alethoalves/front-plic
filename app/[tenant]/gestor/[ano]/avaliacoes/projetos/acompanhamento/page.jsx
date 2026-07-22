@@ -30,7 +30,6 @@ import preverConclusaoAvaliacoes from "@/lib/preverConclusaoAvaliacoes";
 import { formatarData } from "@/lib/formatarDatas";
 import { Toast } from "primereact/toast";
 import { getCookie, setCookie } from "cookies-next";
-import TabelaPlanoDeTrabalhoAcompanhamento from "@/components/tabelas/TabelaPlanoDeTrabalhoAcompanhamento";
 
 const Page = ({ params }) => {
   // ESTADOS
@@ -985,9 +984,6 @@ const Page = ({ params }) => {
             </>
           )}
         </Card>
-
-        <h5 className="mb-2 mt-2">Planos de Trabalho</h5>
-        <TabelaPlanoDeTrabalhoAcompanhamento params={params} />
       </main>
       <Toast ref={toast} />
     </>

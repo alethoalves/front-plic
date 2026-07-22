@@ -7,6 +7,9 @@
     background-color: $white-darken;
     border-radius: $gap-1;
 }
+.clickableStatus {
+    cursor: pointer;
+}
 .menuAcoes{
     ul{
         list-style: none;
