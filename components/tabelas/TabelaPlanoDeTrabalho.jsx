@@ -18,6 +18,7 @@ import { InputNumber } from "primereact/inputnumber";
 import { Toast } from "primereact/toast";
 import { FilterService } from "primereact/api";
 import { Dialog } from "primereact/dialog";
+import { Tag } from "primereact/tag";
 
 // SERVIÇOS
 import {
@@ -25,6 +26,7 @@ import {
   getAllPlanoDeTrabalhosByTenant,
 } from "@/app/api/client/planoDeTrabalho";
 import { handleDefinirNotaCorte } from "@/lib/notaCorteUtils";
+import { formatStatusText } from "@/lib/tagUtils";
 import {
   editalRowFilterTemplate,
   notaRowFilterTemplate,
@@ -33,6 +35,14 @@ import {
 } from "@/lib/tableTemplates";
 import Modal from "../Modal";
 import PlanoDeTrabalho from "../PlanoDeTrabalho";
+
+// Mesmo conjunto de status de avaliação usado em TabelaPlanoDeTrabalhoAcompanhamento.jsx
+// — é o mesmo campo (inscricaoProjeto.statusAvaliacao).
+const STATUS_AVALIACAO_OPCOES = [
+  "AGUARDANDO_AVALIACAO",
+  "EM_AVALIACAO",
+  "AVALIADA",
+].map((status) => ({ label: formatStatusText(status), value: status }));
 
 // Registra filtro personalizado para intervalo de notas
 FilterService.register("nota_intervalo", (value, filters) => {
@@ -59,6 +69,10 @@ const TabelaPlanoDeTrabalho = ({ params }) => {
     useState([]);
   const [showJustificativaModal, setShowJustificativaModal] = useState(false);
   const [justificativaAtual, setJustificativaAtual] = useState("");
+  const [showJustificativaBloqueioModal, setShowJustificativaBloqueioModal] =
+    useState(false);
+  const [justificativaBloqueioAtual, setJustificativaBloqueioAtual] =
+    useState("");
 
   // REFS
   const toast = useRef(null);
@@ -69,6 +83,10 @@ const TabelaPlanoDeTrabalho = ({ params }) => {
     global: { value: "", matchMode: FilterMatchMode.CONTAINS },
     id: { value: "", matchMode: FilterMatchMode.CONTAINS },
     "inscricao.status": {
+      value: [],
+      matchMode: FilterMatchMode.IN,
+    },
+    "inscricaoProjeto.statusAvaliacao": {
       value: [],
       matchMode: FilterMatchMode.IN,
     },
@@ -202,6 +220,13 @@ const TabelaPlanoDeTrabalho = ({ params }) => {
       setJustificativaAtual(rowData.justificativa);
       setShowJustificativaModal(true);
     }
+  };
+
+  const abrirJustificativaBloqueio = (rowData) => {
+    setJustificativaBloqueioAtual(
+      rowData.inscricaoProjeto?.justificativaBloqueio || ""
+    );
+    setShowJustificativaBloqueioModal(true);
   };
 
   // HANDLERS
@@ -362,6 +387,41 @@ const TabelaPlanoDeTrabalho = ({ params }) => {
                   style={{ width: "12rem" }}
                 />
                 <Column
+                  field="inscricaoProjeto.statusAvaliacao"
+                  header="Status Avaliação"
+                  sortable
+                  filter
+                  filterElement={(options) =>
+                    editalRowFilterTemplate(options, STATUS_AVALIACAO_OPCOES)
+                  }
+                  showFilterMenu={false}
+                  filterField="inscricaoProjeto.statusAvaliacao"
+                  body={(rowData) =>
+                    rowData.inscricaoProjeto?.statusAvaliacao || "-"
+                  }
+                  style={{ width: "14rem" }}
+                />
+                <Column
+                  header="Bloqueio"
+                  body={(rowData) =>
+                    rowData.inscricaoProjeto?.bloqueadoAvaliacao ? (
+                      <Tag
+                        severity="warning"
+                        className={styles.tagClicavel}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          abrirJustificativaBloqueio(rowData);
+                        }}
+                      >
+                        Bloqueado
+                      </Tag>
+                    ) : (
+                      "-"
+                    )
+                  }
+                  style={{ width: "10rem" }}
+                />
+                <Column
                   field="statusClassificacao"
                   header="Status Classificação do Plano"
                   sortable
@@ -519,6 +579,16 @@ const TabelaPlanoDeTrabalho = ({ params }) => {
       >
         <div style={{ whiteSpace: "pre-line", paddingBottom: "20px" }}>
           {justificativaAtual}
+        </div>
+      </Dialog>
+      <Dialog
+        header="Justificativa do Bloqueio"
+        visible={showJustificativaBloqueioModal}
+        style={{ width: "50vw" }}
+        onHide={() => setShowJustificativaBloqueioModal(false)}
+      >
+        <div style={{ whiteSpace: "pre-line", paddingBottom: "20px" }}>
+          {justificativaBloqueioAtual}
         </div>
       </Dialog>
       <Toast ref={toast} />
