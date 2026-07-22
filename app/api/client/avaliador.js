@@ -408,6 +408,25 @@ export const deleteFichaAvaliacao = async (tenantSlug,fichaId ) => {
   }
 };
 
+export const arquivarFichaAvaliacao = async (tenantSlug, fichaId, arquivada) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.put(
+      `/private/${tenantSlug}/fichaAvaliacao/${fichaId}/arquivar`,
+      { arquivada },
+      { headers }
+    );
+    return response.data;
+
+  } catch (error) {
+      console.error("Erro ao arquivar ficha:", error);
+      throw error;
+  }
+};
+
 export const avaliadorRefazerAvaliacao = async (tenantSlug, fichaId) => {
   try {
     const headers = getAuthHeadersClient();

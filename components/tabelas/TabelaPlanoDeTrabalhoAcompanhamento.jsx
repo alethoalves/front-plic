@@ -16,6 +16,7 @@ import { ProgressBar } from "primereact/progressbar";
 import { Dropdown } from "primereact/dropdown";
 import { Toast } from "primereact/toast";
 import { FilterService } from "primereact/api";
+import { Button as PrimeButton } from "primereact/button";
 
 // COMPONENTES
 import Button from "@/components/Button";
@@ -51,6 +52,66 @@ FilterService.register("nota_intervalo", (value, filters) => {
   return true;
 });
 
+// Fábrica dos filtros iniciais — usada tanto no useState quanto no reset
+// do botão "Limpar Filtros", pra não duplicar o objeto em dois lugares.
+const getInitialFilters = () => ({
+  global: { value: "", matchMode: FilterMatchMode.CONTAINS },
+  id: { value: "", matchMode: FilterMatchMode.CONTAINS },
+  "inscricaoProjeto.statusAvaliacao": {
+    value: [],
+    matchMode: FilterMatchMode.IN,
+  },
+  "inscricao.edital.titulo": {
+    value: [],
+    matchMode: FilterMatchMode.IN,
+  },
+  titulo: { value: "", matchMode: FilterMatchMode.CONTAINS },
+  "inscricaoProjeto.projeto.titulo": {
+    value: "",
+    matchMode: FilterMatchMode.CONTAINS,
+  },
+  "inscricaoProjeto.projeto.area.area": {
+    value: [],
+    matchMode: FilterMatchMode.IN,
+  },
+  "area.area": { value: [], matchMode: FilterMatchMode.IN },
+  orientadoresString: {
+    value: "",
+    matchMode: FilterMatchMode.CONTAINS,
+  },
+  alunosString: {
+    value: "",
+    matchMode: FilterMatchMode.CONTAINS,
+  },
+  notaTotal: {
+    value: [undefined, undefined],
+    matchMode: "nota_intervalo",
+  },
+  notaProjeto: {
+    value: [undefined, undefined],
+    matchMode: "nota_intervalo",
+  },
+  notaPlano: {
+    value: [undefined, undefined],
+    matchMode: "nota_intervalo",
+  },
+  notaOrientador: {
+    value: [undefined, undefined],
+    matchMode: "nota_intervalo",
+  },
+  notaAluno: {
+    value: [undefined, undefined],
+    matchMode: "nota_intervalo",
+  },
+  quantidadeFichas: { value: "", matchMode: FilterMatchMode.CONTAINS },
+  quantidadeAvaliadores: {
+    value: "",
+    matchMode: FilterMatchMode.CONTAINS,
+  },
+  diferencaNotas: { value: "", matchMode: FilterMatchMode.CONTAINS },
+  avaliadoresString: { value: "", matchMode: FilterMatchMode.CONTAINS },
+});
+
 const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
   // ESTADOS
   const [loading, setLoading] = useState(true);
@@ -69,63 +130,7 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
   const dataTableRef = useRef(null);
 
   // FILTROS
-  const [filters, setFilters] = useState({
-    global: { value: "", matchMode: FilterMatchMode.CONTAINS },
-    id: { value: "", matchMode: FilterMatchMode.CONTAINS },
-    "inscricaoProjeto.statusAvaliacao": {
-      value: [],
-      matchMode: FilterMatchMode.IN,
-    },
-    "inscricao.edital.titulo": {
-      value: [],
-      matchMode: FilterMatchMode.IN,
-    },
-    titulo: { value: "", matchMode: FilterMatchMode.CONTAINS },
-    "inscricaoProjeto.projeto.titulo": {
-      value: "",
-      matchMode: FilterMatchMode.CONTAINS,
-    },
-    "inscricaoProjeto.projeto.area.area": {
-      value: [],
-      matchMode: FilterMatchMode.IN,
-    },
-    "area.area": { value: [], matchMode: FilterMatchMode.IN },
-    orientadoresString: {
-      value: "", // Adicione value padrão
-      matchMode: FilterMatchMode.CONTAINS,
-    },
-    alunosString: {
-      value: "", // Adicione value padrão
-      matchMode: FilterMatchMode.CONTAINS,
-    },
-    notaTotal: {
-      value: [undefined, undefined],
-      matchMode: "nota_intervalo",
-    },
-    notaProjeto: {
-      value: [undefined, undefined],
-      matchMode: "nota_intervalo",
-    },
-    notaPlano: {
-      value: [undefined, undefined],
-      matchMode: "nota_intervalo",
-    },
-    notaOrientador: {
-      value: [undefined, undefined],
-      matchMode: "nota_intervalo",
-    },
-    notaAluno: {
-      value: [undefined, undefined],
-      matchMode: "nota_intervalo",
-    },
-    quantidadeFichas: { value: "", matchMode: FilterMatchMode.CONTAINS },
-    quantidadeAvaliadores: {
-      value: "",
-      matchMode: FilterMatchMode.CONTAINS,
-    },
-    diferencaNotas: { value: "", matchMode: FilterMatchMode.CONTAINS },
-    avaliadoresString: { value: "", matchMode: FilterMatchMode.CONTAINS },
-  });
+  const [filters, setFilters] = useState(getInitialFilters());
   const fetchInitialData = async () => {
     setLoading(true);
     try {
@@ -153,7 +158,30 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
           const fichasProjeto = item.inscricaoProjeto?.FichaAvaliacao || [];
           const avaliadoresProjeto =
             item.inscricaoProjeto?.InscricaoProjetoAvaliador || [];
-          const notasProjeto = fichasProjeto.map((f) => f.notaTotal || 0);
+
+          // Diferença de notas: mesma régua usada no modal de detalhe (soma
+          // projeto + plano por avaliador, já que o mesmo avaliador envia os
+          // dois juntos na mesma submissão) — ignora fichas arquivadas e
+          // fichas "sem nota" (período bloqueado), senão o max/min fica
+          // distorcido por valores que não deveriam contar.
+          const notaCombinadaPorAvaliador = new Map();
+          fichasProjeto
+            .filter((f) => !f.arquivada && f.notaTotal !== null)
+            .forEach((f) => {
+              notaCombinadaPorAvaliador.set(
+                f.avaliadorId,
+                (notaCombinadaPorAvaliador.get(f.avaliadorId) || 0) + f.notaTotal
+              );
+            });
+          (item.FichaAvaliacao || [])
+            .filter((f) => !f.arquivada && f.notaTotal !== null)
+            .forEach((f) => {
+              notaCombinadaPorAvaliador.set(
+                f.avaliadorId,
+                (notaCombinadaPorAvaliador.get(f.avaliadorId) || 0) + f.notaTotal
+              );
+            });
+          const notasCombinadas = Array.from(notaCombinadaPorAvaliador.values());
 
           return {
             ...item,
@@ -176,12 +204,21 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
                 .filter(Boolean)
                 .join(", ") || "Nenhum avaliador",
             diferencaNotas:
-              notasProjeto.length > 0
-                ? Math.max(...notasProjeto) - Math.min(...notasProjeto)
+              notasCombinadas.length > 0
+                ? Math.max(...notasCombinadas) - Math.min(...notasCombinadas)
                 : "N/A",
           };
         }) || [];
       setItens(itensProcessados);
+      // Mantém o plano aberto no modal em sincronia após qualquer refresh
+      // (ex.: arquivar/desarquivar uma ficha) — sem isso, planoFichas
+      // continuaria mostrando os dados antigos até o modal ser reaberto.
+      setSelectedPlano((prevSelected) =>
+        prevSelected
+          ? itensProcessados.find((item) => item.id === prevSelected.id) ??
+            prevSelected
+          : prevSelected
+      );
 
       const editaisUnicos = [
         ...new Set(itens.map((item) => item.inscricao?.edital?.titulo)),
@@ -281,9 +318,21 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
     setGlobalFilterValue(value);
   };
 
+  const clearFilters = () => {
+    setFilters(getInitialFilters());
+    setGlobalFilterValue("");
+    setSelectedItems([]); // consistente com onFilter, que já limpa a seleção a cada mudança de filtro
+  };
+
   const renderHeader = () => {
     return (
-      <div className="flex flex-wrap justify-content-between align-items-center">
+      <div className="flex flex-wrap justify-content-between align-items-center gap-2">
+        <PrimeButton
+          icon="pi pi-filter-slash"
+          label="Limpar Filtros"
+          onClick={clearFilters}
+          className="p-button-outlined p-button-secondary"
+        />
         <InputText
           className="w-100"
           value={globalFilterValue}

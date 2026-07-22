@@ -3,19 +3,23 @@
 import { useState, useEffect, useRef } from "react";
 import styles from "@/components/Formularios/Form.module.scss";
 import {
+  RiArchiveLine,
   RiArrowLeftRightLine,
   RiEyeLine,
   RiGroupLine,
+  RiInboxUnarchiveLine,
   RiInformationLine,
   RiQuillPenLine,
 } from "@remixicon/react";
 import { Tag } from "primereact/tag";
 import { DataView } from "primereact/dataview";
 import { Toast } from "primereact/toast";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import {
   getInscricaoProjetoById,
   updateInscricaoProjeto,
 } from "@/app/api/client/projeto";
+import { arquivarFichaAvaliacao } from "@/app/api/client/avaliador";
 import { getSeverityByStatus, formatStatusText } from "@/lib/tagUtils";
 import Button from "@/components/Button";
 
@@ -42,23 +46,25 @@ const ProjetoAvaliacaoResumo = ({
   const [inscricaoProjeto, setInscricaoProjeto] = useState(null);
   const toast = useRef(null);
 
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const data = await getInscricaoProjetoById(
+        tenantSlug,
+        idInscricao,
+        projetoId
+      );
+      setInscricaoProjeto(data);
+    } catch (error) {
+      console.error("Erro ao buscar dados do projeto:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const data = await getInscricaoProjetoById(
-          tenantSlug,
-          idInscricao,
-          projetoId
-        );
-        setInscricaoProjeto(data);
-      } catch (error) {
-        console.error("Erro ao buscar dados do projeto:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenantSlug, idInscricao, projetoId]);
 
   const handleUpdateStatus = async (statusAvaliacao) => {
@@ -87,6 +93,49 @@ const ProjetoAvaliacaoResumo = ({
     }
   };
 
+  // Arquivar/desarquivar exclui/restaura a nota deste avaliador da média e
+  // da contagem mínima de avaliações — pode afetar até duas fichas reais
+  // (a do projeto e a deste plano), então alterna as duas que existirem.
+  const handleToggleArquivar = (ficha) => {
+    const alvo = !ficha.arquivada;
+    confirmDialog({
+      message: alvo
+        ? "Arquivar esta ficha de avaliação? A nota deste avaliador deixará de contar na média e no número mínimo de avaliações do projeto/plano."
+        : "Desarquivar esta ficha de avaliação? A nota deste avaliador voltará a contar na média.",
+      header: "Confirmação",
+      icon: "pi pi-exclamation-triangle",
+      acceptLabel: "Sim",
+      rejectLabel: "Não",
+      accept: async () => {
+        try {
+          const idsParaAlternar = [
+            ficha.fichaProjetoId,
+            ficha.fichaPlanoId,
+          ].filter(Boolean);
+          for (const id of idsParaAlternar) {
+            await arquivarFichaAvaliacao(tenantSlug, id, alvo);
+          }
+          await fetchData();
+          await onSuccess?.();
+          toast.current?.show({
+            severity: "success",
+            summary: "Sucesso",
+            detail: alvo ? "Ficha arquivada." : "Ficha desarquivada.",
+            life: 3000,
+          });
+        } catch (error) {
+          console.error("Erro ao arquivar/desarquivar ficha:", error);
+          toast.current?.show({
+            severity: "error",
+            summary: "Erro",
+            detail: "Ocorreu um erro ao arquivar/desarquivar a ficha.",
+            life: 3000,
+          });
+        }
+      },
+    });
+  };
+
   // O gestor só alterna entre "Avaliada" e "Aguardando avaliação" aqui — o
   // status "Em avaliação" é setado automaticamente pelo sistema (atribuição
   // de avaliador), não é uma opção manual nesse resumo.
@@ -110,15 +159,21 @@ const ProjetoAvaliacaoResumo = ({
 
   // Uma linha por avaliador: quem avaliou o projeto também avaliou o(s)
   // plano(s) na mesma submissão, então a nota exibida é a soma (projeto +
-  // plano) — não faz sentido mostrar como duas fichas separadas.
+  // plano) — não faz sentido mostrar como duas fichas separadas. Guarda os
+  // dois ids reais (fichaProjetoId/fichaPlanoId) e as duas flags de
+  // arquivamento por trás da linha combinada, já que arquivar precisa
+  // afetar as duas fichas juntas (mesmo avaliador, mesma submissão).
   const fichasCombinadas = (() => {
     const porAvaliador = new Map();
 
     (inscricaoProjeto?.FichaAvaliacao || []).forEach((f) => {
       porAvaliador.set(f.avaliadorId, {
-        fichaId: f.id,
         avaliador: f.avaliador,
         notaTotal: f.notaTotal || 0,
+        fichaProjetoId: f.id,
+        fichaPlanoId: null,
+        arquivadaProjeto: f.arquivada,
+        arquivadaPlano: null,
       });
     });
 
@@ -126,16 +181,29 @@ const ProjetoAvaliacaoResumo = ({
       const existente = porAvaliador.get(f.avaliadorId);
       if (existente) {
         existente.notaTotal += f.notaTotal || 0;
+        existente.fichaPlanoId = f.id;
+        existente.arquivadaPlano = f.arquivada;
       } else {
         porAvaliador.set(f.avaliadorId, {
-          fichaId: f.id,
           avaliador: f.avaliador,
           notaTotal: f.notaTotal || 0,
+          fichaProjetoId: null,
+          fichaPlanoId: f.id,
+          arquivadaProjeto: null,
+          arquivadaPlano: f.arquivada,
         });
       }
     });
 
-    return Array.from(porAvaliador.values());
+    return Array.from(porAvaliador.values()).map((row) => ({
+      ...row,
+      // Indicador visual da linha: arquivada se qualquer uma das duas
+      // partes (projeto/plano) estiver arquivada.
+      arquivada: Boolean(row.arquivadaProjeto || row.arquivadaPlano),
+      // Mantém o mesmo id usado antes por abrirFichaDetalhada (prioriza a
+      // ficha de projeto, cai pra ficha de plano se não houver uma).
+      fichaId: row.fichaProjetoId ?? row.fichaPlanoId,
+    }));
   })();
 
   // Abre, em nova aba, a ficha completa (respostas do projeto + dos planos
@@ -153,7 +221,9 @@ const ProjetoAvaliacaoResumo = ({
       {fichas.map((ficha) => (
         <div
           key={ficha.fichaId}
-          className={styles.fichas}
+          className={`${styles.fichas} ${
+            ficha.arquivada ? styles.fichaArquivada : ""
+          }`}
           onClick={() => abrirFichaDetalhada(ficha)}
         >
           <div className={styles.headerFicha}>
@@ -163,11 +233,31 @@ const ProjetoAvaliacaoResumo = ({
                 <br />
                 <strong>{ficha.avaliador?.nome}</strong>
               </p>
+              {ficha.arquivada && (
+                <Tag severity="warning" value="Arquivada" className="mt-1" />
+              )}
             </div>
             <div className={styles.content2}>
-              <p>
+              <p
+                style={
+                  ficha.arquivada ? { textDecoration: "line-through" } : undefined
+                }
+              >
                 Total: <strong>{ficha.notaTotal}</strong>
               </p>
+              <span
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleToggleArquivar(ficha);
+                }}
+                title={ficha.arquivada ? "Desarquivar" : "Arquivar"}
+              >
+                {ficha.arquivada ? (
+                  <RiInboxUnarchiveLine />
+                ) : (
+                  <RiArchiveLine />
+                )}
+              </span>
               <RiEyeLine />
             </div>
           </div>
@@ -188,6 +278,7 @@ const ProjetoAvaliacaoResumo = ({
     <div className={styles.content}>
       <div className={styles.toast}>
         <Toast ref={toast} />
+        <ConfirmDialog />
       </div>
       <div className={styles.mainContent}>
         <div className={styles.box}>

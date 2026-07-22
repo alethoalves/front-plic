@@ -512,6 +512,9 @@
   }
   .fichas{
     border-top: 1px solid $white-darken;
+    &.fichaArquivada{
+        opacity: 0.6;
+    }
     .content1{
         flex: 1;
     }
