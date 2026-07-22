@@ -9,9 +9,16 @@ import {
 } from "@/app/api/client/avaliador";
 import { getCargos } from "@/app/api/client/cargo";
 import { Card } from "primereact/card";
-import { RiSettings5Line, RiTimeLine, RiSearchLine } from "@remixicon/react";
+import {
+  RiSettings5Line,
+  RiTimeLine,
+  RiSearchLine,
+  RiFileExcelLine,
+} from "@remixicon/react";
 import { Checkbox } from "primereact/checkbox";
 import { RiDeleteBinLine } from "@remixicon/react";
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
 import { GestorDesassociarAvaliadorInscricaoProjeto } from "@/app/api/client/avaliador";
 import NoData from "@/components/NoData";
 import calcularTempoDesdeAtribuicao from "@/lib/calcularTempoDesdeAtribuicao";
@@ -828,6 +835,342 @@ const Page = ({ params }) => {
     reportarResultadoDesvinculacao(sucesso, falhas);
   };
 
+  // Listas filtradas/ordenadas reaproveitadas tanto pela renderização quanto
+  // pela exportação em Excel, pra não duplicar a lógica de filtro/ordenação.
+  const projetosNaoDistribuidosFiltrados = ordenarProjetos(
+    inscricoesProjetos.filter((projeto) => {
+      const statusMatch = projeto.statusAvaliacao === "AGUARDANDO_AVALIACAO";
+      const buscaMatch =
+        !buscaProjeto ||
+        projeto.projeto?.titulo
+          ?.toLowerCase()
+          .includes(buscaProjeto.toLowerCase()) ||
+        projeto.inscricao?.proponente?.nome
+          ?.toLowerCase()
+          .includes(buscaProjeto.toLowerCase());
+      const areaMatch =
+        areaFiltro === null ||
+        (areaFiltro === "Sem área definida"
+          ? !projeto.projeto.area
+          : projeto.projeto.area?.area === areaFiltro);
+      return statusMatch && buscaMatch && areaMatch;
+    }),
+    ordenarProjeto,
+  );
+
+  const avaliadoresDisponiveisParaProjeto = projetoSelecionado
+    ? ordenarAvaliadores(
+        filtrarAvaliadoresPorBusca(
+          avaliadores.filter(
+            (avaliador) =>
+              (!projetoSelecionado.projeto.area ||
+                avaliador.user.userArea.some(
+                  (ua) =>
+                    ua.area.area === projetoSelecionado.projeto.area?.area,
+                )) &&
+              !projetoSelecionado.InscricaoProjetoAvaliador?.some(
+                (ipa) => ipa.avaliadorId === avaliador.user.id,
+              ),
+          ),
+          buscaAvaliadorProjeto,
+        ),
+        ordenarAvaliadorProjeto,
+      )
+    : [];
+
+  const areasComProjetosFiltradas = ordenarAreas(
+    filtrarAreasPorBusca(areasComProjetos, buscaArea),
+    ordenarArea,
+  );
+
+  const avaliadoresDaAreaFiltrados = areaSelecionada
+    ? ordenarAvaliadores(
+        filtrarAvaliadoresPorBusca(
+          getAvaliadoresPorArea(),
+          buscaAvaliadorArea,
+        ),
+        ordenarAvaliadorArea,
+      )
+    : [];
+
+  const avaliadoresGeralFiltrados = ordenarAvaliadores(
+    filtrarAvaliadoresPorBusca(avaliadores, buscaAvaliadorGeral),
+    ordenarAvaliadorGeral,
+  );
+
+  const projetosAvaliadosPeloAvaliadorSelecionado = avaliadorSelecionado
+    ? inscricoesProjetos.filter((inscricao) =>
+        inscricao.FichaAvaliacao?.some(
+          (ficha) => ficha.avaliadorId === avaliadorSelecionado.user.id,
+        ),
+      )
+    : [];
+
+  const pendentesGeralFiltrados = ordenarPendentesGeral(
+    filtrarPendentesGeralPorBusca(
+      avaliadores.flatMap((avaliador) =>
+        avaliador.user.InscricaoProjetoAvaliador.filter(
+          (atribuicao) =>
+            (atribuicao.inscricaoProjeto?.FichaAvaliacao?.length || 0) === 0,
+        ).map((atribuicao) => ({
+          atribuicao,
+          avaliador,
+        })),
+      ),
+      buscaPendenteGeral,
+    ),
+    ordenarPendenteGeral,
+  );
+
+  // Gera e baixa um .xlsx com uma ou mais abas a partir de dados já em memória
+  // (mesmo padrão usado em app/.../avaliacoes/projetos/avaliadores/page.jsx).
+  const exportarExcel = async (nomeArquivo, planilhas) => {
+    const workbook = new ExcelJS.Workbook();
+    planilhas.forEach(({ nome, colunas, linhas }) => {
+      const worksheet = workbook.addWorksheet(nome);
+      // Colunas marcadas com wrapText: true (ex.: texto com "\n" pra
+      // simular várias linhas dentro da mesma célula) precisam desse
+      // alinhamento pro Excel de fato quebrar a linha na exibição.
+      worksheet.columns = colunas.map((coluna) =>
+        coluna.wrapText
+          ? {
+              ...coluna,
+              style: { alignment: { wrapText: true, vertical: "top" } },
+            }
+          : coluna,
+      );
+      linhas.forEach((linha) => worksheet.addRow(linha));
+    });
+    const buffer = await workbook.xlsx.writeBuffer();
+    saveAs(new Blob([buffer]), nomeArquivo);
+  };
+
+  const colunasAvaliador = [
+    { header: "Nome", key: "nome", width: 30 },
+    { header: "Email", key: "email", width: 35 },
+    { header: "Área(s)", key: "areas", width: 35 },
+    { header: "Atribuídas", key: "atribuidas", width: 12 },
+    { header: "Avaliadas", key: "avaliadas", width: 12 },
+    { header: "Pendentes", key: "pendentes", width: 12 },
+  ];
+
+  const linhaAvaliador = (avaliador) => ({
+    nome: avaliador.user.nome,
+    email: avaliador.user.email,
+    areas: avaliador.user.userArea.map((ua) => ua.area.area).join(", "),
+    atribuidas:
+      avaliador.projetosAtribuidos ??
+      avaliador.user.InscricaoProjetoAvaliador?.length ??
+      0,
+    avaliadas: avaliador.projetosAvaliados ?? 0,
+    pendentes: avaliador.projetosPendentes ?? 0,
+  });
+
+  const exportarDistribuicaoPorProjeto = () => {
+    exportarExcel("distribuicao-por-projeto.xlsx", [
+      {
+        nome: "Projetos",
+        colunas: [
+          { header: "ID", key: "id", width: 10 },
+          { header: "Título", key: "titulo", width: 40 },
+          { header: "Área", key: "area", width: 25 },
+          { header: "Orientador", key: "orientador", width: 30 },
+          { header: "Email do orientador", key: "emailOrientador", width: 35 },
+          { header: "Avaliadores atribuídos", key: "avaliadores", width: 20 },
+        ],
+        linhas: projetosNaoDistribuidosFiltrados.map((projeto) => ({
+          id: projeto.id,
+          titulo: projeto.projeto?.titulo || "Projeto sem título",
+          area: projeto.projeto.area?.area || "Sem área definida",
+          orientador: projeto.inscricao?.proponente?.nome || "",
+          emailOrientador: projeto.inscricao?.proponente?.email || "",
+          avaliadores: projeto.InscricaoProjetoAvaliador?.length || 0,
+        })),
+      },
+      {
+        nome: "Avaliadores disponíveis",
+        colunas: colunasAvaliador,
+        linhas: avaliadoresDisponiveisParaProjeto.map(linhaAvaliador),
+      },
+    ]);
+  };
+
+  const exportarDistribuicaoPorArea = () => {
+    // Com área selecionada, a aba de avaliadores é a mesma lista já filtrada
+    // pra tela. Sem área selecionada, essa lista fica vazia na tela (o
+    // usuário ainda não escolheu uma área) — pro Excel, nesse caso,
+    // exportamos todos os avaliadores mesmo assim, já que o dado é útil
+    // sem depender da seleção.
+    const avaliadoresParaExportar = areaSelecionada
+      ? avaliadoresDaAreaFiltrados
+      : ordenarAvaliadores(
+          filtrarAvaliadoresPorBusca(avaliadores, buscaAvaliadorArea),
+          ordenarAvaliadorArea,
+        );
+
+    const areaSelecionadaInfo = areaSelecionada
+      ? areasComProjetos.find((a) => a.area === areaSelecionada)
+      : null;
+
+    // Com área selecionada: quantos projetos dessa área ainda faltam
+    // distribuir (mesmo valor pra todo mundo, já que a lista já está
+    // restrita a quem avalia essa área). Sem área selecionada: para cada
+    // área do avaliador, quantos projetos dela ainda faltam distribuir.
+    const linhaComProjetosPendentesPorArea = (avaliador) => {
+      const base = linhaAvaliador(avaliador);
+      if (areaSelecionada) {
+        return {
+          ...base,
+          projetosPendentesArea: areaSelecionadaInfo?.count ?? 0,
+        };
+      }
+      const areasComPendencias = avaliador.user.userArea
+        .map((ua) => ({
+          area: ua.area.area,
+          count:
+            areasComProjetos.find((a) => a.area === ua.area.area)?.count ??
+            0,
+        }))
+        .filter(({ count }) => count > 0)
+        .sort((a, b) => b.count - a.count);
+
+      const projetosPendentesArea = areasComPendencias.length
+        ? `<ul>\n${areasComPendencias
+            .map(
+              ({ area, count }) =>
+                `<li>${area} - ${count} projetos pendentes</li>`,
+            )
+            .join("\n")}\n</ul>`
+        : "Nenhuma área com pendências";
+
+      return { ...base, projetosPendentesArea };
+    };
+
+    exportarExcel("distribuicao-por-area.xlsx", [
+      {
+        nome: "Áreas",
+        colunas: [
+          { header: "Área", key: "area", width: 30 },
+          {
+            header: "Projetos não distribuídos",
+            key: "count",
+            width: 22,
+          },
+        ],
+        linhas: areasComProjetosFiltradas.map((item) => ({
+          area: item.area,
+          count: item.count,
+        })),
+      },
+      {
+        nome: "Avaliadores",
+        colunas: [
+          { header: "Nome", key: "nome", width: 30 },
+          { header: "Email", key: "email", width: 35 },
+          { header: "Área(s)", key: "areas", width: 35 },
+          {
+            header: areaSelecionada
+              ? "Projetos pendentes na área"
+              : "Projetos pendentes por área",
+            key: "projetosPendentesArea",
+            width: areaSelecionada ? 22 : 55,
+            wrapText: !areaSelecionada,
+          },
+          { header: "Atribuídas", key: "atribuidas", width: 12 },
+          { header: "Avaliadas", key: "avaliadas", width: 12 },
+          { header: "Pendentes", key: "pendentes", width: 12 },
+        ],
+        linhas: avaliadoresParaExportar.map(linhaComProjetosPendentesPorArea),
+      },
+    ]);
+  };
+
+  const exportarAvaliadoresXProjetos = () => {
+    const pendentes = getPendentesDoAvaliadorSelecionado().map(
+      (atribuicao) => {
+        const tempo = calcularTempoDesdeAtribuicao(atribuicao.createdAt);
+        return {
+          projeto:
+            atribuicao.inscricaoProjeto?.projeto?.titulo ||
+            "Projeto sem título",
+          id: atribuicao.inscricaoProjeto?.id,
+          status: "Pendente",
+          tempoOuNota: tempo.display,
+          mediaGeral: "",
+        };
+      },
+    );
+
+    const avaliados = projetosAvaliadosPeloAvaliadorSelecionado.map(
+      (inscricao) => {
+        const fichaDoAvaliador = inscricao.FichaAvaliacao?.find(
+          (ficha) => ficha.avaliadorId === avaliadorSelecionado.user.id,
+        );
+        return {
+          projeto: inscricao.projeto?.titulo || "Projeto sem título",
+          id: inscricao.id,
+          status: "Avaliado",
+          tempoOuNota: fichaDoAvaliador?.notaTotal?.toFixed(2) ?? "",
+          mediaGeral: inscricao.notaMedia,
+        };
+      },
+    );
+
+    exportarExcel("avaliadores-x-projetos.xlsx", [
+      {
+        nome: "Avaliadores",
+        colunas: colunasAvaliador,
+        linhas: avaliadoresGeralFiltrados.map(linhaAvaliador),
+      },
+      {
+        nome: "Projetos do avaliador selecionado",
+        colunas: [
+          { header: "Projeto", key: "projeto", width: 40 },
+          { header: "ID", key: "id", width: 10 },
+          { header: "Status", key: "status", width: 14 },
+          {
+            header: "Tempo desde atribuição / Sua nota",
+            key: "tempoOuNota",
+            width: 25,
+          },
+          { header: "Média geral", key: "mediaGeral", width: 14 },
+        ],
+        linhas: [...pendentes, ...avaliados],
+      },
+    ]);
+  };
+
+  const exportarAvaliacoesPendentesGeral = () => {
+    exportarExcel("avaliacoes-pendentes-geral.xlsx", [
+      {
+        nome: "Pendentes",
+        colunas: [
+          { header: "Projeto", key: "projeto", width: 40 },
+          { header: "ID", key: "id", width: 10 },
+          { header: "Avaliador", key: "avaliador", width: 30 },
+          { header: "Email do avaliador", key: "emailAvaliador", width: 35 },
+          { header: "Aguardando há", key: "aguardando", width: 20 },
+          { header: "Atribuído em", key: "atribuidoEm", width: 20 },
+        ],
+        linhas: pendentesGeralFiltrados.map(({ atribuicao, avaliador }) => {
+          const tempo = calcularTempoDesdeAtribuicao(atribuicao.createdAt);
+          return {
+            projeto:
+              atribuicao.inscricaoProjeto?.projeto?.titulo ||
+              "Projeto sem título",
+            id: atribuicao.inscricaoProjeto?.id,
+            avaliador: avaliador.user.nome,
+            emailAvaliador: avaliador.user.email,
+            aguardando: tempo.display,
+            atribuidoEm: new Date(atribuicao.createdAt).toLocaleString(
+              "pt-BR",
+            ),
+          };
+        }),
+      },
+    ]);
+  };
+
   return (
     <>
       <Modal
@@ -1094,7 +1437,14 @@ const Page = ({ params }) => {
           </div>
         </Card>
         <Card className={`mb-4 p-2`}>
-          <h5 className="mb-2">Distribuição por projeto específico</h5>
+          <div className="flex-space mb-2">
+            <h5>Distribuição por projeto específico</h5>
+            <RiFileExcelLine
+              className={`${style.icon} cursor-pointer`}
+              onClick={exportarDistribuicaoPorProjeto}
+              title="Baixar em Excel"
+            />
+          </div>
           <div className={`${style.distribuicao}`}>
             <div className={`${style.distribuicaoCard} ${style.projetos}`}>
               <div className={style.scrollableContainer}>
@@ -1141,34 +1491,7 @@ const Page = ({ params }) => {
                 </div>
 
                 <ul>
-                  {ordenarProjetos(
-                    inscricoesProjetos.filter((projeto) => {
-                      // Filtro por status
-                      const statusMatch =
-                        projeto.statusAvaliacao === "AGUARDANDO_AVALIACAO";
-
-                      // Filtro por busca (projeto ou orientador)
-                      const buscaMatch =
-                        !buscaProjeto ||
-                        projeto.projeto?.titulo
-                          ?.toLowerCase()
-                          .includes(buscaProjeto.toLowerCase()) ||
-                        projeto.inscricao?.proponente?.nome
-                          ?.toLowerCase()
-                          .includes(buscaProjeto.toLowerCase());
-
-                      // Filtro por área
-                      // Por esta versão mais robusta:
-                      const areaMatch =
-                        areaFiltro === null || // Quando seleciona "Todas as áreas"
-                        (areaFiltro === "Sem área definida"
-                          ? !projeto.projeto.area
-                          : projeto.projeto.area?.area === areaFiltro);
-
-                      return statusMatch && buscaMatch && areaMatch;
-                    }),
-                    ordenarProjeto,
-                  ).map((projeto, index) => (
+                  {projetosNaoDistribuidosFiltrados.map((projeto, index) => (
                     <li
                       key={index}
                       onClick={() => {
@@ -1250,28 +1573,8 @@ const Page = ({ params }) => {
                           </div>
                         </li>
                       ) : (
-                        ordenarAvaliadores(
-                          filtrarAvaliadoresPorBusca(
-                            avaliadores.filter(
-                              (avaliador) =>
-                                // Sem área definida no projeto: mostra todos os
-                                // avaliadores. Senão, filtra pelos da mesma área.
-                                (!projetoSelecionado.projeto.area ||
-                                  avaliador.user.userArea.some(
-                                    (ua) =>
-                                      ua.area.area ===
-                                      projetoSelecionado.projeto.area?.area,
-                                  )) &&
-                                // Exclui já associados
-                                !projetoSelecionado.InscricaoProjetoAvaliador?.some(
-                                  (ipa) =>
-                                    ipa.avaliadorId === avaliador.user.id,
-                                ),
-                            ),
-                            buscaAvaliadorProjeto,
-                          ),
-                          ordenarAvaliadorProjeto,
-                        ).map((avaliador, index) => (
+                        avaliadoresDisponiveisParaProjeto.map(
+                          (avaliador, index) => (
                           <li
                             key={index}
                             onClick={() => handleSelecionarAvaliador(avaliador)}
@@ -1296,7 +1599,8 @@ const Page = ({ params }) => {
                               {renderBadgesAvaliador(avaliador)}
                             </div>
                           </li>
-                        ))
+                          ),
+                        )
                       )}
                     </ul>
                   </>
@@ -1310,7 +1614,14 @@ const Page = ({ params }) => {
           </div>
         </Card>
         <Card className={`mb-4 p-2`}>
-          <h5 className="mb-2">Distribuição por área</h5>
+          <div className="flex-space mb-2">
+            <h5>Distribuição por área</h5>
+            <RiFileExcelLine
+              className={`${style.icon} cursor-pointer`}
+              onClick={exportarDistribuicaoPorArea}
+              title="Baixar em Excel"
+            />
+          </div>
           {avaliadoresList?.length > 0 && areaSelecionada && (
             <div className={`${style.actions}`}>
               <button
@@ -1358,10 +1669,7 @@ const Page = ({ params }) => {
                 </div>
                 <ul>
                   {areasComProjetos.length > 0 ? (
-                    ordenarAreas(
-                      filtrarAreasPorBusca(areasComProjetos, buscaArea),
-                      ordenarArea,
-                    ).map((item, index) => (
+                    areasComProjetosFiltradas.map((item, index) => (
                       <li
                         key={index}
                         onClick={() => setAreaSelecionada(item.area)}
@@ -1430,13 +1738,7 @@ const Page = ({ params }) => {
                       </div>
                     </li>
                   ) : (
-                    ordenarAvaliadores(
-                      filtrarAvaliadoresPorBusca(
-                        getAvaliadoresPorArea(),
-                        buscaAvaliadorArea,
-                      ),
-                      ordenarAvaliadorArea,
-                    ).map((avaliador, index) => (
+                    avaliadoresDaAreaFiltrados.map((avaliador, index) => (
                       <li
                         key={index}
                         onClick={(e) => {
@@ -1508,7 +1810,14 @@ const Page = ({ params }) => {
           </div>
         </Card>
         <Card className={`mb-4 p-2`}>
-          <h5 className="mb-2">Avaliadores x Projetos</h5>
+          <div className="flex-space mb-2">
+            <h5>Avaliadores x Projetos</h5>
+            <RiFileExcelLine
+              className={`${style.icon} cursor-pointer`}
+              onClick={exportarAvaliadoresXProjetos}
+              title="Baixar em Excel"
+            />
+          </div>
           <div className={`${style.distribuicao}`}>
             <div className={`${style.distribuicaoCard} ${style.avaliadores}`}>
               <div className={style.scrollableContainer}>
@@ -1534,13 +1843,7 @@ const Page = ({ params }) => {
                   </div>
                 </div>
                 <ul>
-                  {ordenarAvaliadores(
-                    filtrarAvaliadoresPorBusca(
-                      avaliadores,
-                      buscaAvaliadorGeral,
-                    ),
-                    ordenarAvaliadorGeral,
-                  ).map((avaliador, index) => (
+                  {avaliadoresGeralFiltrados.map((avaliador, index) => (
                     <li
                       key={index}
                       onClick={() => {
@@ -1665,20 +1968,8 @@ const Page = ({ params }) => {
 
                     <h6 className="mt-2 ml-2 mb-2">Avaliados</h6>
                     <ul>
-                      {inscricoesProjetos.filter((inscricao) =>
-                        inscricao.FichaAvaliacao?.some(
-                          (ficha) =>
-                            ficha.avaliadorId === avaliadorSelecionado.user.id,
-                        ),
-                      ).length > 0 ? (
-                        inscricoesProjetos
-                          .filter((inscricao) =>
-                            inscricao.FichaAvaliacao?.some(
-                              (ficha) =>
-                                ficha.avaliadorId ===
-                                avaliadorSelecionado.user.id,
-                            ),
-                          )
+                      {projetosAvaliadosPeloAvaliadorSelecionado.length > 0 ? (
+                        projetosAvaliadosPeloAvaliadorSelecionado
                           .map((inscricao, idx) => {
                             const fichasDoAvaliador =
                               inscricao.FichaAvaliacao?.filter(
@@ -1737,6 +2028,11 @@ const Page = ({ params }) => {
         <Card className={`mb-4 p-2`}>
           <div className={style.listHeaderComAcao}>
             <h5 className="mb-2">Avaliações pendentes (geral)</h5>
+            <RiFileExcelLine
+              className={`${style.icon} cursor-pointer`}
+              onClick={exportarAvaliacoesPendentesGeral}
+              title="Baixar em Excel"
+            />
           </div>
           <div className={style.distribuicao}>
             <div className={`${style.distribuicaoCard} ${style.projetos}`}>
@@ -1763,22 +2059,7 @@ const Page = ({ params }) => {
                   </div>
                 </div>
                 <ul>
-                  {ordenarPendentesGeral(
-                    filtrarPendentesGeralPorBusca(
-                      avaliadores.flatMap((avaliador) =>
-                        avaliador.user.InscricaoProjetoAvaliador.filter(
-                          (atribuicao) =>
-                            (atribuicao.inscricaoProjeto?.FichaAvaliacao
-                              ?.length || 0) === 0,
-                        ).map((atribuicao) => ({
-                          atribuicao,
-                          avaliador,
-                        })),
-                      ),
-                      buscaPendenteGeral,
-                    ),
-                    ordenarPendenteGeral,
-                  ).map(({ atribuicao, avaliador }, idx) => {
+                  {pendentesGeralFiltrados.map(({ atribuicao, avaliador }, idx) => {
                     const tempo = calcularTempoDesdeAtribuicao(
                       atribuicao.createdAt,
                     );
