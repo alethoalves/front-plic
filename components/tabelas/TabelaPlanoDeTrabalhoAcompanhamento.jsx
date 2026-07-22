@@ -19,6 +19,7 @@ import { FilterService } from "primereact/api";
 import { Button as PrimeButton } from "primereact/button";
 import { InputNumber } from "primereact/inputnumber";
 import { Dialog } from "primereact/dialog";
+import { Tag } from "primereact/tag";
 
 // COMPONENTES
 import Button from "@/components/Button";
@@ -146,6 +147,10 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
   const [progress, setProgress] = useState(0);
   const [showJustificativaModal, setShowJustificativaModal] = useState(false);
   const [justificativaAtual, setJustificativaAtual] = useState("");
+  const [showJustificativaBloqueioModal, setShowJustificativaBloqueioModal] =
+    useState(false);
+  const [justificativaBloqueioAtual, setJustificativaBloqueioAtual] =
+    useState("");
 
   // REFS
   const toast = useRef(null);
@@ -298,6 +303,13 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
       setJustificativaAtual(rowData.justificativa);
       setShowJustificativaModal(true);
     }
+  };
+
+  const abrirJustificativaBloqueio = (rowData) => {
+    setJustificativaBloqueioAtual(
+      rowData.inscricaoProjeto?.justificativaBloqueio || ""
+    );
+    setShowJustificativaBloqueioModal(true);
   };
 
   // Ids únicos de InscricaoProjeto (projeto pai) por trás dos planos
@@ -487,6 +499,26 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
                 rowData.inscricaoProjeto?.statusAvaliacao || "-"
               }
               style={{ width: "14rem" }}
+            />
+            <Column
+              header="Bloqueio"
+              body={(rowData) =>
+                rowData.inscricaoProjeto?.bloqueadoAvaliacao ? (
+                  <Tag
+                    severity="warning"
+                    className={styles.tagClicavel}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      abrirJustificativaBloqueio(rowData);
+                    }}
+                  >
+                    Bloqueado
+                  </Tag>
+                ) : (
+                  "-"
+                )
+              }
+              style={{ width: "10rem" }}
             />
             <Column
               field="statusClassificacao"
@@ -828,6 +860,16 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
       >
         <div style={{ whiteSpace: "pre-line", paddingBottom: "20px" }}>
           {justificativaAtual}
+        </div>
+      </Dialog>
+      <Dialog
+        header="Justificativa do Bloqueio"
+        visible={showJustificativaBloqueioModal}
+        style={{ width: "50vw" }}
+        onHide={() => setShowJustificativaBloqueioModal(false)}
+      >
+        <div style={{ whiteSpace: "pre-line", paddingBottom: "20px" }}>
+          {justificativaBloqueioAtual}
         </div>
       </Dialog>
       <Toast ref={toast} />

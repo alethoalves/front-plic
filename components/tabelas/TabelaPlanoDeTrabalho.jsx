@@ -18,7 +18,6 @@ import { InputNumber } from "primereact/inputnumber";
 import { Toast } from "primereact/toast";
 import { FilterService } from "primereact/api";
 import { Dialog } from "primereact/dialog";
-import { Tag } from "primereact/tag";
 
 // SERVIÇOS
 import {
@@ -69,10 +68,6 @@ const TabelaPlanoDeTrabalho = ({ params }) => {
     useState([]);
   const [showJustificativaModal, setShowJustificativaModal] = useState(false);
   const [justificativaAtual, setJustificativaAtual] = useState("");
-  const [showJustificativaBloqueioModal, setShowJustificativaBloqueioModal] =
-    useState(false);
-  const [justificativaBloqueioAtual, setJustificativaBloqueioAtual] =
-    useState("");
 
   // REFS
   const toast = useRef(null);
@@ -220,13 +215,6 @@ const TabelaPlanoDeTrabalho = ({ params }) => {
       setJustificativaAtual(rowData.justificativa);
       setShowJustificativaModal(true);
     }
-  };
-
-  const abrirJustificativaBloqueio = (rowData) => {
-    setJustificativaBloqueioAtual(
-      rowData.inscricaoProjeto?.justificativaBloqueio || ""
-    );
-    setShowJustificativaBloqueioModal(true);
   };
 
   // HANDLERS
@@ -402,26 +390,6 @@ const TabelaPlanoDeTrabalho = ({ params }) => {
                   style={{ width: "14rem" }}
                 />
                 <Column
-                  header="Bloqueio"
-                  body={(rowData) =>
-                    rowData.inscricaoProjeto?.bloqueadoAvaliacao ? (
-                      <Tag
-                        severity="warning"
-                        className={styles.tagClicavel}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          abrirJustificativaBloqueio(rowData);
-                        }}
-                      >
-                        Bloqueado
-                      </Tag>
-                    ) : (
-                      "-"
-                    )
-                  }
-                  style={{ width: "10rem" }}
-                />
-                <Column
                   field="statusClassificacao"
                   header="Status Classificação do Plano"
                   sortable
@@ -579,16 +547,6 @@ const TabelaPlanoDeTrabalho = ({ params }) => {
       >
         <div style={{ whiteSpace: "pre-line", paddingBottom: "20px" }}>
           {justificativaAtual}
-        </div>
-      </Dialog>
-      <Dialog
-        header="Justificativa do Bloqueio"
-        visible={showJustificativaBloqueioModal}
-        style={{ width: "50vw" }}
-        onHide={() => setShowJustificativaBloqueioModal(false)}
-      >
-        <div style={{ whiteSpace: "pre-line", paddingBottom: "20px" }}>
-          {justificativaBloqueioAtual}
         </div>
       </Dialog>
       <Toast ref={toast} />
