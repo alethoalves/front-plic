@@ -417,300 +417,293 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
       {renderModalContent()}
       <main className={styles.main}>
         <Card className="custom-card mb-2 mt-2 pt-1">
-          {loading ? (
-            <div className="pr-2 pl-2 pb-2 pt-2">
-              <ProgressBar mode="indeterminate" style={{ height: "6px" }} />
+          {selectedItems.length > 0 && (
+            <div
+              className={`flex align-items-center gap-2 mb-2 ${styles.acaoLote}`}
+            >
+              <span>
+                {selectedItems.length} plano(s) de trabalho
+                selecionado(s)
+              </span>
+              <Button className="button btn-primary" onClick={abrirMenuAcoes}>
+                Executar Ação
+              </Button>
             </div>
-          ) : (
-            <>
-              {selectedItems.length > 0 && (
+          )}
+
+          <DataTable
+            ref={dataTableRef}
+            value={itens}
+            loading={loading}
+            paginator
+            rows={10}
+            rowsPerPageOptions={[10, 20, 50]}
+            scrollable
+            selectionMode="checkbox"
+            selection={selectedItems}
+            onSelectionChange={(e) => setSelectedItems(e.value)}
+            dataKey="id"
+            onRowClick={(e) => {
+              setSelectedPlano(e.data);
+              setIsModalOpen(true);
+            }}
+            header={renderHeader()}
+            rowClassName={() => "cursor-pointer"}
+            filters={filters}
+            onFilter={(e) => {
+              setFilters(e.filters);
+              setSelectedItems([]); // limpa a seleção com os novos filtros aplicados
+            }}
+            filterDisplay="row"
+            globalFilterFields={["inscricao.edital.titulo"]}
+            emptyMessage="Nenhum item encontrado."
+            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+            currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros"
+          >
+            <Column
+              selectionMode="multiple"
+              headerStyle={{ width: "3rem" }}
+              frozen
+            />
+            <Column
+              field="id"
+              header="ID_Plano"
+              sortable
+              filter
+              filterPlaceholder="Filtrar por id"
+              filterField="id"
+            />
+            <Column
+              field="inscricaoProjeto.statusAvaliacao"
+              header="Status Avaliação"
+              sortable
+              filter
+              filterElement={(options) =>
+                editalRowFilterTemplate(options, STATUS_AVALIACAO_OPCOES)
+              }
+              showFilterMenu={false}
+              filterField="inscricaoProjeto.statusAvaliacao"
+              body={(rowData) =>
+                rowData.inscricaoProjeto?.statusAvaliacao || "-"
+              }
+              style={{ width: "14rem" }}
+            />
+            <Column
+              field="statusClassificacao"
+              header="Status Classificação do Plano"
+              sortable
+              filter
+              filterElement={(options) =>
+                statusClassificacaoFilterTemplate(
+                  options,
+                  STATUS_CLASSIFICACAO_DISPONIVEIS
+                )
+              }
+              showFilterMenu={false}
+              filterField="statusClassificacao"
+              body={(rowData) =>
+                statusClassificacaoBodyTemplate(
+                  rowData,
+                  styles,
+                  openJustificativaModal
+                )
+              }
+              style={{ width: "12rem" }}
+            />
+            <Column
+              field="inscricao.edital.titulo"
+              header="Edital"
+              sortable
+              filter
+              filterElement={(options) =>
+                editalRowFilterTemplate(options, editaisDisponiveis)
+              }
+              showFilterMenu={false}
+              filterField="inscricao.edital.titulo"
+            />
+
+            <Column
+              field="inscricaoProjeto.projeto.titulo"
+              header="Nome do Projeto"
+              sortable
+              filter
+              filterPlaceholder="Filtrar por nome"
+              filterField="inscricaoProjeto.projeto.titulo"
+              body={(rowData) =>
+                rowData.inscricaoProjeto?.projeto?.titulo || "-"
+              }
+              style={{ maxWidth: "20rem" }}
+            />
+            <Column
+              field="titulo"
+              header="Título do Plano de Trabalho"
+              sortable
+              filter
+              filterPlaceholder="Filtrar por nome"
+              filterField="titulo"
+              style={{ maxWidth: "20rem" }}
+            />
+            <Column
+              field="inscricaoProjeto.projeto.area.area"
+              header="Área do Projeto"
+              sortable
+              filter
+              filterElement={(options) =>
+                editalRowFilterTemplate(options, areasProjetoDisponiveis)
+              }
+              showFilterMenu={false}
+              filterField="inscricaoProjeto.projeto.area.area"
+              body={(rowData) =>
+                rowData.inscricaoProjeto?.projeto?.area?.area || "-"
+              }
+              style={{ width: "12rem" }}
+            />
+            <Column
+              field="area.area"
+              header="Área do Plano"
+              sortable
+              filter
+              filterElement={(options) =>
+                editalRowFilterTemplate(options, areasPlanoDisponiveis)
+              }
+              showFilterMenu={false}
+              filterField="area.area"
+              body={(rowData) => rowData.area?.area || "-"}
+              style={{ width: "12rem" }}
+            />
+            <Column
+              field="orientadoresString"
+              header="Orientador"
+              sortable
+              filter
+              showFilterMenu={true}
+              filterField="orientadoresString"
+              filterPlaceholder="Filtrar por nome"
+            />
+            <Column
+              field="alunosString"
+              header="Aluno"
+              sortable
+              filter
+              showFilterMenu={true}
+              filterField="alunosString"
+              filterPlaceholder="Filtrar por nome"
+            />
+
+            <Column
+              field="notaTotal"
+              header="Nota Total Plano de Trabalho"
+              sortable
+              filter
+              filterField="notaTotal"
+              filterElement={notaRowFilterTemplate}
+              filterMatchMode="nota_intervalo"
+              dataType="numeric"
+              body={(rowData) => rowData.notaTotal}
+              style={{ textAlign: "center", width: "8rem" }}
+            />
+            <Column
+              field="notaProjeto"
+              header="Nota Projeto"
+              sortable
+              filter
+              filterField="notaProjeto"
+              filterElement={notaRowFilterTemplate}
+              filterMatchMode="nota_intervalo"
+              dataType="numeric"
+              body={(rowData) => rowData.notaProjeto}
+              style={{ textAlign: "center", width: "8rem" }}
+            />
+
+            <Column
+              field="notaPlano"
+              header="Nota Plano"
+              sortable
+              filter
+              filterField="notaPlano"
+              filterElement={notaRowFilterTemplate}
+              filterMatchMode="nota_intervalo"
+              dataType="numeric"
+              body={(rowData) => rowData.notaPlano}
+              style={{ textAlign: "center", width: "8rem" }}
+            />
+            <Column
+              field="notaOrientador"
+              header="Nota Orientador"
+              sortable
+              filter
+              filterField="notaOrientador"
+              filterElement={notaRowFilterTemplate}
+              filterMatchMode="nota_intervalo"
+              dataType="numeric"
+              body={(rowData) => rowData.notaOrientador}
+              style={{ textAlign: "center", width: "8rem" }}
+            />
+            <Column
+              field="notaAluno"
+              header="Nota Aluno"
+              sortable
+              filter
+              filterField="notaAluno"
+              filterElement={notaRowFilterTemplate}
+              filterMatchMode="nota_intervalo"
+              dataType="numeric"
+              body={(rowData) => rowData.notaAluno}
+              style={{ textAlign: "center", width: "8rem" }}
+            />
+
+            {/* Colunas herdadas da antiga tabela "Avaliações de Projetos" */}
+            <Column
+              field="quantidadeFichas"
+              header="Qtd. Fichas"
+              sortable
+              filter
+              filterPlaceholder="Filtrar por quantidade"
+              filterField="quantidadeFichas"
+            />
+            <Column
+              field="quantidadeAvaliadores"
+              header="Qtd. Avaliadores"
+              sortable
+              filter
+              filterPlaceholder="Filtrar por quantidade"
+              filterField="quantidadeAvaliadores"
+            />
+            <Column
+              field="diferencaNotas"
+              header="Diferença de Notas"
+              sortable
+              filter
+              filterPlaceholder="Filtrar por diferença"
+              filterField="diferencaNotas"
+              body={(rowData) =>
+                typeof rowData.diferencaNotas === "number"
+                  ? rowData.diferencaNotas.toFixed(2)
+                  : rowData.diferencaNotas
+              }
+            />
+            <Column
+              field="avaliadoresString"
+              header="Avaliadores"
+              sortable
+              filter
+              filterPlaceholder="Filtrar por avaliadores"
+              filterField="avaliadoresString"
+              body={(rowData) => (
                 <div
-                  className={`flex align-items-center gap-2 mb-2 ${styles.acaoLote}`}
+                  style={{
+                    maxWidth: "300px",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                  title={rowData.avaliadoresString}
                 >
-                  <span>
-                    {selectedItems.length} plano(s) de trabalho
-                    selecionado(s)
-                  </span>
-                  <Button className="button btn-primary" onClick={abrirMenuAcoes}>
-                    Executar Ação
-                  </Button>
+                  {rowData.avaliadoresString}
                 </div>
               )}
-
-              <DataTable
-                ref={dataTableRef}
-                value={itens}
-                paginator
-                rows={10}
-                rowsPerPageOptions={[10, 20, 50]}
-                scrollable
-                selectionMode="checkbox"
-                selection={selectedItems}
-                onSelectionChange={(e) => setSelectedItems(e.value)}
-                dataKey="id"
-                onRowClick={(e) => {
-                  setSelectedPlano(e.data);
-                  setIsModalOpen(true);
-                }}
-                header={renderHeader()}
-                rowClassName={() => "cursor-pointer"}
-                filters={filters}
-                onFilter={(e) => {
-                  setFilters(e.filters);
-                  setSelectedItems([]); // limpa a seleção com os novos filtros aplicados
-                }}
-                filterDisplay="row"
-                globalFilterFields={["inscricao.edital.titulo"]}
-                emptyMessage="Nenhum item encontrado."
-                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros"
-              >
-                <Column
-                  selectionMode="multiple"
-                  headerStyle={{ width: "3rem" }}
-                  frozen
-                />
-                <Column
-                  field="id"
-                  header="ID_Plano"
-                  sortable
-                  filter
-                  filterPlaceholder="Filtrar por id"
-                  filterField="id"
-                />
-                <Column
-                  field="inscricaoProjeto.statusAvaliacao"
-                  header="Status Avaliação"
-                  sortable
-                  filter
-                  filterElement={(options) =>
-                    editalRowFilterTemplate(options, STATUS_AVALIACAO_OPCOES)
-                  }
-                  showFilterMenu={false}
-                  filterField="inscricaoProjeto.statusAvaliacao"
-                  body={(rowData) =>
-                    rowData.inscricaoProjeto?.statusAvaliacao || "-"
-                  }
-                  style={{ width: "14rem" }}
-                />
-                <Column
-                  field="statusClassificacao"
-                  header="Status Classificação do Plano"
-                  sortable
-                  filter
-                  filterElement={(options) =>
-                    statusClassificacaoFilterTemplate(
-                      options,
-                      STATUS_CLASSIFICACAO_DISPONIVEIS
-                    )
-                  }
-                  showFilterMenu={false}
-                  filterField="statusClassificacao"
-                  body={(rowData) =>
-                    statusClassificacaoBodyTemplate(
-                      rowData,
-                      styles,
-                      openJustificativaModal
-                    )
-                  }
-                  style={{ width: "12rem" }}
-                />
-                <Column
-                  field="inscricao.edital.titulo"
-                  header="Edital"
-                  sortable
-                  filter
-                  filterElement={(options) =>
-                    editalRowFilterTemplate(options, editaisDisponiveis)
-                  }
-                  showFilterMenu={false}
-                  filterField="inscricao.edital.titulo"
-                />
-
-                <Column
-                  field="inscricaoProjeto.projeto.titulo"
-                  header="Nome do Projeto"
-                  sortable
-                  filter
-                  filterPlaceholder="Filtrar por nome"
-                  filterField="inscricaoProjeto.projeto.titulo"
-                  body={(rowData) =>
-                    rowData.inscricaoProjeto?.projeto?.titulo || "-"
-                  }
-                  style={{ maxWidth: "20rem" }}
-                />
-                <Column
-                  field="titulo"
-                  header="Título do Plano de Trabalho"
-                  sortable
-                  filter
-                  filterPlaceholder="Filtrar por nome"
-                  filterField="titulo"
-                  style={{ maxWidth: "20rem" }}
-                />
-                <Column
-                  field="inscricaoProjeto.projeto.area.area"
-                  header="Área do Projeto"
-                  sortable
-                  filter
-                  filterElement={(options) =>
-                    editalRowFilterTemplate(options, areasProjetoDisponiveis)
-                  }
-                  showFilterMenu={false}
-                  filterField="inscricaoProjeto.projeto.area.area"
-                  body={(rowData) =>
-                    rowData.inscricaoProjeto?.projeto?.area?.area || "-"
-                  }
-                  style={{ width: "12rem" }}
-                />
-                <Column
-                  field="area.area"
-                  header="Área do Plano"
-                  sortable
-                  filter
-                  filterElement={(options) =>
-                    editalRowFilterTemplate(options, areasPlanoDisponiveis)
-                  }
-                  showFilterMenu={false}
-                  filterField="area.area"
-                  body={(rowData) => rowData.area?.area || "-"}
-                  style={{ width: "12rem" }}
-                />
-                <Column
-                  field="orientadoresString"
-                  header="Orientador"
-                  sortable
-                  filter
-                  showFilterMenu={true}
-                  filterField="orientadoresString"
-                  filterPlaceholder="Filtrar por nome"
-                />
-                <Column
-                  field="alunosString"
-                  header="Aluno"
-                  sortable
-                  filter
-                  showFilterMenu={true}
-                  filterField="alunosString"
-                  filterPlaceholder="Filtrar por nome"
-                />
-
-                <Column
-                  field="notaTotal"
-                  header="Nota Total Plano de Trabalho"
-                  sortable
-                  filter
-                  filterField="notaTotal"
-                  filterElement={notaRowFilterTemplate}
-                  filterMatchMode="nota_intervalo"
-                  dataType="numeric"
-                  body={(rowData) => rowData.notaTotal}
-                  style={{ textAlign: "center", width: "8rem" }}
-                />
-                <Column
-                  field="notaProjeto"
-                  header="Nota Projeto"
-                  sortable
-                  filter
-                  filterField="notaProjeto"
-                  filterElement={notaRowFilterTemplate}
-                  filterMatchMode="nota_intervalo"
-                  dataType="numeric"
-                  body={(rowData) => rowData.notaProjeto}
-                  style={{ textAlign: "center", width: "8rem" }}
-                />
-
-                <Column
-                  field="notaPlano"
-                  header="Nota Plano"
-                  sortable
-                  filter
-                  filterField="notaPlano"
-                  filterElement={notaRowFilterTemplate}
-                  filterMatchMode="nota_intervalo"
-                  dataType="numeric"
-                  body={(rowData) => rowData.notaPlano}
-                  style={{ textAlign: "center", width: "8rem" }}
-                />
-                <Column
-                  field="notaOrientador"
-                  header="Nota Orientador"
-                  sortable
-                  filter
-                  filterField="notaOrientador"
-                  filterElement={notaRowFilterTemplate}
-                  filterMatchMode="nota_intervalo"
-                  dataType="numeric"
-                  body={(rowData) => rowData.notaOrientador}
-                  style={{ textAlign: "center", width: "8rem" }}
-                />
-                <Column
-                  field="notaAluno"
-                  header="Nota Aluno"
-                  sortable
-                  filter
-                  filterField="notaAluno"
-                  filterElement={notaRowFilterTemplate}
-                  filterMatchMode="nota_intervalo"
-                  dataType="numeric"
-                  body={(rowData) => rowData.notaAluno}
-                  style={{ textAlign: "center", width: "8rem" }}
-                />
-
-                {/* Colunas herdadas da antiga tabela "Avaliações de Projetos" */}
-                <Column
-                  field="quantidadeFichas"
-                  header="Qtd. Fichas"
-                  sortable
-                  filter
-                  filterPlaceholder="Filtrar por quantidade"
-                  filterField="quantidadeFichas"
-                />
-                <Column
-                  field="quantidadeAvaliadores"
-                  header="Qtd. Avaliadores"
-                  sortable
-                  filter
-                  filterPlaceholder="Filtrar por quantidade"
-                  filterField="quantidadeAvaliadores"
-                />
-                <Column
-                  field="diferencaNotas"
-                  header="Diferença de Notas"
-                  sortable
-                  filter
-                  filterPlaceholder="Filtrar por diferença"
-                  filterField="diferencaNotas"
-                  body={(rowData) =>
-                    typeof rowData.diferencaNotas === "number"
-                      ? rowData.diferencaNotas.toFixed(2)
-                      : rowData.diferencaNotas
-                  }
-                />
-                <Column
-                  field="avaliadoresString"
-                  header="Avaliadores"
-                  sortable
-                  filter
-                  filterPlaceholder="Filtrar por avaliadores"
-                  filterField="avaliadoresString"
-                  body={(rowData) => (
-                    <div
-                      style={{
-                        maxWidth: "300px",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                      title={rowData.avaliadoresString}
-                    >
-                      {rowData.avaliadoresString}
-                    </div>
-                  )}
-                />
-              </DataTable>
-            </>
-          )}
+            />
+          </DataTable>
         </Card>
       </main>
       <Modal isOpen={activeModal !== null} onClose={fecharModalAcao} size="small">
