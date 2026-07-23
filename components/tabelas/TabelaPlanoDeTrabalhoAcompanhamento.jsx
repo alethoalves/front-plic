@@ -20,6 +20,7 @@ import { Button as PrimeButton } from "primereact/button";
 import { InputNumber } from "primereact/inputnumber";
 import { Dialog } from "primereact/dialog";
 import { Tag } from "primereact/tag";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 
 // COMPONENTES
 import Button from "@/components/Button";
@@ -30,7 +31,9 @@ import {
   aplicarNotaCorte,
 } from "@/app/api/client/planoDeTrabalho";
 import { alterarStatusAvaliacao } from "@/app/api/client/projeto";
+import { arquivarFichaAvaliacao } from "@/app/api/client/avaliador";
 import { handleDefinirNotaCorte } from "@/lib/notaCorteUtils";
+import { handleArquivarFichaMenorNota } from "@/lib/arquivarFichaMenorNotaUtils";
 import { formatStatusText } from "@/lib/tagUtils";
 import {
   editalRowFilterTemplate,
@@ -153,6 +156,8 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
   const [salvandoStatus, setSalvandoStatus] = useState(false);
   const [notaCorte, setNotaCorte] = useState(0);
   const [isLoadingNotaCorte, setIsLoadingNotaCorte] = useState(false);
+  const [isLoadingArquivarMenorNota, setIsLoadingArquivarMenorNota] =
+    useState(false);
   const [progress, setProgress] = useState(0);
   const [showJustificativaModal, setShowJustificativaModal] = useState(false);
   const [justificativaAtual, setJustificativaAtual] = useState("");
@@ -374,6 +379,29 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
       toast,
     });
     fecharModalAcao();
+  };
+
+  const confirmarArquivarMenorNota = () => {
+    confirmDialog({
+      message: `Arquivar a ficha de menor nota em até ${selectedItems.length} plano(s) selecionado(s)? Planos com só 1 ficha ativa ou empate na menor nota serão ignorados.`,
+      header: "Confirmação",
+      icon: "pi pi-exclamation-triangle",
+      acceptLabel: "Sim",
+      rejectLabel: "Não",
+      accept: async () => {
+        await handleArquivarFichaMenorNota({
+          selectedItems,
+          params,
+          arquivarFichaAvaliacaoApi: arquivarFichaAvaliacao,
+          fetchInitialData,
+          setIsLoadingArquivarMenorNota,
+          setProgress,
+          setSelectedItems,
+          toast,
+        });
+        fecharModalAcao();
+      },
+    });
   };
 
   // HANDLERS
@@ -769,6 +797,9 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
                     <li onClick={() => setActiveModal("aplicarNotaCorte")}>
                       <p>Aplicar nota de corte</p>
                     </li>
+                    <li onClick={() => setActiveModal("arquivarMenorNota")}>
+                      <p>Arquivar ficha de menor nota</p>
+                    </li>
                   </ul>
                 </div>
               );
@@ -864,6 +895,47 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
                   </div>
                 </div>
               );
+            case "arquivarMenorNota":
+              return (
+                <div className={styles.formNotaManual}>
+                  <h5 className="mb-2">Arquivar ficha de menor nota</h5>
+                  <p className="mb-2">
+                    Para cada um dos {selectedItems.length} plano(s)
+                    selecionado(s), arquiva a ficha do avaliador com a nota
+                    mais baixa (projeto + este plano), desde que haja pelo
+                    menos 2 fichas ativas. Planos com só 1 ficha ativa ou
+                    com empate na nota mais baixa são ignorados.
+                  </p>
+                  {isLoadingArquivarMenorNota && (
+                    <div className="mt-3">
+                      <ProgressBar
+                        value={progress}
+                        style={{ height: "6px" }}
+                        showValue={false}
+                      />
+                      <small className="block text-center mt-1">
+                        {progress}% completo
+                      </small>
+                    </div>
+                  )}
+                  <div className="flex justify-content-end gap-2 mt-3">
+                    <Button
+                      className="button btn-secondary"
+                      onClick={fecharModalAcao}
+                      disabled={isLoadingArquivarMenorNota}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button
+                      className="button btn-primary"
+                      onClick={confirmarArquivarMenorNota}
+                      loading={isLoadingArquivarMenorNota}
+                    >
+                      Confirmar
+                    </Button>
+                  </div>
+                </div>
+              );
             default:
               return null;
           }
@@ -889,6 +961,7 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
           {justificativaBloqueioAtual}
         </div>
       </Dialog>
+      <ConfirmDialog />
       <Toast ref={toast} />
     </>
   );

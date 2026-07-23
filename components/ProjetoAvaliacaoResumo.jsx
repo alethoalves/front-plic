@@ -20,6 +20,7 @@ import {
   updateInscricaoProjeto,
 } from "@/app/api/client/projeto";
 import { arquivarFichaAvaliacao } from "@/app/api/client/avaliador";
+import { combinarFichasPorAvaliador } from "@/lib/fichaAvaliacaoUtils";
 import { getSeverityByStatus, formatStatusText } from "@/lib/tagUtils";
 import Button from "@/components/Button";
 
@@ -159,52 +160,11 @@ const ProjetoAvaliacaoResumo = ({
 
   // Uma linha por avaliador: quem avaliou o projeto também avaliou o(s)
   // plano(s) na mesma submissão, então a nota exibida é a soma (projeto +
-  // plano) — não faz sentido mostrar como duas fichas separadas. Guarda os
-  // dois ids reais (fichaProjetoId/fichaPlanoId) e as duas flags de
-  // arquivamento por trás da linha combinada, já que arquivar precisa
-  // afetar as duas fichas juntas (mesmo avaliador, mesma submissão).
-  const fichasCombinadas = (() => {
-    const porAvaliador = new Map();
-
-    (inscricaoProjeto?.FichaAvaliacao || []).forEach((f) => {
-      porAvaliador.set(f.avaliadorId, {
-        avaliador: f.avaliador,
-        notaTotal: f.notaTotal || 0,
-        fichaProjetoId: f.id,
-        fichaPlanoId: null,
-        arquivadaProjeto: f.arquivada,
-        arquivadaPlano: null,
-      });
-    });
-
-    (planoFichas || []).forEach((f) => {
-      const existente = porAvaliador.get(f.avaliadorId);
-      if (existente) {
-        existente.notaTotal += f.notaTotal || 0;
-        existente.fichaPlanoId = f.id;
-        existente.arquivadaPlano = f.arquivada;
-      } else {
-        porAvaliador.set(f.avaliadorId, {
-          avaliador: f.avaliador,
-          notaTotal: f.notaTotal || 0,
-          fichaProjetoId: null,
-          fichaPlanoId: f.id,
-          arquivadaProjeto: null,
-          arquivadaPlano: f.arquivada,
-        });
-      }
-    });
-
-    return Array.from(porAvaliador.values()).map((row) => ({
-      ...row,
-      // Indicador visual da linha: arquivada se qualquer uma das duas
-      // partes (projeto/plano) estiver arquivada.
-      arquivada: Boolean(row.arquivadaProjeto || row.arquivadaPlano),
-      // Mantém o mesmo id usado antes por abrirFichaDetalhada (prioriza a
-      // ficha de projeto, cai pra ficha de plano se não houver uma).
-      fichaId: row.fichaProjetoId ?? row.fichaPlanoId,
-    }));
-  })();
+  // plano) — não faz sentido mostrar como duas fichas separadas.
+  const fichasCombinadas = combinarFichasPorAvaliador(
+    inscricaoProjeto?.FichaAvaliacao || [],
+    planoFichas || []
+  );
 
   // Abre, em nova aba, a ficha completa (respostas do projeto + dos planos
   // desse mesmo avaliador) — mesmo estilo de tela usado pelo avaliador em
