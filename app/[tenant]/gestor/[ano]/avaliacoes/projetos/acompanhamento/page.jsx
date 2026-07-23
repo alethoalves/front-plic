@@ -11,11 +11,13 @@ import {
   RiFileListLine,
   RiUserFollowLine,
   RiUserStarLine,
+  RiCalculatorLine,
 } from "@remixicon/react";
 // COMPONENTES
 import Header from "@/components/Header";
 import Modal from "@/components/Modal";
 import FormNewInscricao from "@/components/Formularios/FormNewInscricao";
+import Button from "@/components/Button";
 // PRIMEREACT
 import { Card } from "primereact/card";
 import { Chart } from "primereact/chart";
@@ -664,7 +666,22 @@ const Page = ({ params }) => {
       <main className={styles.main}>
         <Header className="mb-3" titulo="Acompanhar avaliação" />
         <Card className="mb-4 p-2">
-          <h5 className="mb-2">Distribuição das Notas Totais</h5>
+          <div className="flex-space mb-2">
+            <h5>Distribuição das Notas Totais</h5>
+            <div className={styles.acaoBotao}>
+              <Button
+                className="button btn-secondary"
+                icon={RiCalculatorLine}
+                onClick={() =>
+                  router.push(
+                    `/${params.tenant}/gestor/${params.ano}/avaliacoes/projetos/acompanhamento/simulacao-nota-corte`
+                  )
+                }
+              >
+                Simular nota de corte
+              </Button>
+            </div>
+          </div>
           {Object.keys(comboChartData).length > 0 ? (
             <div>
               <Chart

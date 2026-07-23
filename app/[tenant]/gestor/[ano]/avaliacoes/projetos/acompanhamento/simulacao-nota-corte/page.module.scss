@@ -1,0 +1,140 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+.main {
+  display: flex;
+  flex-direction: column;
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  margin-bottom: $gap-2;
+}
+
+.voltar {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $gray-500;
+  font-size: 0.88rem;
+  padding: 0;
+  transition: color 0.15s;
+
+  svg {
+    width: 18px;
+  }
+
+  &:hover {
+    color: $primary-normal;
+  }
+}
+
+.aplicarTodos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: $gap-2;
+  background-color: $white-darken;
+  border-radius: $gap-1;
+  padding: $gap-2;
+
+  label {
+    display: block;
+    font-size: 13px;
+    color: $gray-600;
+    margin-bottom: 4px;
+  }
+}
+
+.avisoPendente {
+  background-color: $warning-normal;
+  border-radius: $gap-1;
+  padding: $gap-2;
+  margin-bottom: $gap-2;
+  font-size: 13px;
+}
+
+.dashboard {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $gap-2;
+}
+
+.card_style1 {
+  display: flex;
+  flex: 1;
+  min-width: 160px;
+
+  .left {
+    width: 100px;
+    border-top-left-radius: $gap-1;
+    border-bottom-left-radius: $gap-1;
+    background-color: $white-darken;
+    border-right: 2px solid $white-light;
+    h5 {
+      color: $primary-darken;
+    }
+    h6 {
+      color: $primary-darken;
+      text-align: center;
+    }
+    display: flex;
+    gap: 4px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: $gap-2;
+  }
+  .right {
+    flex: 1;
+    background-color: $white-darken;
+    border-top-right-radius: $gap-1;
+    border-bottom-right-radius: $gap-1;
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+    justify-content: center;
+    padding: $gap-2;
+  }
+}
+
+.grupoLabel {
+  color: $primary-darken;
+  margin-bottom: $gap-1;
+}
+
+.statTilesRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $gap-2;
+}
+
+.statTile {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+  flex: 1;
+  min-width: 260px;
+  background-color: $white-darken;
+  border-radius: $gap-1;
+  padding: $gap-2 $gap-3;
+  svg {
+    width: 28px;
+    height: 28px;
+    color: $primary-normal;
+    flex-shrink: 0;
+  }
+  h5 {
+    color: $primary-darken;
+    margin-bottom: 2px;
+  }
+  p {
+    margin: 0;
+    font-size: 13px;
+  }
+}

@@ -277,3 +277,12 @@
     width: 24px;
     color: $primary-normal;
 }
+
+// .button (styles/partials/_buttons.scss) é width:100% por padrão — dentro
+// de um .flex-space (justify-content: space-between), isso faz o botão
+// esticar e "comer" o espaço vazio entre ele e o título. Envolver num wrapper
+// width:max-content faz o width:100% resolver contra o tamanho do próprio
+// conteúdo do botão, em vez do espaço sobrando na linha.
+.acaoBotao{
+    width: max-content;
+}
