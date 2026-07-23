@@ -229,7 +229,36 @@ export const aplicarNotaCorte = async (tenantSlug, notaCorte, classificados, des
     throw error;
   }
 };
-  
+
+/**************************
+ * IMPORTAÇÃO DE NOTAS DAS PARTICIPAÇÕES
+ **************************/
+
+export const importarNotasParticipacoes = async (tenantSlug, planoIds) => {
+  try {
+    const token = getCookie("authToken");
+    if (!token) {
+      throw new Error("Token de autenticação não encontrado");
+    }
+
+    const response = await req.put(
+      `/private/${tenantSlug}/planosDeTrabalho/importarNotasParticipacoes`,
+      { planoIds },
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao importar notas das participações:", error);
+    throw error;
+  }
+};
+
   export const updatePlanoDeTrabalhoPerfilUser = async (
     tenantSlug,
     inscricaoId,

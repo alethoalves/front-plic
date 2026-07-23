@@ -29,11 +29,13 @@ import Button from "@/components/Button";
 import {
   getAllPlanoDeTrabalhosByTenant,
   aplicarNotaCorte,
+  importarNotasParticipacoes,
 } from "@/app/api/client/planoDeTrabalho";
 import { alterarStatusAvaliacao } from "@/app/api/client/projeto";
 import { arquivarFichaAvaliacao } from "@/app/api/client/avaliador";
 import { handleDefinirNotaCorte } from "@/lib/notaCorteUtils";
 import { handleArquivarFichaMenorNota } from "@/lib/arquivarFichaMenorNotaUtils";
+import { handleImportarNotasParticipacoes } from "@/lib/importarNotasParticipacoesUtils";
 import { formatStatusText } from "@/lib/tagUtils";
 import {
   editalRowFilterTemplate,
@@ -158,6 +160,7 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
   const [isLoadingNotaCorte, setIsLoadingNotaCorte] = useState(false);
   const [isLoadingArquivarMenorNota, setIsLoadingArquivarMenorNota] =
     useState(false);
+  const [isLoadingImportarNotas, setIsLoadingImportarNotas] = useState(false);
   const [progress, setProgress] = useState(0);
   const [showJustificativaModal, setShowJustificativaModal] = useState(false);
   const [justificativaAtual, setJustificativaAtual] = useState("");
@@ -404,6 +407,28 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
     });
   };
 
+  const confirmarImportarNotas = () => {
+    confirmDialog({
+      message: `Isso vai sobrescrever a Nota Aluno e a Nota Orientador de TODOS os ${itens.length} plano(s) de trabalho do ano — inclusive os que não estão visíveis com os filtros atuais. Deseja continuar?`,
+      header: "Confirmação",
+      icon: "pi pi-exclamation-triangle",
+      acceptLabel: "Sim",
+      rejectLabel: "Não",
+      accept: async () => {
+        await handleImportarNotasParticipacoes({
+          planoIds: itens.map((item) => item.id),
+          params,
+          importarNotasParticipacoesApi: importarNotasParticipacoes,
+          fetchInitialData,
+          setIsLoadingImportarNotas,
+          setProgress,
+          toast,
+        });
+        fecharModalAcao();
+      },
+    });
+  };
+
   // HANDLERS
   const onGlobalFilterChange = (e) => {
     const value = e.target.value;
@@ -422,12 +447,20 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
   const renderHeader = () => {
     return (
       <div className="flex flex-wrap justify-content-between align-items-center gap-2">
-        <PrimeButton
-          icon="pi pi-filter-slash"
-          label="Limpar Filtros"
-          onClick={clearFilters}
-          className="p-button-outlined p-button-secondary"
-        />
+        <div className="flex flex-wrap align-items-center gap-2">
+          <PrimeButton
+            icon="pi pi-filter-slash"
+            label="Limpar Filtros"
+            onClick={clearFilters}
+            className="p-button-outlined p-button-secondary"
+          />
+          <Button
+            className="button btn-primary"
+            onClick={() => setActiveModal("importarNotasParticipacoes")}
+          >
+            Importar notas de participações
+          </Button>
+        </div>
         <InputText
           className="w-100"
           value={globalFilterValue}
@@ -454,6 +487,9 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
           ano={params.ano}
           projetoId={selectedPlano.inscricaoProjeto?.projeto?.id}
           idInscricao={selectedPlano.inscricao?.id}
+          planoId={selectedPlano.id}
+          notaAlunoPlano={selectedPlano.notaAluno}
+          notaOrientadorPlano={selectedPlano.notaOrientador}
           planoFichas={selectedPlano.FichaAvaliacao}
           onSuccess={fetchInitialData}
         />
@@ -930,6 +966,49 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
                       className="button btn-primary"
                       onClick={confirmarArquivarMenorNota}
                       loading={isLoadingArquivarMenorNota}
+                    >
+                      Confirmar
+                    </Button>
+                  </div>
+                </div>
+              );
+            case "importarNotasParticipacoes":
+              return (
+                <div className={styles.formNotaManual}>
+                  <h5 className="mb-2">Importar notas de participações</h5>
+                  <p className="mb-2">
+                    Para cada um dos {itens.length} plano(s) de trabalho do
+                    ano, calcula a Nota Aluno e a Nota Orientador como a
+                    média da &quot;Nota Total Geral&quot; das participações de aluno e
+                    de orientador (a mesma nota exibida nas telas de Seleção
+                    de Participações). Aplica a TODOS os planos, independente
+                    dos filtros ou da seleção atuais da tabela, e sobrescreve
+                    os valores já existentes.
+                  </p>
+                  {isLoadingImportarNotas && (
+                    <div className="mt-3">
+                      <ProgressBar
+                        value={progress}
+                        style={{ height: "6px" }}
+                        showValue={false}
+                      />
+                      <small className="block text-center mt-1">
+                        {progress}% completo
+                      </small>
+                    </div>
+                  )}
+                  <div className="flex justify-content-end gap-2 mt-3">
+                    <Button
+                      className="button btn-secondary"
+                      onClick={fecharModalAcao}
+                      disabled={isLoadingImportarNotas}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button
+                      className="button btn-primary"
+                      onClick={confirmarImportarNotas}
+                      loading={isLoadingImportarNotas}
                     >
                       Confirmar
                     </Button>

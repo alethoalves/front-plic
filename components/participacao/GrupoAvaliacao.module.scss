@@ -1,0 +1,91 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/spacing";
+
+.grupoBox {
+  border: 1px solid $gray-100;
+  border-radius: $gap-1;
+  overflow: hidden;
+  background: $white-darken;
+
+  &:not(:last-child) {
+    margin-bottom: $gap-1;
+  }
+
+  &.nivel1 {
+    background: $white-dark;
+  }
+
+  &.nivel2 {
+    background: $gray-25;
+  }
+
+  .grupoHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $gap-1 $gap-2;
+
+    .grupoLabel {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: $gray-700;
+    }
+
+    .notaBadge {
+      background: $primary-lighten;
+      color: $primary-dark;
+      border-radius: 20px;
+      padding: 2px 10px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+  }
+
+  .grupoContent {
+    padding: $gap-1 $gap-2;
+
+    .itemBox {
+      background: $white-light;
+      border-radius: $gap-1;
+      padding: $gap-1 $gap-2;
+      border: 1px solid $gray-50;
+
+      &:not(:last-child) {
+        margin-bottom: $gap-1;
+      }
+
+      .itemNumber {
+        font-size: 0.7rem;
+        color: $gray-400;
+        margin-bottom: 4px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .itemRow {
+        display: flex;
+        gap: $gap-1;
+        margin-bottom: 2px;
+
+        .itemKey {
+          color: $gray-500;
+          font-size: 0.8rem;
+          min-width: 90px;
+          flex-shrink: 0;
+        }
+
+        .itemValue {
+          color: $gray-800;
+          font-size: 0.8rem;
+          word-break: break-word;
+        }
+      }
+    }
+  }
+}

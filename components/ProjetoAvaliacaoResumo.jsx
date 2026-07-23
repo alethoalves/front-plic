@@ -10,6 +10,7 @@ import {
   RiInboxUnarchiveLine,
   RiInformationLine,
   RiQuillPenLine,
+  RiStarLine,
 } from "@remixicon/react";
 import { Tag } from "primereact/tag";
 import { DataView } from "primereact/dataview";
@@ -20,9 +21,12 @@ import {
   updateInscricaoProjeto,
 } from "@/app/api/client/projeto";
 import { arquivarFichaAvaliacao } from "@/app/api/client/avaliador";
+import { getParticipacao } from "@/app/api/client/participacao";
 import { combinarFichasPorAvaliador } from "@/lib/fichaAvaliacaoUtils";
 import { getSeverityByStatus, formatStatusText } from "@/lib/tagUtils";
 import Button from "@/components/Button";
+import Modal from "@/components/Modal";
+import GrupoAvaliacao from "@/components/participacao/GrupoAvaliacao";
 
 /**
  * Resumo somente leitura (+ troca de status) de um projeto avaliado — usado
@@ -40,11 +44,18 @@ const ProjetoAvaliacaoResumo = ({
   ano,
   projetoId,
   idInscricao,
+  planoId,
+  notaAlunoPlano,
+  notaOrientadorPlano,
   planoFichas,
   onSuccess,
 }) => {
   const [loading, setLoading] = useState(true);
   const [inscricaoProjeto, setInscricaoProjeto] = useState(null);
+  const [participacaoSelecionada, setParticipacaoSelecionada] = useState(null);
+  const [detalheParticipacao, setDetalheParticipacao] = useState(null);
+  const [carregandoDetalheParticipacao, setCarregandoDetalheParticipacao] =
+    useState(false);
   const toast = useRef(null);
 
   const fetchData = async () => {
@@ -53,7 +64,8 @@ const ProjetoAvaliacaoResumo = ({
       const data = await getInscricaoProjetoById(
         tenantSlug,
         idInscricao,
-        projetoId
+        projetoId,
+        planoId
       );
       setInscricaoProjeto(data);
     } catch (error) {
@@ -136,6 +148,90 @@ const ProjetoAvaliacaoResumo = ({
       },
     });
   };
+
+  // Nota total de uma participação (aluno/orientador) = nota da ficha Lattes
+  // + soma das notas extras lançadas manualmente — mesma fórmula usada nas
+  // telas de Seleção de Participações e na importação de notas do plano.
+  const calcularNotaParticipacao = (participacao) => {
+    const totalExtra = (participacao.NotaExtraParticipacao || []).reduce(
+      (soma, nota) => soma + nota.valor,
+      0
+    );
+    return {
+      notaFicha: participacao.fichaAvaliacao?.nota ?? 0,
+      totalExtra,
+      total: (participacao.fichaAvaliacao?.nota ?? 0) + totalExtra,
+    };
+  };
+
+  const participacoesNotas = [
+    ...(inscricaoProjeto?.participacoesAluno || []).map((p) => ({
+      ...p,
+      tipoLabel: "Aluno",
+    })),
+    ...(inscricaoProjeto?.participacoesOrientador || []).map((p) => ({
+      ...p,
+      tipoLabel: "Orientador",
+    })),
+  ];
+
+  // Abre um segundo modal, por cima deste, com a ficha Lattes completa de
+  // uma participação — busca sob demanda (não vem na lista resumida acima).
+  const abrirDetalheParticipacao = async (participacao) => {
+    setParticipacaoSelecionada(participacao);
+    setDetalheParticipacao(null);
+    setCarregandoDetalheParticipacao(true);
+    try {
+      const completa = await getParticipacao(tenantSlug, participacao.id, ano);
+      setDetalheParticipacao(completa);
+    } catch (error) {
+      console.error("Erro ao buscar ficha da participação:", error);
+      toast.current?.show({
+        severity: "error",
+        summary: "Erro",
+        detail: "Não foi possível carregar a ficha da participação.",
+        life: 3000,
+      });
+    } finally {
+      setCarregandoDetalheParticipacao(false);
+    }
+  };
+
+  const fecharDetalheParticipacao = () => {
+    setParticipacaoSelecionada(null);
+    setDetalheParticipacao(null);
+  };
+
+  const listTemplateParticipacoes = (participacoes) => (
+    <div className={styles.list}>
+      {participacoes.map((p) => {
+        const { total } = calcularNotaParticipacao(p);
+        return (
+          <div
+            key={p.id}
+            className={styles.fichas}
+            onClick={() => abrirDetalheParticipacao(p)}
+          >
+            <div className={styles.headerFicha}>
+              <div className={styles.content1}>
+                <p>
+                  {p.tipoLabel}:
+                  <br />
+                  <strong>{p.user?.nome}</strong>
+                </p>
+              </div>
+              <div className={styles.content2}>
+                <p>
+                  Total: <strong>{total}</strong>
+                </p>
+                <RiEyeLine />
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
 
   // O gestor só alterna entre "Avaliada" e "Aguardando avaliação" aqui — o
   // status "Em avaliação" é setado automaticamente pelo sistema (atribuição
@@ -307,7 +403,83 @@ const ProjetoAvaliacaoResumo = ({
             emptyMessage="Nada encontrado :/"
           />
         </div>
+
+        {planoId && (
+          <div className={styles.box}>
+            <div className={styles.header}>
+              <div className={styles.icon}>
+                <RiStarLine />
+              </div>
+              <h6>Notas das Participações</h6>
+            </div>
+            <div className="pl-2 pr-2 pb-2">
+              <p className="mb-1">
+                <strong>Nota Aluno (persistida no plano): </strong>
+                {notaAlunoPlano ?? "—"}
+              </p>
+              <p className="mb-1">
+                <strong>Nota Orientador (persistida no plano): </strong>
+                {notaOrientadorPlano ?? "—"}
+              </p>
+            </div>
+            <DataView
+              value={participacoesNotas}
+              listTemplate={listTemplateParticipacoes}
+              layout="list"
+              emptyMessage="Nenhuma participação de aluno ou orientador encontrada."
+            />
+          </div>
+        )}
       </div>
+
+      <Modal
+        isOpen={!!participacaoSelecionada}
+        onClose={fecharDetalheParticipacao}
+        size="small"
+      >
+        {carregandoDetalheParticipacao && <p>Carregando...</p>}
+        {!carregandoDetalheParticipacao && detalheParticipacao && (
+          <div>
+            <h5 className="mb-1">
+              {participacaoSelecionada?.tipoLabel}:{" "}
+              {detalheParticipacao.user?.nome}
+            </h5>
+            <p className="mb-2">
+              Ficha:{" "}
+              <strong>
+                {detalheParticipacao.fichaAvaliacao?.nota ?? 0} /{" "}
+                {detalheParticipacao.fichaAvaliacao?.notaMax ?? 0}
+              </strong>
+              {" · "}
+              Notas extras:{" "}
+              <strong>
+                {(detalheParticipacao.NotaExtraParticipacao || []).reduce(
+                  (soma, nota) => soma + nota.valor,
+                  0
+                )}
+              </strong>
+            </p>
+            {detalheParticipacao.fichaAvaliacao?.grupos?.length > 0 ? (
+              detalheParticipacao.fichaAvaliacao.grupos.map((grupo, i) => (
+                <GrupoAvaliacao key={i} grupo={grupo} nivel={0} />
+              ))
+            ) : (
+              <p>Nenhum item de avaliação.</p>
+            )}
+            {(detalheParticipacao.NotaExtraParticipacao || []).length > 0 && (
+              <div className="mt-2">
+                <h6 className="mb-1">Notas extras</h6>
+                {detalheParticipacao.NotaExtraParticipacao.map((nota) => (
+                  <p key={nota.id} className="mb-1">
+                    +{nota.valor} pt{nota.valor === 1 ? "" : "s"}
+                    {nota.observacao ? ` — ${nota.observacao}` : ""}
+                  </p>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

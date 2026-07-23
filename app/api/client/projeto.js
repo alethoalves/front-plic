@@ -259,15 +259,24 @@ export const getInscricaoProjetoByTenant = async (tenantSlug, status, ano) => {
   }
 };
 
-export const getInscricaoProjetoById = async (tenantSlug, idInscricao,idProjeto) => {
+export const getInscricaoProjetoById = async (tenantSlug, idInscricao, idProjeto, planoId = null) => {
   try {
       const headers = getAuthHeadersClient();
       if (!headers) {
           throw new Error("Usuário não autenticado.");
       }
 
-      const response = await req.get(`/private/${tenantSlug}/inscricaoProjeto/${idInscricao}/${idProjeto}`, { headers });
-      return response.data.inscricaoProjeto;
+      const response = await req.get(
+        `/private/${tenantSlug}/inscricaoProjeto/${idInscricao}/${idProjeto}`,
+        { headers, params: planoId ? { planoId } : {} }
+      );
+      // Mantém o retorno = inscricaoProjeto (contrato original) e anexa as
+      // notas das participações do plano, quando pedidas via `planoId`.
+      return {
+        ...response.data.inscricaoProjeto,
+        participacoesAluno: response.data.participacoesAluno || [],
+        participacoesOrientador: response.data.participacoesOrientador || [],
+      };
   } catch (error) {
       console.error("Erro ao buscar inscrições de projetos por tenant:", error);
       throw error;
