@@ -33,7 +33,7 @@ const SuporteWhatsapp = () => (
   </a>
 );
 
-const ConviteAvaliadorClient = ({ tenant, ano, pathLogo }) => {
+const ConviteAvaliadorClient = ({ tenant, ano, pathLogo, avaliacoesEncerradas }) => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [resultado, setResultado] = useState(null); // { elegibilidade, motivoRecusa?, telefoneTenant?, precisaCompletarCadastro? }
@@ -85,8 +85,28 @@ const ConviteAvaliadorClient = ({ tenant, ano, pathLogo }) => {
     resultado?.precisaCompletarCadastro &&
     !cadastroCompleto;
 
-  // apto: já tem doutorado confirmado -> login/cadastro real, vira avaliador direto
-  if (resultado?.elegibilidade === "apto") {
+  // encerrado: não sobrou projeto/plano pendente de avaliação nesse ano — nem
+  // deixa chegar no formulário de CPF (avaliacoesEncerradas veio já assim do
+  // servidor) nem aceita seguir se o estado mudou entre o load da página e o
+  // envio do CPF (resultado.elegibilidade === "encerrado")
+  const encerrado = avaliacoesEncerradas || resultado?.elegibilidade === "encerrado";
+
+  if (encerrado) {
+    conteudo = (
+      <div className={styles.box}>
+        <div className={styles.header}>
+          <h4>Avaliações encerradas</h4>
+        </div>
+        <div className={styles.boxContent}>
+          <p>
+            As avaliações deste ano já foram encerradas e não é mais possível
+            se cadastrar como avaliador.
+          </p>
+        </div>
+      </div>
+    );
+  } else if (resultado?.elegibilidade === "apto") {
+    // apto: já tem doutorado confirmado -> login/cadastro real, vira avaliador direto
     conteudo = (
       <div className={styles.signinWrapper}>
         <Signin

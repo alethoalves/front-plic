@@ -672,6 +672,7 @@ const Page = ({ params }) => {
           projetosAvaliados,
           projetosAtribuidos,
           projetosPendentes: projetosAtribuidos - projetosAvaliados,
+          planosTrabalhoAvaliados: avaliador.user.planosTrabalhoAvaliados ?? 0,
         };
       });
 
@@ -947,15 +948,18 @@ const Page = ({ params }) => {
 
   const colunasAvaliador = [
     { header: "Nome", key: "nome", width: 30 },
+    { header: "CPF", key: "cpf", width: 16 },
     { header: "Email", key: "email", width: 35 },
     { header: "Área(s)", key: "areas", width: 35 },
     { header: "Atribuídas", key: "atribuidas", width: 12 },
     { header: "Avaliadas", key: "avaliadas", width: 12 },
     { header: "Pendentes", key: "pendentes", width: 12 },
+    { header: "Planos de trabalho avaliados", key: "planosAvaliados", width: 16 },
   ];
 
   const linhaAvaliador = (avaliador) => ({
     nome: avaliador.user.nome,
+    cpf: avaliador.user.cpf,
     email: avaliador.user.email,
     areas: avaliador.user.userArea.map((ua) => ua.area.area).join(", "),
     atribuidas:
@@ -964,6 +968,7 @@ const Page = ({ params }) => {
       0,
     avaliadas: avaliador.projetosAvaliados ?? 0,
     pendentes: avaliador.projetosPendentes ?? 0,
+    planosAvaliados: avaliador.planosTrabalhoAvaliados ?? 0,
   });
 
   const exportarDistribuicaoPorProjeto = () => {

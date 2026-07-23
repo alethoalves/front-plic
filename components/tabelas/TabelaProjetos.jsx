@@ -54,6 +54,10 @@ const STATUS_AVALIACAO_OPCOES = [
   "EM_AVALIACAO",
   "AVALIADA",
 ].map((status) => ({ label: formatStatusText(status), value: status }));
+const BLOQUEIO_OPCOES = [
+  { label: "Bloqueado", value: true },
+  { label: "Não bloqueado", value: false },
+];
 
 const TabelaProjetos = ({ params }) => {
   // ESTADOS
@@ -93,6 +97,7 @@ const TabelaProjetos = ({ params }) => {
     },
     "inscricao.edital.titulo": { value: [], matchMode: FilterMatchMode.IN },
     statusAvaliacao: { value: "", matchMode: FilterMatchMode.CONTAINS },
+    bloqueadoAvaliacao: { value: [], matchMode: FilterMatchMode.IN },
     notaMedia: {
       value: [undefined, undefined],
       matchMode: "intervalo_numerico",
@@ -538,7 +543,14 @@ const TabelaProjetos = ({ params }) => {
                 style={{ textAlign: "center", width: "8rem" }}
               />
               <Column
+                field="bloqueadoAvaliacao"
                 header="Bloqueio"
+                filter
+                filterElement={(options) =>
+                  editalRowFilterTemplate(options, BLOQUEIO_OPCOES)
+                }
+                showFilterMenu={false}
+                filterField="bloqueadoAvaliacao"
                 body={(rowData) =>
                   rowData.bloqueadoAvaliacao ? (
                     <Tag

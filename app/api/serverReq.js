@@ -68,6 +68,16 @@ export const getEditais = async (tenantSlug) => {
 
 
 
+export const getStatusAvaliacoesAvaliador = async (tenantSlug, ano) => {
+  try {
+    const response = await req.get(`/public/${tenantSlug}/avaliador/${ano}/status-avaliacoes`);
+    return response.data.avaliacoesEncerradas;
+  } catch (error) {
+    console.error('Erro ao consultar status das avaliações:', error);
+    return false;
+  }
+};
+
 export const getEventoBySlug = async (slug) => {
   try {
     
