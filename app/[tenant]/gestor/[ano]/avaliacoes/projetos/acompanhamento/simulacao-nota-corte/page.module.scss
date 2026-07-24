@@ -51,6 +51,25 @@
   }
 }
 
+.rebaixamentoCampo {
+  display: flex;
+  align-items: center;
+  gap: $gap-1;
+  margin-top: $gap-2;
+
+  label {
+    font-size: 13px;
+    color: $gray-600;
+    cursor: pointer;
+  }
+}
+
+.notaTile {
+  margin-top: 2px;
+  font-size: 11px;
+  color: $gray-500;
+}
+
 .avisoPendente {
   background-color: $warning-normal;
   border-radius: $gap-1;

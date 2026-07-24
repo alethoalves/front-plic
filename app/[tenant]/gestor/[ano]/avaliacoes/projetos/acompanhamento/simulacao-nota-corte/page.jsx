@@ -18,14 +18,18 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { InputNumber } from "primereact/inputnumber";
 import { Button as PrimeButton } from "primereact/button";
+import { Checkbox } from "primereact/checkbox";
 import { Tag } from "primereact/tag";
 import { Toast } from "primereact/toast";
 // FUNÇÕES
 import { getAllPlanoDeTrabalhosByTenant } from "@/app/api/client/planoDeTrabalho";
 
 // Mesmas cores semânticas usadas em Tags de status no resto do app
-// (styles/partials/_colors.scss: $success-dark / $error-normal).
+// (styles/partials/_colors.scss: $success-dark / $warning-normal / $error-normal
+// — combinação validada com o script do skill de dataviz pra separação por
+// daltonismo antes de usar aqui).
 const COR_APROVADOS = "#28bb49";
+const COR_REBAIXADOS = "#FFCE52";
 const COR_REPROVADOS = "#F03D3D";
 
 // Um plano pode ter nota de corte diferente conforme a modalidade do aluno
@@ -49,6 +53,12 @@ const Page = ({ params }) => {
   const [cortes, setCortes] = useState({});
   const [corteTodosBolsista, setCorteTodosBolsista] = useState(null);
   const [corteTodosVoluntario, setCorteTodosVoluntario] = useState(null);
+
+  // Regra de algumas instituições: bolsista que não atinge o corte de
+  // bolsista, mas atinge o corte de voluntário do mesmo edital, é
+  // reclassificado como voluntário aprovado em vez de reprovado. Desligado
+  // por padrão — nem toda instituição segue essa regra.
+  const [permitirRebaixamento, setPermitirRebaixamento] = useState(false);
 
   const fetchInitialData = useCallback(async () => {
     setLoading(true);
@@ -134,6 +144,12 @@ const Page = ({ params }) => {
       const planosDoEdital = itensAvaliados.filter(
         (item) => (item.inscricao?.edital?.titulo || "Sem edital") === titulo
       );
+      const corteVoluntarioEdital = cortes[titulo]?.voluntario;
+      const temCorteVoluntarioEdital =
+        corteVoluntarioEdital !== undefined &&
+        corteVoluntarioEdital !== null &&
+        corteVoluntarioEdital !== "";
+
       MODALIDADES.forEach(({ key, label }) => {
         const planosModalidade = planosDoEdital.filter(
           (item) => item.modalidade === key
@@ -145,11 +161,27 @@ const Page = ({ params }) => {
           corteInformado !== "";
 
         let aprovados = 0;
+        let rebaixados = 0;
         let reprovados = 0;
         if (temCorte) {
           planosModalidade.forEach((item) => {
-            if (item.notaTotal >= corteInformado) aprovados += 1;
-            else reprovados += 1;
+            if (item.notaTotal >= corteInformado) {
+              aprovados += 1;
+              return;
+            }
+            // Só bolsista pode ser rebaixado pra voluntário — voluntário
+            // nunca "sobe" pra bolsista mesmo batendo o corte de bolsista,
+            // já que bolsa é alocação limitada, não é automática por nota.
+            if (
+              key === "bolsista" &&
+              permitirRebaixamento &&
+              temCorteVoluntarioEdital &&
+              item.notaTotal >= corteVoluntarioEdital
+            ) {
+              rebaixados += 1;
+            } else {
+              reprovados += 1;
+            }
           });
         }
 
@@ -160,6 +192,7 @@ const Page = ({ params }) => {
           corte: temCorte ? corteInformado : null,
           total: planosModalidade.length,
           aprovados,
+          rebaixados,
           reprovados,
           taxaAprovacao:
             temCorte && planosModalidade.length > 0
@@ -169,16 +202,22 @@ const Page = ({ params }) => {
       });
     });
     return linhas;
-  }, [editais, itensAvaliados, cortes]);
+  }, [editais, itensAvaliados, cortes, permitirRebaixamento]);
 
   const resumoGeral = useMemo(() => {
     const comCorte = resultadoPorEdital.filter((r) => r.corte !== null);
     const total = comCorte.reduce((soma, r) => soma + r.total, 0);
-    const aprovados = comCorte.reduce((soma, r) => soma + r.aprovados, 0);
+    const aprovadosComBolsaOuVaga = comCorte.reduce((soma, r) => soma + r.aprovados, 0);
     const reprovados = comCorte.reduce((soma, r) => soma + r.reprovados, 0);
 
     const bolsistas = comCorte.filter((r) => r.modalidade === "bolsista");
     const voluntarios = comCorte.filter((r) => r.modalidade === "voluntario");
+    const bolsistasRebaixados = bolsistas.reduce((soma, r) => soma + r.rebaixados, 0);
+
+    // "Aprovados" do resumo geral = todo mundo aceito no programa, incluindo
+    // quem foi rebaixado de bolsista pra voluntário (perdeu a bolsa, mas
+    // continua aprovado) — por isso soma os rebaixados aqui.
+    const aprovados = aprovadosComBolsaOuVaga + bolsistasRebaixados;
 
     return {
       linhasComCorte: comCorte.length,
@@ -188,6 +227,7 @@ const Page = ({ params }) => {
       reprovados,
       taxaAprovacao: total > 0 ? (aprovados / total) * 100 : 0,
       bolsasAprovadas: bolsistas.reduce((soma, r) => soma + r.aprovados, 0),
+      bolsistasRebaixados,
       bolsasReprovadas: bolsistas.reduce((soma, r) => soma + r.reprovados, 0),
       voluntariosAprovados: voluntarios.reduce((soma, r) => soma + r.aprovados, 0),
       voluntariosReprovados: voluntarios.reduce((soma, r) => soma + r.reprovados, 0),
@@ -196,26 +236,38 @@ const Page = ({ params }) => {
 
   const chartData = useMemo(() => {
     const comCorte = resultadoPorEdital.filter((r) => r.corte !== null);
+    const datasets = [
+      {
+        label: "Aprovados",
+        backgroundColor: COR_APROVADOS,
+        data: comCorte.map((r) => r.aprovados),
+        borderRadius: 4,
+        maxBarThickness: 48,
+      },
+    ];
+    // Série de rebaixados só entra no gráfico quando a regra está ligada —
+    // senão vira uma legenda sempre zerada, sem informação nenhuma.
+    if (permitirRebaixamento) {
+      datasets.push({
+        label: "Rebaixados p/ Voluntário",
+        backgroundColor: COR_REBAIXADOS,
+        data: comCorte.map((r) => r.rebaixados),
+        borderRadius: 4,
+        maxBarThickness: 48,
+      });
+    }
+    datasets.push({
+      label: "Reprovados",
+      backgroundColor: COR_REPROVADOS,
+      data: comCorte.map((r) => r.reprovados),
+      borderRadius: 4,
+      maxBarThickness: 48,
+    });
     return {
       labels: comCorte.map((r) => `${r.editalTitulo} · ${r.modalidadeLabel}`),
-      datasets: [
-        {
-          label: "Aprovados",
-          backgroundColor: COR_APROVADOS,
-          data: comCorte.map((r) => r.aprovados),
-          borderRadius: 4,
-          maxBarThickness: 48,
-        },
-        {
-          label: "Reprovados",
-          backgroundColor: COR_REPROVADOS,
-          data: comCorte.map((r) => r.reprovados),
-          borderRadius: 4,
-          maxBarThickness: 48,
-        },
-      ],
+      datasets,
     };
-  }, [resultadoPorEdital]);
+  }, [resultadoPorEdital, permitirRebaixamento]);
 
   const chartOptions = {
     responsive: true,
@@ -289,7 +341,7 @@ const Page = ({ params }) => {
         <Header
           className="mb-3"
           titulo="Simular Nota de Corte"
-          descricao="Defina a nota de corte de cada edital — separada para Bolsista e Voluntário(a), já que muitos editais usam régua diferente para cada modalidade — e veja quantos planos seriam aprovados ou reprovados. Nenhum dado é alterado, é só uma simulação."
+          descricao="Defina a nota de corte de cada edital — separada para Bolsista e Voluntário(a), já que muitos editais usam régua diferente para cada modalidade — e veja quantos planos seriam aprovados ou reprovados. Opcionalmente, rebaixe bolsistas reprovados para voluntário se a nota deles atingir o corte de voluntário. Nenhum dado é alterado, é só uma simulação."
         />
 
         <Card className="mb-4 p-2">
@@ -329,6 +381,18 @@ const Page = ({ params }) => {
               onClick={handleAplicarATodos}
               disabled={corteTodosBolsista === null && corteTodosVoluntario === null}
             />
+          </div>
+
+          <div className={styles.rebaixamentoCampo}>
+            <Checkbox
+              inputId="permitirRebaixamento"
+              checked={permitirRebaixamento}
+              onChange={(e) => setPermitirRebaixamento(e.checked)}
+            />
+            <label htmlFor="permitirRebaixamento">
+              Rebaixar bolsista reprovado para voluntário, se a nota também
+              atingir a nota de corte de voluntário do mesmo edital
+            </label>
           </div>
 
           <DataTable
@@ -373,6 +437,15 @@ const Page = ({ params }) => {
             <Column
               header="Aprovados"
               body={(row) => (row.corte !== null ? row.aprovados : "—")}
+              style={{ textAlign: "center" }}
+            />
+            <Column
+              header="Rebaixados p/ Voluntário"
+              body={(row) =>
+                row.modalidade === "bolsista" && permitirRebaixamento
+                  ? row.rebaixados
+                  : "—"
+              }
               style={{ textAlign: "center" }}
             />
             <Column
@@ -424,6 +497,12 @@ const Page = ({ params }) => {
                   </div>
                   <div className={styles.right}>
                     <h6>Aprovados</h6>
+                    {permitirRebaixamento && resumoGeral.bolsistasRebaixados > 0 && (
+                      <p className={styles.notaTile}>
+                        inclui {resumoGeral.bolsistasRebaixados} rebaixado(s)
+                        p/ voluntário
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className={styles.card_style1}>
@@ -450,13 +529,22 @@ const Page = ({ params }) => {
                   <RiGraduationCapLine />
                   <div>
                     <h5>
-                      {resumoGeral.bolsasAprovadas} aprovada(s) ·{" "}
-                      {resumoGeral.bolsasReprovadas} reprovada(s)
+                      {resumoGeral.bolsasAprovadas} aprovada(s)
+                      {permitirRebaixamento && (
+                        <>
+                          {" "}
+                          · {resumoGeral.bolsistasRebaixados} rebaixada(s)
+                        </>
+                      )}{" "}
+                      · {resumoGeral.bolsasReprovadas} reprovada(s)
                     </h5>
                     <p>
                       Bolsistas — as {resumoGeral.bolsasAprovadas}{" "}
                       aprovadas são as solicitações de bolsa que teriam que
                       ser atendidas
+                      {permitirRebaixamento &&
+                        resumoGeral.bolsistasRebaixados > 0 &&
+                        `; as ${resumoGeral.bolsistasRebaixados} rebaixadas entram como voluntário aprovado, sem bolsa`}
                     </p>
                   </div>
                 </div>
@@ -477,7 +565,11 @@ const Page = ({ params }) => {
 
         {chartData.labels.length > 0 && (
           <Card className="mb-4 p-2">
-            <h5 className="mb-2">Aprovados vs. Reprovados por Edital e Modalidade</h5>
+            <h5 className="mb-2">
+              {permitirRebaixamento
+                ? "Aprovados, Rebaixados e Reprovados por Edital e Modalidade"
+                : "Aprovados vs. Reprovados por Edital e Modalidade"}
+            </h5>
             <Chart
               type="bar"
               data={chartData}
