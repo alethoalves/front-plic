@@ -158,7 +158,7 @@ export const InscricaoButton = ({ params }) => {
         const formattedTenants = data
           .map((tenant) => ({
             ...tenant,
-            label: `${tenant.slug.toUpperCase()} - ${tenant.nome}`,
+            label: `${(tenant.sigla || tenant.slug).toUpperCase()} - ${tenant.nome}`,
             // `value` já vem namespaced do backend (tenant:slug / parceira:id)
             // pra não colidir entre um slug de tenant e o id de uma parceira.
           }))

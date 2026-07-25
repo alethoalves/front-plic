@@ -124,15 +124,18 @@ export const relatorioEmailsUsuarios = async (tenantSlug) => {
   URL.revokeObjectURL(url);
 };
 
-export const getSubmissaoByEvento = async (eventoSlug, idEvento, tenantSlug) => {
+export const getSubmissaoByEvento = async (eventoSlug, idEvento, tenantSlug, instituicaoParceiraId) => {
   try {
     const headers = getAuthHeadersClient();
     if (!headers) {
       return false;
     }
 
-    // Define os parâmetros da query condicionalmente
-    const queryParams = tenantSlug ? `?tenantSlug=${tenantSlug}` : "";
+    // Define os parâmetros da query condicionalmente (um filtro ou outro, nunca os dois)
+    const params = new URLSearchParams();
+    if (tenantSlug) params.set("tenantSlug", tenantSlug);
+    else if (instituicaoParceiraId) params.set("instituicaoParceiraId", instituicaoParceiraId);
+    const queryParams = params.toString() ? `?${params.toString()}` : "";
 
     const response = await req.get(
       `/evenplic/${eventoSlug}/listaSubmissoes/${idEvento}${queryParams}`,

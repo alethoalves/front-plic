@@ -67,13 +67,14 @@ const Page = ({ params }) => {
   };
 
   // Função para gerar relatório de submissões em Excel - Versão Atualizada
-  const gerarRelatorioSubmissoes = async (tenantSigla = null) => {
+  const gerarRelatorioSubmissoes = async (filtro = null) => {
     setIsDownloadingSubmissoes(true);
     try {
       const submissaoData = await getSubmissaoByEvento(
         params.eventoSlug,
         evento.evento.id,
-        tenantSigla,
+        filtro?.tenantSlug,
+        filtro?.instituicaoParceiraId,
       );
 
       const workbook = new ExcelJS.Workbook();
@@ -204,7 +205,7 @@ const Page = ({ params }) => {
       saveAs(
         blob,
         `submissoes_${evento.evento.slug}${
-          tenantSigla ? `_${tenantSigla}` : ""
+          filtro?.label ? `_${filtro.label}` : ""
         }.xlsx`,
       );
     } catch (error) {
@@ -223,10 +224,12 @@ const Page = ({ params }) => {
       evento.evento.nomeEvento,
     );
     try {
+      const filtro = filtroInstituicaoAtual();
       const submissaoData = await getSubmissaoByEvento(
         params.eventoSlug,
         evento.evento.id,
-        selectedTenant?.tenant,
+        filtro?.tenantSlug,
+        filtro?.instituicaoParceiraId,
       );
 
       // Remove tudo que pode quebrar o XML do docx
@@ -838,6 +841,9 @@ const Page = ({ params }) => {
             
             <div class="info-basica">
                 <span><strong>ID:</strong> ${submissao.id}</span>
+                <span><strong>Instituição:</strong> ${getInstituicaoSigla(
+                  submissao,
+                )}</span>
                 <span><strong>Categoria:</strong> ${
                   submissao.categoria || "N/A"
                 }</span>
@@ -1049,6 +1055,17 @@ const Page = ({ params }) => {
     setIsModalOpen(true);
   };
 
+  // Deriva o filtro a mandar pra API a partir do `selectedTenant` atual —
+  // um tenant real filtra por slug, uma instituição parceira filtra pelo
+  // `id` dela (não tem Tenant/slug). `label` é usado em nome de arquivo e
+  // textos do modal, que já leem `selectedTenant.tenant` hoje.
+  const filtroInstituicaoAtual = () => {
+    if (!selectedTenant) return null;
+    return selectedTenant.instituicaoParceiraId
+      ? { instituicaoParceiraId: selectedTenant.instituicaoParceiraId, label: selectedTenant.tenant }
+      : { tenantSlug: selectedTenant.tenant, label: selectedTenant.tenant };
+  };
+
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedTenant(null);
@@ -1075,7 +1092,7 @@ const Page = ({ params }) => {
         {isDownloading ? "Exportando..." : "Anais do Evento (.docx)"}
       </Button>
       <Button
-        onClick={() => gerarRelatorioSubmissoes(selectedTenant?.tenant)}
+        onClick={() => gerarRelatorioSubmissoes(filtroInstituicaoAtual())}
         icon={RiFileExcelLine}
         className="btn-secondary mt-2"
         type="button"
@@ -1129,12 +1146,19 @@ const Page = ({ params }) => {
               <h6>{tenant.tenant}</h6>
             </div>
           ))}
-          {/* Instituições parceiras (sem Tenant) — só exibição por enquanto,
-              o filtro/export por instituição ainda cobre apenas tenants reais */}
+          {/* Instituições parceiras (sem Tenant) — filtram export pelo id da
+              parceira em vez do slug de um Tenant */}
           {(evento.info.parceirasTotais || []).map((parceira) => (
             <div
               className={`${styles.total} ${styles.light}`}
-              key={parceira.instituicao}
+              key={parceira.id}
+              onClick={() =>
+                openModal({
+                  tenant: parceira.instituicao,
+                  instituicaoParceiraId: parceira.id,
+                  quantidadeSubmissoesTotal: parceira.quantidadeSubmissoesTotal,
+                })
+              }
             >
               <p>{parceira.quantidadeSubmissoesTotal}</p>
               <h6>{parceira.instituicao}</h6>
