@@ -23,6 +23,7 @@ const Layout = ({ children, params }) => {
           "--primary-dark": primaryVariants.dark,
           "--primary-normal": primaryVariants.normal,
           "--primary-light": primaryVariants.light,
+          "--primary-lighten": primaryVariants.lighten,
 
           "--white-darken": whiteVariants.darken,
           "--white-dark": whiteVariants.dark,

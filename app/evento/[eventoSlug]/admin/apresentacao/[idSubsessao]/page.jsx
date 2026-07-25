@@ -30,6 +30,7 @@ import {
 } from "@/app/api/client/square";
 import { Toast } from "primereact/toast";
 import { InputText } from "primereact/inputtext";
+import { getInstituicaoSigla } from "@/lib/instituicaoDisplay";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
@@ -350,7 +351,7 @@ const Page = ({ params }) => {
                     {item.Resumo?.area?.area
                       ? item.Resumo?.area?.area
                       : "sem área"}
-                    - {item.tenant?.sigla.toUpperCase()}-{" "}
+                    - {getInstituicaoSigla(item)}-{" "}
                     {item.categoria.toUpperCase()}
                   </p>
                 </div>
@@ -622,7 +623,7 @@ const Page = ({ params }) => {
                         {item.submissao?.Resumo?.area?.area
                           ? item.submissao?.Resumo?.area?.area
                           : "sem área"}{" "}
-                        - {item.submissao?.tenant?.sigla}-{" "}
+                        - {getInstituicaoSigla(item.submissao)}-{" "}
                         {item.submissao?.categoria.toUpperCase()}
                       </p>
                     </div>

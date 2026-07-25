@@ -434,6 +434,33 @@ b{
   }
 }
 
+// Tipografia editorial — usada só nas páginas públicas de evento (títulos de
+// edição/série, cabeçalhos de seção), reaproveitando a escala de tamanho já
+// existente e só trocando a família pra Source Serif 4.
+.h-editorial{
+  @include typeface-1(h3, desktop);
+  @include responsive(s) {
+    @include typeface-1(h3, mobile);
+  }
+  @include responsive(xs) {
+    @include typeface-1(h3, smallmobile);
+  }
+  font-family: var(--font-source-serif);
+  font-weight: 500;
+}
+
+.h-editorial-sm{
+  @include typeface-1(h4, desktop);
+  @include responsive(s) {
+    @include typeface-1(h4, mobile);
+  }
+  @include responsive(xs) {
+    @include typeface-1(h4, smallmobile);
+  }
+  font-family: var(--font-source-serif);
+  font-weight: 500;
+}
+
 input, .select{
   font-family:var(--font-lato);
   font-size: 14px;

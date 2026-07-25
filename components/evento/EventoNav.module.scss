@@ -1,0 +1,107 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+@import "/styles/partials/eventoEditorial";
+
+// Altura da barra fixa do menu no mobile — usada tanto pra ancorar o
+// dropdown quanto (mais um respiro de $gap-2) pra compensar o banner da
+// página (ver .eventoPlatewrapComNav em _eventoEditorial.scss). Se mudar
+// aqui, mudar lá também.
+$toggleHeight: 64px;
+
+.eventoNavPanel {
+  margin-bottom: $gap-2;
+
+  // No mobile o toggle e o dropdown são fixed (saem do fluxo normal), então
+  // esse painel já renderiza com 0px de conteúdo — sem isso, sobraria uma
+  // margem "fantasma" mesmo sem nada visível aqui.
+  @include responsive(s) {
+    margin-bottom: 0;
+  }
+}
+
+.eventoNavToggle {
+  display: none;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: $gap-2;
+  background: $white-light;
+  border: 1px solid $gray-50;
+  border-radius: $gap-1;
+  padding: $gap-2 $gap-3;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: $black-light;
+  cursor: pointer;
+  transition: ease 0.2s;
+
+  svg {
+    width: 20px;
+    height: 20px;
+    color: $primary-dark;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    border-color: $primary-normal;
+    color: $primary-darken;
+  }
+
+  // No mobile o toggle vira uma barra fixa no topo — primeiro elemento
+  // visível da página, acima do banner (que ganha padding-top compensando
+  // essa altura, ver .eventoPlatewrapComNav).
+  @include responsive(s) {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: $toggleHeight;
+    padding: $gap-1 $gap-3;
+    border-radius: 0;
+    border-width: 0 0 1px 0;
+    z-index: 1000;
+  }
+}
+
+.eventoNavToggleLogo {
+  height: 100%;
+  display: flex;
+  align-items: center;
+
+  img {
+    height: 100%;
+    max-height: 44px;
+    width: auto;
+    object-fit: contain;
+  }
+}
+
+.eventoNavBody {
+  @include responsive(s) {
+    // Dropdown ancorado logo abaixo da barra fixa — abre por cima do
+    // conteúdo da página em vez de empurrar algo que já ficou lá embaixo
+    // (banner, Inscreva-se), que é onde essa lista mora no fluxo normal.
+    position: fixed;
+    top: $toggleHeight;
+    left: 0;
+    right: 0;
+    max-height: 0;
+    opacity: 0;
+    overflow-y: auto;
+    background: $white-light;
+    padding: 0 $gap-2;
+    box-shadow: 0px 8px 20px rgba(5, 17, 34, 0.12);
+    z-index: 999;
+    transition: max-height 0.25s ease, opacity 0.2s ease, padding 0.25s ease;
+  }
+}
+
+.eventoNavOpen .eventoNavBody {
+  @include responsive(s) {
+    max-height: calc(100vh - #{$toggleHeight});
+    opacity: 1;
+    padding: $gap-2;
+  }
+}

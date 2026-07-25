@@ -23,6 +23,7 @@ import Modal from "@/components/Modal";
 import { getEventoBySlug } from "@/app/api/client/eventos";
 import { transformarQuebrasEmParagrafos } from "@/lib/formatarParagrafo";
 import { MultiSelect } from "primereact/multiselect";
+import { getInstituicaoSigla } from "@/lib/instituicaoDisplay";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
@@ -255,7 +256,7 @@ const Page = ({ params }) => {
                         <div className={styles.info}>
                           <p className={styles.area}>
                             {item?.Resumo?.area?.area || "sem área"} -{" "}
-                            {item?.tenant?.sigla.toUpperCase()} -{" "}
+                            {getInstituicaoSigla(item)} -{" "}
                             {item?.categoria.toUpperCase()}
                           </p>
                         </div>
@@ -294,7 +295,7 @@ const Page = ({ params }) => {
                               handleLerResumo(
                                 eventoId,
                                 item.id,
-                                item.tenant?.id
+                                item.tenant?.id ?? item.instituicaoParceiraSnapshot?.id
                               )
                             }
                           >
@@ -310,7 +311,7 @@ const Page = ({ params }) => {
                           className={`${styles.squareHeader}  ${styles.action} ${styles.actionPrimary}`}
                           onClick={() =>
                             router.push(
-                              `/evento/${params.eventoSlug}/edicao/${params.edicao}/avaliador/avaliacoes/avaliacao/${eventoId}/${item.id}/${item.tenant?.id}`
+                              `/evento/${params.eventoSlug}/edicao/${params.edicao}/avaliador/avaliacoes/avaliacao/${eventoId}/${item.id}/${item.tenant?.id ?? item.instituicaoParceiraSnapshot?.id}`
                             )
                           }
                         >
@@ -379,7 +380,7 @@ const Page = ({ params }) => {
                       <div className={styles.info}>
                         <p className={styles.area}>
                           {item?.Resumo?.area?.area || "sem área"} -{" "}
-                          {item?.tenant?.sigla.toUpperCase()} -{" "}
+                          {getInstituicaoSigla(item)} -{" "}
                           {item?.categoria?.toUpperCase()}
                         </p>
                       </div>

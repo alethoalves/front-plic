@@ -19,11 +19,11 @@ export const LoginAvaliadorEvento = ({ eventoSlug }) => {
   return (
     <>
       <div
-        className={`w-100 ${styles.action} ${styles.primary}`}
+        className={styles.eventoIndexItem}
         onClick={() => setIsModalOpen(true)}
       >
         <RiLoginBoxLine />
-        <h6>Espaço do avaliador</h6>
+        Espaço do avaliador
       </div>
 
       <Modal

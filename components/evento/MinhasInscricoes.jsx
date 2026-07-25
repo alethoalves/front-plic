@@ -124,7 +124,10 @@ export const MinhasInscricoes = ({ params }) => {
         planoProjetoId: selectedPlano ? selectedPlano.id : null,
         type: type,
         slugEvento: params.edicao,
-        tenant: selectedTenant.slug,
+        tipoInstituicao: selectedTenant.tipo,
+        ...(selectedTenant.tipo === "PARCEIRA"
+          ? { instituicaoParceiraId: selectedTenant.slug }
+          : { tenant: selectedTenant.slug }),
         cpf: cpfValue,
         resumos: resumoData,
         palavrasChave: palavrasChaveData,
@@ -156,7 +159,7 @@ export const MinhasInscricoes = ({ params }) => {
           .map((tenant) => ({
             ...tenant,
             label: `${tenant.slug.toUpperCase()} - ${tenant.nome}`,
-            value: tenant.slug,
+            // `value` já vem namespaced do backend (tenant:slug / parceira:id).
           }))
           .sort((a, b) => a.label.localeCompare(b.label)); // Ordenação por label
 
@@ -207,6 +210,16 @@ export const MinhasInscricoes = ({ params }) => {
   const onSubmit = async (data) => {
     if (!selectedTenant || !data.cpf) return;
 
+    // Instituição parceira não tem TenantEvento nem plano/projeto pra
+    // vincular — pula direto pra etapa de submissão avulsa do resumo, sem
+    // nem chamar a API.
+    if (selectedTenant.tipo === "PARCEIRA") {
+      setPlanos([]);
+      setType(undefined);
+      setActiveStep(3);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -214,7 +227,7 @@ export const MinhasInscricoes = ({ params }) => {
       const planosData = await getPlanosOuProjetos(
         data.cpf,
         params.edicao,
-        selectedTenant.value
+        selectedTenant.slug
       );
       setPlanos(planosData.data);
       setType(planosData.type);

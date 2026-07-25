@@ -1,0 +1,22 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+@import "/styles/partials/eventoEditorial";
+
+// <picture>/<img> cru em vez de next/image: precisamos do <source media>
+// pra fazer o browser baixar só a versão certa do banner (desktop OU mobile),
+// coisa que next/image não faz sem duplicar o download das duas.
+.eventoBannerPicture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.eventoBannerImg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}

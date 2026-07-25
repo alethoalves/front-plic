@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import NoData from "@/components/NoData";
 import { getFichasAvaliacoesEvento } from "@/app/api/client/submissaoAvaliador";
+import { getInstituicaoSigla } from "@/lib/instituicaoDisplay";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
@@ -73,7 +74,7 @@ const Page = ({ params }) => {
                       <div>
                         <p className={styles.area}>
                           {item?.area?.area || "sem área"} -{" "}
-                          {item?.tenant?.sigla?.toUpperCase()} -{" "}
+                          {getInstituicaoSigla(item)} -{" "}
                           {item?.categoria?.toUpperCase()}
                         </p>
                         <h6 className={`mt-1 ${styles.tituloProjeto}`}>

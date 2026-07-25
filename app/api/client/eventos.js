@@ -271,6 +271,24 @@ export const deleteSubmissao = async (tenantSlug, idSubmissao) => {
   }
 };
 
+export const createEdicaoEvento = async (tenantSlug, data) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+
+    const response = await req.post(
+      `/evenplic/${tenantSlug}/evento`,
+      data,
+      { headers }
+    );
+
+    return response.data.evento;
+  } catch (error) {
+    console.error("Erro ao criar edição de evento:", error);
+    throw error;
+  }
+};
+
 export const getEventosDashboard = async (tenantSlug) => {
   try {
     const headers = getAuthHeadersClient();
@@ -311,6 +329,95 @@ export const getEventoDashboard = async (eventoSlug) => {
   }
 };
 
+
+export const getEventoConfiguracoes = async (eventoSlug) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+
+    const response = await req.get(
+      `/evenplic/evento/${eventoSlug}/configuracoes`,
+      { headers }
+    );
+
+    return response.data.evento;
+  } catch (error) {
+    console.error("Erro ao buscar configurações do evento:", error);
+    throw error;
+  }
+};
+
+export const updateEventoConfiguracoes = async (eventoSlug, data) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+
+    const response = await req.put(
+      `/evenplic/evento/${eventoSlug}/configuracoes`,
+      data,
+      { headers }
+    );
+
+    return response.data.evento;
+  } catch (error) {
+    console.error("Erro ao atualizar configurações do evento:", error);
+    throw error;
+  }
+};
+
+export const criarInstituicaoParceira = async (eventoSlug, data) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+
+    const response = await req.post(
+      `/evenplic/evento/${eventoSlug}/instituicoes-parceiras`,
+      data,
+      { headers }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao criar instituição parceira:", error);
+    throw error;
+  }
+};
+
+export const atualizarInstituicaoParceira = async (eventoSlug, id, data) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+
+    const response = await req.put(
+      `/evenplic/evento/${eventoSlug}/instituicoes-parceiras/${id}`,
+      data,
+      { headers }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao atualizar instituição parceira:", error);
+    throw error;
+  }
+};
+
+export const uploadImagemEvento = async (eventoSlug, formData) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+
+    const response = await req.post(
+      `/evenplic/evento/${eventoSlug}/configuracoes/upload`,
+      formData,
+      { headers: { ...headers, "Content-Type": "multipart/form-data" } }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao fazer upload da imagem do evento:", error);
+    throw error;
+  }
+};
 
 export const getEventosAnoCorrente = async (slug) => {
   try {

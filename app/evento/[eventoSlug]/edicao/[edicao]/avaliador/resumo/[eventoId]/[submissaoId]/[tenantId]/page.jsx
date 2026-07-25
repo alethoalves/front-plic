@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { getResumo } from "@/app/api/client/submissaoAvaliador";
 import { transformarQuebrasEmParagrafos } from "@/lib/formatarParagrafo";
+import { getInstituicaoSigla } from "@/lib/instituicaoDisplay";
 import styles from "./page.module.scss";
 import {
   RiArrowLeftLine,
@@ -76,7 +77,7 @@ export default function ResumoPage() {
             {resumo?.Resumo?.area?.area || "Área não definida"}
           </span>
           <span className={styles.tenant}>
-            {resumo?.tenant?.sigla?.toUpperCase()}
+            {getInstituicaoSigla(resumo)}
           </span>
           <span className={styles.categoria}>
             {resumo?.categoria?.toUpperCase()}

@@ -1,5 +1,5 @@
 import { PrimeReactProvider } from "primereact/api";
-import { lato, kanit } from "@/styles/fonts";
+import { lato, kanit, sourceSerif } from "@/styles/fonts";
 import "@/styles/globals.scss";
 
 export const generateMetadata = async ({ params }) => {
@@ -23,7 +23,7 @@ const RootLayout = ({ children }) => {
       lang="pt-br" //
     >
       <body
-        className={`${lato.variable} ${kanit.variable}`}
+        className={`${lato.variable} ${kanit.variable} ${sourceSerif.variable}`}
         suppressHydrationWarning={true}
       >
         <PrimeReactProvider>{children}</PrimeReactProvider>

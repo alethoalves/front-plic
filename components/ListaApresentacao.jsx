@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import styles from "./ListaApresentacao.module.scss";
 import { getListaSubmissao } from "@/app/api/client/submissao";
 import { formatarData, formatarHora } from "@/lib/formatarDatas";
+import { getInstituicaoSigla } from "@/lib/instituicaoDisplay";
 
 const ListaApresentacao = ({ eventoSlug }) => {
   const [submissoes, setSubmissoes] = useState([]);
@@ -62,7 +63,7 @@ const ListaApresentacao = ({ eventoSlug }) => {
       const searchLower = searchTerm.toLowerCase();
 
       // Verificar se o termo de busca corresponde a qualquer participante
-      return submissao.Resumo.participacoes.some(
+      return submissao.Resumo?.participacoes?.some(
         (participante) =>
           participante.user.nome.toLowerCase().includes(searchLower) ||
           participante.user.cpf.includes(searchTerm)
@@ -108,7 +109,7 @@ const ListaApresentacao = ({ eventoSlug }) => {
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>Lista de Apresentações</h2>
+      <h2 className={`h-editorial-sm ${styles.title}`}>Lista de Apresentações</h2>
 
       {/* Campo de busca */}
       <div className={styles.searchContainer}>
@@ -151,25 +152,18 @@ const ListaApresentacao = ({ eventoSlug }) => {
         <div className={styles.apresentacoesList}>
           {filteredSubmissoes.map((submissao) => (
             <div key={submissao.id} className={styles.apresentacaoCard}>
-              <div
-                className={`${styles.statusBadge} ${getStatusClass(
-                  submissao.status
-                )}`}
-              >
-                {getStatusLabel(submissao.status)}
-              </div>
-
               <div className={styles.cardHeader}>
                 <h3 className={styles.titulo}>
-                  ID {submissao.id} - {submissao.Resumo.titulo}
+                  ID {submissao.id} - {submissao.Resumo?.titulo || "Resumo não disponível"}
                 </h3>
                 <div className={styles.headerMeta}>
-                  <span className={styles.categoria}>
-                    <p className={styles.infoLabel}>Pôster:</p>
-                    <h3 className={styles.infoValue}>
-                      {getPosterNumber(submissao)}
-                    </h3>
-                  </span>
+                  <div
+                    className={`${styles.statusBadge} ${getStatusClass(
+                      submissao.status
+                    )}`}
+                  >
+                    {getStatusLabel(submissao.status)}
+                  </div>
                   {submissao.indicacaoPremio && (
                     <span className={styles.premio}>Indicado a prêmio</span>
                   )}
@@ -206,14 +200,14 @@ const ListaApresentacao = ({ eventoSlug }) => {
                   <div className={styles.infoItem}>
                     <span className={styles.infoLabel}>Instituição:</span>
                     <span className={styles.infoValue}>
-                      {submissao.tenant?.sigla || "Não informado"}
+                      {getInstituicaoSigla(submissao)}
                     </span>
                   </div>
                 </div>
 
                 <div className={styles.participantes}>
                   <h4 className={styles.sectionTitle}>Participantes:</h4>
-                  {submissao.Resumo.participacoes.map((participante) => (
+                  {submissao.Resumo?.participacoes?.map((participante) => (
                     <div key={participante.id} className={styles.participante}>
                       <span className={styles.participanteNome}>
                         {participante.user.nome}
@@ -230,16 +224,16 @@ const ListaApresentacao = ({ eventoSlug }) => {
                     Área do Conhecimento:
                   </span>
                   <span className={styles.areaValue}>
-                    {submissao.Resumo.area?.area || "Não informada"}
+                    {submissao.Resumo?.area?.area || "Não informada"}
                   </span>
                   <span className={styles.grandeAreaValue}>
-                    {submissao.Resumo.area?.grandeArea?.grandeArea
+                    {submissao.Resumo?.area?.grandeArea?.grandeArea
                       ? `(${submissao.Resumo.area.grandeArea.grandeArea})`
                       : ""}
                   </span>
                 </div>
 
-                {submissao.Resumo.PalavraChave &&
+                {submissao.Resumo?.PalavraChave &&
                   submissao.Resumo.PalavraChave.length > 0 && (
                     <div className={styles.palavrasChave}>
                       <span className={styles.sectionTitle}>

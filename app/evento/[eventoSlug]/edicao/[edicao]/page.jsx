@@ -1,51 +1,39 @@
-import Image from "next/image";
-import Link from "next/link";
 import styles from "./page.module.scss";
 import {
-  RiArticleLine,
-  RiAwardFill,
   RiCalendarEventFill,
-  RiCouponLine,
-  RiHome6Line,
   RiMapPinLine,
-  RiPresentationFill,
-  RiUserStarLine,
 } from "@remixicon/react";
-import { Card } from "primereact/card";
 import {
   getEventoBySlug,
   getEventoProgramacao,
   getEventoRootBySlug,
 } from "@/app/api/serverReq";
-import { Fragment } from "react";
-import { InscricaoButton } from "@/components/evento/InscricaoButton";
-import { Accordion, AccordionTab } from "primereact/accordion";
-import { formatDateForDisplay } from "@/lib/formatDateForDisplay";
 import NoData from "@/components/NoData";
-import { MinhasInscricoes } from "@/components/evento/MinhasInscricoes";
-import { CertificadoEvento } from "@/components/evento/CertificadoEvento";
-// Função para formatar AAAA-MM-DD para DD/MM/AAAA
-const formatDate = (dateString) => {
-  const [year, month, day] = dateString.split("-");
-  return `${day}/${month}/${year}`;
-};
+import { EventoNav } from "@/components/evento/EventoNav";
+import { EventoBanner } from "@/components/evento/EventoBanner";
 
 // Função para extrair apenas horas e minutos de uma data ISO
 const formatTime = (isoString) => {
-  // Extrai a parte do tempo (HH:MM:SS) da string ISO
   const timePart = isoString.split("T")[1] || "";
-  // Pega apenas horas e minutos
   const [hours, minutes] = timePart.split(":");
   return `${hours}:${minutes}`;
 };
+
 const formatDateFromISO = (isoString) => {
-  // Extrai a parte da data (AAAA-MM-DD) da string ISO
+  if (!isoString) return null;
   const datePart = isoString.split("T")[0];
-  // Divide em componentes
   const [year, month, day] = datePart.split("-");
-  // Remonta no formato DD/MM/AAAA
   return `${day}/${month}/${year}`;
 };
+
+const DIAS_SEMANA = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+const MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+const formatDiaLabel = (dateString) => {
+  const [year, month, day] = dateString.split("-");
+  const data = new Date(Number(year), Number(month) - 1, Number(day));
+  return `${DIAS_SEMANA[data.getDay()]}, ${day} de ${MESES[Number(month) - 1]}`;
+};
+
 const Page = async ({ params }) => {
   let eventoRoot;
   let evento;
@@ -60,167 +48,79 @@ const Page = async ({ params }) => {
 
   return (
     <>
-      <header>
-        {false && (
-          <div className={styles.login}>
-            <p>Avaliador</p>
-          </div>
+      <div className={`${styles.eventoPlatewrap} ${styles.eventoPlatewrapComNav}`}>
+        <EventoBanner evento={evento} />
+        {eventoRoot?.nome && (
+          <p className={styles.eventoPlateCaption}>{eventoRoot.nome}</p>
         )}
-        <div className={styles.banner}>
-          <Image
-            src={`/image/${params.eventoSlug}/bgImg.png`}
-            alt="Background"
-            fill
-            quality={100}
-            className={styles.bgImage}
-          />
-          <div className={styles.bannerOverlay}>
-            <Image
-              src={`/image/${params.eventoSlug}/${params.edicao}/pathBanner.png`}
-              alt="Evento Banner"
-              width={1200}
-              height={400}
-              priority // Adicionado para otimização de LCP
-              className={styles.overlayImage}
-            />
-          </div>
-        </div>
-      </header>
+      </div>
 
-      <main className={styles.main}>
-        <article>
-          <aside>
-            <div className={styles.actions}>
-              {evento.permitirSubmissoes && (
-                <div className={styles.desktop}>
-                  <InscricaoButton params={params} />
-                </div>
+      <main className={`${styles.eventoSpread} ${styles.eventoSpreadNavFixo}`}>
+        <nav className={styles.eventoIndex}>
+          <EventoNav params={params} evento={evento} eventoRoot={eventoRoot} />
+        </nav>
+
+        <div className={styles.content}>
+          <div className={`${styles.eventoCard} mb-3`}>
+            {eventoRoot?.nome && (
+              <span className={styles.eventoEyebrow}>{eventoRoot.nome}</span>
+            )}
+            <h1 className={`h-editorial ${styles.title}`}>{evento.nomeEvento}</h1>
+            <div className={styles.topline}>
+              <span className={styles.eventoDatestamp}>
+                <RiCalendarEventFill />
+                {evento.inicio && evento.fim
+                  ? `${formatDateFromISO(evento.inicio)} – ${formatDateFromISO(evento.fim)}`
+                  : "Datas a definir"}
+              </span>
+              {evento.local && (
+                <span className={styles.eventoLoc}>
+                  <RiMapPinLine />
+                  {evento.local}
+                </span>
               )}
-              <div className={styles.desktop}>
-                <MinhasInscricoes params={params} />
-              </div>
-              <Link
-                href={`/evento/${params.eventoSlug}/edicao/${params.edicao}/apresentacoes`}
-                className={styles.edicaoLink}
-              >
-                <div className={styles.action}>
-                  <RiPresentationFill />
-                  <h6>Lista de Apresentações</h6>
-                </div>
-              </Link>
-              <Link
-                href={`/evento/${params.eventoSlug}/edicao/${params.edicao}/publicacoes`}
-                className={styles.edicaoLink}
-              >
-                <div className={styles.action}>
-                  <RiArticleLine />
-                  <h6>Publicações</h6>
-                </div>
-              </Link>
-
-              <div>
-                <CertificadoEvento eventoId={evento.id} params={params} />
-              </div>
             </div>
+            {evento.isbn && (
+              <div className={styles.isbnRow}>
+                <span className={styles.k}>ISBN</span> {evento.isbn}
+              </div>
+            )}
+          </div>
 
-            <div className={`${styles.edicoesContent}`}>
-              <h6 className={styles.sectionTitle}>Últimas Edições</h6>
-              <div className={styles.edicoes}>
-                {eventoRoot?.eventos
-                  .sort((a, b) => b.id - a.id)
-                  .map((edicao) => (
-                    <Link
-                      key={edicao.id}
-                      href={`/evento/${params.eventoSlug}/edicao/${edicao.slug}`}
-                      className={styles.edicaoLink}
-                      target="_blank"
-                    >
-                      <div className={styles.edicao}>
-                        <h6>{edicao.edicaoEvento}</h6>
-                      </div>
-                    </Link>
-                  ))}
-              </div>
-            </div>
-          </aside>
-          <section className={`${styles.content} ${styles.descriptionSection}`}>
-            <div className={`${styles.mobile}`}>
-              <div className={`${styles.sectionContent} mb-1`}>
-                <InscricaoButton params={params} />
-              </div>
-              <div className={`${styles.sectionContent}`}>
-                <MinhasInscricoes params={params} />
-              </div>
-            </div>
+          <div className={styles.sectionHead}>
+            <h2 className="h-editorial-sm">Programação</h2>
+            <div className={styles.rule}></div>
+          </div>
 
-            <div className={styles.sectionContent}>
-              <div className={styles.descriptionContent}>
-                <h5
-                  className={`preserve-line-breaks ${styles.sectionTitle} ml-0  mb-2`}
-                >
-                  {evento.nomeEvento}
-                </h5>
-                {evento.isbn ? <p>ISBN: {evento.isbn}</p> : null}
-                <div className={styles.card}>
-                  <div className={styles.cardContent}>
-                    <div>
-                      <div className={`${styles.cardItem} mt-2 mb-1`}>
-                        <RiCalendarEventFill />
-                        <p>
-                          de <strong>{formatDateFromISO(evento.inicio)}</strong>{" "}
-                          a <strong>{formatDateFromISO(evento.fim)}</strong>
-                        </p>
-                      </div>
-                      <div className={styles.cardItem}>
-                        <RiMapPinLine />
-                        <p>{evento.local}</p>
-                      </div>
+          {!programacao || programacao.length === 0 ? (
+            <NoData />
+          ) : (
+            programacao.map((eventosDoDia) => (
+              <div className={styles.eventoAgendaDay} key={eventosDoDia.data}>
+                <span className={styles.eventoAgendaDayLabel}>
+                  {formatDiaLabel(eventosDoDia.data)}
+                </span>
+                {eventosDoDia.eventos.map((atividade, i) => (
+                  <div className={styles.eventoAgendaItem} key={i}>
+                    <div className={styles.eventoAgendaTime}>
+                      {formatTime(atividade.inicio)}
+                    </div>
+                    <div className={styles.eventoAgendaBody}>
+                      <h4>{atividade.titulo}</h4>
+                      <p>{atividade.descricao}</p>
+                      {atividade.local && (
+                        <div className={styles.eventoAgendaLoc}>
+                          <RiMapPinLine />
+                          {atividade.local}
+                        </div>
+                      )}
                     </div>
                   </div>
-                </div>
+                ))}
               </div>
-            </div>
-            <div className={styles.sectionContent}>
-              <div className={styles.descriptionContent}>
-                <h5
-                  className={`preserve-line-breaks ${styles.sectionTitle} ml-0  mb-2`}
-                >
-                  Programação
-                </h5>
-                {(!programacao || programacao.length === 0) && <NoData />}
-                <div className={styles.accordionWrapper}>
-                  <Accordion activeIndex={0}>
-                    {programacao.map((eventosDoDia) => (
-                      <AccordionTab header={formatDate(eventosDoDia.data)}>
-                        <div className={styles.atividades}>
-                          {eventosDoDia.eventos.map((atividade) => (
-                            <div className={styles.atividade}>
-                              <div className={styles.hora}>
-                                <p>{formatTime(atividade.inicio)}</p>
-                              </div>
-                              <div className={styles.conteudo}>
-                                <div className={styles.titulo}>
-                                  <h6>{atividade.titulo}</h6>
-                                </div>
-                                <div className={styles.descricao}>
-                                  <p>{atividade.descricao}</p>
-                                </div>
-                                <div className={styles.local}>
-                                  <RiMapPinLine />
-                                  <p>{atividade.local}</p>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </AccordionTab>
-                    ))}
-                  </Accordion>
-                </div>
-              </div>
-            </div>
-          </section>
-        </article>
+            ))
+          )}
+        </div>
       </main>
     </>
   );

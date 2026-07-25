@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 // ESTILOS E ÍCONES
 import styles from "@/components/dashboards/Eventos.module.scss";
 import {
+  RiAddCircleFill,
   RiArrowLeftCircleFill,
   RiArrowRightCircleFill,
   RiBatteryLowLine,
@@ -20,21 +21,24 @@ import {
 // FUNÇÕES
 import Link from "next/link";
 import NoData from "../NoData";
-import { getEventosDashboard } from "@/app/api/client/eventos";
+import { getEventosDashboard, getEventosByTenant } from "@/app/api/client/eventos";
 import { getSubmissaoByEvento } from "@/app/api/client/relatorios";
 import { formatarData, formatarHora } from "@/lib/formatarDatas";
 import Modal from "../Modal";
 import Button from "../Button";
+import FormEdicaoEvento from "../Formularios/FormEdicaoEvento";
 import ExcelJS from "exceljs"; // Para exportação do Excel
 import { saveAs } from "file-saver"; // Para salvar o arquivo Excel
 
-const Inscricoes = ({ tenantSlug }) => {
+const Inscricoes = ({ tenantSlug, anoAtual }) => {
   // ESTADOS
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [currentEventIndex, setCurrentEventIndex] = useState(0);
   const [eventos, setEventos] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [eventoRoots, setEventoRoots] = useState([]);
   const [isDownloading, setIsDownloading] = useState(false);
   const [
     isDownloadingArtigoSemIdentificacao,
@@ -51,10 +55,16 @@ const Inscricoes = ({ tenantSlug }) => {
     setLoading(true);
     try {
       const data = await getEventosDashboard(tenantSlug);
-      const eventosOrdenados = data.sort(
+      // O edital do ciclo exibido como "ano X" fecha com o congresso no ano
+      // seguinte, então a edição do evento correspondente é registrada como X+1.
+      const eventosDoAno = anoAtual
+        ? data.filter((e) => e.data.evento.edicaoEvento === Number(anoAtual) + 1)
+        : data;
+      const eventosOrdenados = eventosDoAno.sort(
         (a, b) => b.data.evento.id - a.data.evento.id,
       );
       setEventos(eventosOrdenados);
+      setCurrentEventIndex(0);
     } catch (error) {
       setError(
         error.response?.data?.message ?? "Erro na conexão com o servidor.",
@@ -66,7 +76,7 @@ const Inscricoes = ({ tenantSlug }) => {
 
   useEffect(() => {
     fetchEventos(tenantSlug);
-  }, [tenantSlug]);
+  }, [tenantSlug, anoAtual]);
 
   // Função para passar para o próximo evento
   const handleNextEvent = () => {
@@ -328,6 +338,30 @@ const Inscricoes = ({ tenantSlug }) => {
     setTenant(tenant);
     setIsModalOpen(true);
   };
+  const openCreateModal = async () => {
+    try {
+      const eventosTenant = await getEventosByTenant(tenantSlug);
+      const rootsUnicos = [];
+      const idsVistos = new Set();
+      (eventosTenant || []).forEach((te) => {
+        const root = te.evento?.eventoRoot;
+        if (root && !idsVistos.has(root.id)) {
+          idsVistos.add(root.id);
+          rootsUnicos.push(root);
+        }
+      });
+      setEventoRoots(rootsUnicos);
+    } catch (error) {
+      setEventoRoots([]);
+    }
+    setIsCreateModalOpen(true);
+  };
+  const closeCreateModal = () => {
+    setIsCreateModalOpen(false);
+  };
+  const handleCreateEdicaoSuccess = () => {
+    fetchEventos(tenantSlug);
+  };
   const gerarDadosDasSubmissoes = async (tenantSigla) => {
     setIsDownloadingSubmissoes(true);
     try {
@@ -533,9 +567,27 @@ const Inscricoes = ({ tenantSlug }) => {
       </Button>
     </Modal>
   );
+  const renderCreateModalContent = () => (
+    <Modal isOpen={isCreateModalOpen} onClose={closeCreateModal} size="small">
+      <div className={`${styles.icon} mb-2`}>
+        <RiAddCircleFill />
+      </div>
+      <h4>Nova edição de evento</h4>
+      <p>Preencha os dados abaixo para criar uma nova edição de evento.</p>
+      <FormEdicaoEvento
+        tenantSlug={tenantSlug}
+        eventoRoots={eventoRoots}
+        anoAtual={anoAtual}
+        onClose={closeCreateModal}
+        onSuccess={handleCreateEdicaoSuccess}
+      />
+    </Modal>
+  );
+
   return (
     <div className={`${styles.dashboard}`}>
       {renderModalContent()}
+      {renderCreateModalContent()}
 
       <div className={styles.head}>
         <div className={styles.left}>
@@ -546,26 +598,31 @@ const Inscricoes = ({ tenantSlug }) => {
             <h5>Eventos</h5>
           </div>
         </div>
-        {eventos?.length > 1 && (
-          <div className={styles.actions}>
-            <div
-              className={`${styles.btn} ${
-                currentEventIndex === 0 ? styles.disabled : ""
-              }`}
-              onClick={handlePreviousEvent}
-            >
-              <RiArrowLeftCircleFill />
-            </div>
-            <div
-              className={`${styles.btn} ${
-                currentEventIndex === eventos.length - 1 ? styles.disabled : ""
-              }`}
-              onClick={handleNextEvent}
-            >
-              <RiArrowRightCircleFill />
-            </div>
+        <div className={styles.actions}>
+          <div className={styles.btn} onClick={openCreateModal} title="Criar nova edição de evento">
+            <RiAddCircleFill />
           </div>
-        )}
+          {eventos?.length > 1 && (
+            <>
+              <div
+                className={`${styles.btn} ${
+                  currentEventIndex === 0 ? styles.disabled : ""
+                }`}
+                onClick={handlePreviousEvent}
+              >
+                <RiArrowLeftCircleFill />
+              </div>
+              <div
+                className={`${styles.btn} ${
+                  currentEventIndex === eventos.length - 1 ? styles.disabled : ""
+                }`}
+                onClick={handleNextEvent}
+              >
+                <RiArrowRightCircleFill />
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {eventos ? (
@@ -579,10 +636,22 @@ const Inscricoes = ({ tenantSlug }) => {
             </Link>
           </div>
         ) : (
-          <NoData description="Nenhum evento encontrado" />
+          <NoData
+            description={
+              anoAtual
+                ? `Nenhuma edição encontrada para ${anoAtual}`
+                : "Nenhum evento encontrado"
+            }
+          />
         )
       ) : (
-        <NoData description="Nenhum evento encontrado" />
+        <NoData
+          description={
+            anoAtual
+              ? `Nenhuma edição encontrada para ${anoAtual}`
+              : "Nenhum evento encontrado"
+          }
+        />
       )}
     </div>
   );

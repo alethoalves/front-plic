@@ -151,10 +151,10 @@ const Page = ({ params }) => {
               </div>
             )}
             <div className={`${styles.dashboard} ${styles.dashboardC}`}>
-              <Atividades tenantSlug={params.tenant} />
+              <Atividades tenantSlug={params.tenant} anoAtual={params.ano} />
             </div>
             <div className={`${styles.dashboard} ${styles.dashboardD}`}>
-              <Eventos tenantSlug={params.tenant} />
+              <Eventos tenantSlug={params.tenant} anoAtual={params.ano} />
             </div>
           </>
         )}

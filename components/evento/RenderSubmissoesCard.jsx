@@ -12,6 +12,7 @@ import { Toast } from "primereact/toast";
 import { Accordion, AccordionTab } from "primereact/accordion";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { getInstituicaoSigla } from "@/lib/instituicaoDisplay";
 
 export const RenderSubmissoesCard = ({
   params,
@@ -106,7 +107,7 @@ export const RenderSubmissoesCard = ({
                     <p>
                       <span>{submissao.Resumo.titulo}</span>{" "}
                       <span>
-                        ({submissao.tenant?.sigla} - {submissao.categoria})
+                        ({getInstituicaoSigla(submissao)} - {submissao.categoria})
                       </span>
                     </p>
                   </div>
@@ -119,7 +120,7 @@ export const RenderSubmissoesCard = ({
                         <h6 className="mb-1">Detalhes do Resumo</h6>
                         <p>
                           <strong>Instituição:</strong>{" "}
-                          {submissao.tenant?.sigla}
+                          {getInstituicaoSigla(submissao)}
                         </p>
                         <p>
                           <strong>Área:</strong> {submissao.Resumo?.area?.area}

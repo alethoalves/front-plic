@@ -33,6 +33,7 @@ import ModalSubmissaoAdmin from "@/components/ModalSubmissaoAdmin";
 
 import BuscadorBack from "@/components/BuscadorBack";
 import { vincularSubmissao } from "@/app/api/client/square";
+import { getInstituicaoSigla } from "@/lib/instituicaoDisplay";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false); // Estado de carregamento
@@ -254,7 +255,7 @@ const Page = ({ params }) => {
                     {item.Resumo?.area?.area
                       ? item.Resumo?.area?.area
                       : "sem área"}
-                    - {item.tenant?.sigla.toUpperCase()}-{" "}
+                    - {getInstituicaoSigla(item)}-{" "}
                     {item.categoria?.toUpperCase()}
                   </p>
                 </div>
@@ -498,7 +499,7 @@ const Page = ({ params }) => {
                   {item.Resumo?.area?.area
                     ? item.Resumo?.area?.area
                     : "sem área"}{" "}
-                  - {item.tenant?.sigla.toUpperCase()}-{" "}
+                  - {getInstituicaoSigla(item)}-{" "}
                   {item.categoria?.toUpperCase()}
                 </p>
               </div>

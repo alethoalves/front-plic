@@ -18,6 +18,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { formatarData, formatarHora } from "@/lib/formatarDatas";
 import { desvincularSubmissao } from "@/app/api/client/square";
+import { getInstituicaoSigla } from "@/lib/instituicaoDisplay";
 
 const Modal = ({ isOpen, onClose, eventoSlug, idSubmissao, onDataUpdated }) => {
   const [visible, setVisible] = useState(false);
@@ -150,7 +151,7 @@ const Modal = ({ isOpen, onClose, eventoSlug, idSubmissao, onDataUpdated }) => {
                       {submissao?.Resumo?.area?.area
                         ? submissao?.Resumo?.area?.area
                         : "sem área"}{" "}
-                      - {submissao?.tenant?.sigla.toUpperCase()}-{" "}
+                      - {getInstituicaoSigla(submissao)}-{" "}
                       {submissao?.categoria?.toUpperCase()}
                     </p>
                   </div>

@@ -31,6 +31,7 @@ import Modal from "@/components/Modal";
 import Button from "@/components/Button";
 import NoData from "@/components/NoData";
 import { transformarQuebrasEmParagrafos } from "@/lib/formatarParagrafo";
+import { getInstituicaoSigla } from "@/lib/instituicaoDisplay";
 import { Toast } from "primereact/toast";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 
@@ -362,7 +363,7 @@ const Page = ({ params }) => {
                   <div className={styles.info}>
                     <p className={styles.area}>
                       {submissao?.Resumo?.area?.area || "sem área"} -{" "}
-                      {submissao?.tenant?.sigla.toUpperCase()} -{" "}
+                      {getInstituicaoSigla(submissao)} -{" "}
                       {submissao?.categoria.toUpperCase()}
                     </p>
                   </div>

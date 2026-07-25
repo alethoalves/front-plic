@@ -26,6 +26,7 @@ import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import { getSubmissaoByEvento } from "@/app/api/client/relatorios";
 import { getSubmissoesComAvaliacoes } from "@/app/api/client/submissao";
+import { getInstituicaoSigla, getInstituicaoNome } from "@/lib/instituicaoDisplay";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
@@ -153,7 +154,7 @@ const Page = ({ params }) => {
             area.grandeArea?.grandeArea || "Sem grande área",
           ),
           categoria: sanitizeText(submissao.categoria || "Sem categoria"),
-          siglaTenant: sanitizeText(submissao.tenant?.sigla || "Sem sigla"),
+          siglaTenant: sanitizeText(getInstituicaoSigla(submissao)),
           notaFinal: submissao.notaFinal?.toFixed(2) || "N/A",
           sessao:
             submissao.subsessao?.sessaoApresentacao?.titulo || "Sem sessão",
@@ -1128,6 +1129,17 @@ const Page = ({ params }) => {
               <h6>{tenant.tenant}</h6>
             </div>
           ))}
+          {/* Instituições parceiras (sem Tenant) — só exibição por enquanto,
+              o filtro/export por instituição ainda cobre apenas tenants reais */}
+          {(evento.info.parceirasTotais || []).map((parceira) => (
+            <div
+              className={`${styles.total} ${styles.light}`}
+              key={parceira.instituicao}
+            >
+              <p>{parceira.quantidadeSubmissoesTotal}</p>
+              <h6>{parceira.instituicao}</h6>
+            </div>
+          ))}
           <div
             className={`${styles.total} ${styles.blue}`}
             onClick={() => openModal(null)}
@@ -1136,6 +1148,10 @@ const Page = ({ params }) => {
               {evento
                 ? evento.info?.tenantsTotais.reduce(
                     (total, tenant) => total + tenant.quantidadeSubmissoesTotal,
+                    0,
+                  ) +
+                  (evento.info?.parceirasTotais || []).reduce(
+                    (total, parceira) => total + parceira.quantidadeSubmissoesTotal,
                     0,
                   )
                 : 0}

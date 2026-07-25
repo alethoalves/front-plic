@@ -124,7 +124,10 @@ export const InscricaoButton = ({ params }) => {
         planoProjetoId: selectedPlano ? selectedPlano.id : null,
         type: type,
         slugEvento: params.edicao,
-        tenant: selectedTenant.slug,
+        tipoInstituicao: selectedTenant.tipo,
+        ...(selectedTenant.tipo === "PARCEIRA"
+          ? { instituicaoParceiraId: selectedTenant.slug }
+          : { tenant: selectedTenant.slug }),
         cpf: cpfValue,
         resumos: resumoData,
         palavrasChave: palavrasChaveData,
@@ -156,7 +159,8 @@ export const InscricaoButton = ({ params }) => {
           .map((tenant) => ({
             ...tenant,
             label: `${tenant.slug.toUpperCase()} - ${tenant.nome}`,
-            value: tenant.slug,
+            // `value` já vem namespaced do backend (tenant:slug / parceira:id)
+            // pra não colidir entre um slug de tenant e o id de uma parceira.
           }))
           .sort((a, b) => a.label.localeCompare(b.label)); // Ordenação por label
 
@@ -207,6 +211,16 @@ export const InscricaoButton = ({ params }) => {
   const onSubmit = async (data) => {
     if (!selectedTenant || !data.cpf) return;
 
+    // Instituição parceira não tem TenantEvento nem plano/projeto pra
+    // vincular — pula direto pra etapa de submissão avulsa do resumo, sem
+    // nem chamar a API.
+    if (selectedTenant.tipo === "PARCEIRA") {
+      setPlanos([]);
+      setType(undefined);
+      setActiveStep(3);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -214,7 +228,7 @@ export const InscricaoButton = ({ params }) => {
       const planosData = await getPlanosOuProjetos(
         data.cpf,
         params.edicao,
-        selectedTenant.value,
+        selectedTenant.slug,
       );
       setPlanos(planosData.data);
       setType(planosData.type);
@@ -376,11 +390,11 @@ export const InscricaoButton = ({ params }) => {
       <Toast ref={toast} position="top-right" />
 
       <div
-        className={`w-100 ${styles.action} ${styles.primary}`}
+        className={styles.eventoCtaPrimary}
         onClick={() => setIsModalOpen(true)}
       >
         <RiCouponLine />
-        <h6>Inscreva-se aqui!</h6>
+        Inscreva-se
       </div>
 
       <Modal

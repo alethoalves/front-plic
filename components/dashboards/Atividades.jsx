@@ -22,9 +22,8 @@ import BuscadorBack from "../BuscadorBack";
 // FUNÇÕES
 import Link from "next/link";
 import { registroAtividadesDashboard } from "@/app/api/client/registroAtividade";
-import { getCookie, getCookies } from "cookies-next";
 
-const Inscricoes = ({ tenantSlug }) => {
+const Inscricoes = ({ tenantSlug, anoAtual }) => {
   // ESTADOS
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -34,9 +33,10 @@ const Inscricoes = ({ tenantSlug }) => {
   const [listAnos, setListAnos] = useState([]);
   const [listEditais, setListEditais] = useState([]);
   const [listAtividades, setListAtividades] = useState([]);
-  const [editalAno, setEditalAno] = useState(() => {
-    return getCookie("anoSelected") || "";
-  });
+  // O ano vem do segmento [ano] da URL (via anoAtual), não do cookie
+  // anoSelected — que pode ficar desatualizado se a página for aberta por
+  // link direto, voltar/avançar do navegador, etc.
+  const [editalAno, setEditalAno] = useState(anoAtual || "");
   const [editalTitulo, setEditalTitulo] = useState("");
   const [idFormularioAtividade, setIdFormularioAtividade] = useState("");
   const [searchValue, setSearchValue] = useState("");
@@ -77,6 +77,12 @@ const Inscricoes = ({ tenantSlug }) => {
   useEffect(() => {
     fetchAtividades(tenantSlug);
   }, [tenantSlug]);
+
+  // Mantém o filtro de ano sincronizado com o ano da URL, caso o componente
+  // não seja remontado ao navegar entre anos (ex: só o segmento [ano] muda)
+  useEffect(() => {
+    setEditalAno(anoAtual || "");
+  }, [anoAtual]);
 
   // Chamando a API sempre que os filtros mudarem
   useEffect(() => {

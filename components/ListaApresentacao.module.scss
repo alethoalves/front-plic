@@ -1,57 +1,44 @@
 @import "/styles/partials/colors";
 @import "/styles/partials/layout";
 @import "/styles/partials/spacing";
+@import "/styles/partials/eventoEditorial";
 
 .container {
-  max-width: 1200px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: $gap-3;
-  
+  padding: $gap-3 $gap-2 $gap-6;
+
   @include responsive(xs) {
-    padding: $gap-2;
+    padding: $gap-2 $gap-1 $gap-4;
   }
 }
 
 .title {
-  color: $primary-darken;
   margin-bottom: $gap-3;
-  text-align: center;
-  font-size: 2rem;
-  
-  @include responsive(xs) {
-    font-size: 1.5rem;
-    margin-bottom: $gap-2;
-  }
 }
 
 .searchContainer {
   position: relative;
   margin-bottom: $gap-3;
-  display: flex;
-  justify-content: center;
-  max-width: 500px;
-  margin-left: auto;
-  margin-right: auto;
+  max-width: 420px;
 }
 
 .searchInput {
   width: 100%;
   padding: $gap-2;
   padding-right: 40px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  background-color: color-mix(in srgb, $white-dark 25%, transparent);
-  color: $primary-darken;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  
+  border: 1px solid $gray-100;
+  border-radius: 4px;
+  background-color: $white-light;
+  color: $black-light;
+
   &::placeholder {
-    color: rgba($primary-darken, 0.6);
+    color: $gray-300;
   }
-  
+
   &:focus {
-    outline: none;
-    border-color: $primary-darken;
+    outline: 1px solid $primary-normal;
+    border-color: $primary-normal;
   }
 }
 
@@ -64,59 +51,53 @@
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: rgba($primary-darken, 0.6);
-  
+  color: $gray-400;
+
   &:hover {
     color: $primary-darken;
   }
 }
 
 .resultsCount {
-  text-align: center;
   margin-bottom: $gap-2;
-  color: $primary-darken;
+  color: $gray-500;
   font-style: italic;
+  font-size: 0.9rem;
 }
 
-.loading, .error, .noResults {
+.loading,
+.error,
+.noResults {
   text-align: center;
   padding: $gap-4;
-  color: $primary-darken;
-  background-color: color-mix(in srgb, $white-dark 25%, transparent);
-  border-radius: 8px;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  color: $gray-500;
+  background-color: $white-light;
+  border: 1px solid $gray-50;
+  border-radius: $gap-1;
 }
 
 .apresentacoesList {
   display: flex;
   flex-direction: column;
-  gap: $gap-3;
+  gap: $gap-2;
 }
 
 .apresentacaoCard {
-  background-color: color-mix(in srgb, $white-dark 25%, transparent);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid $gray-50;
+  background: $white-light;
+  border-radius: $gap-1;
+  box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
   overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  }
 }
 
 .cardHeader {
-  padding: $gap-3;
-  background-color: color-mix(in srgb, $primary-darken 15%, transparent);
+  padding: $gap-2 $gap-3;
+  border-bottom: 1px solid $gray-50;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  
+  gap: $gap-2;
+
   @include responsive(xs) {
     flex-direction: column;
     gap: $gap-1;
@@ -124,15 +105,13 @@
 }
 
 .titulo {
-  color: $white-light;
+  color: $black-light;
   margin: 0;
   flex: 1;
-  font-size: 1.25rem;
+  font-size: 1.1rem;
+  font-weight: 600;
   line-height: 1.4;
-  
-  @include responsive(xs) {
-    font-size: 1.1rem;
-  }
+  font-family: var(--font-lato);
 }
 
 .headerMeta {
@@ -140,29 +119,21 @@
   flex-direction: column;
   align-items: flex-end;
   gap: $gap-1;
-  
+  flex-shrink: 0;
+
   @include responsive(xs) {
     flex-direction: row;
     align-items: center;
-    margin-top: $gap-1;
   }
 }
 
-.categoria {
-  background-color: color-mix(in srgb, $warning-dark 70%, transparent);
-  color: $white-dark;
-  padding: 4px $gap-1;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  white-space: nowrap;
-}
-
 .premio {
-  background-color: color-mix(in srgb, $success-dark 70%, transparent);
-  color: $white-light;
-  padding: 4px $gap-1;
-  border-radius: 4px;
-  font-size: 0.85rem;
+  background-color: $success-lighten;
+  color: $success-dark;
+  padding: 2px $gap-1;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  font-weight: 600;
   white-space: nowrap;
 }
 
@@ -172,10 +143,12 @@
 
 .infoGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: $gap-2;
-  margin-bottom: $gap-3;
-  
+  margin-bottom: $gap-2;
+  padding-bottom: $gap-2;
+  border-bottom: 1px solid $gray-50;
+
   @include responsive(xs) {
     grid-template-columns: 1fr;
   }
@@ -187,142 +160,136 @@
 }
 
 .infoLabel {
-  font-weight: 600;
-  color: $primary-darken;
-  margin-bottom: 4px;
-  font-size: 0.9rem;
+  font-weight: 700;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $gray-400;
+  margin-bottom: 2px;
 }
 
 .infoValue {
-  color: $white-dark;
+  color: $black-light;
   line-height: 1.4;
+  font-size: 0.9rem;
 }
 
 .sectionTitle {
-  color: $primary-darken;
+  color: $gray-500;
   margin-bottom: $gap-1;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .participantes {
-  margin-bottom: $gap-3;
+  margin-bottom: $gap-2;
 }
 
 .participante {
   display: flex;
   flex-wrap: wrap;
-  gap: $gap-1;
-  margin-bottom: 8px;
-  align-items: center;
-  
-  @include responsive(xs) {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 2px;
-  }
+  gap: 6px;
+  margin-bottom: 4px;
+  align-items: baseline;
+  font-size: 0.9rem;
 }
 
 .participanteNome {
-  color: $white-dark;
+  color: $black-light;
   font-weight: 500;
 }
 
 .participanteCargo {
-  color: rgba($white-dark, 0.8);
+  color: $gray-400;
   font-style: italic;
-  font-size: 0.9rem;
-}
-
-.participanteEmail {
-  color: rgba($white-dark, 0.7);
   font-size: 0.85rem;
 }
 
 .area {
-  margin-bottom: $gap-3;
+  margin-bottom: $gap-2;
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: $gap-1;
+  gap: 6px;
+  font-size: 0.9rem;
 }
 
 .areaValue {
-  color: $white-dark;
+  color: $black-light;
   font-weight: 500;
 }
 
 .grandeAreaValue {
-  color: rgba($white-dark, 0.8);
+  color: $gray-400;
   font-style: italic;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
 .palavrasChaveList {
   display: flex;
   flex-wrap: wrap;
-  gap: $gap-1;
-  margin-top: $gap-1;
+  gap: 6px;
+  margin-top: 4px;
 }
 
 .palavraChave {
-  background-color: color-mix(in srgb, $primary-darken 20%, transparent);
-  color: $white-light;
-  padding: 4px 8px;
+  background: $primary-lighten;
+  color: $primary-darken;
+  padding: 3px 10px;
   border-radius: 16px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
 }
 
-// Adicione estas classes ao seu arquivo SCSS
-
-// Status Badge Styles
+// ─── Selo de status ──────────────────────────────────────────────────────────
+// Cor semântica (estado da submissão), independente da cor de marca do evento.
 .statusBadge {
-  padding: 8px 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-align: center;
+  padding: 3px 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-radius: 4px 4px 0 0;
-  color: $white-normal;
+  letter-spacing: 0.04em;
+  border-radius: 3px;
+  white-space: nowrap;
 }
 
 .statusAguardando {
-  background-color: $warning-normal;
-  color: $black-normal;
+  background-color: $warning-lighten;
+  color: $warning-darken;
 }
 
 .statusEmAvaliacao {
-  background-color: $warning-light;
+  background-color: $warning-lighten;
   color: $warning-darken;
 }
 
 .statusAvaliada {
-  background-color: $success-normal;
-  color: $white-normal;
+  background-color: $success-lighten;
+  color: $success-dark;
 }
 
 .statusSelecionada {
-  background-color: $error-lighten;
-  color: $error-dark;
+  background-color: $primary-lighten;
+  color: $primary-darken;
 }
 
 .statusDistribuida {
-  background-color: $error-lighten;
-  color: $error-dark;
+  background-color: $primary-lighten;
+  color: $primary-darken;
 }
 
 .statusAusente {
-  background-color: $primary-dark;
-  color: $white-normal;
+  background-color: $gray-100;
+  color: $gray-600;
 }
 
 .statusAusenteJustificada {
-  background-color: $primary-dark;
-  color: $white-normal;
+  background-color: $gray-100;
+  color: $gray-600;
 }
 
 .statusDefault {
-  background-color: $gray-400;
-  color: $white-normal;
+  background-color: $gray-100;
+  color: $gray-600;
 }

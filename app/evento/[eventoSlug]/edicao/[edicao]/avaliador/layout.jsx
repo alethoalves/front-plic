@@ -4,12 +4,26 @@ import NavBarAvaliador from "@/components/NavBarAvaliador";
 import styles from "./layout.module.scss";
 import { headers } from "next/headers";
 import NavBarAvaliadorEvento from "@/components/NavBarAvaliadorEvento";
-const Layout = ({ children, params }) => {
+import { getEventoBySlug } from "@/app/api/serverReq";
+import {
+  resolveEventoImageSrc,
+  DEFAULT_EVENTO_LOGO,
+} from "@/lib/resolveEventoImage";
+
+const Layout = async ({ children, params }) => {
+  let evento;
+  try {
+    evento = await getEventoBySlug(params.edicao);
+  } catch (error) {
+    evento = null;
+  }
+  const pathLogoExtended = resolveEventoImageSrc(evento?.pathLogo, DEFAULT_EVENTO_LOGO);
+
   return (
     <div className={styles.dashboard}>
       <div className={styles.item1}>
         <SideNav
-          pathLogoExtended={`/image/${params.eventoSlug}/logoMenu.png`}
+          pathLogoExtended={pathLogoExtended}
           menuType="avaliadorEvento"
         />
       </div>
