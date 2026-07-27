@@ -198,3 +198,59 @@
     width: 24px;
     color: $primary-normal;
 }
+
+.apresentacaoBadges{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+.apresentacaoBadge{
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px $gap-1;
+    border-radius: $gap-1;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+    svg{
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+    }
+}
+.apresentacaoNeutro{
+    background-color: $gray-100;
+    color: $gray-500;
+}
+.apresentacaoSucesso{
+    background-color: $success-lighten;
+    color: $success-dark;
+}
+.apresentacaoAlerta{
+    background-color: $warning-lighten;
+    color: $warning-darken;
+}
+.apresentacaoClicavel{
+    cursor: pointer;
+    &:hover{
+        opacity: 0.8;
+    }
+}
+.pdfLink{
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: $gap-1;
+    color: $primary-dark;
+    font-size: 13px;
+    svg{
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+    }
+    &:hover{
+        text-decoration: underline;
+    }
+}

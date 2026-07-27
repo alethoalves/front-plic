@@ -40,7 +40,7 @@ export const RenderParticipantesCard = ({
   const isParticipanteInicial = (participanteCpf) => {
     if (type !== "PLANO" && type !== "PROJETO") return false;
     return initialParticipantes.some(
-      (p) => limparCPF(p.cpf) === limparCPF(participanteCpf)
+      (p) => limparCPF(p.cpf) === limparCPF(participanteCpf),
     );
   };
   const tiposParticipante = [
@@ -132,7 +132,7 @@ export const RenderParticipantesCard = ({
   const removerParticipante = (cpf) => {
     const cpfLimpo = limparCPF(cpf);
     setParticipantes(
-      participantes.filter((p) => limparCPF(p.cpf) !== cpfLimpo)
+      participantes.filter((p) => limparCPF(p.cpf) !== cpfLimpo),
     );
     toast.current.show({
       severity: "success",
@@ -145,7 +145,7 @@ export const RenderParticipantesCard = ({
   const canSave = () => {
     const cpfLimpo = limparCPF(cpf);
     const hasMainParticipant = participantes.some(
-      (p) => limparCPF(p.cpf) === cpfLimpo
+      (p) => limparCPF(p.cpf) === cpfLimpo,
     );
     const hasAluno = participantes.some((p) => p.tipo === "AUTOR");
     const hasOrientador = participantes.some((p) => p.tipo === "ORIENTADOR");
@@ -184,7 +184,7 @@ export const RenderParticipantesCard = ({
 
       if (
         !participantes.some(
-          (p) => p.tipo === "ORIENTADOR" || p.tipo === "COORIENTADOR"
+          (p) => p.tipo === "ORIENTADOR" || p.tipo === "COORIENTADOR",
         )
       ) {
         toast.current.show({
@@ -211,12 +211,51 @@ export const RenderParticipantesCard = ({
     <>
       <Toast ref={toast} position="top-right" />
       <div className="flex flex-column gap-3">
+        <div className="card">
+          <h6 className="mb-1">Participantes Adicionados</h6>
+          {participantes.length === 0 ? (
+            <p>Nenhum participante adicionado</p>
+          ) : (
+            <ul style={{ listStyle: "none", padding: 0 }}>
+              {participantes.map((participante) => {
+                const isInicial = isParticipanteInicial(participante.cpf);
+                return (
+                  <li
+                    key={participante.cpf}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      padding: "0.5rem",
+                      borderBottom: "1px solid #eee",
+                      backgroundColor: isInicial ? "#f8f9fa" : "transparent",
+                    }}
+                  >
+                    <div>
+                      <p>
+                        <strong>{participante.nome}</strong> -{" "}
+                        {participante.tipo}
+                      </p>
+                    </div>
+                    {!isInicial && (
+                      <Button
+                        icon="pi pi-trash"
+                        className="p-button-rounded p-button-danger p-button-sm"
+                        onClick={() => removerParticipante(participante.cpf)}
+                      />
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
         <form onSubmit={handleSubmit(adicionarParticipante)}>
           <div className="flex flex-column gap-2">
             <Input
               control={control}
               name="cpf"
-              label="CPF do Participante"
+              label="Se necessário, inclua outros participantes indicando o CPF"
               icon={RiIdCardLine}
               inputType="text"
               placeholder="Digite o CPF"
@@ -300,46 +339,6 @@ export const RenderParticipantesCard = ({
           </div>
         </form>
 
-        <div className="card">
-          <h6 className="mb-1">Participantes Adicionados</h6>
-          {participantes.length === 0 ? (
-            <p>Nenhum participante adicionado</p>
-          ) : (
-            <ul style={{ listStyle: "none", padding: 0 }}>
-              {participantes.map((participante) => {
-                const isInicial = isParticipanteInicial(participante.cpf);
-                return (
-                  <li
-                    key={participante.cpf}
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      padding: "0.5rem",
-                      borderBottom: "1px solid #eee",
-                      backgroundColor: isInicial ? "#f8f9fa" : "transparent",
-                    }}
-                  >
-                    <div>
-                      <p>
-                        <strong>{participante.nome}</strong> -{" "}
-                        {participante.tipo}
-                      </p>
-                    </div>
-                    {!isInicial && (
-                      <Button
-                        icon="pi pi-trash"
-                        className="p-button-rounded p-button-danger p-button-sm"
-                        onClick={() => removerParticipante(participante.cpf)}
-                      />
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
-
         <div className="flex flex-column gap-2">
           <div className="card p-3">
             <h6>Requisitos:</h6>
@@ -348,7 +347,7 @@ export const RenderParticipantesCard = ({
                 <p
                   className={
                     participantes.some(
-                      (p) => limparCPF(p.cpf) === limparCPF(cpf)
+                      (p) => limparCPF(p.cpf) === limparCPF(cpf),
                     )
                       ? "text-green-500"
                       : "text-red-500"

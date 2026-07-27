@@ -2,6 +2,7 @@ import {
   getSubmissaoByIdForAdmin,
   updateSubmissaoStatus,
 } from "@/app/api/client/submissao";
+import { validarJustificativaManualmente } from "@/app/api/client/eventos";
 import { vincularAutomaticamenteSubmissao } from "@/app/api/client/square"; // Importa a função de vinculação automática
 import styles from "./ModalSubmissaoAdmin.module.scss";
 import Button from "@/components/Button";
@@ -27,6 +28,8 @@ const Modal = ({ isOpen, onClose, eventoSlug, idSubmissao, onDataUpdated }) => {
   const [excluindo, setExcluindo] = useState(false);
   const [vinculando, setVinculando] = useState(false); // Estado para controlar a vinculação automática
   const [alterandoStatus, setAlterandoStatus] = useState(false);
+  const [motivoValidacaoManual, setMotivoValidacaoManual] = useState("");
+  const [validandoManualmente, setValidandoManualmente] = useState(false);
   const fetchData = async (eventoSlug, idSubmissao) => {
     setLoading(true); // Define o estado de carregamento como verdadeiro
     try {
@@ -102,6 +105,27 @@ const Modal = ({ isOpen, onClose, eventoSlug, idSubmissao, onDataUpdated }) => {
       setAlterandoStatus(false);
     }
   };
+  const handleValidarManualmente = async () => {
+    if (!motivoValidacaoManual.trim()) return;
+    setValidandoManualmente(true);
+    try {
+      await validarJustificativaManualmente(
+        eventoSlug,
+        justificativa.id,
+        motivoValidacaoManual.trim()
+      );
+      setMotivoValidacaoManual("");
+      fetchData(eventoSlug, idSubmissao);
+      if (onDataUpdated) onDataUpdated();
+    } catch (error) {
+      console.error("Erro ao validar justificativa manualmente:", error);
+    } finally {
+      setValidandoManualmente(false);
+    }
+  };
+
+  const justificativa = submissao?.JustificativaApresentacaoCongresso?.[0];
+
   if (!isOpen) return null;
 
   return (
@@ -376,6 +400,57 @@ const Modal = ({ isOpen, onClose, eventoSlug, idSubmissao, onDataUpdated }) => {
                         </ul>
                       </div>
                     )}
+                  </div>
+                )}
+                {justificativa && (
+                  <div className={styles.squareHeader}>
+                    <div className={styles.squareHeaderNumero}>
+                      <div>
+                        <p>Justificativa de ausência:</p>
+                      </div>
+                    </div>
+                    <div className={styles.squareHeaderInfo}>
+                      <p>
+                        <strong>Status: </strong>
+                        {justificativa.status === "ACEITA"
+                          ? "Aceita" +
+                            (justificativa.motivoValidacaoManual
+                              ? " (validada manualmente pelo gestor)"
+                              : " (assinada pelo orientador)")
+                          : "Aguardando assinatura do orientador"}
+                      </p>
+                      <p>{justificativa.justificativa}</p>
+                      {justificativa.anexoUrl && (
+                        <p>
+                          <a href={justificativa.anexoUrl} target="_blank" rel="noopener noreferrer">
+                            Ver comprovante em PDF
+                          </a>
+                        </p>
+                      )}
+                      {justificativa.status === "PENDENTE" && (
+                        <div className="mt-2">
+                          <textarea
+                            className="w-full"
+                            rows={2}
+                            placeholder="Motivo da validação manual (ex.: orientador falecido/afastado)"
+                            value={motivoValidacaoManual}
+                            onChange={(e) => setMotivoValidacaoManual(e.target.value)}
+                          />
+                          <p
+                            className={styles.link}
+                            onClick={
+                              validandoManualmente || !motivoValidacaoManual.trim()
+                                ? undefined
+                                : handleValidarManualmente
+                            }
+                          >
+                            {validandoManualmente
+                              ? "Validando..."
+                              : "Validar manualmente (sem assinatura do orientador)"}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>

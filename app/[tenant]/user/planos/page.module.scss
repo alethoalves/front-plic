@@ -18,7 +18,7 @@
   align-items: center;
   gap: 1.5rem;
   margin-bottom: 3rem;
-  
+
   .headerIcon {
     background: linear-gradient(135deg, $primary-dark 0%, $primary-darken 100%);
     color: white;
@@ -27,24 +27,66 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    
+
     svg {
       width: 32px;
       height: 32px;
     }
   }
-  
+
   .headerContent {
+    flex: 1;
+
     h6 {
       margin: 0;
       color: #1e293b;
       font-size: 1.5rem;
     }
-    
+
     p {
       margin: 0.5rem 0 0 0;
       color: #64748b;
     }
+  }
+}
+
+.headerStats {
+  flex-shrink: 0;
+}
+
+.statsBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+
+  .statsBadgeCount {
+    font-weight: 700;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.65);
+  }
+
+  &.statsBadgeWarning {
+    background: #fffbeb;
+    color: #b45309;
+    border: 1px solid #fde68a;
+  }
+
+  &.statsBadgeSuccess {
+    background: #f0fdf4;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
   }
 }
 
@@ -389,12 +431,51 @@
   @include responsive(xs){
     max-width: 60vw;
   }
+}
+
+.respostasHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
 
   .respostasTitle {
     color: $primary-darken;
-    margin-bottom: 1rem;
+    margin: 0;
     font-size: 0.9rem;
     font-weight: 600;
+  }
+
+  .respostasToggleIcon {
+    width: 18px;
+    height: 18px;
+    color: #64748b;
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+
+    &.rotated {
+      transform: rotate(180deg);
+    }
+  }
+
+  &:hover .respostasToggleIcon {
+    color: $primary-darken;
+  }
+}
+
+.respostasCollapse {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+
+  &.respostasCollapseOpen {
+    max-height: 50000px; // Valor suficientemente grande
+    margin-top: 1rem;
   }
 }
 
@@ -559,7 +640,16 @@
     gap: 1rem;
     margin-bottom: 2rem;
   }
-  
+
+  .headerStats {
+    width: 100%;
+
+    .statsBadge {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
   .planoMeta {
     gap: 1rem;
   }

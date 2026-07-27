@@ -1,0 +1,186 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+// Reproduz o card de sessão/subsessão já usado em admin/apresentacao e
+// admin/submissao (page.module.scss), para o CRUD ficar visualmente igual
+// à listagem read-only que ele substitui.
+.content {
+    margin-bottom: $gap-2;
+    max-width: 990px;
+    border: 1px solid $gray-50;
+    box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+    border-radius: $gap-1;
+    @include responsive(s) {
+        flex-direction: column;
+    }
+}
+
+.header {
+    padding: $gap-2;
+    border-bottom: 1px solid $gray-50;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $gap-2;
+    h5 {
+        color: $gray-600;
+        font-size: 18px;
+    }
+}
+
+.mainContent {
+    padding: $gap-2;
+
+    .subsessao {
+        padding: $gap-2;
+        border: 1px solid $gray-50;
+        transition: ease .3s;
+        margin-bottom: $gap-1;
+        border-radius: $gap-1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        @include responsive(xs) {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .description {
+            &:not(:last-child) {
+                margin-right: $gap-2;
+            }
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            @include responsive(xs) {
+                flex-direction: row;
+                margin-bottom: $gap-1;
+            }
+            .infoBoxDescription {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                @include responsive(xs) {
+                    align-items: flex-start;
+                }
+                p {
+                    margin-bottom: 0;
+                }
+                h6 {
+                    white-space: nowrap;
+                    @include responsive(xs) {
+                        font-size: 12px;
+                    }
+                }
+            }
+            .icon {
+                @include responsive(xs) {
+                    margin-right: $gap-2;
+                    width: 18px;
+                }
+            }
+            p {
+                font-size: 12px;
+            }
+        }
+    }
+
+    p {
+        margin-bottom: 5px;
+    }
+}
+
+.icon {
+    width: 24px;
+    color: $primary-normal;
+}
+
+.subsessaoLink {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    @include responsive(xs) {
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100%;
+    }
+}
+
+.subsessaoActions {
+    flex-shrink: 0;
+    margin-left: $gap-2;
+    @include responsive(xs) {
+        margin-left: 0;
+        margin-top: $gap-1;
+    }
+}
+
+// Aproxima o TreeSelect do PrimeReact (usado só aqui por ter busca/chips/
+// seleção em árvore — ver regra 0 do CLAUDE.md) do visual do Input/Select
+// próprios do projeto: mesma borda, altura mínima e raio, em vez do tema
+// PrimeReact padrão.
+.areasField {
+    label p {
+        color: $black-light;
+    }
+}
+
+.areasField :global(.p-treeselect) {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    min-height: $gap-5;
+    border: 1px solid $primary-normal;
+    border-radius: 4px;
+    background-color: $white-light;
+
+    &:not(.p-disabled):hover {
+        border-color: $primary-normal;
+    }
+
+}
+
+// Item flex não encolhe abaixo da largura do próprio conteúdo (o texto do
+// resumo sem quebra de linha) a menos que min-width seja zerado — sem isso
+// o overflow/ellipsis abaixo não tem efeito e o box estica pra fora do card.
+// max-width reforça isso independente do cálculo de flex-shrink.
+.areasField :global(.p-treeselect-label-container) {
+    // !important porque o PrimeReact injeta o CSS base do componente em
+    // runtime dentro de @layer primereact — a ordem desse layer em relação
+    // ao CSS Module do Next.js não é garantida, então min-width/overflow
+    // "normais" às vezes perdem pro base da lib mesmo sendo mais específicos.
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    flex-basis: 0 !important;
+}
+
+.areasField :global(.p-treeselect.p-focus) {
+    outline: 1px solid $primary-normal;
+    border-color: $primary-normal;
+    background-color: $white-normal;
+}
+
+.areasField :global(.p-treeselect.p-disabled) {
+    background-color: $white-dark;
+    border-color: $white-dark;
+}
+
+.areasField :global(.p-treeselect-label) {
+    padding: 12px 14px;
+    color: $black-light;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    text-overflow: ellipsis !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    display: block !important;
+}
+
+.areasField :global(.p-treeselect-label.p-placeholder) {
+    color: $gray-300;
+}

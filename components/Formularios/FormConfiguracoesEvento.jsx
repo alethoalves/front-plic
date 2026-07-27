@@ -18,6 +18,8 @@ import {
   RiPaletteLine,
   RiSave2Line,
 } from "@remixicon/react";
+import FormMoldeResumo from "@/components/Formularios/FormMoldeResumo";
+import FormCategorias from "@/components/Formularios/FormCategorias";
 
 //COMPONENTES
 import Button from "@/components/Button";
@@ -31,6 +33,7 @@ import {
 } from "@/app/api/client/eventos";
 import { resolveEventoImageSrc } from "@/lib/resolveEventoImage";
 import FormInstituicoesParceiras from "@/components/Formularios/FormInstituicoesParceiras";
+import FormTenantsVinculados from "@/components/Formularios/FormTenantsVinculados";
 
 const METODO_CALCULO_NOTA_OPTIONS = [
   { value: "MEDIA", label: "Média das avaliações" },
@@ -40,7 +43,7 @@ const METODO_CALCULO_NOTA_OPTIONS = [
 const CAMPOS_GERAL = ["nomeEvento", "slug", "local", "telefone", "linkGrupo", "isbn"];
 const CAMPOS_DATAS = ["inicio", "fim"];
 const CAMPOS_CONVITE = ["assinatura", "conteudoDefaultConvite"];
-const CAMPOS_APARENCIA = ["primaryColor", "bgColor", "pathBanner", "pathBannerMobile", "pathLogo", "bgImg"];
+const CAMPOS_APARENCIA = ["primaryColor", "bgColor", "pathBanner", "pathBannerMobile", "pathLogo"];
 const CAMPOS_AVALIACAO = [
   "permitirSubmissoes",
   "liberarFichaAvaliacao",
@@ -184,7 +187,6 @@ const FormConfiguracoesEvento = ({ eventoSlug, initialData }) => {
       pathBanner: initialData?.pathBanner || "",
       pathBannerMobile: initialData?.pathBannerMobile || "",
       pathLogo: initialData?.pathLogo || "",
-      bgImg: initialData?.bgImg || "",
       bgColor: initialData?.bgColor || "",
       primaryColor: initialData?.primaryColor || "",
       inicio: isoToBR(initialData?.inicio),
@@ -207,7 +209,6 @@ const FormConfiguracoesEvento = ({ eventoSlug, initialData }) => {
   const pathBanner = watch("pathBanner");
   const pathBannerMobile = watch("pathBannerMobile");
   const pathLogo = watch("pathLogo");
-  const bgImg = watch("bgImg");
   const primaryColor = watch("primaryColor");
   const bgColor = watch("bgColor");
 
@@ -220,7 +221,7 @@ const FormConfiguracoesEvento = ({ eventoSlug, initialData }) => {
     if (["notaMinimaMencaoHonrosa", "notaMinimaPremio"].includes(nome)) {
       return valor !== "" ? Number(valor) : undefined;
     }
-    if (["pathBanner", "pathBannerMobile", "pathLogo", "bgImg"].includes(nome)) {
+    if (["pathBanner", "pathBannerMobile", "pathLogo"].includes(nome)) {
       if (!(valor instanceof File)) return valor || undefined;
       const formData = new FormData();
       formData.append("file", valor);
@@ -337,7 +338,6 @@ const FormConfiguracoesEvento = ({ eventoSlug, initialData }) => {
             </p>
           </div>
           <CampoImagem label="Logo" value={pathLogo} onChange={(f) => setValue("pathLogo", f)} />
-          <CampoImagem label="Imagem de fundo" value={bgImg} onChange={(f) => setValue("bgImg", f)} />
         </div>
       </Secao>
 
@@ -359,9 +359,24 @@ const FormConfiguracoesEvento = ({ eventoSlug, initialData }) => {
         </div>
       </Secao>
 
+      <FormMoldeResumo
+        eventoSlug={eventoSlug}
+        initialPartes={initialData?.moldeResumo?.partes}
+      />
+
+      <FormCategorias
+        eventoSlug={eventoSlug}
+        initialOptions={initialData?.categorias?.options}
+      />
+
       <FormInstituicoesParceiras
         eventoSlug={eventoSlug}
         initialParceiras={initialData?.instituicoesParceiras}
+      />
+
+      <FormTenantsVinculados
+        eventoSlug={eventoSlug}
+        initialTenantsVinculados={initialData?.tenantsVinculados}
       />
     </div>
   );

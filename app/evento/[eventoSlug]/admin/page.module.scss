@@ -26,14 +26,22 @@ border-radius: $gap-1;
     background-color: $white-light;
     border-top-left-radius: $gap-1;
     border-top-right-radius: $gap-1;
+    border-bottom: 1px solid $gray-50;
     display: flex;
+    align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: $gap-1;
+    @include responsive(s){
+        flex-direction: column;
+        align-items: stretch;
+    }
     .left{
         display: flex;
         align-items: center;
-        
+
         .icon {
-            
+
             padding: $gap-2;
             background-color: $white-light;
             color: $primary-darken;
@@ -42,9 +50,9 @@ border-radius: $gap-1;
                 display: none;
             }
           }
-    
+
           .title {
-            
+
             padding: $gap-2;
             @include responsive(xs){
                 padding: $gap-2 0;
@@ -53,15 +61,36 @@ border-radius: $gap-1;
             //margin-left: $gap-2;
             h5 {
                 color: $primary-darken;
-                font-weight: 300;
-               
+                font-weight: 600;
+
                 width: 100%;
                 @include responsive(xs){
                     font-size: 14px;
                 }
             }
-            
+
           }
+    }
+    .headActions {
+        display: flex;
+        align-items: center;
+        gap: $gap-1;
+        padding: $gap-2;
+        flex-wrap: wrap;
+        @include responsive(s){
+            padding: 0 $gap-2 $gap-2 $gap-2;
+        }
+
+        // Button.jsx e o <a> "Ver página do evento" renderizam a classe
+        // global .button (definida em _buttons.scss, com width:100% por
+        // padrão) — como este é um CSS Module, um seletor ".button" comum
+        // seria escopado/hasheado e não bateria com o DOM real, por isso o
+        // :global() aqui é necessário para de fato sobrescrever a largura.
+        :global(.button) {
+            width: auto;
+            height: 38px;
+            white-space: nowrap;
+        }
     }
     .actions{
         display: flex;
@@ -120,7 +149,7 @@ border-radius: $gap-1;
   }
 
   .content {
-        
+
     h5{
         padding: $gap-2;
         font-size: 20px;
@@ -128,125 +157,166 @@ border-radius: $gap-1;
             font-size: 16px;
         }
     }
+
+    .section{
+        padding: $gap-2 $gap-2 0 $gap-2;
+        &:last-child{
+            padding-bottom: $gap-2;
+        }
+        &:not(:last-child){
+            border-bottom: 1px solid $gray-50;
+            padding-bottom: $gap-3;
+        }
+    }
+
+    .sectionHead{
+        display: flex;
+        align-items: baseline;
+        gap: $gap-2;
+        margin-bottom: $gap-2;
+        h6{
+            color: $gray-700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        p{
+            color: $gray-400;
+            font-size: 13px;
+            @include responsive(xs){
+                display: none;
+            }
+        }
+    }
+
+    .statHero{
+        display: flex;
+        align-items: center;
+        gap: $gap-2;
+        background: linear-gradient(135deg, $primary-dark, $primary-darken);
+        border-radius: $gap-1;
+        padding: $gap-2 $gap-3;
+        margin-bottom: $gap-2;
+        cursor: pointer;
+        transition: transform .2s ease, box-shadow .2s ease;
+        box-shadow: 0px 4px 14px rgba(5, 17, 34, 0.12);
+        &:hover{
+            transform: translateY(-2px);
+            box-shadow: 0px 8px 20px rgba(5, 17, 34, 0.16);
+        }
+        svg{
+            width: 36px;
+            height: 36px;
+            color: $white-light;
+            opacity: 0.85;
+            flex-shrink: 0;
+        }
+        p{
+            color: $white-light;
+            opacity: 0.85;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+        h4{
+            color: $white-light;
+            font-weight: 700;
+            margin: 0;
+        }
+    }
+
+    .totaisGrid{
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: $gap-1;
+    }
+
+    .statTile{
+        display: flex;
+        align-items: center;
+        gap: $gap-1;
+        background-color: $white-darken;
+        border-radius: $gap-1;
+        padding: $gap-2;
+        cursor: pointer;
+        transition: transform .2s ease, box-shadow .2s ease;
+        &:hover{
+            transform: translateY(-2px);
+            box-shadow: 0px 4px 14px rgba(5, 17, 34, 0.1);
+        }
+        svg{
+            width: 22px;
+            height: 22px;
+            color: $primary-normal;
+            flex-shrink: 0;
+        }
+        h5{
+            padding: 0;
+            font-size: 20px;
+            color: $primary-darken;
+            margin-bottom: 2px;
+        }
+        p{
+            margin: 0;
+            font-size: 12px;
+            color: $gray-500;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            line-height: 1.3;
+        }
+    }
+
     .sessoes{
-        
-        
+
         .sessao{
             margin-bottom: $gap-2;
+            border-radius: $gap-1;
+            overflow: hidden;
+            box-shadow: 0px 2px 8px rgba(5, 17, 34, 0.06);
+            &:last-child{
+                margin-bottom: 0;
+            }
         }
-        margin: 0 $gap-2 $gap-2 $gap-2;
         h6{
-            
+
             padding: $gap-1 $gap-2;
-            background-color: $gray-50;
-            border: 1px solid $gray-50;
-            border-top-left-radius: $gap-1;
-            border-top-right-radius: $gap-1;
+            background-color: $primary-lighten;
+            color: $primary-darken;
+            font-weight: 700;
             @include responsive(xs){
                 font-size: 14px;
             }
         }
         .subsessoes{
             .subsessao{
+                background-color: $white-light;
                 border: 1px solid $gray-50;
                 border-top: none;
                 padding: $gap-2;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                gap: $gap-2;
                 .description{
-                    &:not(:last-child){
-                        margin-bottom: $gap-2;
-                    }
                     display: flex;
                     align-items: center;
                     .icon{
                         margin-right: $gap-1;
-                        
+
                         svg{
                             color: $success-normal;
                         }
                     }
                     .infoBoxDescription{
                         flex: 1;
+                        p{
+                            margin: 0;
+                        }
                     }
                 }
             }
         }
-    }
-    .totais{
-        padding: $gap-2;
-        display: flex;
-        flex-wrap: wrap;
-        @include responsive(s){
-            display: flex;
-        }
-        @include responsive(xs){
-            display: flex;
-            
-        }
-        .total{
-            border-radius: $gap-1;
-            display: inline-flex;
-            cursor: pointer;
-            transition: ease .3s;
-            &:hover{
-                transform: scale(1.05);
-            }
-            
-            
-           margin-right: $gap-1;
-            margin-bottom: $gap-1;
-            @include responsive(xs){
-                display: flex;
-                &:not(:last-child){
-                    margin-bottom: $gap-1;
-                }
-            }
-            align-items: center;
-            border: 1px solid $gray-50;
-            border-radius: $gap-1;
-            box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
-            &:not(:last-child){
-                margin-right: $gap-1;
-                
-            }
-            p{
-                padding: $gap-1;
-                @include responsive(s){
-                    padding: $gap-1;
-                    font-size: 14px;
-                }
-                background-color: $white-darken;
-                color: $primary-darken;
-                border-top-left-radius: 6.5px;
-                border-bottom-left-radius: 6.5px;
-                font-size: 18px;
-            }
-            h6{
-                padding: 0 $gap-2;
-                @include responsive(s){
-                    padding: 0 $gap-2;
-                    font-size: 12px;
-                };
-                text-transform: uppercase;
-            }
-            
-        }
-        .total.error{
-            p{
-                background-color: $error-light;
-            }
-        }
-        .total.blue{
-            p{
-                background-color: $primary-dark;
-                color: $white-light;
-            }
-        }
-        .total.success{
-            p{
-                background-color: $success-normal;
-            }
-        }
-        
     }
     .show{
         margin: 0 $gap-2;

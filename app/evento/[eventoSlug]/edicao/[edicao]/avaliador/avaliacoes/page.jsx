@@ -295,7 +295,7 @@ const Page = ({ params }) => {
                               handleLerResumo(
                                 eventoId,
                                 item.id,
-                                item.tenant?.id ?? item.instituicaoParceiraSnapshot?.id
+                                item.tenant?.id ?? item.instituicaoParceira?.id
                               )
                             }
                           >
@@ -311,7 +311,7 @@ const Page = ({ params }) => {
                           className={`${styles.squareHeader}  ${styles.action} ${styles.actionPrimary}`}
                           onClick={() =>
                             router.push(
-                              `/evento/${params.eventoSlug}/edicao/${params.edicao}/avaliador/avaliacoes/avaliacao/${eventoId}/${item.id}/${item.tenant?.id ?? item.instituicaoParceiraSnapshot?.id}`
+                              `/evento/${params.eventoSlug}/edicao/${params.edicao}/avaliador/avaliacoes/avaliacao/${eventoId}/${item.id}/${item.tenant?.id ?? item.instituicaoParceira?.id}`
                             )
                           }
                         >

@@ -14,9 +14,12 @@ import { Card } from "primereact/card";
 import { Toast } from "primereact/toast";
 import { MultiSelect } from "primereact/multiselect";
 import { InputText } from "primereact/inputtext";
+import { Dialog } from "primereact/dialog";
+import { Button } from "primereact/button";
 
 // SERVIÇOS
 import { getRegistrosAtividadesByAno } from "@/app/api/client/atividade";
+import { validarJustificativaManualmente } from "@/app/api/client/eventos";
 import {
   RiCheckLine,
   RiCheckboxCircleLine,
@@ -28,6 +31,8 @@ import {
   RiGraduationCapLine,
   RiCheckDoubleLine,
   RiQuillPenLine,
+  RiFilePdfLine,
+  RiSubtractLine,
 } from "@remixicon/react";
 import NoData from "../NoData";
 import { updateRegistroAtividade } from "@/app/api/client/registroAtividade";
@@ -43,6 +48,11 @@ const TabelaRegistroAtividade = ({ params }) => {
   const [globalFilter, setGlobalFilter] = useState("");
   const [progress, setProgress] = useState(0);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [apresentacaoObrigatoria, setApresentacaoObrigatoria] = useState(false);
+  const [eventoObrigatorio, setEventoObrigatorio] = useState(null);
+  const [justificativaSelecionada, setJustificativaSelecionada] = useState(null);
+  const [motivoValidacao, setMotivoValidacao] = useState("");
+  const [validando, setValidando] = useState(false);
   const statusOptions = [
     { label: "Pendente", value: "naoEntregue" },
     { label: "Orientador", value: "aguardandoAprovacaoOrientador" },
@@ -192,6 +202,9 @@ const TabelaRegistroAtividade = ({ params }) => {
         ? data.atividades
         : [];
       const arrPlanos = Array.isArray(data.planos) ? data.planos : [];
+
+      setApresentacaoObrigatoria(!!data.apresentacaoObrigatoria);
+      setEventoObrigatorio(data.eventoObrigatorio || null);
 
       // Agrupar atividades por formularioId
       const atividadesAgrupadas = arrAtividades.reduce((acc, atividade) => {
@@ -392,6 +405,128 @@ const TabelaRegistroAtividade = ({ params }) => {
     );
   };
 
+  // Corpo da célula de apresentação em congresso — só existe quando o ano/tenant
+  // tem apresentacaoObrigatoria configurada em algum evento (ver eventoObrigatorio).
+  // Submissão e justificativa são independentes (o plano pode ter as duas ao mesmo
+  // tempo — ex.: justificou a ausência mas depois acabou apresentando mesmo assim),
+  // então mostramos as duas badges quando existirem, em vez de uma esconder a outra.
+  const apresentacaoBody = (rowData) => {
+    const { submissao, justificativa } = rowData.apresentacao || {};
+
+    let submissaoBadge = null;
+    if (submissao?.status === "AVALIADA") {
+      submissaoBadge = (
+        <span className={`${styles.apresentacaoBadge} ${styles.apresentacaoSucesso}`}>
+          <RiCheckboxCircleLine /> Apresentou
+        </span>
+      );
+    } else if (submissao) {
+      submissaoBadge = (
+        <span className={`${styles.apresentacaoBadge} ${styles.apresentacaoAlerta}`}>
+          <RiErrorWarningLine /> {submissao.status}
+        </span>
+      );
+    }
+
+    let justificativaBadge = null;
+    if (justificativa?.status === "ACEITA") {
+      justificativaBadge = (
+        <span className={`${styles.apresentacaoBadge} ${styles.apresentacaoSucesso}`}>
+          <RiCheckboxCircleLine /> Justificativa aceita
+        </span>
+      );
+    } else if (justificativa?.status === "PENDENTE") {
+      justificativaBadge = (
+        <span
+          className={`${styles.apresentacaoBadge} ${styles.apresentacaoAlerta} ${styles.apresentacaoClicavel}`}
+          onClick={() =>
+            abrirModalValidar({
+              ...justificativa,
+              planoTitulo: rowData.titulo,
+            })
+          }
+          title="Clique para validar manualmente"
+        >
+          <RiErrorWarningLine /> Justificativa pendente
+        </span>
+      );
+    }
+
+    if (!submissaoBadge && !justificativaBadge) {
+      return (
+        <span className={`${styles.apresentacaoBadge} ${styles.apresentacaoNeutro}`}>
+          <RiSubtractLine /> Sem apresentação
+        </span>
+      );
+    }
+
+    return (
+      <div className={styles.apresentacaoBadges}>
+        {submissaoBadge}
+        {justificativaBadge}
+      </div>
+    );
+  };
+
+  const abrirModalValidar = (justificativa) => {
+    setJustificativaSelecionada(justificativa);
+    setMotivoValidacao("");
+  };
+
+  const fecharModalValidar = () => {
+    setJustificativaSelecionada(null);
+    setMotivoValidacao("");
+  };
+
+  const handleValidarManualmente = async () => {
+    if (!motivoValidacao.trim() || !eventoObrigatorio) return;
+
+    setValidando(true);
+    try {
+      await validarJustificativaManualmente(
+        eventoObrigatorio.slug,
+        justificativaSelecionada.id,
+        motivoValidacao
+      );
+
+      // Atualiza o estado local sem recarregar tudo
+      setPlanos((prevPlanos) =>
+        prevPlanos.map((plano) => {
+          if (!plano.apresentacao?.justificativa || plano.apresentacao.justificativa.id !== justificativaSelecionada.id) {
+            return plano;
+          }
+          return {
+            ...plano,
+            apresentacao: {
+              ...plano.apresentacao,
+              justificativa: { ...plano.apresentacao.justificativa, status: "ACEITA" },
+            },
+          };
+        })
+      );
+
+      toast.current?.show({
+        severity: "success",
+        summary: "Sucesso",
+        detail: "Justificativa validada manualmente com sucesso!",
+        life: 3000,
+      });
+      fecharModalValidar();
+    } catch (error) {
+      console.error("Erro ao validar justificativa manualmente:", error);
+      toast.current?.show({
+        severity: "error",
+        summary: "Erro",
+        detail:
+          error.response?.data?.message ||
+          "Falha ao validar a justificativa.",
+        life: 3000,
+      });
+    } finally {
+      setValidando(false);
+    }
+  };
+
   // Cabeçalho da coluna com filtro
   const atividadeHeader = (atividade) => {
     return (
@@ -529,6 +664,16 @@ const TabelaRegistroAtividade = ({ params }) => {
                     )}
                   />
 
+                  {/* Coluna de apresentação em congresso — só quando o ano/tenant tem
+                      apresentacaoObrigatoria configurada em algum evento */}
+                  {apresentacaoObrigatoria && (
+                    <Column
+                      header="Apresentação em Congresso"
+                      body={apresentacaoBody}
+                      style={{ width: "220px" }}
+                    />
+                  )}
+
                   {/* Colunas dinâmicas para grupos de atividades */}
                   {atividades.map((atividade) => (
                     <Column
@@ -548,6 +693,64 @@ const TabelaRegistroAtividade = ({ params }) => {
           </Card>
         )}
       </main>
+
+      <Dialog
+        header="Validar justificativa manualmente"
+        visible={!!justificativaSelecionada}
+        style={{ width: "40vw" }}
+        onHide={fecharModalValidar}
+      >
+        {justificativaSelecionada && (
+          <div>
+            <p>
+              <strong>Plano:</strong> {justificativaSelecionada.planoTitulo}
+            </p>
+            {eventoObrigatorio && (
+              <p>
+                <strong>Evento:</strong> {eventoObrigatorio.nomeEvento}
+              </p>
+            )}
+            <p style={{ whiteSpace: "pre-line", marginTop: "8px" }}>
+              {justificativaSelecionada.justificativa}
+            </p>
+            {justificativaSelecionada.anexoUrl && (
+              <a
+                className={styles.pdfLink}
+                href={justificativaSelecionada.anexoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <RiFilePdfLine /> Ver comprovante anexado
+              </a>
+            )}
+            <p className="mt-2 mb-1">
+              Use quando não for possível obter a assinatura do aluno ou do
+              orientador (ex.: orientador afastado). Informe o motivo da
+              validação manual:
+            </p>
+            <InputText
+              className="w-100"
+              value={motivoValidacao}
+              onChange={(e) => setMotivoValidacao(e.target.value)}
+              placeholder="Motivo da validação manual"
+              disabled={validando}
+            />
+            <div className="flex justify-content-end gap-2 mt-3">
+              <Button
+                label="Cancelar"
+                severity="secondary"
+                onClick={fecharModalValidar}
+                disabled={validando}
+              />
+              <Button
+                label={validando ? "Validando..." : "Validar manualmente"}
+                onClick={handleValidarManualmente}
+                disabled={validando || !motivoValidacao.trim()}
+              />
+            </div>
+          </div>
+        )}
+      </Dialog>
     </>
   );
 };

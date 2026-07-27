@@ -108,24 +108,17 @@
   display: flex;
   flex-wrap: wrap;
   gap: $gap-2;
-
-  > * {
-    flex: 1 1 220px;
-    min-width: 200px;
-  }
+flex-direction: column;
+  
 }
 
 .campoCor {
   display: flex;
   align-items: flex-end;
   gap: $gap-1;
-  flex: 1 1 220px;
   min-width: 200px;
 
-  > div:first-child {
-    flex: 1;
-    min-width: 0;
-  }
+  
 }
 
 .swatch {
@@ -237,7 +230,7 @@
     }
 }
 .formulario{
-    margin-top: $gap-3;
+    //margin-top: $gap-3;
     
     .input{
         
@@ -393,6 +386,11 @@
             border-bottom-right-radius: 6px;
             border-top-left-radius: 0px;
             border-bottom-left-radius: 0px;
+        }
+        // Ícone à esquerda (ex: ativo/inativo) e ações à direita (editar/excluir) —
+        // o conteúdo do meio fica retangular, as bordas arredondadas ficam com as caixas das pontas.
+        .betweenIcons{
+            border-radius: 0px;
         }
         .icon{
             cursor: pointer;

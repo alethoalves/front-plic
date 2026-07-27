@@ -50,6 +50,10 @@ const Page = ({ params }) => {
   const [submissao, setSubmissao] = useState([]);
   const [areas, setAreas] = useState([]);
   const [selectedArea, setSelectedArea] = useState(null);
+  const [justificativaPorPlano, setJustificativaPorPlano] = useState({});
+
+  const getJustificativaPlano = (idPlano) =>
+    justificativaPorPlano[idPlano] || { ativo: false, texto: "" };
 
   // ROTEAMENTO
   const router = useRouter();
@@ -259,6 +263,45 @@ const Page = ({ params }) => {
                       </div>
                     )}
 
+                    <div className="mt-2">
+                      <div
+                        className="flex align-items-center gap-2"
+                        style={{ cursor: "pointer" }}
+                        onClick={() =>
+                          setJustificativaPorPlano((prev) => ({
+                            ...prev,
+                            [idPlano]: { ...getJustificativaPlano(idPlano), ativo: !getJustificativaPlano(idPlano).ativo },
+                          }))
+                        }
+                      >
+                        <input
+                          type="checkbox"
+                          checked={getJustificativaPlano(idPlano).ativo}
+                          onChange={() =>
+                            setJustificativaPorPlano((prev) => ({
+                              ...prev,
+                              [idPlano]: { ...getJustificativaPlano(idPlano), ativo: !getJustificativaPlano(idPlano).ativo },
+                            }))
+                          }
+                        />
+                        <span>Já sei que não poderei comparecer — justificar ausência</span>
+                      </div>
+                      {getJustificativaPlano(idPlano).ativo && (
+                        <textarea
+                          className="mt-2 w-full"
+                          rows={3}
+                          placeholder="Descreva o motivo da ausência. O orientador do plano de trabalho precisará assinar esta justificativa."
+                          value={getJustificativaPlano(idPlano).texto}
+                          onChange={(e) =>
+                            setJustificativaPorPlano((prev) => ({
+                              ...prev,
+                              [idPlano]: { ...getJustificativaPlano(idPlano), texto: e.target.value },
+                            }))
+                          }
+                        />
+                      )}
+                    </div>
+
                     {sessaoSelecionada?.subsessaoApresentacao?.map(
                       (subsessao) => {
                         const [dataISOInicio, horaISOInicio] =
@@ -299,12 +342,14 @@ const Page = ({ params }) => {
                               onClick={async () => {
                                 setLoading(true);
                                 try {
+                                  const justificativaPlano = getJustificativaPlano(idPlano);
                                   const submissao = await startSubmissaoEvento(
                                     params.tenant,
                                     eventoSelecionado.eventoId,
                                     idPlano,
                                     eventoSelecionado.formularioId,
-                                    subsessao.id
+                                    subsessao.id,
+                                    justificativaPlano.ativo ? justificativaPlano.texto : undefined
                                   );
                                   //await refresh();
                                   setTela(1);

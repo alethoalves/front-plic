@@ -285,15 +285,17 @@ const Auth = ({
   };
   return (
     <div className={styles.auth}>
-      <div className={styles.logo}>
-        <Image
-          priority
-          fill
-          src={`/image/${pathLogo}`}
-          alt="logo"
-          sizes="300 500 700"
-        />
-      </div>
+      {pathLogo && (
+        <div className={styles.logo}>
+          <Image
+            priority
+            fill
+            src={`/image/${pathLogo}`}
+            alt="logo"
+            sizes="300 500 700"
+          />
+        </div>
+      )}
 
       {!isAvaliador && !isRoot && (
         <div className={styles.header}>

@@ -14,12 +14,20 @@
   padding: $gap-2;
 }
 
+.headerRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: $gap-2;
+  margin-bottom: 3rem;
+}
+
 .header {
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  margin-bottom: 3rem;
-  
+
   .headerIcon {
     background: linear-gradient(135deg, $primary-dark 0%, $primary-darken 100%);
     color: white;
@@ -261,6 +269,19 @@
   display: flex;
   flex-direction: column;
   gap: $gap-2;
+}
+
+.criarDocumentoModal {
+  .stepHeader {
+    display: flex;
+    align-items: center;
+    gap: $gap-1;
+    margin-bottom: $gap-2;
+
+    h5 {
+      flex: 1;
+    }
+  }
 }
 // Estilos para o Dialog
 .documentoDialog {

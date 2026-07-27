@@ -90,11 +90,15 @@ export const deleteSubmissaoByUser = async (submissaoId, cpf) => {
 };
 export const criarInscricaoEvento = async (body) => {
   try {
-   
-      const response = await req.post(
-          `/evenplic/criarInscricaoEvento`,
-          body,
-      );
+    // Para instituição parceira não há headers (não tem conta no PLIC); para
+    // um tenant real, o backend agora exige o header de autenticação (ver
+    // verificarAutenticacaoTenant no back) — enviamos se já estiver logado.
+    const headers = getAuthHeadersClient();
+    const response = await req.post(
+        `/evenplic/criarInscricaoEvento`,
+        body,
+        headers ? { headers } : undefined,
+    );
     return response.data;
   } catch (error) {
     console.error("Erro ao criar formulário:", error);
@@ -104,7 +108,7 @@ export const criarInscricaoEvento = async (body) => {
 
 export const getTenantsByEventoSlug = async (slug) => {
   try {
-    
+
     const response = await req.get(
       `/evenplic/${slug}/getTenantsByEventoSlug`,
     );
@@ -116,13 +120,104 @@ export const getTenantsByEventoSlug = async (slug) => {
 };
 export const getPlanosOuProjetos = async (cpf,slugEvento, slugTenant) => {
   try {
-    
+    // Este endpoint é sempre chamado no fluxo de tenant real (nunca para
+    // instituição parceira) — o backend exige autenticação.
+    const headers = getAuthHeadersClient();
     const response = await req.get(
       `/evenplic/getTenantsByEventoSlug/${cpf}/${slugEvento}/${slugTenant}`,
+      headers ? { headers } : undefined,
     );
     return response.data;
   } catch (error) {
     console.error("Erro ao chamar a API:", error);
+    throw error;
+  }
+};
+
+export const getPendenciasApresentacao = async (tenantSlug) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+
+    const response = await req.get(
+      `/evenplic/${tenantSlug}/user/pendencias-apresentacao`,
+      { headers }
+    );
+    return response.data.pendencias;
+  } catch (error) {
+    console.error("Erro ao buscar pendências de apresentação:", error);
+    throw error;
+  }
+};
+
+export const getEventosParaJustificarAusencia = async (tenantSlug) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+
+    const response = await req.get(
+      `/evenplic/${tenantSlug}/user/eventos-para-justificar-ausencia`,
+      { headers }
+    );
+    return response.data.eventos;
+  } catch (error) {
+    console.error("Erro ao buscar eventos para justificar ausência:", error);
+    throw error;
+  }
+};
+
+export const getPlanosParaJustificarAusencia = async (tenantSlug, idEvento) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+
+    const response = await req.get(
+      `/evenplic/${tenantSlug}/user/eventos-para-justificar-ausencia/${idEvento}/planos`,
+      { headers }
+    );
+    return response.data; // { evento, planos }
+  } catch (error) {
+    console.error("Erro ao buscar planos para justificar ausência:", error);
+    throw error;
+  }
+};
+
+export const justificarApresentacaoPosEvento = async (tenantSlug, idEvento, idPlanoDeTrabalho, justificativa, comprovanteFile) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+
+    const formData = new FormData();
+    formData.append("justificativa", justificativa);
+    if (comprovanteFile) {
+      formData.append("file", comprovanteFile);
+    }
+
+    const response = await req.post(
+      `/evenplic/${tenantSlug}/evento/${idEvento}/planoDeTrabalho/${idPlanoDeTrabalho}/justificar-apresentacao`,
+      formData,
+      { headers: { ...headers, "Content-Type": "multipart/form-data" } }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao justificar apresentação:", error);
+    throw error;
+  }
+};
+
+export const validarJustificativaManualmente = async (eventoSlug, justificativaId, motivo) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+
+    const response = await req.put(
+      `/evenplic/evento/${eventoSlug}/justificativa-apresentacao/${justificativaId}/validar-manualmente`,
+      { motivo },
+      { headers }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao validar justificativa manualmente:", error);
     throw error;
   }
 };
@@ -221,16 +316,16 @@ export const getAllEvents = async () => {
     throw error;
   }
 };
-export const startSubmissaoEvento = async (tenantSlug,idEvento,idPlanoDeTrabalho,idFormulario,idSubsessaoApresentacao) => {
+export const startSubmissaoEvento = async (tenantSlug,idEvento,idPlanoDeTrabalho,idFormulario,idSubsessaoApresentacao,justificativaAusencia) => {
   try {
     const headers = getAuthHeadersClient();
     if (!headers) {
       return false;
     }
     const response = await req.post(
-      
+
       `/evenplic/${tenantSlug}/startSubmissaoEvento/${idEvento}/${idPlanoDeTrabalho}/${idFormulario}?idSubsessaoApresentacao=${idSubsessaoApresentacao}`,
-      {},
+      justificativaAusencia ? { justificativaAusencia } : {},
       { headers }
     );
     return response.data.submissao;
@@ -365,6 +460,23 @@ export const updateEventoConfiguracoes = async (eventoSlug, data) => {
   }
 };
 
+export const getConfiguracoesEdicaoAnterior = async (eventoSlug) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+
+    const response = await req.get(
+      `/evenplic/evento/${eventoSlug}/configuracoes/edicao-anterior`,
+      { headers }
+    );
+
+    return response.data.edicaoAnterior;
+  } catch (error) {
+    console.error("Erro ao buscar configurações da edição anterior:", error);
+    throw error;
+  }
+};
+
 export const criarInstituicaoParceira = async (eventoSlug, data) => {
   try {
     const headers = getAuthHeadersClient();
@@ -383,6 +495,24 @@ export const criarInstituicaoParceira = async (eventoSlug, data) => {
   }
 };
 
+export const atualizarApresentacaoObrigatoria = async (eventoSlug, tenantId, apresentacaoObrigatoria) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+
+    const response = await req.put(
+      `/evenplic/evento/${eventoSlug}/tenants/${tenantId}/apresentacao-obrigatoria`,
+      { apresentacaoObrigatoria },
+      { headers }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao atualizar apresentação obrigatória:", error);
+    throw error;
+  }
+};
+
 export const atualizarInstituicaoParceira = async (eventoSlug, id, data) => {
   try {
     const headers = getAuthHeadersClient();
@@ -397,6 +527,58 @@ export const atualizarInstituicaoParceira = async (eventoSlug, id, data) => {
     return response.data;
   } catch (error) {
     console.error("Erro ao atualizar instituição parceira:", error);
+    throw error;
+  }
+};
+
+export const excluirInstituicaoParceira = async (eventoSlug, id) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+
+    const response = await req.delete(
+      `/evenplic/evento/${eventoSlug}/instituicoes-parceiras/${id}`,
+      { headers }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao excluir instituição parceira:", error);
+    throw error;
+  }
+};
+
+export const getInstituicoesParceirasEdicaoAnterior = async (eventoSlug) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+
+    const response = await req.get(
+      `/evenplic/evento/${eventoSlug}/instituicoes-parceiras/edicao-anterior`,
+      { headers }
+    );
+
+    return response.data.edicaoAnterior;
+  } catch (error) {
+    console.error("Erro ao buscar instituições parceiras da edição anterior:", error);
+    throw error;
+  }
+};
+
+export const importarInstituicoesParceirasDaEdicaoAnterior = async (eventoSlug) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+
+    const response = await req.post(
+      `/evenplic/evento/${eventoSlug}/instituicoes-parceiras/importar-edicao-anterior`,
+      {},
+      { headers }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao importar instituições parceiras da edição anterior:", error);
     throw error;
   }
 };

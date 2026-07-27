@@ -258,7 +258,17 @@
   p {
     margin: $gap-2 0;
   }
-  
+
+  // Só o branch de conteúdo em texto puro (não-HTML) — ex.: declaração de
+  // justificativa — usa \n pra marcar parágrafos/seções. Escopado nessa classe
+  // própria (em vez do seletor genérico ".documentContent p") pra não afetar
+  // templates HTML de outros tipos de documento, que já têm suas próprias tags
+  // de parágrafo e podem ter quebras de linha de formatação no HTML-fonte que
+  // devem continuar colapsando normalmente.
+  .plainTextContent {
+    white-space: pre-line;
+  }
+
   strong {
     color: #1e293b;
   }

@@ -10,8 +10,10 @@ import {
   RiBankLine,
   RiDownloadLine,
   RiExternalLinkLine,
+  RiFilePdfLine,
 } from "@remixicon/react";
 import styles from "./page.module.scss";
+import formStyles from "@/components/Formularios/Form.module.scss";
 import { useEffect, useState } from "react";
 import {
   getMyDocuments,
@@ -552,7 +554,7 @@ const DocumentoDetailPage = ({ params }) => {
     } else {
       return (
         <div className={styles.documentoContent}>
-          <p>{conteudo}</p>
+          <p className={styles.plainTextContent}>{conteudo}</p>
         </div>
       );
     }
@@ -705,6 +707,21 @@ const DocumentoDetailPage = ({ params }) => {
               documento.status === "PENDENTE" &&
               renderizarDadosBancarios()}
             {renderizarConteudoDocumento()}
+            {documento?.justificativaApresentacaoCongresso?.anexoUrl && (
+              <div className={formStyles.pdfDoc}>
+                <span className={formStyles.pdfIcon}>
+                  <RiFilePdfLine size={16} />
+                </span>
+                <a
+                  className={formStyles.pdfName}
+                  href={documento.justificativaApresentacaoCongresso.anexoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Comprovante anexado
+                </a>
+              </div>
+            )}
           </div>
 
           {/* Mostrar seção de assinaturas apenas se o formulário estiver preenchido ou for TERMO */}

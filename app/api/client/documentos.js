@@ -58,6 +58,37 @@ export const criarRegistrosDocumento = async (tenantSlug, documentoTemplateId, p
     throw error;
   }
 };
+export const getAllDocumentos = async (tenantSlug, ano) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return [];
+    const response = await req.get(
+      `/private/${tenantSlug}/documentos/getAllDocumentos`,
+      { headers, params: ano ? { ano } : {} }
+    );
+    return response.data.documentos;
+  } catch (error) {
+    console.error("Erro ao buscar documentos do tenant:", error);
+    throw error;
+  }
+};
+
+export const recusarDocumento = async (tenantSlug, documentoRegistroId, observacao) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+    const response = await req.put(
+      `/private/${tenantSlug}/documentos/recusar`,
+      { documentoRegistroId, observacao },
+      { headers }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao recusar documento:", error);
+    throw error;
+  }
+};
+
 export const deleteDocumentoNaoAssinado = async (tenantSlug, documentoId) => {
   try {
     const headers = getAuthHeadersClient();

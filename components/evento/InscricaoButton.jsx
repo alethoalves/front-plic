@@ -3,6 +3,7 @@ import { RiCouponLine, RiIdCardLine } from "@remixicon/react";
 import styles from "./InscricaoButton.module.scss";
 import { useState, useEffect, useRef, useMemo } from "react";
 import Modal from "../Modal";
+import LoginCpfConhecido from "./LoginCpfConhecido";
 
 import { Stepper } from "primereact/stepper";
 import { StepperPanel } from "primereact/stepperpanel";
@@ -48,6 +49,7 @@ export const InscricaoButton = ({ params }) => {
   const [loadingSubmissoes, setLoadingSubmissoes] = useState(false);
   const [submissoesLoaded, setSubmissoesLoaded] = useState(false);
   const [type, setType] = useState(false);
+  const [awaitingLogin, setAwaitingLogin] = useState(false);
 
   const stepperRef = useRef(null);
   const toast = useRef(null);
@@ -96,6 +98,7 @@ export const InscricaoButton = ({ params }) => {
     setApresentacaoData(null);
     setType();
     setSelectedPlano();
+    setAwaitingLogin(false);
   };
 
   const handleConfirmarEnviar = () => {
@@ -221,12 +224,20 @@ export const InscricaoButton = ({ params }) => {
       return;
     }
 
+    // Instituição real: o backend agora exige login de verdade (não basta o
+    // CPF) para garantir que quem está se inscrevendo é o dono do CPF —
+    // mostra o formulário de login/cadastro embutido antes de buscar planos.
+    setAwaitingLogin(true);
+  };
+
+  const buscarPlanosAposLogin = async () => {
+    setAwaitingLogin(false);
     setLoading(true);
     setError(null);
 
     try {
       const planosData = await getPlanosOuProjetos(
-        data.cpf,
+        cpfValue,
         params.edicao,
         selectedTenant.slug,
       );
@@ -240,9 +251,9 @@ export const InscricaoButton = ({ params }) => {
     } catch (error) {
       console.error("Erro ao buscar planos:", error);
       const errorMessage =
-        "Erro ao buscar planos. Verifique o CPF e tente novamente.";
-      setError(error.response.data.message || errorMessage);
-      showError(error.response.data.message || errorMessage);
+        "Erro ao buscar planos. Faça login novamente e tente outra vez.";
+      setError(error.response?.data?.message || errorMessage);
+      showError(error.response?.data?.message || errorMessage);
     } finally {
       setLoading(false);
     }
@@ -252,7 +263,15 @@ export const InscricaoButton = ({ params }) => {
     setSelectedPlano(plano);
     setRegistrosAtividade(registros);
 
-    // Verifica se é um PLANO e tem registros de atividade
+    // Pré-preenche o título do resumo com o título do plano/projeto já
+    // selecionado — não faz sentido pedir pro aluno digitar de novo algo que
+    // o sistema já sabe.
+    const tituloPreenchido =
+      type === "PROJETO" ? plano?.projeto?.titulo : plano?.titulo;
+
+    // Verifica se é um PLANO e tem registros de atividade (sistema legado de
+    // resumo-via-atividade — ver getRegistrosAtividadePorPlano); quando
+    // existir, também pré-preenche as partes do resumo a partir dele.
     if (type === "PLANO" && registros?.registroAtividades?.length > 0) {
       const registroAtividade = registros.registroAtividades[0];
 
@@ -276,7 +295,7 @@ export const InscricaoButton = ({ params }) => {
 
       // Cria o payload do resumo no formato esperado
       const resumoPayload = {
-        titulo: plano.titulo, // Usa o título do plano
+        titulo: tituloPreenchido,
         partesResumo: Object.keys(partesResumo).map((nome) => ({
           nome,
           conteudo: partesResumo[nome],
@@ -301,6 +320,10 @@ export const InscricaoButton = ({ params }) => {
 
         setPalavrasChaveData(palavrasChave);
       }
+    } else if (tituloPreenchido) {
+      // Sem sistema legado de resumo-via-atividade: só pré-preenche o
+      // título mesmo, o restante do resumo o aluno preenche do zero.
+      setResumoData({ titulo: tituloPreenchido });
     }
 
     // LÓGICA PARA POPULAR PARTICIPANTES =================================
@@ -441,6 +464,27 @@ export const InscricaoButton = ({ params }) => {
               <StepperPanel header="Informe seu CPF">
                 <div className={styles.contentBox}>
                   <div className={styles.content}>
+                    {awaitingLogin ? (
+                      <div>
+                        <p className="mb-2">
+                          Esta instituição é cadastrada no PLIC. Entre com o
+                          CPF <strong>{cpfValue}</strong> para continuar.
+                        </p>
+                        <LoginCpfConhecido
+                          cpf={cpfValue}
+                          onSuccess={buscarPlanosAposLogin}
+                        />
+                        <div className="flex pt-2">
+                          <Button
+                            label="Voltar"
+                            severity="secondary"
+                            icon="pi pi-arrow-left"
+                            onClick={() => setAwaitingLogin(false)}
+                            type="button"
+                          />
+                        </div>
+                      </div>
+                    ) : (
                     <form onSubmit={handleSubmit(onSubmit)}>
                       <div className="flex flex-column gap-2">
                         <Input
@@ -501,6 +545,7 @@ export const InscricaoButton = ({ params }) => {
                         </Button>
                       </div>
                     </form>
+                    )}
                   </div>
                 </div>
               </StepperPanel>
@@ -517,7 +562,7 @@ export const InscricaoButton = ({ params }) => {
                     <div>
                       {`Ops! Entre em contato com a secretaria de Iniciação Científica da sua instituição de ensino, pois o CPF informado não está vinculado a um projeto de IC da instituição ${
                         selectedTenant?.nome
-                      } (${selectedTenant?.slug.toUpperCase()})`}{" "}
+                      } (${selectedTenant?.sigla?.toUpperCase() ?? ""})`}{" "}
                     </div>
                   ) : (
                     planos?.map((plano) => (

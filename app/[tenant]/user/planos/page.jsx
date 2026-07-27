@@ -21,7 +21,7 @@ import {
   RiHistoryLine,
 } from "@remixicon/react";
 import styles from "./page.module.scss";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Modal from "@/components/Modal";
 import Campo from "@/components/Campo";
@@ -57,6 +57,7 @@ const Page = ({ params }) => {
     setRegistrosAtividadesEditaisVigentes,
   ] = useState([]);
   const [expandedItems, setExpandedItems] = useState({});
+  const [expandedRespostas, setExpandedRespostas] = useState({});
   const [modalLoading, setModalLoading] = useState(false);
   const [approvingId, setApprovingId] = useState(null);
   const toast = useRef(null);
@@ -93,15 +94,17 @@ const Page = ({ params }) => {
         setFilteredAreas(transformedArray(getAreasResponse));
 
         // Para cada plano, ordenar suas atividades por data de início
-        const planosComAtividadesOrdenadas = response.filter((plano) => plano.statusClassificacao === 'CLASSIFICADO').map((plano) => ({
-          ...plano,
-          registroAtividades:
-            plano.registroAtividades?.sort(
-              (a, b) =>
-                new Date(a.atividade.dataInicio) -
-                new Date(b.atividade.dataInicio),
-            ) || [],
-        }));
+        const planosComAtividadesOrdenadas = response
+          .filter((plano) => plano.statusClassificacao === "CLASSIFICADO")
+          .map((plano) => ({
+            ...plano,
+            registroAtividades:
+              plano.registroAtividades?.sort(
+                (a, b) =>
+                  new Date(a.atividade.dataInicio) -
+                  new Date(b.atividade.dataInicio),
+              ) || [],
+          }));
 
         setRegistrosAtividadesEditaisVigentes(
           planosComAtividadesOrdenadas || [],
@@ -459,6 +462,32 @@ const Page = ({ params }) => {
     return hoje <= tresDiasDepois;
   };
 
+  const toggleRespostas = (registroAtividadeId) => {
+    setExpandedRespostas((prev) => ({
+      ...prev,
+      [registroAtividadeId]: !prev[registroAtividadeId],
+    }));
+  };
+
+  const resumoAtividadesObrigatorias = useMemo(() => {
+    const registros = registroAtividadesEditaisVigentes.flatMap(
+      (plano) => plano.registroAtividades || [],
+    );
+    const obrigatorias = registros.filter(
+      (registro) =>
+        registro.atividade?.obrigatoria && registro.status !== "dispensada",
+    );
+    const entregues = obrigatorias.filter(
+      (registro) => registro.status === "concluido",
+    ).length;
+
+    return {
+      total: obrigatorias.length,
+      entregues,
+      pendentes: obrigatorias.length - entregues,
+    };
+  }, [registroAtividadesEditaisVigentes]);
+
   const toggleAreaDropdown = (planoId) => {
     setOpenAreaDropdowns((prev) => ({
       ...prev,
@@ -766,6 +795,44 @@ const Page = ({ params }) => {
                 atividades e emita certificado de conclusão.
               </p>
             </div>
+            {resumoAtividadesObrigatorias.total > 0 && (
+              <div className={styles.headerStats}>
+                <span
+                  className={`${styles.statsBadge} ${
+                    resumoAtividadesObrigatorias.pendentes > 0
+                      ? styles.statsBadgeWarning
+                      : styles.statsBadgeSuccess
+                  }`}
+                >
+                  {resumoAtividadesObrigatorias.pendentes > 0 ? (
+                    <RiAlertLine />
+                  ) : (
+                    <RiCheckDoubleLine />
+                  )}
+                  <span>
+                    {resumoAtividadesObrigatorias.pendentes > 0
+                      ? `${resumoAtividadesObrigatorias.pendentes} atividade${
+                          resumoAtividadesObrigatorias.pendentes > 1
+                            ? "s"
+                            : ""
+                        } obrigatória${
+                          resumoAtividadesObrigatorias.pendentes > 1
+                            ? "s"
+                            : ""
+                        } pendente${
+                          resumoAtividadesObrigatorias.pendentes > 1
+                            ? "s"
+                            : ""
+                        }`
+                      : "Atividades obrigatórias em dia"}
+                  </span>
+                  <span className={styles.statsBadgeCount}>
+                    {resumoAtividadesObrigatorias.entregues}/
+                    {resumoAtividadesObrigatorias.total}
+                  </span>
+                </span>
+              </div>
+            )}
           </div>
           {/* MENU DE NAVEGAÇÃO RÁPIDA COM LINK */}
           <div className={styles.navegacaoRapida}>
@@ -1010,7 +1077,7 @@ const Page = ({ params }) => {
                           ) : (
                             <>
                               <RiFileDownloadLine size={16} />
-                              Emitir Certificadoooo
+                              Emitir Certificado
                             </>
                           )}
                         </Button>
@@ -1066,10 +1133,39 @@ const Page = ({ params }) => {
                                 {/* Respostas */}
                                 {atividade.respostas?.length > 0 && (
                                   <div className={styles.respostasSection}>
-                                    <h6 className={styles.respostasTitle}>
-                                      Respostas Enviadas
-                                    </h6>
-                                    {renderRespostas(atividade.respostas)}
+                                    <button
+                                      type="button"
+                                      className={styles.respostasHeader}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        toggleRespostas(atividade.id);
+                                      }}
+                                    >
+                                      <h6 className={styles.respostasTitle}>
+                                        Respostas Enviadas (
+                                        {atividade.respostas.length})
+                                      </h6>
+                                      <RiArrowDownSLine
+                                        className={`${
+                                          styles.respostasToggleIcon
+                                        } ${
+                                          expandedRespostas[atividade.id]
+                                            ? styles.rotated
+                                            : ""
+                                        }`}
+                                      />
+                                    </button>
+                                    <div
+                                      className={`${
+                                        styles.respostasCollapse
+                                      } ${
+                                        expandedRespostas[atividade.id]
+                                          ? styles.respostasCollapseOpen
+                                          : ""
+                                      }`}
+                                    >
+                                      {renderRespostas(atividade.respostas)}
+                                    </div>
                                   </div>
                                 )}
 

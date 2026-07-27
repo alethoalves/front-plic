@@ -11,11 +11,15 @@ import {
   RiArrowLeftCircleFill,
   RiArrowRightCircleFill,
   RiBatteryLowLine,
+  RiBuildingLine,
   RiCalendarLine,
+  RiExternalLinkLine,
   RiFileExcelLine,
+  RiFileList3Line,
   RiFileWordLine,
   RiGroupLine,
   RiPresentationFill,
+  RiSettings3Line,
 } from "@remixicon/react";
 import Modal from "@/components/Modal";
 import Button from "@/components/Button";
@@ -1122,6 +1126,16 @@ const Page = ({ params }) => {
     return <NoData description="Evento não encontrado" />;
   }
 
+  const totalGeral =
+    evento.info.tenantsTotais.reduce(
+      (total, tenant) => total + tenant.quantidadeSubmissoesTotal,
+      0,
+    ) +
+    (evento.info.parceirasTotais || []).reduce(
+      (total, parceira) => total + parceira.quantidadeSubmissoesTotal,
+      0,
+    );
+
   return (
     <div className={styles.dashboard}>
       {renderModalContent()}
@@ -1132,116 +1146,153 @@ const Page = ({ params }) => {
             <h5>{evento.evento.nomeEvento}</h5>
           </div>
         </div>
+        <div className={styles.headActions}>
+          {evento.evento.eventoRootSlug && (
+            <a
+              href={`/evento/${evento.evento.eventoRootSlug}/edicao/${evento.evento.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="button btn-secondary"
+            >
+              <RiExternalLinkLine className="btn-icon" />
+              <p className="p5">Ver página do evento</p>
+            </a>
+          )}
+          <Button
+            linkTo={`/evento/${params.eventoSlug}/admin/apresentacao`}
+            icon={RiPresentationFill}
+            className="btn-secondary"
+          >
+            Criar sessões
+          </Button>
+          <Button
+            linkTo={`/evento/${params.eventoSlug}/admin/configuracoes`}
+            icon={RiSettings3Line}
+            className="btn-secondary"
+          >
+            Configurações
+          </Button>
+        </div>
       </div>
 
       <div className={styles.content}>
-        <div className={styles.totais}>
-          {evento.info.tenantsTotais.map((tenant) => (
-            <div
-              className={`${styles.total} ${styles.light}`}
-              key={tenant.tenant}
-              onClick={() => openModal(tenant)}
-            >
-              <p>{tenant.quantidadeSubmissoesTotal}</p>
-              <h6>{tenant.tenant}</h6>
-            </div>
-          ))}
-          {/* Instituições parceiras (sem Tenant) — filtram export pelo id da
-              parceira em vez do slug de um Tenant */}
-          {(evento.info.parceirasTotais || []).map((parceira) => (
-            <div
-              className={`${styles.total} ${styles.light}`}
-              key={parceira.id}
-              onClick={() =>
-                openModal({
-                  tenant: parceira.instituicao,
-                  instituicaoParceiraId: parceira.id,
-                  quantidadeSubmissoesTotal: parceira.quantidadeSubmissoesTotal,
-                })
-              }
-            >
-              <p>{parceira.quantidadeSubmissoesTotal}</p>
-              <h6>{parceira.instituicao}</h6>
-            </div>
-          ))}
-          <div
-            className={`${styles.total} ${styles.blue}`}
-            onClick={() => openModal(null)}
-          >
-            <p>
-              {evento
-                ? evento.info?.tenantsTotais.reduce(
-                    (total, tenant) => total + tenant.quantidadeSubmissoesTotal,
-                    0,
-                  ) +
-                  (evento.info?.parceirasTotais || []).reduce(
-                    (total, parceira) => total + parceira.quantidadeSubmissoesTotal,
-                    0,
-                  )
-                : 0}
-            </p>
-            <h6>Total Geral</h6>
+        <section className={styles.section}>
+          <div className={styles.sectionHead}>
+            <h6>Submissões por instituição</h6>
+            <p>Clique em uma instituição para exportar os dados dela.</p>
           </div>
-        </div>
-        <div className={styles.sessoes}>
-          {evento.info.sessaoInfo[0] &&
-          evento.info.sessaoInfo[0].subsessoes[0] ? (
-            evento.info.sessaoInfo.map((sessao) => {
-              const sessaoLabel = sessao.titulo;
-              const capacidadeTotal = sessao.capacidade;
-              return sessao.subsessoes.map((subs) => (
-                <div className={styles.sessao} key={subs.inicio}>
-                  <h6>{sessaoLabel}</h6>
-                  <div className={styles.subsessoes}>
-                    <div className={styles.subsessao}>
-                      <div className={styles.description}>
-                        <div className={styles.icon}>
-                          <RiCalendarLine />
+
+          <div className={styles.statHero} onClick={() => openModal(null)}>
+            <RiFileList3Line />
+            <div>
+              <p>Total geral de submissões</p>
+              <h4>{totalGeral}</h4>
+            </div>
+          </div>
+
+          <div className={styles.totaisGrid}>
+            {evento.info.tenantsTotais.map((tenant) => (
+              <div
+                className={styles.statTile}
+                key={tenant.tenant}
+                onClick={() => openModal(tenant)}
+              >
+                <RiBuildingLine />
+                <div>
+                  <h5>{tenant.quantidadeSubmissoesTotal}</h5>
+                  <p>{tenant.tenant}</p>
+                </div>
+              </div>
+            ))}
+            {/* Instituições parceiras (sem Tenant) — filtram export pelo id da
+                parceira em vez do slug de um Tenant */}
+            {(evento.info.parceirasTotais || []).map((parceira) => (
+              <div
+                className={styles.statTile}
+                key={parceira.id}
+                onClick={() =>
+                  openModal({
+                    tenant: parceira.instituicao,
+                    instituicaoParceiraId: parceira.id,
+                    quantidadeSubmissoesTotal: parceira.quantidadeSubmissoesTotal,
+                  })
+                }
+              >
+                <RiBuildingLine />
+                <div>
+                  <h5>{parceira.quantidadeSubmissoesTotal}</h5>
+                  <p>{parceira.instituicao}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className={styles.section}>
+          <div className={styles.sectionHead}>
+            <h6>Sessões e subsessões</h6>
+          </div>
+
+          <div className={styles.sessoes}>
+            {evento.info.sessaoInfo[0] &&
+            evento.info.sessaoInfo[0].subsessoes[0] ? (
+              evento.info.sessaoInfo.map((sessao) => {
+                const sessaoLabel = sessao.titulo;
+                const capacidadeTotal = sessao.capacidade;
+                return sessao.subsessoes.map((subs) => (
+                  <div className={styles.sessao} key={subs.inicio}>
+                    <h6>{sessaoLabel}</h6>
+                    <div className={styles.subsessoes}>
+                      <div className={styles.subsessao}>
+                        <div className={styles.description}>
+                          <div className={styles.icon}>
+                            <RiCalendarLine />
+                          </div>
+                          <div className={styles.infoBoxDescription}>
+                            <p>
+                              <strong>Início: </strong>
+                              {formatarData(subs.inicio)} -{" "}
+                              {formatarHora(subs.inicio)}
+                            </p>
+                            <p>
+                              <strong>Fim: </strong>
+                              {formatarData(subs.fim)} - {formatarHora(subs.fim)}
+                            </p>
+                          </div>
                         </div>
-                        <div className={styles.infoBoxDescription}>
-                          <p>
-                            <strong>Início: </strong>
-                            {formatarData(subs.inicio)} -{" "}
-                            {formatarHora(subs.inicio)}
-                          </p>
-                          <p>
-                            <strong>Fim: </strong>
-                            {formatarData(subs.fim)} - {formatarHora(subs.fim)}
-                          </p>
+                        <div className={styles.description}>
+                          <div className={styles.icon}>
+                            <RiBatteryLowLine />
+                          </div>
+                          <div className={styles.infoBoxDescription}>
+                            <p>
+                              <strong>Capacidade: </strong>
+                              {subs.submissaoTotal} inscritos | capacidade:{" "}
+                              {capacidadeTotal}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                      <div className={styles.description}>
-                        <div className={styles.icon}>
-                          <RiBatteryLowLine />
-                        </div>
-                        <div className={styles.infoBoxDescription}>
-                          <p>
-                            <strong>Capacidade: </strong>
-                            {subs.submissaoTotal} inscritos | capacidade:{" "}
-                            {capacidadeTotal}
-                          </p>
-                        </div>
-                      </div>
-                      <div className={styles.description}>
-                        <div className={styles.icon}>
-                          <RiGroupLine />
-                        </div>
-                        <div className={styles.infoBoxDescription}>
-                          <p>
-                            <strong>Avaliadores: </strong>
-                            {subs.convitesAceitos}
-                          </p>
+                        <div className={styles.description}>
+                          <div className={styles.icon}>
+                            <RiGroupLine />
+                          </div>
+                          <div className={styles.infoBoxDescription}>
+                            <p>
+                              <strong>Avaliadores: </strong>
+                              {subs.convitesAceitos}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ));
-            })
-          ) : (
-            <NoData description="Este evento ainda não tem sessões cadastradas." />
-          )}
-        </div>
+                ));
+              })
+            ) : (
+              <NoData description="Este evento ainda não tem sessões cadastradas." />
+            )}
+          </div>
+        </section>
       </div>
     </div>
   );

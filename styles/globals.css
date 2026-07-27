@@ -1950,7 +1950,7 @@ button[type=submit]:disabled:hover, button:disabled:hover {
 }
 
 .p-button-rounded span {
-  margin-right: 0px;
+  margin-right: -3px;
 }
 
 .p-dropdown-panel .p-component .p-ripple-disabled .p-connected-overlay-enter-done {
