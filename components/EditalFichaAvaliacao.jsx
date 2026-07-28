@@ -170,9 +170,25 @@ const SubgrupoCondicao = ({ subgrupo, onChange, onDelete, availableAttrs, enumVa
 };
 
 // ─── PerfilForm ───────────────────────────────────────────────────────────────
+const TIPOS_LICENCA_DISPONIVEIS = ["MATERNIDADE", "ADOCAO"];
+
 const PerfilForm = ({ initialData, mode, onSave, onClose }) => {
   const [data, setData] = useState(clone(initialData));
   const set = (k, v) => setData((prev) => ({ ...prev, [k]: v }));
+
+  const regras = data.regrasLicencaRetroativa || {};
+  const setRegra = (k, v) =>
+    setData((prev) => ({
+      ...prev,
+      regrasLicencaRetroativa: { ...(prev.regrasLicencaRetroativa || {}), [k]: v },
+    }));
+  const tiposLicencaAtivos = regras.tiposLicenca?.length ? regras.tiposLicenca : TIPOS_LICENCA_DISPONIVEIS;
+  const toggleTipoLicenca = (tipo) => {
+    const next = tiposLicencaAtivos.includes(tipo)
+      ? tiposLicencaAtivos.filter((t) => t !== tipo)
+      : [...tiposLicencaAtivos, tipo];
+    setRegra("tiposLicenca", next);
+  };
 
   return (
     <div className={styles.form}>
@@ -238,6 +254,57 @@ const PerfilForm = ({ initialData, mode, onSave, onClose }) => {
           onChange={(e) => set("notaMaxExtra", Number(e.target.value))}
         />
       </label>
+
+      <div className={styles.subSection}>
+        <h6>Retroatividade por licença (maternidade/adoção)</h6>
+        <p className={styles.hint}>
+          Desloca retroativamente o período avaliado no Lattes para quem teve
+          licença nos últimos anos — ex.: regra da UnB (1 ano retroativo por
+          licença, para licenças nos últimos 5 anos).
+        </p>
+        <label className={styles.checkLabel}>
+          <input
+            type="checkbox"
+            checked={regras.habilitado ?? true}
+            onChange={(e) => setRegra("habilitado", e.target.checked)}
+          />
+          Habilitar deslocamento retroativo por licença
+        </label>
+
+        <label className={styles.field}>
+          <span>Anos retroativos por licença</span>
+          <input
+            type="number"
+            min={0}
+            value={regras.anosPorLicenca ?? 1}
+            onChange={(e) => setRegra("anosPorLicenca", Number(e.target.value))}
+          />
+        </label>
+
+        <label className={styles.field}>
+          <span>Considerar licenças dos últimos N anos</span>
+          <input
+            type="number"
+            min={0}
+            value={regras.janelaAnosRetroativos ?? 5}
+            onChange={(e) => setRegra("janelaAnosRetroativos", Number(e.target.value))}
+          />
+        </label>
+
+        <span className={styles.field}>
+          <span>Tipos de licença considerados</span>
+          {TIPOS_LICENCA_DISPONIVEIS.map((tipo) => (
+            <label key={tipo} className={styles.checkLabel}>
+              <input
+                type="checkbox"
+                checked={tiposLicencaAtivos.includes(tipo)}
+                onChange={() => toggleTipoLicenca(tipo)}
+              />
+              {tipo}
+            </label>
+          ))}
+        </span>
+      </div>
 
       <div className={styles.formActions}>
         <Button className="btn-secondary" onClick={onClose}>
@@ -779,6 +846,11 @@ const EditalFichaAvaliacao = ({ params }) => {
                   <span className={styles.badge} title="Tipo de avaliação">
                     {perfil.tipoAvaliacao === "MANUAL" ? "Manual" : perfil.tipoAvaliacao === "HIBRIDA" ? "Híbrida" : "Automática"}
                   </span>
+                  {(perfil.regrasLicencaRetroativa?.habilitado ?? true) && (
+                    <span className={styles.badge} title="Aplica deslocamento retroativo por licença maternidade/adoção">
+                      retroativo por licença
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
