@@ -35,6 +35,41 @@ $transition-default: all 0.3s ease;
   }
 }
 
+.suporteWhatsapp {
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+  margin-bottom: $gap-3;
+  padding: $gap-2 $gap-3;
+  border-radius: $gap-1;
+  background-color: $success-lighten;
+  border: 1px solid $success-normal;
+  text-decoration: none;
+  transition: opacity 0.3s ease;
+
+  &:hover {
+    opacity: 0.85;
+  }
+
+  svg {
+    width: 32px;
+    height: 32px;
+    color: $success-dark;
+    flex-shrink: 0;
+  }
+
+  p {
+    color: $primary-darken;
+    margin: 0;
+  }
+}
+
+.suporteWhatsappTitulo {
+  font-weight: 700;
+}
+
 .header {
   display: flex;
   align-items: center;

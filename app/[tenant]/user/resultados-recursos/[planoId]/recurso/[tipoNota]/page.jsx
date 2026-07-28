@@ -8,6 +8,7 @@ import {
   RiEyeLine,
   RiRefreshLine,
   RiDeleteBin6Line,
+  RiWhatsappFill,
 } from "@remixicon/react";
 import { Accordion, AccordionTab } from "primereact/accordion";
 import { Toast } from "primereact/toast";
@@ -20,7 +21,7 @@ import FileInput from "@/components/FileInput";
 import Skeleton from "@/components/Skeleton";
 import BlockNoteContent from "@/components/BlockNoteContent";
 import GrupoAvaliacao from "@/components/participacao/GrupoAvaliacao";
-import { getCurrentUserId } from "@/lib/headers";
+import { getCurrentUserId, getCurrentUserNome } from "@/lib/headers";
 import { xmlLattes } from "@/app/api/clientReq";
 import {
   getRecursoDetalhe,
@@ -42,6 +43,39 @@ const LABELS_NOTA = {
 
 const EH_PROJETO_OU_PLANO = (tipoNota) =>
   tipoNota === "projeto" || tipoNota === "plano";
+
+// Suporte do PLIC (não é o contato do tenant) — mesmo número já usado em
+// FluxoInscricaoEdital.jsx, EditarParticipacao.jsx e ConviteAvaliadorClient.jsx.
+// Migrado da listagem de Resultados e Recursos pra cá: aqui dá pra levar o
+// contexto específico do recurso (plano, tipo de nota, título) na mensagem.
+const SUPORTE_PLIC_WHATSAPP = "5561991651494";
+
+const SuporteWhatsapp = ({ nome, cpf, planoId, labelNota, titulo }) => {
+  const linhas = [
+    `Olá! Meu nome é ${nome || "[nome não identificado]"} e preciso de ajuda com um recurso no PLIC.`,
+    `CPF: ${cpf || "[CPF não identificado]"}`,
+    `ID do plano de trabalho: ${planoId}`,
+    `Nota: ${labelNota}`,
+  ];
+  if (titulo) linhas.push(`Título: ${titulo}`);
+
+  return (
+    <a
+      className={styles.suporteWhatsapp}
+      href={`https://wa.me/${SUPORTE_PLIC_WHATSAPP}?text=${encodeURIComponent(
+        linhas.join("\n"),
+      )}`}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <RiWhatsappFill />
+      <div>
+        <p className={styles.suporteWhatsappTitulo}>Precisa de ajuda?</p>
+        <p>Fale com o suporte do PLIC pelo WhatsApp: +55 (61) 99165-1494</p>
+      </div>
+    </a>
+  );
+};
 
 // Mesma lógica de exibição usada na avaliação (avaliador/avaliacoes/projetos/[idProjeto]) —
 // switch pelo tipo de campo do formulário de inscrição.
@@ -469,9 +503,7 @@ const RecursoProjetoPlano = ({
   return (
     <>
       <span className={styles.areaBadge}>
-        <Badge variant="info">
-          {recurso.area?.area ?? "Área não informada"}
-        </Badge>
+        <Badge>{recurso.area?.area ?? "Área não informada"}</Badge>
       </span>
       <h4 className={styles.tituloPlano}>{recurso.titulo}</h4>
 
@@ -1062,6 +1094,14 @@ const Page = ({ params }) => {
             <h6>Nota de {labelNota}</h6>
           </div>
         </div>
+
+        <SuporteWhatsapp
+          nome={getCurrentUserNome()}
+          cpf={recurso?.cpfSolicitante}
+          planoId={params.planoId}
+          labelNota={labelNota}
+          titulo={recurso?.titulo}
+        />
 
         {loading ? (
           <Skeleton />

@@ -1,6 +1,11 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { RiScales3Line, RiUser2Line, RiGroupLine } from "@remixicon/react";
+import {
+  RiScales3Line,
+  RiUser2Line,
+  RiGroupLine,
+  RiCursorLine,
+} from "@remixicon/react";
 import { Card } from "primereact/card";
 import { Toast } from "primereact/toast";
 import Link from "next/link";
@@ -44,6 +49,13 @@ const PlanoCard = ({ plano, tenant, toast }) => {
     notasPreenchidas.length > 0
       ? NOTAS.reduce((soma, { key }) => soma + (plano[key] || 0), 0)
       : null;
+
+  const maximos = plano.notasMaximas ?? {};
+  const notaTotalMaximo = NOTAS.every(
+    ({ slug }) => typeof maximos[slug] === "number",
+  )
+    ? NOTAS.reduce((soma, { slug }) => soma + maximos[slug], 0)
+    : null;
 
   return (
     <Card className={styles.planoCard}>
@@ -98,6 +110,7 @@ const PlanoCard = ({ plano, tenant, toast }) => {
         </div>
 
         <p className={styles.notasHint}>
+          <RiCursorLine />
           Clique na nota para entrar com recurso
         </p>
 
@@ -105,6 +118,7 @@ const PlanoCard = ({ plano, tenant, toast }) => {
           {NOTAS.map(({ key, label, slug }) => {
             const semNota = plano[key] === null || plano[key] === undefined;
             const elegibilidade = plano.recursoElegibilidade?.[slug];
+            const maximo = maximos[slug];
             return (
               <Link
                 key={key}
@@ -128,6 +142,11 @@ const PlanoCard = ({ plano, tenant, toast }) => {
                 <span className={styles.notaMiniValor}>
                   {formatarNota(plano[key]) ?? "—"}
                 </span>
+                {typeof maximo === "number" && (
+                  <span className={styles.notaMiniMaximo}>
+                    de {formatarNota(maximo)}
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -140,9 +159,18 @@ const PlanoCard = ({ plano, tenant, toast }) => {
         >
           <span className={styles.label}>Nota Total</span>
           <span className={styles.valor}>
-            {notaTotal === null
-              ? "Aguardando avaliação"
-              : formatarNota(notaTotal)}
+            {notaTotal === null ? (
+              "Aguardando avaliação"
+            ) : (
+              <>
+                {formatarNota(notaTotal)}
+                {notaTotalMaximo !== null && (
+                  <span className={styles.valorMaximo}>
+                    /{formatarNota(notaTotalMaximo)}
+                  </span>
+                )}
+              </>
+            )}
           </span>
         </div>
       </div>
