@@ -75,7 +75,7 @@ const Menu = ({ onClick, itensMenu, existeEdital, gestor = false }) => {
         <li
           className={`${isActive ? styles.active : ""} ${
             isGroupItem ? styles.groupItem : ""
-          }`}
+          } ${item.highlight ? styles.highlight : ""}`}
         >
           <div className={styles.icon}>{Icon && <Icon />}</div>
           <p>{item.title}</p>

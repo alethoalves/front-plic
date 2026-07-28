@@ -14,6 +14,8 @@ import {
   editarAvaliadorEvento,
 } from "@/app/api/client/avaliadoresEvento";
 import { FilterMatchMode } from "primereact/api";
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
 import styles from "./page.module.scss";
 
 const Page = ({ params }) => {
@@ -44,8 +46,13 @@ const Page = ({ params }) => {
   });
 
   const toast = useRef(null);
+  const dataTableRef = useRef(null);
 
   const getVinculacao = (avaliador) => {
+    if (avaliador.vinculoAtivo === false) {
+      return "Vínculo removido";
+    }
+
     if (avaliador.tenant && avaliador.tenant.sigla) {
       return avaliador.tenant.sigla;
     }
@@ -105,6 +112,8 @@ const Page = ({ params }) => {
 
   // Função para abrir o diálogo de edição de vinculação
   const abrirDialogVinculacao = (rowData) => {
+    if (rowData.vinculoAtivo === false) return;
+
     setAvaliadorSelecionado(rowData);
 
     // Configurar estado inicial baseado na vinculação atual
@@ -223,6 +232,10 @@ const Page = ({ params }) => {
 
   // Template para a coluna de vinculação com clique e ícone de edição
   const vinculacaoBodyTemplate = (rowData) => {
+    if (rowData.vinculoAtivo === false) {
+      return <span>{getVinculacao(rowData)}</span>;
+    }
+
     return (
       <div
         className="cursor-pointer text-primary hover:underline flex align-items-center gap-2"
@@ -279,6 +292,10 @@ const Page = ({ params }) => {
   };
 
   const rootBodyTemplate = (rowData) => {
+    if (rowData.vinculoAtivo === false) {
+      return "—";
+    }
+
     return (
       <Dropdown
         value={rowData.avaliadorRoot}
@@ -351,6 +368,34 @@ const Page = ({ params }) => {
     );
   };
 
+  const exportExcel = async () => {
+    const dadosParaExportar =
+      dataTableRef.current?.getFilteredValue?.() ?? avaliadores;
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Avaliadores");
+    worksheet.columns = [
+      { header: "Nome", key: "nome", width: 30 },
+      { header: "CPF", key: "cpf", width: 18 },
+      { header: "E-mail", key: "email", width: 30 },
+      { header: "Vinculação", key: "vinculacao", width: 30 },
+      { header: "Avaliador Root", key: "avaliadorRoot", width: 15 },
+      { header: "Avaliações Realizadas", key: "qntAvaliacoes", width: 20 },
+    ];
+    dadosParaExportar.forEach((avaliador) => {
+      worksheet.addRow({
+        nome: avaliador.user.nome,
+        cpf: avaliador.user.cpf,
+        email: emailBodyTemplate(avaliador),
+        vinculacao: getVinculacao(avaliador),
+        avaliadorRoot: avaliador.avaliadorRoot ? "Sim" : "Não",
+        qntAvaliacoes: avaliador.qntAvaliacoes ?? 0,
+      });
+    });
+    const buffer = await workbook.xlsx.writeBuffer();
+    saveAs(new Blob([buffer]), `Avaliadores-${params.eventoSlug}.xlsx`);
+  };
+
   const header = (
     <div className="flex justify-content-between align-items-center">
       <InputText
@@ -358,6 +403,12 @@ const Page = ({ params }) => {
         value={globalFilterValue}
         onChange={onGlobalFilterChange}
         placeholder="Buscar..."
+      />
+      <Button
+        icon="pi pi-file-excel"
+        label="Exportar"
+        onClick={exportExcel}
+        className="ml-2"
       />
     </div>
   );
@@ -460,6 +511,7 @@ const Page = ({ params }) => {
 
       <div className="card">
         <DataTable
+          ref={dataTableRef}
           value={avaliadores}
           paginator
           filterDisplay="row"
@@ -509,6 +561,11 @@ const Page = ({ params }) => {
             filterField="avaliadorRoot"
             showFilterMenu={false}
             filterElement={rootFilterTemplate}
+          />
+          <Column
+            field="qntAvaliacoes"
+            header="Avaliações Realizadas"
+            sortable
           />
         </DataTable>
       </div>

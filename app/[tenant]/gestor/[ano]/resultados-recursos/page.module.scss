@@ -1,0 +1,100 @@
+@import "./styles/partials/colors";
+@import "./styles/partials/layout";
+@import "./styles/partials/spacing";
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-2;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $gap-2;
+  padding: $gap-2;
+  border-radius: $gap-1;
+  background-color: $white-dark;
+  border: 1px solid $white-light;
+  transition: ease 0.3s;
+
+  &:hover {
+    box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+  }
+
+  h6 {
+    margin-bottom: 2px;
+  }
+
+  p {
+    color: $gray-500;
+  }
+}
+
+.itemInfo {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+
+  .icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: $gap-1;
+    background-color: $warning-lighten;
+    color: $warning-darken;
+
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+.toggles {
+  display: flex;
+  align-items: center;
+  gap: $gap-3;
+}
+
+.toggleGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.toggleGroupLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: $gray-500;
+}
+
+.toggleBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: $gap-1 $gap-2;
+  border-radius: $gap-1;
+  color: $gray-500;
+  font-size: 0.9rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: color 0.15s, background-color 0.15s;
+
+  &:hover {
+    background-color: $white-normal;
+  }
+
+  &.toggleAtivo {
+    color: $warning-darken;
+    background-color: $warning-lighten;
+  }
+}

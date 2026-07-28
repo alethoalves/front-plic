@@ -20,6 +20,7 @@ const emptyPerfil = () => ({
   tipoParticipacao: "orientador",
   aplicabilidade: "geral",
   notaMax: 0,
+  notaMaxExtra: 0,
   grupos: [],
 });
 
@@ -226,6 +227,15 @@ const PerfilForm = ({ initialData, mode, onSave, onClose }) => {
           type="number"
           value={data.notaMax}
           onChange={(e) => set("notaMax", Number(e.target.value))}
+        />
+      </label>
+
+      <label className={styles.field}>
+        <span>Nota máxima de notas extras</span>
+        <input
+          type="number"
+          value={data.notaMaxExtra || 0}
+          onChange={(e) => set("notaMaxExtra", Number(e.target.value))}
         />
       </label>
 
@@ -763,6 +773,9 @@ const EditalFichaAvaliacao = ({ params }) => {
                   <span className={styles.badge}>{perfil.tipoParticipacao}</span>
                   <span className={styles.badge}>{perfil.aplicabilidade}</span>
                   <span className={styles.badgePoints}>{perfil.notaMax} pts máx.</span>
+                  <span className={styles.badgePoints} title="Nota máxima de notas extras">
+                    +{perfil.notaMaxExtra || 0} extra
+                  </span>
                   <span className={styles.badge} title="Tipo de avaliação">
                     {perfil.tipoAvaliacao === "MANUAL" ? "Manual" : perfil.tipoAvaliacao === "HIBRIDA" ? "Híbrida" : "Automática"}
                   </span>

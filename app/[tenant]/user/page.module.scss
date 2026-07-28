@@ -360,6 +360,19 @@
         padding: $gap-2;
         width: 100%;
     }
+    &.highlight{
+        background-color: $warning-lighten;
+        border: 1px solid $warning-light;
+        .icon{
+            background-color: $warning-dark;
+            svg{
+                color: $warning-lighten;
+            }
+        }
+        h6{
+            color: $warning-darken;
+        }
+    }
 }
 .inscricaoEvento{
     display: flex;

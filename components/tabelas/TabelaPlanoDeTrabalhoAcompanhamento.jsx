@@ -21,6 +21,9 @@ import { InputNumber } from "primereact/inputnumber";
 import { Dialog } from "primereact/dialog";
 import { Tag } from "primereact/tag";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import { RiFileExcelLine } from "@remixicon/react";
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
 
 // COMPONENTES
 import Button from "@/components/Button";
@@ -83,6 +86,7 @@ FilterService.register("nota_intervalo", (value, filters) => {
 // do botão "Limpar Filtros", pra não duplicar o objeto em dois lugares.
 const getInitialFilters = () => ({
   global: { value: "", matchMode: FilterMatchMode.CONTAINS },
+  "inscricao.id": { value: "", matchMode: FilterMatchMode.CONTAINS },
   id: { value: "", matchMode: FilterMatchMode.CONTAINS },
   "inscricaoProjeto.statusAvaliacao": {
     value: [],
@@ -444,6 +448,68 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
     setSelectedItems([]); // consistente com onFilter, que já limpa a seleção a cada mudança de filtro
   };
 
+  // Exporta SEMPRE todos os planos carregados (itens), independente dos
+  // filtros/busca aplicados na tabela — mesmas colunas exibidas na tela.
+  const exportarExcel = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Planos de Trabalho");
+
+    worksheet.columns = [
+      { header: "ID_Inscrição", key: "inscricaoId", width: 12 },
+      { header: "ID_Plano", key: "id", width: 12 },
+      { header: "Status Avaliação", key: "statusAvaliacao", width: 20 },
+      { header: "Bloqueio", key: "bloqueio", width: 16 },
+      { header: "Status Classificação do Plano", key: "statusClassificacao", width: 22 },
+      { header: "Edital", key: "edital", width: 25 },
+      { header: "Nome do Projeto", key: "projetoTitulo", width: 30 },
+      { header: "Título do Plano de Trabalho", key: "titulo", width: 30 },
+      { header: "Área do Projeto", key: "areaProjeto", width: 20 },
+      { header: "Área do Plano", key: "areaPlano", width: 20 },
+      { header: "Orientador", key: "orientadores", width: 30 },
+      { header: "Aluno", key: "alunos", width: 30 },
+      { header: "Nota Total Plano de Trabalho", key: "notaTotal", width: 18 },
+      { header: "Nota Projeto", key: "notaProjeto", width: 14 },
+      { header: "Nota Plano", key: "notaPlano", width: 14 },
+      { header: "Nota Orientador", key: "notaOrientador", width: 14 },
+      { header: "Nota Aluno", key: "notaAluno", width: 14 },
+      { header: "Qtd. Fichas", key: "quantidadeFichas", width: 12 },
+      { header: "Qtd. Avaliadores", key: "quantidadeAvaliadores", width: 14 },
+      { header: "Diferença de Notas", key: "diferencaNotas", width: 16 },
+      { header: "Avaliadores", key: "avaliadoresString", width: 40 },
+    ];
+
+    itens.forEach((item) => {
+      worksheet.addRow({
+        inscricaoId: item.inscricao?.id,
+        id: item.id,
+        statusAvaliacao: formatStatusText(item.inscricaoProjeto?.statusAvaliacao),
+        bloqueio: item.inscricaoProjeto?.bloqueadoAvaliacao
+          ? "Bloqueado"
+          : "Não bloqueado",
+        statusClassificacao: formatStatusText(item.statusClassificacao),
+        edital: item.inscricao?.edital?.titulo || "-",
+        projetoTitulo: item.inscricaoProjeto?.projeto?.titulo || "-",
+        titulo: item.titulo,
+        areaProjeto: item.inscricaoProjeto?.projeto?.area?.area || "-",
+        areaPlano: item.area?.area || "-",
+        orientadores: item.orientadoresString,
+        alunos: item.alunosString,
+        notaTotal: item.notaTotal,
+        notaProjeto: item.notaProjeto,
+        notaPlano: item.notaPlano,
+        notaOrientador: item.notaOrientador,
+        notaAluno: item.notaAluno,
+        quantidadeFichas: item.quantidadeFichas,
+        quantidadeAvaliadores: item.quantidadeAvaliadores,
+        diferencaNotas: item.diferencaNotas,
+        avaliadoresString: item.avaliadoresString,
+      });
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    saveAs(new Blob([buffer]), "PlanosDeTrabalho.xlsx");
+  };
+
   const renderHeader = () => {
     return (
       <div className="flex flex-wrap justify-content-between align-items-center gap-2">
@@ -460,6 +526,11 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
           >
             Importar notas de participações
           </Button>
+          <RiFileExcelLine
+            className={`${styles.icon} cursor-pointer`}
+            onClick={exportarExcel}
+            title="Baixar em Excel"
+          />
         </div>
         <InputText
           className="w-100"
@@ -549,6 +620,15 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
               selectionMode="multiple"
               headerStyle={{ width: "3rem" }}
               frozen
+            />
+            <Column
+              field="inscricao.id"
+              header="ID_Inscrição"
+              sortable
+              filter
+              filterPlaceholder="Filtrar por id"
+              filterField="inscricao.id"
+              body={(rowData) => rowData.inscricao?.id}
             />
             <Column
               field="id"

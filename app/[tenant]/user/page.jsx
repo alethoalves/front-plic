@@ -11,6 +11,7 @@ import {
   RiHistoryLine,
   RiListCheck2,
   RiMicroscopeLine,
+  RiScales3Line,
 } from "@remixicon/react";
 import styles from "./page.module.scss";
 import { useEffect, useState } from "react";
@@ -108,6 +109,20 @@ const Page = ({ params }) => {
               </div>
             </Link>
           )}
+          <Link href={`/${params.tenant}/user/resultados-recursos`}>
+            <div className={`${styles.infoBox} ${styles.highlight}`}>
+              <div className={styles.icon}>
+                <RiScales3Line />
+              </div>
+              <div className={styles.infoBoxContent}>
+                <h6>Resultados e Recursos</h6>
+                <p>
+                  Confira o resultado da avaliação e, se necessário, entre
+                  com recurso.
+                </p>
+              </div>
+            </div>
+          </Link>
           <Link href={`/${params.tenant}/user/participacoes`}>
             <div className={styles.infoBox}>
               <div className={styles.icon}>

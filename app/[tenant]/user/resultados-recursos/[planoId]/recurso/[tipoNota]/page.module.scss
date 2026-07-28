@@ -1,0 +1,531 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+$border-radius-sm: 8px;
+$transition-default: all 0.3s ease;
+
+.navContent {
+  min-height: 100vh;
+}
+
+.content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: $gap-2;
+}
+
+.voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: $primary-darken;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  margin-bottom: $gap-3;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+  margin-bottom: $gap-3;
+  padding-bottom: $gap-3;
+  border-bottom: 1px solid $gray-50;
+
+  .headerIcon {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    background: $primary-lighten;
+    color: $primary-dark;
+    border-radius: $border-radius-sm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+      width: 22px;
+      height: 22px;
+    }
+  }
+
+  .headerContent {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .eyebrow {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: $gray-400;
+    margin-bottom: 2px;
+  }
+
+  .headerContent h6 {
+    margin: 0;
+    color: $gray-800;
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+}
+
+.areaBadge {
+  display: inline-flex;
+  margin-bottom: $gap-1;
+}
+
+.tituloPlano {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: $gray-800;
+  margin: 0 0 $gap-3 0;
+}
+
+.resumoNotas {
+  display: flex;
+  border: 1px solid $gray-50;
+  border-radius: $border-radius-sm;
+  margin-bottom: $gap-3;
+  overflow: hidden;
+}
+
+.resumoItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: $gap-2;
+
+  &:not(:last-child) {
+    border-right: 1px solid $gray-50;
+  }
+}
+
+.resumoLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: $gray-500;
+}
+
+.resumoValor {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: $gray-800;
+}
+
+.resumoTotal {
+  background: $primary-lighten;
+
+  .resumoLabel {
+    color: $primary-dark;
+  }
+
+  .resumoValor {
+    color: $primary-darken;
+    font-size: 1.25rem;
+  }
+}
+
+.secao {
+  margin-bottom: $gap-3;
+  padding-bottom: $gap-3;
+  border-bottom: 1px solid $gray-50;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.secaoHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $gap-2;
+  margin-bottom: $gap-2;
+  flex-wrap: wrap;
+
+  :global(.button) {
+    width: auto;
+    height: auto;
+    padding: 6px $gap-2;
+
+    svg {
+      width: 16px;
+    }
+  }
+}
+
+.secaoTitulo {
+  font-size: 1rem;
+  font-weight: 600;
+  color: $gray-800;
+  margin: 0 0 $gap-2 0;
+}
+
+.avisoManual {
+  padding: $gap-2;
+  border-radius: $gap-1;
+  background-color: $white-dark;
+  border: 1px dashed $white-normal;
+  color: $gray-600;
+  font-size: 0.9375rem;
+}
+
+.notasHint {
+  font-size: 0.8125rem;
+  color: $gray-500;
+  margin: $gap-1 0;
+}
+
+.contadorCaracteres {
+  font-size: 0.8125rem;
+  color: $gray-500;
+  text-align: right;
+  margin: 4px 0 0 0;
+
+  &.abaixoDoMinimo {
+    color: $error-dark;
+  }
+}
+
+.blocoAvaliador {
+  margin-bottom: $gap-3;
+}
+
+.itemRecurso {
+  padding: $gap-2;
+  border-radius: $gap-1;
+  background-color: $white-dark;
+  border: 1px solid $white-normal;
+  margin-bottom: $gap-2;
+}
+
+.itemRecursoHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $gap-1;
+}
+
+.itemRecursoLabel {
+  font-weight: 600;
+  color: $gray-800;
+  font-size: 0.9375rem;
+}
+
+.notasContainer {
+  display: flex;
+  gap: $gap-2;
+  margin-bottom: $gap-1;
+}
+
+.notaBadge {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: $gap-1 $gap-2;
+  border-radius: $gap-1;
+}
+
+.notaBadgeLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 4px;
+}
+
+.notaBadgeValor {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.notaAtribuida {
+  background-color: $warning-lighten;
+
+  .notaBadgeLabel,
+  .notaBadgeValor {
+    color: $warning-darken;
+  }
+}
+
+.notaMaxima {
+  background-color: $white-darken;
+
+  .notaBadgeLabel,
+  .notaBadgeValor {
+    color: $primary-dark;
+  }
+}
+
+.comentarioAvaliador {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $warning-darken;
+  background-color: $warning-lighten;
+  border-left: 3px solid $warning-dark;
+  border-radius: $gap-1;
+  padding: $gap-1 $gap-2;
+  margin: 0 0 $gap-1 0;
+}
+
+.textarea {
+  width: 100%;
+  border: 1px solid $white-normal;
+  border-radius: $gap-1;
+  padding: $gap-1 $gap-2;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  resize: vertical;
+
+  &:focus {
+    outline: none;
+    border-color: $primary-normal;
+  }
+}
+
+.recursoEnviado {
+  padding: $gap-2;
+  border-radius: $gap-1;
+  background-color: $white-light;
+border: 1px solid $success-normal;
+  .recursoEnviadoLabel {
+    font-weight: 600;
+    color: $success-dark;
+    margin: 0 0 4px 0;
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  p {
+    margin: 0;
+    color: $gray-700;
+  }
+}
+
+.acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: $gap-2;
+  margin-top: $gap-2;
+
+  :global(.button) {
+    width: auto;
+    height: auto;
+    padding: $gap-1 $gap-3;
+    min-width: 160px;
+  }
+}
+
+.link {
+  color: $primary-normal;
+}
+
+.emptyValue {
+  color: $gray-400;
+  font-style: italic;
+}
+
+// ─── Modal de simulação (recalcular Lattes) ─────────────────────────────────
+.simulacaoModal {
+  h5 {
+    margin: 0 0 $gap-2 0;
+  }
+}
+
+.simulacaoNotas {
+  display: flex;
+  gap: $gap-3;
+  margin-bottom: $gap-2;
+
+  > div {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .simulacaoLabel {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: $gray-500;
+    font-weight: 600;
+  }
+
+  .simulacaoValor {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: $primary-dark;
+  }
+}
+
+.avisoBloqueio {
+  color: $error-dark;
+  background-color: $error-lighten;
+  padding: $gap-2;
+  border-radius: $gap-1;
+}
+
+.notaExtraItem {
+  color: $gray-700;
+  font-size: 0.9375rem;
+  margin: 0 0 4px 0;
+}
+
+// ─── "Itens não contabilizados" (portado de EditarParticipacao.module.scss) ─
+.grupoAvaliacao {
+  margin-bottom: $gap-1;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.grupoPrincipal {
+  border: 1px solid $gray-50;
+  border-radius: $border-radius-sm;
+  background: $white-light;
+  overflow: hidden;
+
+  > .grupoHeader {
+    background: $gray-25;
+    padding: $gap-2 $gap-3;
+    border-bottom: 1px solid $gray-50;
+  }
+}
+
+.grupoSecundario {
+  > .grupoHeader {
+    padding: $gap-1;
+    background: transparent;
+    border-bottom: none;
+  }
+}
+
+.grupoTerciario {
+  margin-left: $gap-2;
+  padding-left: $gap-2;
+  border-left: 1px dashed $gray-200;
+
+  > .grupoHeader {
+    padding: $gap-1;
+  }
+}
+
+.grupoHeader {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-1;
+  transition: $transition-default;
+
+  &.clickable {
+    cursor: pointer;
+
+    &:hover {
+      background: rgba($primary-normal, 0.02);
+    }
+  }
+}
+
+.grupoHeaderTop {
+  display: flex;
+  align-items: flex-start;
+  gap: $gap-1;
+
+  .expandIcon {
+    color: $gray-500;
+    font-size: 0.75rem;
+    margin-top: 3px;
+    flex-shrink: 0;
+  }
+}
+
+.grupoLabel {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: $gray-700;
+  margin: 0;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.grupoHeaderBottom {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.itensResposta {
+  padding: $gap-1;
+  background: $gray-25;
+  border-radius: $border-radius-sm;
+}
+
+.itemResposta {
+  background: $white-light;
+  border-radius: $border-radius-sm;
+  padding: $gap-2;
+  margin-bottom: $gap-1;
+  border: 1px solid $gray-50;
+}
+
+.itemHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $gap-1;
+  padding-bottom: $gap-1;
+  border-bottom: 1px solid $gray-50;
+
+  .itemIndex {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: $gray-500;
+  }
+}
+
+.itemCampos {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-1;
+}
+
+.campoItem {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+
+  .campoLabel {
+    font-weight: 500;
+    color: $gray-600;
+    margin-bottom: 1px;
+  }
+
+  .campoValor {
+    color: $gray-800;
+    word-break: break-word;
+  }
+}
+
+.subgrupos {
+  padding: 0 $gap-1 $gap-1;
+}

@@ -34,16 +34,28 @@ export const salvarFichaAvaliacaoManual = async (tenantSlug, idParticipacao, fic
   }
 };
 
-export const gerarFichaAvaliacaoParticipacao = async (tenantSlug, idParticipacao) => {
+export const gerarFichaAvaliacaoParticipacao = async (tenantSlug, idParticipacao, bloquearSeInferior = false) => {
     try {
       const headers = getAuthHeadersClient();
     if (!headers) return false;
-    const response = await req.post(`/private/${tenantSlug}/gerar-ficha-avaliacao-participacao/${idParticipacao}`, {}, {headers});
+    const response = await req.post(`/private/${tenantSlug}/gerar-ficha-avaliacao-participacao/${idParticipacao}`, { bloquearSeInferior }, {headers});
     return response.data;
 
 
     } catch (error) {
       console.error("Erro ao criar CV Lattes:", error);
+      throw error;
+    }
+  };
+
+export const simularFichaAvaliacaoParticipacao = async (tenantSlug, idParticipacao) => {
+    try {
+      const headers = getAuthHeadersClient();
+      if (!headers) return false;
+      const response = await req.get(`/private/${tenantSlug}/simular-ficha-avaliacao-participacao/${idParticipacao}`, { headers });
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao simular ficha de avaliação:", error);
       throw error;
     }
   };

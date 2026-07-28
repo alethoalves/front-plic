@@ -1,0 +1,294 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+$card-border-radius: 16px;
+$transition-default: all 0.25s ease;
+$shadow-card: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.05);
+$shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+
+.navContent {
+  min-height: 100vh;
+}
+
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: $gap-3 $gap-2;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+  margin-bottom: $gap-4;
+
+  .headerIcon {
+    background: linear-gradient(135deg, $warning-dark 0%, $warning-darken 100%);
+    color: $warning-lighten;
+    padding: $gap-2;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+      width: 28px;
+      height: 28px;
+    }
+  }
+
+  .pageTitle {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: $gray-800;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+  }
+
+  .pageDescription {
+    font-size: 0.9375rem;
+    color: $gray-600;
+    margin: 0;
+  }
+}
+
+// Lista de planos — sempre em coluna, um card embaixo do outro
+.planosGrid {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-3;
+
+  @include responsive(s) {
+    gap: $gap-2;
+  }
+}
+
+.planoCard {
+  border: 1px solid $gray-50 !important;
+  border-radius: $card-border-radius !important;
+  box-shadow: $shadow-card !important;
+  background: $white-light !important;
+
+  :global(.p-card-body) {
+    padding: 0 !important;
+  }
+
+  :global(.p-card-content) {
+    padding: 0 !important;
+  }
+}
+
+.cardContent {
+  padding: $gap-3;
+  display: flex;
+  flex-direction: column;
+  gap: $gap-2;
+}
+
+.editalInfo {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: $gray-500;
+  margin: 0;
+}
+
+.areaBadge {
+  display: inline-flex;
+  align-self: flex-start;
+}
+
+.planoTitulo {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: $gray-800;
+  margin: 0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.metaItem {
+  display: flex;
+  align-items: flex-start;
+  gap: $gap-1;
+}
+
+.metaIcon {
+  color: $primary-darken;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.metaContent {
+  flex: 1;
+  min-width: 0;
+
+  .metaLabel {
+    display: block;
+    color: $gray-500;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+
+  .metaValue {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+}
+
+.personItem {
+  color: $gray-700;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+// Aviso — cada nota é clicável e leva ao recurso daquela nota
+.notasHint {
+  font-size: 0.75rem;
+  color: $gray-500;
+  margin: $gap-1 0 0 0;
+}
+
+// Notas — grid de miniCards, 4 no desktop, 2 no mobile
+.notasGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: $gap-1;
+
+  @include responsive(xs) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.notaMiniCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: $gap-1;
+  border-radius: $gap-1;
+  background-color: $white-dark;
+  border: 1px solid $white-normal;
+  text-align: center;
+  cursor: pointer;
+  transition: $transition-default;
+
+  &:hover {
+    background-color: $primary-lighten;
+    border-color: $primary-normal;
+    transform: translateY(-2px);
+    box-shadow: $shadow-card;
+  }
+
+  .notaMiniLabel {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    font-weight: 600;
+    color: $gray-500;
+  }
+
+  .notaMiniValor {
+    font-size: 1.0625rem;
+    font-weight: 700;
+    color: $gray-800;
+  }
+
+  &.semNota .notaMiniValor {
+    color: $gray-300;
+    font-weight: 600;
+  }
+}
+
+// Nota total — card em destaque ao final
+.notaTotalCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $gap-2;
+  border-radius: $gap-1;
+  margin-top: 4px;
+  
+
+  .label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+    color: $primary-darken;
+  }
+
+  .valor {
+    font-family: var(--font-kanit);
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: $primary-dark;
+    line-height: 1;
+  }
+
+  &.semAvaliacao {
+    background: $white-dark;
+    border-color: $white-normal;
+
+    .label {
+      color: $gray-500;
+    }
+
+    .valor {
+      font-size: 0.9375rem;
+      color: $gray-500;
+      font-family: inherit;
+    }
+  }
+}
+
+// Estado vazio
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: $gap-1;
+  padding: $gap-6 $gap-3;
+  border-radius: $card-border-radius;
+  background-color: $white-dark;
+  border: 1px dashed $white-normal;
+
+  .emptyIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, $warning-dark 0%, $warning-darken 100%);
+    color: $warning-lighten;
+    margin-bottom: $gap-1;
+
+    svg {
+      width: 28px;
+      height: 28px;
+    }
+  }
+
+  h6 {
+    color: $gray-800;
+    margin: 0;
+  }
+
+  p {
+    color: $gray-600;
+    max-width: 420px;
+    margin: 0;
+  }
+}

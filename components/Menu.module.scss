@@ -62,13 +62,41 @@
     li.active {
         background-color: $white-darken;
     }
-    
+
     .active,
     li:hover {
         &::before {
             background-color: $primary-dark;
             border-top: 1px solid $primary-dark;
             border-bottom: 1px solid $primary-dark;
+        }
+    }
+
+    /* Item de destaque (ex: Resultados e Recursos) — recurso opcional,
+       controlado pelo gestor, então merece se diferenciar visualmente
+       dos demais itens do menu, sem quebrar a identidade do restante */
+    li.highlight {
+        color: $warning-darken;
+
+        .icon {
+            color: $warning-darken;
+        }
+
+        &::before {
+            background-color: $warning-normal;
+            border-top: 1px solid $warning-normal;
+            border-bottom: 1px solid $warning-normal;
+        }
+
+        &:hover,
+        &.active {
+            background-color: $warning-lighten;
+
+            &::before {
+                background-color: $warning-dark;
+                border-top: 1px solid $warning-dark;
+                border-bottom: 1px solid $warning-dark;
+            }
         }
     }
 
@@ -118,10 +146,13 @@
             margin: 4px 0 4px 0;
             padding: 0;
             list-style: none;
-            
+
             li {
+                padding: $gap-1 $gap-2;
+
                 p{
                     font-weight: 500;
+                    font-size: 0.8125rem;
                 }
                 &::before {
                     left: $gap-4; /* Ajusta a posição da borda para itens aninhados */
@@ -145,6 +176,26 @@
             border-bottom: 1px solid $primary-dark;
         }
     }
+
+            /* Variante warning do item de grupo (ex: Resultados e Recursos) */
+            li.highlight {
+                color: $warning-darken;
+
+                &::before {
+                    background-color: $warning-normal;
+                    border-color: $warning-normal;
+                }
+
+                &:hover,
+                &.active {
+                    background-color: $warning-lighten;
+
+                    &::before {
+                        background-color: $warning-dark;
+                        border-color: $warning-dark;
+                    }
+                }
+            }
         }
     }
 
