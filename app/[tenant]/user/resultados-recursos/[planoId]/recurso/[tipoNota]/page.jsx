@@ -21,6 +21,7 @@ import FileInput from "@/components/FileInput";
 import Skeleton from "@/components/Skeleton";
 import BlockNoteContent from "@/components/BlockNoteContent";
 import GrupoAvaliacao from "@/components/participacao/GrupoAvaliacao";
+import GanttChart from "@/components/GanttChart";
 import { getCurrentUserId, getCurrentUserNome } from "@/lib/headers";
 import { xmlLattes } from "@/app/api/clientReq";
 import {
@@ -507,7 +508,7 @@ const RecursoProjetoPlano = ({
       </span>
       <h4 className={styles.tituloPlano}>{recurso.titulo}</h4>
 
-      {recurso.conteudo?.length > 0 && (
+      {(recurso.conteudo?.length > 0 || recurso.cronograma?.length > 0) && (
         <div className={styles.secao}>
           <h6 className={styles.secaoTitulo}>
             Conteúdo do {LABELS_NOTA[tipoNota]}
@@ -518,6 +519,11 @@ const RecursoProjetoPlano = ({
                 {renderRespostaValor(item)}
               </AccordionTab>
             ))}
+            {recurso.cronograma?.length > 0 && (
+              <AccordionTab header="Cronograma">
+                <GanttChart cronograma={recurso.cronograma} />
+              </AccordionTab>
+            )}
           </Accordion>
         </div>
       )}
