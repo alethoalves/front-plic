@@ -11,6 +11,7 @@ import {
   RiWhatsappFill,
 } from "@remixicon/react";
 import { Accordion, AccordionTab } from "primereact/accordion";
+import { Timeline } from "primereact/timeline";
 import { Toast } from "primereact/toast";
 
 import styles from "./page.module.scss";
@@ -21,7 +22,7 @@ import FileInput from "@/components/FileInput";
 import Skeleton from "@/components/Skeleton";
 import BlockNoteContent from "@/components/BlockNoteContent";
 import GrupoAvaliacao from "@/components/participacao/GrupoAvaliacao";
-import GanttChart from "@/components/GanttChart";
+import { parseDateBR } from "@/lib/formatarDatas";
 import { getCurrentUserId, getCurrentUserNome } from "@/lib/headers";
 import { xmlLattes } from "@/app/api/clientReq";
 import {
@@ -414,6 +415,17 @@ const RecursoProjetoPlano = ({
     }))
     .filter(({ itens }) => itens.length > 0);
 
+  // Mesma transformação usada na ficha de avaliação do avaliador
+  // (avaliador/avaliacoes/projetos/[idProjeto]/page.jsx) pra alimentar o
+  // Timeline do PrimeReact — concatena início/fim num único texto oposto.
+  const cronogramaEvents = [...(recurso.cronograma || [])]
+    .sort((a, b) => parseDateBR(a.inicio) - parseDateBR(b.inicio))
+    .map((item) => ({
+      status: item.atividade,
+      date: `${item.inicio} – ${item.fim}`,
+      icon: "pi pi-calendar",
+    }));
+
   const handleEnviarItem = async (chave) => {
     const texto = (respostas[chave] || "").trim();
     if (texto.length < JUSTIFICATIVA_MIN) {
@@ -521,7 +533,13 @@ const RecursoProjetoPlano = ({
             ))}
             {recurso.cronograma?.length > 0 && (
               <AccordionTab header="Cronograma">
-                <GanttChart cronograma={recurso.cronograma} />
+                <div className="card">
+                  <Timeline
+                    value={cronogramaEvents}
+                    opposite={(item) => <small>{item.date}</small>}
+                    content={(item) => <span>{item.status}</span>}
+                  />
+                </div>
               </AccordionTab>
             )}
           </Accordion>
