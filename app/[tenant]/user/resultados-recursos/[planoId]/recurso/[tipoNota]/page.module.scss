@@ -3,7 +3,10 @@
 @import "/styles/partials/spacing";
 
 $border-radius-sm: 8px;
+$border-radius-md: 12px;
 $transition-default: all 0.3s ease;
+$shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+$shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
 
 .navContent {
   min-height: 100vh;
@@ -563,4 +566,395 @@ border: 1px solid $success-normal;
 
 .subgrupos {
   padding: 0 $gap-1 $gap-1;
+}
+
+// ─── Guia passo a passo + vídeos tutoriais do Lattes (portado de
+// EditarParticipacao.module.scss, só pra aluno) ──────────────────────────────
+.updateInfo {
+  display: flex;
+  align-items: center;
+  gap: $gap-1;
+  padding: $gap-1 $gap-2;
+  background: $gray-50;
+  border-radius: $border-radius-sm;
+  font-size: 0.75rem;
+  color: $gray-600;
+  margin-bottom: $gap-2;
+
+  svg {
+    color: $success-normal;
+    width: 22px;
+  }
+}
+
+.guideCard {
+  margin-top: $gap-3;
+  border: 1px solid $gray-50;
+  border-radius: $border-radius-md;
+  box-shadow: $shadow-sm;
+  transition: $transition-default;
+
+  &:hover {
+    box-shadow: $shadow-md;
+  }
+
+  :global(.p-card-body) {
+    padding: $gap-3;
+  }
+}
+
+.guideHeader {
+  margin-bottom: $gap-3;
+  padding-bottom: $gap-2;
+  border-bottom: 2px solid $gray-50;
+
+  h4 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: $gray-600;
+    margin: 0 0 $gap-1 0;
+  }
+
+  .guideSubtitle {
+    font-size: 0.875rem;
+    color: $gray-600;
+    margin: 0;
+  }
+}
+
+.stepsList {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-3;
+}
+
+.stepItem {
+  display: flex;
+  gap: $gap-3;
+  padding: $gap-2;
+  background: $white-light;
+  border-radius: $border-radius-sm;
+  transition: $transition-default;
+
+  &:hover {
+    background: $gray-25;
+  }
+}
+
+.stepNumber {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  background: $primary-normal;
+  color: white;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba($primary-normal, 0.3);
+}
+
+.stepContent {
+  flex: 1;
+
+  p {
+    margin: 0 0 $gap-2 0;
+    color: $gray-600;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .stepLink {
+    display: flex;
+    align-items: center;
+    gap: $gap-1;
+    color: $primary-normal;
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: $transition-default;
+
+    svg {
+      width: 20px;
+    }
+
+    &:hover {
+      color: $primary-darken;
+    }
+  }
+
+  .stepLogo {
+    position: relative;
+    width: 30px;
+    height: 30px;
+    margin-right: $gap-1;
+
+    @include responsive(xs) {
+      display: none;
+    }
+
+    img {
+      object-fit: contain;
+      object-position: center center;
+    }
+  }
+
+  .stepActions {
+    display: flex;
+    align-items: center;
+    gap: $gap-2;
+    flex-wrap: wrap;
+
+    .stepSeparator {
+      color: $gray-400;
+      font-size: 0.75rem;
+    }
+  }
+
+  .stepImage {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    height: 390px;
+    margin-top: $gap-2;
+    border: 1px solid $gray-50;
+    border-radius: $border-radius-sm;
+    overflow: hidden;
+    background: $gray-25;
+
+    img {
+      object-fit: contain;
+      object-position: center;
+    }
+  }
+
+  .fileFormatBadge {
+    display: inline-block;
+    padding: 4px 12px;
+    background: linear-gradient(135deg, $primary-normal 0%, $primary-darken 100%);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 20px;
+    margin-top: $gap-2;
+  }
+}
+
+@media (max-width: 768px) {
+  .stepItem {
+    flex-direction: column;
+  }
+
+  .stepNumber {
+    align-self: flex-start;
+  }
+
+  .stepContent {
+    .stepImage {
+      max-width: 100%;
+      height: 160px;
+    }
+  }
+}
+
+.tutoriaisCard {
+  margin-top: $gap-3;
+  border: 1px solid $gray-50;
+  border-radius: $border-radius-md;
+  box-shadow: $shadow-sm;
+  transition: $transition-default;
+  overflow: hidden;
+  background: $white-light;
+
+  svg {
+    width: 22px;
+  }
+
+  &:hover {
+    box-shadow: $shadow-md;
+  }
+
+  :global(.p-card-body) {
+    padding: 0;
+  }
+
+  :global(.p-card-content) {
+    padding: 0;
+  }
+}
+
+.tutoriaisHeader {
+  display: flex;
+  align-items: center;
+  gap: $gap-3;
+  padding: $gap-3 $gap-4;
+  background: linear-gradient(135deg, #fff0f0 0%, #ffe6e6 100%);
+  border-bottom: 1px solid rgba(#ff0000, 0.1);
+
+  h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: $gray-700;
+    margin: 0 0 2px 0;
+  }
+
+  .tutoriaisSubtitle {
+    font-size: 0.75rem;
+    color: $gray-500;
+    margin: 0;
+  }
+}
+
+.tutoriaisIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(#ff0000, 0.1);
+  border-radius: 10px;
+  flex-shrink: 0;
+
+  svg {
+    color: #ff0000;
+  }
+
+  @include responsive(xs) {
+    display: none;
+  }
+}
+
+.tutoriaisList {
+  display: flex;
+  flex-direction: column;
+  padding: $gap-1;
+}
+
+.tutorialItem {
+  display: flex;
+  align-items: center;
+  gap: $gap-3;
+  padding: $gap-2 $gap-3;
+  text-decoration: none;
+  border-radius: $border-radius-sm;
+  transition: $transition-default;
+
+  &:hover {
+    background: $gray-25;
+
+    .tutorialIconWrapper {
+      background: rgba(#ff0000, 0.15);
+      transform: scale(1.05);
+    }
+
+    .tutorialTitle {
+      color: $primary-darken;
+    }
+
+    .tutorialPlatform {
+      color: $primary-normal;
+    }
+  }
+}
+
+.tutorialIconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: $gray-25;
+  border-radius: 8px;
+  flex-shrink: 0;
+  transition: $transition-default;
+
+  svg {
+    color: $gray-600;
+  }
+}
+
+.tutorialContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+
+  .tutorialTitle {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $gray-700;
+    line-height: 1.4;
+    transition: color 0.2s ease;
+  }
+
+  .tutorialPlatform {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.6875rem;
+    color: $gray-500;
+    transition: color 0.2s ease;
+
+    svg {
+      opacity: 0.7;
+    }
+  }
+}
+
+.tutoriaisFooter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $gap-1;
+  padding: $gap-2 $gap-3;
+  background: $gray-25;
+  border-top: 1px solid $gray-50;
+
+  svg {
+    color: #ff0000;
+  }
+
+  span {
+    font-size: 0.6875rem;
+    color: $gray-500;
+  }
+}
+
+@media (max-width: 768px) {
+  .tutoriaisHeader {
+    padding: $gap-2 $gap-3;
+  }
+
+  .tutorialItem {
+    padding: $gap-2;
+  }
+
+  .tutorialContent .tutorialTitle {
+    font-size: 0.8125rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .tutoriaisHeader {
+    h4 {
+      font-size: 0.9375rem;
+    }
+
+    .tutoriaisSubtitle {
+      font-size: 0.6875rem;
+    }
+  }
+
+  .tutorialItem {
+    gap: $gap-2;
+  }
+
+  .tutorialIconWrapper {
+    width: 32px;
+    height: 32px;
+  }
+
+  .tutoriaisFooter span {
+    font-size: 0.625rem;
+  }
 }

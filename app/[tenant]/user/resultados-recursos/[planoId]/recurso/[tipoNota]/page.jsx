@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import {
   RiScales3Line,
   RiArrowLeftLine,
@@ -9,10 +10,17 @@ import {
   RiRefreshLine,
   RiDeleteBin6Line,
   RiWhatsappFill,
+  RiSave2Line,
+  RiExternalLinkLine,
+  RiYoutubeLine,
+  RiFlaskLine,
+  RiUserStarLine,
+  RiCommunityLine,
 } from "@remixicon/react";
 import { Accordion, AccordionTab } from "primereact/accordion";
 import { Timeline } from "primereact/timeline";
 import { Toast } from "primereact/toast";
+import { Card } from "primereact/card";
 
 import styles from "./page.module.scss";
 import { Badge } from "@/components/Badge";
@@ -24,6 +32,7 @@ import BlockNoteContent from "@/components/BlockNoteContent";
 import GrupoAvaliacao from "@/components/participacao/GrupoAvaliacao";
 import { parseDateBR } from "@/lib/formatarDatas";
 import { getCurrentUserId, getCurrentUserNome } from "@/lib/headers";
+import generateLattesText from "@/lib/generateLattesText";
 import { xmlLattes } from "@/app/api/clientReq";
 import {
   getRecursoDetalhe,
@@ -725,6 +734,7 @@ const RecursoParticipacao = ({
   toast,
   onAtualizado,
 }) => {
+  const ehAluno = tipoNota === "aluno";
   const [simulacao, setSimulacao] = useState(null);
   const [simulando, setSimulando] = useState(false);
   const [salvando, setSalvando] = useState(false);
@@ -779,14 +789,14 @@ const RecursoParticipacao = ({
     setEnviandoXml(true);
     try {
       const userId = getCurrentUserId();
-      await xmlLattes(file, tenant, userId);
+      const response = await xmlLattes(file, tenant, userId);
       toast.current.show({
         severity: "success",
         summary: "Sucesso",
         detail: "Currículo Lattes enviado com sucesso.",
         life: 5000,
       });
-      onAtualizado({ temCvLattes: true });
+      onAtualizado({ temCvLattes: true, cvLattesUrl: response?.fileUrl ?? null });
     } catch (error) {
       const detail =
         error.response?.data?.message ||
@@ -1004,7 +1014,228 @@ const RecursoParticipacao = ({
         <h6 className={styles.secaoTitulo}>
           Recalcular a partir do currículo Lattes
         </h6>
-        {!recurso.temCvLattes ? (
+        {ehAluno ? (
+          <>
+            {recurso.temCvLattes && recurso.cvLattesUrl && (
+              <div className={styles.updateInfo}>
+                <RiSave2Line />
+                <span>
+                  Última atualização:{" "}
+                  {generateLattesText(recurso.cvLattesUrl).formattedDate} às{" "}
+                  {generateLattesText(recurso.cvLattesUrl).formattedTime}
+                </span>
+              </div>
+            )}
+            <FileInput
+              label={
+                recurso.temCvLattes
+                  ? "Atualizar Currículo Lattes"
+                  : "Enviar pasta .ZIP do Currículo Lattes"
+              }
+              onFileSelect={handleUploadXml}
+              disabled={enviandoXml}
+              errorMessage={fileError}
+            />
+            {recurso.temCvLattes && (
+              <div className={styles.acoes}>
+                <Button
+                  className="btn-primary"
+                  icon={RiRefreshLine}
+                  onClick={handleSimular}
+                  loading={simulando}
+                  disabled={simulando}
+                >
+                  Recalcular
+                </Button>
+              </div>
+            )}
+
+            {/* Guia passo a passo — mesmo conteúdo de EditarParticipacao.jsx */}
+            <Card className={styles.guideCard}>
+              <div className={styles.guideHeader}>
+                <h4>Como enviar ou atualizar seu Currículo Lattes</h4>
+                <p className={styles.guideSubtitle}>
+                  Siga os passos abaixo para exportar e enviar seu CV Lattes
+                  em formato XML/ZIP
+                </p>
+              </div>
+
+              <div className={styles.stepsList}>
+                <div className={styles.stepItem}>
+                  <div className={styles.stepNumber}>1</div>
+                  <div className={styles.stepContent}>
+                    <p>Acesse a plataforma Lattes</p>
+                    <a
+                      href="https://lattes.cnpq.br/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.stepLink}
+                    >
+                      <div className={styles.stepLogo}>
+                        <Image
+                          fill
+                          src="/image/cnpqLogoMini.png"
+                          alt="CNPq Logo"
+                          sizes="24 24 700"
+                        />
+                      </div>
+                      lattes.cnpq.br
+                      <RiExternalLinkLine size={14} />
+                    </a>
+                  </div>
+                </div>
+
+                <div className={styles.stepItem}>
+                  <div className={styles.stepNumber}>2</div>
+                  <div className={styles.stepContent}>
+                    <p>Cadastre ou atualize seu currículo</p>
+                    <div className={styles.stepActions}>
+                      <a
+                        href="https://wwws.cnpq.br/cvlattesweb/pkg_cv_estr.inicio"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.stepLink}
+                      >
+                        Cadastrar novo currículo
+                      </a>
+                      <span className={styles.stepSeparator}>ou</span>
+                      <a
+                        href="https://lattes.cnpq.br/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.stepLink}
+                      >
+                        Atualizar currículo existente
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <div className={styles.stepItem}>
+                  <div className={styles.stepNumber}>3</div>
+                  <div className={styles.stepContent}>
+                    <p>
+                      Na página do seu currículo Lattes, clique em &quot;Exportar&quot;
+                    </p>
+                    <div className={styles.stepImage}>
+                      <Image
+                        fill
+                        src="/image/printLattesExportar.png"
+                        alt="Botão exportar no Lattes"
+                        sizes="100 100 700"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className={styles.stepItem}>
+                  <div className={styles.stepNumber}>4</div>
+                  <div className={styles.stepContent}>
+                    <p>
+                      Selecione o formato <strong>XML</strong> e faça o
+                      download
+                    </p>
+                    <div className={styles.fileFormatBadge}>
+                      Será feito o download de uma pasta com o formato: .ZIP
+                      ou um arquivo no formato .XML.
+                    </div>
+                  </div>
+                </div>
+
+                <div className={styles.stepItem}>
+                  <div className={styles.stepNumber}>5</div>
+                  <div className={styles.stepContent}>
+                    <p>Faça o upload da pasta .ZIP ou do arquivo .XML</p>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            {/* Vídeos tutoriais — mesmo conteúdo de EditarParticipacao.jsx (aluno) */}
+            <Card className={styles.tutoriaisCard}>
+              <div className={styles.tutoriaisHeader}>
+                <div className={styles.tutoriaisIcon}>
+                  <RiYoutubeLine size={20} />
+                </div>
+                <div>
+                  <h4>Vídeos Tutoriais</h4>
+                  <p className={styles.tutoriaisSubtitle}>
+                    Aprenda como cadastrar atividades no seu Currículo Lattes
+                  </p>
+                </div>
+              </div>
+
+              <div className={styles.tutoriaisList}>
+                <a
+                  href="https://www.youtube.com/watch?v=gTfFHQXoRQQ"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.tutorialItem}
+                >
+                  <div className={styles.tutorialIconWrapper}>
+                    <RiFlaskLine size={18} />
+                  </div>
+                  <div className={styles.tutorialContent}>
+                    <span className={styles.tutorialTitle}>
+                      Como inserir Iniciação Científica no Lattes
+                    </span>
+                    <span className={styles.tutorialPlatform}>
+                      YouTube
+                      <RiExternalLinkLine size={12} />
+                    </span>
+                  </div>
+                </a>
+
+                <a
+                  href="https://www.youtube.com/watch?v=7Ir-Ee1GPDc"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.tutorialItem}
+                >
+                  <div className={styles.tutorialIconWrapper}>
+                    <RiUserStarLine size={18} />
+                  </div>
+                  <div className={styles.tutorialContent}>
+                    <span className={styles.tutorialTitle}>
+                      Como inserir Monitoria no Lattes
+                    </span>
+                    <span className={styles.tutorialPlatform}>
+                      YouTube
+                      <RiExternalLinkLine size={12} />
+                    </span>
+                  </div>
+                </a>
+
+                <a
+                  href="https://www.youtube.com/watch?v=BmMuhb_wm-Q"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.tutorialItem}
+                >
+                  <div className={styles.tutorialIconWrapper}>
+                    <RiCommunityLine size={18} />
+                  </div>
+                  <div className={styles.tutorialContent}>
+                    <span className={styles.tutorialTitle}>
+                      Como inserir projetos de extensão no Lattes
+                    </span>
+                    <span className={styles.tutorialPlatform}>
+                      YouTube
+                      <RiExternalLinkLine size={12} />
+                    </span>
+                  </div>
+                </a>
+              </div>
+
+              <div className={styles.tutoriaisFooter}>
+                <RiYoutubeLine size={14} />
+                <span>
+                  Clique nos links acima para abrir os tutoriais no YouTube
+                </span>
+              </div>
+            </Card>
+          </>
+        ) : !recurso.temCvLattes ? (
           <FileInput
             label="Enviar pasta .ZIP do Currículo Lattes"
             onFileSelect={handleUploadXml}
