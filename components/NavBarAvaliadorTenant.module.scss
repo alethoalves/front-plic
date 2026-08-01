@@ -8,22 +8,28 @@
     align-items: center;
     background-color: $white-light;
     border-bottom: 1px solid $white-darken;
-    width: 100%;
+    width: 100vw;
     position: fixed;
-    top: 0;
-    left: 0;
     color: $primary-darken;
     z-index: 998;
-    padding: 0 $gap-3;
 
     .navBarItem1 {
-        flex: 1;
-        display: flex;
-        align-items: center;
+        width: 150px;
+        margin-left: $gap-2;
+        display: none;
+        @include responsive(s) {
+            display: block;
+            margin-left: 68px;
+        }
 
         .logoImg {
-            width: 150px;
+            width: auto;
+            flex: 1;
             height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: $gap-1;
             position: relative;
 
             img {
@@ -34,54 +40,12 @@
     }
 
     .navBarItem2 {
-        flex: 2;
         display: flex;
-        justify-content: center;
-    }
-
-    .navBarItem3 {
+        align-items: center;
+        justify-content: right;
+        padding-right: $gap-2;
+        width: 300px;
         flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-    }
-}
-
-.menu {
-    display: flex;
-    align-items: center;
-    gap: $gap-1;
-    list-style: none;
-
-    li {
-        display: flex;
-        align-items: center;
-        gap: $gap-1;
-        padding: $gap-1 $gap-3;
-        border-radius: $gap-1;
-        cursor: pointer;
-        color: $primary-dark;
-        font-weight: 700;
-        font-size: 0.875rem;
-        transition: all 0.3s ease;
-        white-space: nowrap;
-
-        svg {
-            width: 20px;
-        }
-
-        &:hover {
-            background-color: $white-darken;
-        }
-
-        &.active {
-            background-color: $primary-dark;
-            color: $white-darken;
-
-            p {
-                color: $white-darken;
-            }
-        }
     }
 }
 
@@ -108,19 +72,5 @@
     svg {
         height: 22px;
         margin-left: $gap-1;
-    }
-}
-
-@include responsive(s) {
-    .navBar {
-        .navBarItem1 {
-            .logoImg {
-                width: 100px;
-            }
-        }
-
-        .menu li p {
-            display: none;
-        }
     }
 }

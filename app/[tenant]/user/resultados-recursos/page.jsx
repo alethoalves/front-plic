@@ -5,6 +5,7 @@ import {
   RiUser2Line,
   RiGroupLine,
   RiCursorLine,
+  RiLockLine,
 } from "@remixicon/react";
 import { Card } from "primereact/card";
 import { Toast } from "primereact/toast";
@@ -56,6 +57,18 @@ const PlanoCard = ({ plano, tenant, toast }) => {
   )
     ? NOTAS.reduce((soma, { slug }) => soma + maximos[slug], 0)
     : null;
+
+  // "Nota Final" (extras de recurso já deferidos) só aparece se o edital
+  // habilitou explicitamente — por padrão a tela continua mostrando a nota
+  // pura (notaTotal), sem nenhuma menção a recurso.
+  const recursoHabilitado = !!plano.inscricao?.edital?.habilitarRecurso;
+  const notaFinalHabilitada = !!plano.inscricao?.edital?.habilitarNotaFinal;
+  const notaExtraTotal =
+    (plano.notaExtraRecursoProjeto || 0) + (plano.notaExtraRecursoPlano || 0);
+  const mostrarNotaFinal = notaFinalHabilitada && notaTotal !== null;
+  const valorExibido = mostrarNotaFinal ? notaTotal + notaExtraTotal : notaTotal;
+  const labelNota = mostrarNotaFinal ? "Nota Final" : "Nota Total";
+  const temExtra = mostrarNotaFinal && notaExtraTotal > 0;
 
   return (
     <Card className={styles.planoCard}>
@@ -109,9 +122,22 @@ const PlanoCard = ({ plano, tenant, toast }) => {
           </div>
         </div>
 
-        <p className={styles.notasHint}>
-          <RiCursorLine />
-          Clique na nota para entrar com recurso
+        <p
+          className={`${styles.notasHint} ${
+            !recursoHabilitado ? styles.notasHintIndisponivel : ""
+          }`}
+        >
+          {recursoHabilitado ? (
+            <>
+              <RiCursorLine />
+              Clique na nota para entrar com recurso
+            </>
+          ) : (
+            <>
+              <RiLockLine />
+              Recurso não está disponível para este edital
+            </>
+          )}
         </p>
 
         <div className={styles.notasGrid}>
@@ -119,6 +145,15 @@ const PlanoCard = ({ plano, tenant, toast }) => {
             const semNota = plano[key] === null || plano[key] === undefined;
             const elegibilidade = plano.recursoElegibilidade?.[slug];
             const maximo = maximos[slug];
+            // Só projeto e plano têm coluna de extra de recurso própria
+            // (orientador/aluno não têm ajuste de recurso — ver schema).
+            const extraDoCard =
+              slug === "projeto"
+                ? plano.notaExtraRecursoProjeto || 0
+                : slug === "plano"
+                  ? plano.notaExtraRecursoPlano || 0
+                  : 0;
+            const temExtraNoCard = mostrarNotaFinal && extraDoCard > 0;
             return (
               <Link
                 key={key}
@@ -147,6 +182,11 @@ const PlanoCard = ({ plano, tenant, toast }) => {
                     de {formatarNota(maximo)}
                   </span>
                 )}
+                {temExtraNoCard && (
+                  <span className={styles.notaMiniBadgeExtra}>
+                    +{formatarNota(extraDoCard)} recurso
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -154,24 +194,38 @@ const PlanoCard = ({ plano, tenant, toast }) => {
 
         <div
           className={`${styles.notaTotalCard} ${
-            notaTotal === null ? styles.semAvaliacao : ""
+            valorExibido === null ? styles.semAvaliacao : ""
           }`}
         >
-          <span className={styles.label}>Nota Total</span>
-          <span className={styles.valor}>
-            {notaTotal === null ? (
-              "Aguardando avaliação"
-            ) : (
-              <>
-                {formatarNota(notaTotal)}
-                {notaTotalMaximo !== null && (
-                  <span className={styles.valorMaximo}>
-                    /{formatarNota(notaTotalMaximo)}
-                  </span>
-                )}
-              </>
+          <div className={styles.notaTotalHeader}>
+            <span className={styles.label}>{labelNota}</span>
+            {temExtra && (
+              <span className={styles.badgeExtra}>
+                +{formatarNota(notaExtraTotal)} pontos após recurso
+              </span>
             )}
-          </span>
+          </div>
+          <div className={styles.notaTotalValorBloco}>
+            <span className={styles.valor}>
+              {valorExibido === null ? (
+                "Aguardando avaliação"
+              ) : (
+                <>
+                  {formatarNota(valorExibido)}
+                  {notaTotalMaximo !== null && (
+                    <span className={styles.valorMaximo}>
+                      /{formatarNota(notaTotalMaximo)}
+                    </span>
+                  )}
+                </>
+              )}
+            </span>
+            {temExtra && (
+              <span className={styles.detalheExtra}>
+                (nota anterior: {formatarNota(notaTotal)} + Recurso: {formatarNota(notaExtraTotal)})
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </Card>

@@ -170,6 +170,13 @@ $shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04
     height: 16px;
     flex-shrink: 0;
   }
+
+  // Recurso desligado pro edital — constatação, não convite a uma ação, por
+  // isso troca o amarelo "chamativo" por um tom neutro.
+  &.notasHintIndisponivel {
+    color: $gray-500;
+    background-color: $gray-50;
+  }
 }
 
 // Notas — grid de miniCards, 4 no desktop, 2 no mobile
@@ -223,6 +230,16 @@ $shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04
     color: $gray-500;
   }
 
+  .notaMiniBadgeExtra {
+    font-size: 0.625rem;
+    font-weight: 700;
+    color: $success-dark;
+    background-color: $success-lighten;
+    border-radius: 999px;
+    padding: 1px 6px;
+    white-space: nowrap;
+  }
+
   &.semNota .notaMiniValor {
     color: $gray-300;
     font-weight: 600;
@@ -232,12 +249,14 @@ $shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04
 // Nota total — card em destaque ao final
 .notaTotalCard {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  gap: $gap-2;
+  flex-wrap: wrap;
   padding: $gap-2;
   border-radius: $gap-1;
   margin-top: 4px;
-  
+
 
   .label {
     font-size: 0.8rem;
@@ -275,6 +294,40 @@ $shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04
       font-family: inherit;
     }
   }
+}
+
+.notaTotalHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.notaTotalValorBloco {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+// Ganhar pontos no recurso é uma notícia boa pro aluno — verde, diferente do
+// vermelho/$error-normal usado nas telas de auditoria do gestor
+// (TabelaRecursosGestor.jsx, TabelaPlanoDeTrabalhoAcompanhamento.jsx).
+.badgeExtra {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: $success-dark;
+  background-color: $success-lighten;
+  border-radius: 999px;
+  padding: 2px $gap-1;
+  white-space: nowrap;
+}
+
+.detalheExtra {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: $gray-500;
+  text-align: right;
 }
 
 // Estado vazio

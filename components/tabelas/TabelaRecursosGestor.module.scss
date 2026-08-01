@@ -1,0 +1,60 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+.link {
+  cursor: pointer;
+  color: $primary-normal;
+  text-decoration: underline;
+
+  &:hover {
+    color: $primary-dark;
+  }
+}
+
+.notaExtra {
+  color: $error-normal;
+  font-weight: 600;
+}
+
+// PrimeReact/tema deixam o rótulo do header em uma linha só por padrão —
+// força quebra pra colunas com título mais longo (ex. "Nota Extra (Recurso Projeto)").
+.headerWrap {
+  white-space: normal !important;
+
+  :global(.p-column-header-content),
+  :global(.p-column-title) {
+    white-space: normal !important;
+    word-break: break-word;
+  }
+}
+
+// Botão de ícone só — o estado :disabled já é tratado pela regra global
+// button:disabled (styles/partials/_buttons.scss), não precisa de override aqui.
+.acaoReverter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid $white-normal;
+  border-radius: $gap-1;
+  background-color: $white-light;
+  color: $primary-dark;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover:not(:disabled) {
+    background-color: $primary-lighten;
+    color: $primary-darken;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+}

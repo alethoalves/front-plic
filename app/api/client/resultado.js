@@ -15,3 +15,19 @@ export const getResultadosByUser = async (tenantSlug) => {
     throw error;
   }
 };
+
+export const atualizarHabilitarNotaFinal = async (tenantSlug, editalId, habilitarNotaFinal) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+    const response = await req.put(
+      `/private/${tenantSlug}/edital/${editalId}/habilitar-nota-final`,
+      { habilitarNotaFinal },
+      { headers }
+    );
+    return response.data.edital;
+  } catch (error) {
+    console.error("Erro ao atualizar habilitação de nota final:", error);
+    throw error;
+  }
+};

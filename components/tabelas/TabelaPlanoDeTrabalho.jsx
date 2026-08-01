@@ -153,7 +153,9 @@ const TabelaPlanoDeTrabalho = ({ params }) => {
                 item.notaAluno +
                 item.notaOrientador +
                 item.notaPlano +
-                item.notaProjeto
+                item.notaProjeto +
+                (item.notaExtraRecursoProjeto || 0) +
+                (item.notaExtraRecursoPlano || 0)
               ).toFixed(4)
             ),
             alunosString: alunos.join(", "),

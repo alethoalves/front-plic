@@ -196,12 +196,16 @@ export default function SolicitacoesBolsa() {
 
     return rawData.map((item) => {
       const plano = item.participacao?.planoDeTrabalho;
+      // notaProjeto/notaPlano são puros (sem o ajuste de recurso já
+      // deferido) — soma explícita do extra aqui.
       const notaTotal = plano
         ? (
             plano.notaAluno +
             plano.notaOrientador +
             plano.notaPlano +
-            plano.notaProjeto
+            plano.notaProjeto +
+            (plano.notaExtraRecursoProjeto || 0) +
+            (plano.notaExtraRecursoPlano || 0)
           ).toFixed(4)
         : null;
       const orientadores =

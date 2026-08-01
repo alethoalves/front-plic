@@ -7,6 +7,21 @@
     background-color: $white-darken;
     border-radius: $gap-1;
 }
+.notaExtra {
+    color: $error-normal;
+    font-weight: 600;
+}
+// PrimeReact deixa o rótulo do header em uma linha só por padrão — força
+// quebra pra colunas com título mais longo (ex. "Nota Extra (Recurso Projeto)").
+.headerWrap {
+    white-space: normal !important;
+
+    :global(.p-column-header-content),
+    :global(.p-column-title) {
+        white-space: normal !important;
+        word-break: break-word;
+    }
+}
 .clickableStatus {
     cursor: pointer;
 }

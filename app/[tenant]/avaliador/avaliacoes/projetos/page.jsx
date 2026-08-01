@@ -13,8 +13,13 @@ import {
   RiAddCircleLine,
   RiShuffleLine,
   RiStarFill,
+  RiQuestionLine,
+  RiShieldCheckLine,
+  RiAlertLine,
+  RiLightbulbFlashLine,
 } from "@remixicon/react";
 import { MultiSelect } from "primereact/multiselect";
+import { Checkbox } from "primereact/checkbox";
 import Modal from "@/components/Modal";
 import NoData from "@/components/NoData";
 import Button from "@/components/Button";
@@ -29,6 +34,7 @@ import {
 import { getUserAreas } from "@/app/api/client/userTenant";
 import { getAreas } from "@/app/api/client/area";
 import { getCurrentUserId } from "@/lib/headers";
+import { useModalAjuda } from "@/lib/useModalAjuda";
 
 // Suporte do PLIC (não é o contato do tenant) — mesmo número já usado em
 // ConviteAvaliadorClient.jsx, FluxoInscricaoEdital.jsx e EditarParticipacao.jsx.
@@ -72,6 +78,7 @@ const Page = ({ params }) => {
   const [loadingDevolver, setLoadingDevolver] = useState({});
   const [podeAtribuirNovoProjeto, setPodeAtribuirNovoProjeto] = useState(true);
   const router = useRouter();
+  const ajuda = useModalAjuda("plic:avaliador:ajudaProjetos", params.tenant);
 
   const anoCorrente = new Date().getFullYear();
   const [userId] = useState(() => getCurrentUserId());
@@ -378,7 +385,139 @@ const Page = ({ params }) => {
         </Modal>
       )}
 
+      <Modal isOpen={ajuda.isOpen} onClose={ajuda.fechar} size="large">
+        <div className={styles.explicacaoHeader}>
+          <span className={styles.explicacaoIcon}>
+            <RiShieldCheckLine size={22} />
+          </span>
+          <div>
+            <h5 className={styles.explicacaoTitulo}>
+              Como funciona a avaliação de projetos
+            </h5>
+            <p className={styles.explicacaoSubtitulo}>
+              Antes de selecionar um projeto, conheça as regras que garantem
+              uma avaliação justa e ágil para todos os proponentes.
+            </p>
+          </div>
+        </div>
+
+        <div className={styles.comoFuncionaBox}>
+          <ol className={styles.comoFuncionaLista}>
+            <li>
+              <strong>Um projeto por vez.</strong> Você só pode estar com um
+              projeto atribuído para avaliação de cada vez. Essa regra existe
+              para que nenhum avaliador acumule vários projetos e atrase o
+              prazo de quem está aguardando avaliação.
+            </li>
+            <li>
+              <strong>Quantos projetos avaliar?</strong> Esperamos que cada
+              avaliador avalie entre 5 e 10 projetos. Mas se você tiver
+              disponibilidade para avaliar mais, não há problema algum — pelo
+              contrário, isso é muito bem-vindo e ajuda a divulgar o resultado
+              final de forma mais célere para todos.
+            </li>
+            <li>
+              <strong>Prazo de 48 horas.</strong> A partir do momento em que
+              você seleciona um projeto, o esperado é que a avaliação seja
+              concluída em até 48 horas. Projetos não avaliados nesse prazo
+              podem retornar à fila para serem avaliados por outra pessoa.
+            </li>
+            <li>
+              <strong>Você pode escolher outro projeto depois.</strong> Assim
+              que concluir ou devolver o projeto atual, você pode selecionar
+              livremente um novo projeto — quantas vezes quiser, um de cada
+              vez.
+            </li>
+            <li>
+              <strong>Devolução voluntária a qualquer momento.</strong> Se
+              surgir um imprevisto, ou o projeto não for da sua área de
+              atuação, use o botão <strong>Devolver</strong> a qualquer
+              momento. O projeto volta para a fila e sua vaga é liberada para
+              escolher outro.
+            </li>
+          </ol>
+        </div>
+
+        <div className={styles.sugestaoModo}>
+          <div className={styles.sugestaoModoIcon}>
+            <RiLightbulbFlashLine size={20} />
+          </div>
+          <div className={styles.sugestaoModoContent}>
+            <h6 className={styles.sugestaoModoTitulo}>
+              Uma forma prática de organizar sua avaliação
+            </h6>
+            <p className={styles.sugestaoModoTexto}>
+              Você não precisa ficar de olho no sistema o tempo todo. Uma boa
+              estratégia é entrar quando tiver um tempo livre, avaliar quantos
+              projetos conseguir naquele momento, e repetir isso em outras
+              oportunidades ao longo do período de avaliação.
+            </p>
+          </div>
+        </div>
+
+        <div className={styles.impedimentos}>
+          <div className={styles.impedimentosIcon}>
+            <RiAlertLine size={20} />
+          </div>
+          <div className={styles.impedimentosContent}>
+            <h6 className={styles.impedimentosTitulo}>
+              Quando um projeto não aparece para você avaliar
+            </h6>
+            <p className={styles.impedimentosTexto}>
+              Para preservar a imparcialidade da avaliação, o sistema impede
+              automaticamente que você avalie um projeto quando:
+            </p>
+            <ul className={styles.impedimentosListaRegras}>
+              <li>
+                Você participa do projeto como orientador(a), aluno(a) ou
+                coorientador(a);
+              </li>
+              <li>
+                Você possui a mesma lotação (unidade/departamento) do(a)
+                orientador(a) ou coorientador(a) do projeto; ou
+              </li>
+              <li>
+                Seu identificador Lattes consta no currículo Lattes do(a)
+                orientador(a) ou coorientador(a) do projeto — por exemplo,
+                como coautor(a), integrante de equipe de projeto ou
+                participante de banca.
+              </li>
+            </ul>
+            <p className={styles.impedimentosTexto}>
+              Esses projetos simplesmente não aparecerão na lista de seleção.
+            </p>
+          </div>
+        </div>
+
+        <div className={styles.modalAcoes}>
+          <div className={styles.checkboxRow}>
+            <Checkbox
+              inputId="naoMostrarAjudaProjetos"
+              checked={ajuda.naoMostrarNovamente}
+              onChange={(e) => ajuda.setNaoMostrarNovamente(e.checked)}
+            />
+            <label htmlFor="naoMostrarAjudaProjetos">
+              Não mostrar novamente
+            </label>
+          </div>
+          <Button className="btn-primary" onClick={ajuda.fechar}>
+            Entendi
+          </Button>
+        </div>
+      </Modal>
+
       <div className={styles.navContent}>
+        <div className="flex-space mb-2">
+          <h5>Sala de Avaliação</h5>
+          <button
+            type="button"
+            className={styles.botaoAjuda}
+            onClick={ajuda.reabrir}
+            title="Como funciona a avaliação de projetos"
+          >
+            <RiQuestionLine size={20} />
+          </button>
+        </div>
         <SuporteWhatsapp />
 
         <div className={styles.areasInteresse}>

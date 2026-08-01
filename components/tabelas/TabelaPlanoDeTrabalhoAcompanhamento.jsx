@@ -127,7 +127,15 @@ const getInitialFilters = () => ({
     value: [undefined, undefined],
     matchMode: "nota_intervalo",
   },
+  notaExtraRecursoProjeto: {
+    value: [undefined, undefined],
+    matchMode: "nota_intervalo",
+  },
   notaPlano: {
+    value: [undefined, undefined],
+    matchMode: "nota_intervalo",
+  },
+  notaExtraRecursoPlano: {
     value: [undefined, undefined],
     matchMode: "nota_intervalo",
   },
@@ -234,12 +242,18 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
           return {
             ...item,
             // Campos virtuais
+            // notaProjeto/notaPlano são puros (sem o ajuste de recurso) —
+            // soma explícita do extra aqui, senão um plano que só passou da
+            // nota de corte por causa de um recurso deferido seria
+            // classificado com base na nota pré-recurso.
             notaTotal: parseFloat(
               (
                 item.notaAluno +
                 item.notaOrientador +
                 item.notaPlano +
-                item.notaProjeto
+                item.notaProjeto +
+                (item.notaExtraRecursoProjeto || 0) +
+                (item.notaExtraRecursoPlano || 0)
               ).toFixed(4)
             ),
             alunosString: alunos.join(", "),
@@ -469,7 +483,9 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
       { header: "Aluno", key: "alunos", width: 30 },
       { header: "Nota Total Plano de Trabalho", key: "notaTotal", width: 18 },
       { header: "Nota Projeto", key: "notaProjeto", width: 14 },
+      { header: "Nota Extra (Recurso Projeto)", key: "notaExtraRecursoProjeto", width: 18 },
       { header: "Nota Plano", key: "notaPlano", width: 14 },
+      { header: "Nota Extra (Recurso Plano)", key: "notaExtraRecursoPlano", width: 18 },
       { header: "Nota Orientador", key: "notaOrientador", width: 14 },
       { header: "Nota Aluno", key: "notaAluno", width: 14 },
       { header: "Qtd. Fichas", key: "quantidadeFichas", width: 12 },
@@ -496,7 +512,9 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
         alunos: item.alunosString,
         notaTotal: item.notaTotal,
         notaProjeto: item.notaProjeto,
+        notaExtraRecursoProjeto: item.notaExtraRecursoProjeto || 0,
         notaPlano: item.notaPlano,
+        notaExtraRecursoPlano: item.notaExtraRecursoPlano || 0,
         notaOrientador: item.notaOrientador,
         notaAluno: item.notaAluno,
         quantidadeFichas: item.quantidadeFichas,
@@ -807,6 +825,23 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
               body={(rowData) => rowData.notaProjeto}
               style={{ textAlign: "center", width: "8rem" }}
             />
+            <Column
+              field="notaExtraRecursoProjeto"
+              header="Nota Extra (Recurso Projeto)"
+              headerClassName={styles.headerWrap}
+              sortable
+              filter
+              filterField="notaExtraRecursoProjeto"
+              filterElement={notaRowFilterTemplate}
+              filterMatchMode="nota_intervalo"
+              dataType="numeric"
+              body={(rowData) => (
+                <span className={styles.notaExtra}>
+                  {rowData.notaExtraRecursoProjeto || 0}
+                </span>
+              )}
+              style={{ textAlign: "center", width: "9rem" }}
+            />
 
             <Column
               field="notaPlano"
@@ -819,6 +854,23 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
               dataType="numeric"
               body={(rowData) => rowData.notaPlano}
               style={{ textAlign: "center", width: "8rem" }}
+            />
+            <Column
+              field="notaExtraRecursoPlano"
+              header="Nota Extra (Recurso Plano)"
+              headerClassName={styles.headerWrap}
+              sortable
+              filter
+              filterField="notaExtraRecursoPlano"
+              filterElement={notaRowFilterTemplate}
+              filterMatchMode="nota_intervalo"
+              dataType="numeric"
+              body={(rowData) => (
+                <span className={styles.notaExtra}>
+                  {rowData.notaExtraRecursoPlano || 0}
+                </span>
+              )}
+              style={{ textAlign: "center", width: "9rem" }}
             />
             <Column
               field="notaOrientador"

@@ -530,3 +530,91 @@ export const atribuicaoDeProjetosPeloGestor = async (tenant, body) => {
       throw error;
   }
 };
+
+// ─── Ambiente do avaliador: análise de recursos ────────────────────────────
+
+export const listarFamiliasRecursoAvaliador = async (tenant, ano = null) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const url = `/private/${tenant}/avaliador/recursos${ano ? `?ano=${ano}` : ""}`;
+    const response = await req.get(url, { headers });
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao listar famílias de recurso:", error);
+    throw error;
+  }
+};
+
+export const getAnaliseRecursoAvaliador = async (tenant, planoId) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.get(
+      `/private/${tenant}/avaliador/recursos/${planoId}`,
+      { headers }
+    );
+    return response.data.analise;
+  } catch (error) {
+    console.error("Erro ao buscar análise de recurso:", error);
+    throw error;
+  }
+};
+
+export const pegarFamiliaRecursoAvaliador = async (tenant, planoId) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.post(
+      `/private/${tenant}/avaliador/recursos/${planoId}/pegar`,
+      {},
+      { headers }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao reivindicar recurso:", error);
+    throw error;
+  }
+};
+
+export const devolverFamiliaRecursoAvaliador = async (tenant, planoId) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.put(
+      `/private/${tenant}/avaliador/recursos/${planoId}/devolver`,
+      {},
+      { headers }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao devolver recurso:", error);
+    throw error;
+  }
+};
+
+export const analisarRecursosEmLoteAvaliador = async (tenant, body) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.put(
+      `/private/${tenant}/avaliador/recursos/analisar-lote`,
+      body,
+      { headers }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao analisar recursos em lote:", error);
+    throw error;
+  }
+};

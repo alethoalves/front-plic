@@ -1,0 +1,384 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+.voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: $primary-darken;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  margin-bottom: $gap-3;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// Mesmo padrão de abas já usado em avaliador/avaliacoes/projetos/[idProjeto]
+// (Projeto + uma por plano), com badge de pendentes em vez de nota corrente.
+.abas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border-bottom: 2px solid rgba(#000, 0.1);
+  margin-bottom: $gap-3;
+}
+
+.aba {
+  display: flex;
+  align-items: center;
+  gap: $gap-1;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  padding: $gap-2 $gap-3;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: $gray-500;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+
+  &:hover {
+    color: $primary-normal;
+  }
+
+  &.abaAtiva {
+    color: $primary-normal;
+    border-bottom-color: $primary-normal;
+    font-weight: 700;
+  }
+}
+
+.abaNota {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px $gap-1;
+  border-radius: 999px;
+  background-color: $warning-lighten;
+  color: $warning-darken;
+}
+
+.navegacaoAbas {
+  display: flex;
+  justify-content: space-between;
+  gap: $gap-2;
+  margin-bottom: $gap-3;
+
+  :global(.button) {
+    width: auto;
+    height: auto;
+    padding: $gap-1 $gap-2;
+  }
+}
+
+.navContent {
+  display: flex;
+  align-items: flex-start;
+  gap: $gap-2;
+  @include responsive(xs) {
+    flex-direction: column;
+  }
+}
+
+.projeto,
+.fichaDeAvaliacao {
+  width: 50%;
+  @include responsive(xs) {
+    width: 100%;
+  }
+  border: 1px dashed $warning-dark;
+  border-radius: 6px;
+  padding: $gap-2;
+}
+
+// Painel esquerdo fica fixo na tela enquanto o gestor rola os itens de
+// recurso à direita — 70px é a altura da NavBar fixa (NavBar.module.scss),
+// que também define o margin-top do próprio .content do layout do gestor.
+.projeto {
+  position: sticky;
+  top: calc(70px + #{$gap-1});
+  max-height: calc(100vh - 70px - #{$gap-2});
+  overflow-y: auto;
+
+  @include responsive(xs) {
+    position: static;
+    max-height: none;
+    overflow-y: visible;
+  }
+}
+
+.eyebrow {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $gray-400;
+  margin-bottom: 2px;
+}
+
+.titulo {
+  color: $gray-800;
+  margin: 0 0 $gap-1 0;
+}
+
+.area {
+  color: $gray-500;
+  margin: 0 0 $gap-2 0;
+}
+
+.link {
+  color: $primary-normal;
+  text-decoration: underline;
+}
+
+.emptyValue {
+  color: $gray-500;
+  font-style: italic;
+  margin: 0;
+}
+
+.secaoTitulo {
+  font-size: 1rem;
+  font-weight: 600;
+  color: $gray-800;
+  margin: $gap-2 0 $gap-1 0;
+}
+
+.avisoManual {
+  padding: $gap-2;
+  border-radius: $gap-1;
+  background-color: $white-dark;
+  border: 1px dashed $white-normal;
+  color: $gray-600;
+  font-size: 0.9375rem;
+
+  p {
+    margin: 0;
+  }
+}
+
+.irParaPlano {
+  margin-top: $gap-2;
+  padding-top: $gap-2;
+  border-top: 1px dashed $white-normal;
+}
+
+.irParaPlanoBotoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $gap-1;
+
+  :global(.button) {
+    width: auto;
+    height: auto;
+    padding: $gap-2 $gap-3;
+    text-align: left;
+
+    p {
+      white-space: normal;
+    }
+  }
+}
+
+.blocoAvaliador {
+  margin-bottom: $gap-3;
+}
+
+.itemRecurso {
+  padding: $gap-2;
+  border-radius: $gap-1;
+  background-color: $white-dark;
+  border: 1px solid $white-normal;
+  margin-bottom: $gap-2;
+}
+
+.itemRecursoHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $gap-1;
+  margin-bottom: $gap-1;
+}
+
+.itemRecursoLabel {
+  font-weight: 600;
+  color: $gray-800;
+  font-size: 0.9375rem;
+}
+
+.notasContainer {
+  display: flex;
+  gap: $gap-2;
+  margin-bottom: $gap-1;
+}
+
+.notaBadge {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: $gap-1 $gap-2;
+  border-radius: $gap-1;
+}
+
+.notaBadgeLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 4px;
+}
+
+.notaBadgeValor {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.notaAtribuida {
+  background-color: $warning-lighten;
+
+  .notaBadgeLabel,
+  .notaBadgeValor {
+    color: $warning-darken;
+  }
+}
+
+.notaMaxima {
+  background-color: $white-darken;
+
+  .notaBadgeLabel,
+  .notaBadgeValor {
+    color: $primary-dark;
+  }
+}
+
+.comentarioAvaliador {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $warning-darken;
+  background-color: $warning-lighten;
+  border-left: 3px solid $warning-dark;
+  border-radius: $gap-1;
+  padding: $gap-1 $gap-2;
+  margin: 0 0 $gap-1 0;
+}
+
+.recursoOrientadorLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: $primary-dark;
+  margin: 0 0 2px 0;
+}
+
+.recursoOrientadorTexto {
+  font-size: 0.875rem;
+  color: $gray-700;
+  margin: 0 0 $gap-2 0;
+}
+
+.sliderBloco {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+  margin-bottom: $gap-1;
+  flex-wrap: wrap;
+
+  :global(.button) {
+    width: auto;
+    height: auto;
+    padding: 6px $gap-2;
+  }
+}
+
+.sliderRow {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+  flex: 1;
+  min-width: 200px;
+
+  input[type="range"] {
+    flex: 1;
+  }
+}
+
+.sliderValor {
+  font-weight: 700;
+  color: $gray-800;
+  min-width: 2.5em;
+  text-align: right;
+}
+
+.textarea {
+  width: 100%;
+  border: 1px solid $white-normal;
+  border-radius: $gap-1;
+  padding: $gap-1 $gap-2;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  resize: vertical;
+
+  &:focus {
+    outline: none;
+    border-color: $primary-normal;
+  }
+}
+
+.avisoComentario {
+  font-size: 0.8125rem;
+  color: $error-dark;
+  margin: 4px 0 0 0;
+}
+
+// Barra de ação fica fora das colunas (.navContent) — cobre os pendentes de
+// TODAS as abas, não só a ativa, então não faz sentido morar dentro de
+// .fichaDeAvaliacao.
+.acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: $gap-2;
+  margin-top: $gap-3;
+  margin-bottom: $gap-3;
+  padding-top: $gap-2;
+  border-top: 1px dashed $white-normal;
+
+  :global(.button) {
+    width: auto;
+    height: auto;
+    padding: $gap-1 $gap-3;
+    min-width: 160px;
+  }
+}
+
+.recursoAnalisado {
+  padding: $gap-2;
+  border-radius: $gap-1;
+  background-color: $white-light;
+  border: 1px solid $success-normal;
+
+  p {
+    margin: 0;
+    color: $gray-700;
+  }
+}
+
+.recursoAnalisadoLabel {
+  font-weight: 600;
+  color: $success-dark;
+  margin: 0 0 4px 0;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}

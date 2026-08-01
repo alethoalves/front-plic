@@ -71,8 +71,13 @@ const Page = ({ params }) => {
         // notaAluno/notaOrientador/notaPlano/notaProjeto são os campos
         // persistidos no PlanoDeTrabalho (mesma fonte usada na tela de
         // Acompanhamento) — não recalculados a partir de fichas aqui.
-        const notaProjeto = item.notaProjeto || 0;
-        const notaPlano = item.notaPlano || 0;
+        // notaProjeto/notaPlano são puros (sem o ajuste de recurso já
+        // deferido) — soma explícita do extra aqui, senão a simulação de
+        // corte fica desatualizada em relação a recursos já decididos.
+        const notaProjeto =
+          (item.notaProjeto || 0) + (item.notaExtraRecursoProjeto || 0);
+        const notaPlano =
+          (item.notaPlano || 0) + (item.notaExtraRecursoPlano || 0);
         const notaOrientador = item.notaOrientador || 0;
         const notaAluno = item.notaAluno || 0;
 

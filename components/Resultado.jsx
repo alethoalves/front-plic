@@ -755,7 +755,9 @@ const Resultado = ({}) => {
             (plano.notaAluno || 0) +
             (plano.notaOrientador || 0) +
             (plano.notaPlano || 0) +
-            (plano.notaProjeto || 0)
+            (plano.notaProjeto || 0) +
+            (plano.notaExtraRecursoProjeto || 0) +
+            (plano.notaExtraRecursoPlano || 0)
           ).toFixed(4)
         : null;
 

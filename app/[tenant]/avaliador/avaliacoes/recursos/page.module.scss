@@ -1,0 +1,358 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+.abas {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid rgba(#000, 0.1);
+    margin-bottom: $gap-2;
+}
+.aba {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    padding: $gap-2 $gap-3;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: $gray-500;
+    transition: color 0.15s, border-color 0.15s;
+    &:hover {
+        color: $primary-normal;
+    }
+    &.abaAtiva {
+        color: $primary-normal;
+        border-bottom-color: $primary-normal;
+        font-weight: 700;
+    }
+}
+
+// ================ ÍCONE DE AJUDA + MODAL "COMO FUNCIONA" ================
+.botaoAjuda {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: $gray-500;
+    padding: 4px;
+    transition: color 0.15s;
+    &:hover {
+        color: $primary-normal;
+    }
+}
+
+.explicacaoHeader {
+    display: flex;
+    align-items: flex-start;
+    gap: $gap-2;
+    margin-bottom: $gap-2;
+}
+.explicacaoIcon {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: $primary-normal;
+}
+.explicacaoTitulo {
+    margin: 0 0 4px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: $gray-800;
+}
+.explicacaoSubtitulo {
+    margin: 0;
+    font-size: 0.875rem;
+    color: $gray-500;
+}
+
+.comoFuncionaBox {
+    padding: $gap-3;
+    background: $gray-50;
+    border-radius: 8px;
+    border: 1px solid $gray-200;
+    margin-bottom: $gap-2;
+}
+.comoFuncionaLista {
+    margin: 0;
+    padding: 0 0 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 0.875rem;
+    color: $gray-600;
+    line-height: 1.5;
+    strong { color: $gray-800; }
+}
+
+.modalAcoes {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $gap-2;
+    flex-wrap: wrap;
+    :global(.button) {
+        width: auto;
+        height: auto;
+        padding: $gap-1 $gap-3;
+    }
+}
+.checkboxRow {
+    display: flex;
+    align-items: center;
+    gap: $gap-1;
+    label {
+        cursor: pointer;
+        font-size: 0.875rem;
+        color: $gray-600;
+    }
+}
+
+.noData {
+    width: 100%;
+    border: 1px dashed $warning-dark;
+    border-radius: $gap-1;
+    margin-bottom: $gap-1;
+}
+.error {
+    border: 1px solid $error-light;
+    padding: $gap-2 $gap-3;
+    @include responsive(s) {
+        padding: $gap-1 $gap-2;
+    }
+    border-radius: $gap-1;
+    background-color: $error-lighten;
+    p {
+        color: $error-dark;
+    }
+    margin-top: $gap-1;
+}
+.avisoInfo {
+    display: flex;
+    align-items: center;
+    gap: $gap-2;
+    border: 1px solid $primary-light;
+    background-color: rgba($primary-normal, 0.06);
+    border-radius: $gap-1;
+    padding: $gap-2 $gap-3;
+    margin-bottom: $gap-2;
+    svg {
+        color: $primary-normal;
+        flex-shrink: 0;
+        width: 14px;
+    }
+    p {
+        margin: 0;
+        color: $gray-700;
+    }
+}
+.areasInteresse {
+    border: 1px solid $gray-50;
+    border-radius: $gap-1;
+    padding: $gap-2;
+    margin-bottom: $gap-2;
+}
+.areaTags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $gap-1;
+}
+.areaTag {
+    border: 1px solid $primary-light;
+    padding: 2px 10px;
+    border-radius: $gap-1;
+    color: $primary-light;
+    font-size: 12px;
+}
+.sorteioSection {
+    border: 1px solid $gray-50;
+    border-radius: $gap-1;
+    padding: $gap-2;
+    margin-bottom: $gap-2;
+}
+.editarAreasBtn {
+    display: inline-flex;
+    flex-shrink: 0;
+}
+.areaFiltroSelect {
+    width: 100%;
+}
+.areaOption {
+    display: flex;
+    align-items: center;
+    gap: $gap-1;
+    width: 100%;
+}
+.areaOptionStar {
+    width: 14px;
+    height: 14px;
+    color: $warning-dark;
+    flex-shrink: 0;
+}
+.areaOptionLabel {
+    flex: 1;
+}
+.areaOptionCount {
+    color: $gray-400;
+    font-size: 12px;
+}
+
+.waiting {
+    border: 1px solid $success-normal;
+    padding: $gap-2 $gap-3;
+    @include responsive(s) {
+        padding: $gap-1 $gap-2;
+    }
+    border-radius: $gap-1;
+    background-color: $success-lighten;
+    color: $gray-600;
+    margin-top: $gap-1;
+}
+
+.squares {
+    padding: 4px;
+    .square {
+        border: 1px solid $gray-50;
+        border-radius: $gap-1;
+        padding: 3px;
+        display: flex;
+        @include responsive(s) {
+            flex-direction: column;
+        }
+        &:not(:last-child) {
+            margin-bottom: $gap-1;
+        }
+
+        .squareHeader, .squareContent, .squareContentEmpty {
+            background-color: $white-dark;
+            padding: $gap-1;
+            border-radius: 6px;
+        }
+        .squareHeader {
+            margin-right: 3px;
+            @include responsive(s) {
+                margin-right: 0px;
+                margin-bottom: 3px;
+            }
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: center;
+            h6 {
+                font-size: 22px;
+            }
+        }
+        .squareContent {
+            flex: 1;
+            cursor: pointer;
+            transition: ease 0.3s;
+            border: 1px solid transparent;
+            &:hover {
+                border: 1px solid $primary-light;
+            }
+            .info {
+                display: flex;
+                margin-bottom: 6px;
+                .area {
+                    border: 1px solid $primary-light;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    color: $primary-light;
+                    font-size: 10px;
+                }
+                .planos {
+                    border: 1px solid $success-normal;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    color: $success-dark;
+                    font-size: 10px;
+                    margin-left: 6px;
+                }
+            }
+        }
+        &.squareBloqueado {
+            opacity: 0.5;
+            pointer-events: none;
+            .squareContent {
+                cursor: default;
+                &:hover {
+                    border: 1px solid transparent;
+                }
+            }
+        }
+        &.squareWarning {
+            .squareHeader, .squareContent, .squareContentEmpty {
+                background-color: $warning-lighten;
+            }
+            .squareContent {
+                margin-right: 4px;
+                @include responsive(s) {
+                    margin-right: 0px;
+                    margin-bottom: 4px;
+                }
+                cursor: auto;
+                &:hover {
+                    border: 1px solid transparent;
+                }
+                .area {
+                    border: 1px solid $warning-darken;
+                    color: $warning-darken;
+                }
+            }
+            .actions {
+                display: flex;
+                @include responsive(xs) {
+                    flex-direction: column;
+                }
+                .item1 {
+                    display: flex;
+                    @include responsive(xs) {
+                        .action {
+                            flex: 1;
+                            &:last-child {
+                                margin-right: 0;
+                            }
+                        }
+                    }
+                }
+                .action {
+                    cursor: pointer;
+                    border: 1px solid transparent;
+                    transition: ease 0.3s;
+                    color: $warning-darken;
+                    p { color: $warning-darken; }
+                    &:hover {
+                        border: 1px solid $warning-dark;
+                        transform: scale(1.02);
+                    }
+                    @include responsive(s) {
+                        margin-bottom: 0;
+                        margin-right: 4px;
+                    }
+                    &.actionPrimary {
+                        background-color: $warning-dark;
+                        color: $warning-lighten;
+                        flex: 1;
+                        margin-right: 0;
+                        @include responsive(xs) {
+                            margin-top: 4px;
+                        }
+                        &:hover {
+                            transform: scale(1.005);
+                        }
+                        p { color: $warning-lighten; }
+                    }
+                    &.actionError {
+                        color: $error-dark;
+                        &:hover {
+                            border: 1px solid $error-dark;
+                        }
+                        p { color: $error-dark; }
+                    }
+                }
+            }
+        }
+    }
+}

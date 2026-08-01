@@ -24,6 +24,7 @@ import { Chart } from "primereact/chart";
 import { Calendar } from "primereact/calendar";
 import { InputNumber } from "primereact/inputnumber";
 import { Tag } from "primereact/tag";
+import { Checkbox } from "primereact/checkbox";
 
 // FUNÇÕES
 import { getAllPlanoDeTrabalhosByTenant } from "@/app/api/client/planoDeTrabalho";
@@ -41,6 +42,10 @@ const Page = ({ params }) => {
   const [itens, setItens] = useState([]);
   const [chartData, setChartData] = useState({});
   const [comboChartData, setComboChartData] = useState({});
+  // notaProjeto/notaPlano são puros (sem o ajuste de recurso já deferido) —
+  // esse toggle deixa o gestor escolher se o histograma considera o extra
+  // de recurso ("nota efetiva") ou só a média original dos avaliadores.
+  const [incluirExtraRecurso, setIncluirExtraRecurso] = useState(true);
   const [avaliadores, setAvaliadores] = useState(null);
   const [loadingAvaliadores, setLoadingAvaliadores] = useState(true);
   const toast = useRef();
@@ -293,11 +298,11 @@ const Page = ({ params }) => {
   const prepareComboChartData = useCallback(() => {
     if (itensAvaliados.length === 0) return;
 
+    const notaEfetiva = (item) =>
+      incluirExtraRecurso ? item.notaTotalComExtra : item.notaTotalSemExtra;
+
     // Definir intervalos (bins) para as notas totais (0-100 ou outro range adequado)
-    const maxNota = Math.max(
-      ...itensAvaliados.map((item) => item.notaTotal),
-      10,
-    );
+    const maxNota = Math.max(...itensAvaliados.map(notaEfetiva), 10);
     const binSize = maxNota <= 20 ? 2 : 5;
     const bins = [];
     for (let i = 0; i <= maxNota + binSize; i += binSize) {
@@ -312,7 +317,7 @@ const Page = ({ params }) => {
     // Contar quantos planos estão em cada intervalo de nota TOTAL
     const histogram = new Array(bins.length - 1).fill(0);
     itensAvaliados.forEach((item) => {
-      const notaTotal = item.notaTotal;
+      const notaTotal = notaEfetiva(item);
       for (let i = 0; i < bins.length - 1; i++) {
         if (notaTotal >= bins[i] && notaTotal < bins[i + 1]) {
           histogram[i]++;
@@ -326,7 +331,7 @@ const Page = ({ params }) => {
     });
 
     // Calcular estatísticas
-    const notas = itensAvaliados.map((item) => item.notaTotal);
+    const notas = itensAvaliados.map(notaEfetiva);
     const media = notas.reduce((a, b) => a + b, 0) / notas.length;
     const desvioPadrao = Math.sqrt(
       notas.reduce((sq, n) => sq + Math.pow(n - media, 2), 0) / notas.length,
@@ -378,7 +383,7 @@ const Page = ({ params }) => {
 
     // Armazena as estatísticas para uso nos tooltips
     setChartStats({ media, desvioPadrao });
-  }, [itensAvaliados]);
+  }, [itensAvaliados, incluirExtraRecurso]);
   const comboChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -569,8 +574,15 @@ const Page = ({ params }) => {
         const notaOrientador = item.notaOrientador || 0;
         const mediaAlunos = item.notaAluno || 0;
         const mediaRA = calcularMediaRA(item.participacoes) || 0;
-        const notaTotal =
+        // notaTotalSemExtra = só a média dos avaliadores (nunca inclui
+        // recurso); notaTotalComExtra soma o ajuste de recurso já deferido —
+        // o histograma escolhe qual usar via o toggle "incluirExtraRecurso".
+        const notaTotalSemExtra =
           notaProjeto + notaPlano + notaOrientador + mediaAlunos;
+        const notaExtraTotal =
+          (item.notaExtraRecursoProjeto || 0) +
+          (item.notaExtraRecursoPlano || 0);
+        const notaTotalComExtra = notaTotalSemExtra + notaExtraTotal;
 
         return {
           ...item,
@@ -602,7 +614,8 @@ const Page = ({ params }) => {
           notaOrientador: parseFloat(notaOrientador.toFixed(4)),
           mediaNotasAlunos: parseFloat(mediaAlunos.toFixed(4)),
           mediaRA: parseFloat(mediaRA.toFixed(4)),
-          notaTotal: parseFloat(notaTotal.toFixed(4)),
+          notaTotalSemExtra: parseFloat(notaTotalSemExtra.toFixed(4)),
+          notaTotalComExtra: parseFloat(notaTotalComExtra.toFixed(4)),
         };
       });
       setItens(itensComCamposVirtuais || []);
@@ -681,6 +694,16 @@ const Page = ({ params }) => {
                 Simular nota de corte
               </Button>
             </div>
+          </div>
+          <div className="flex align-items-center gap-2 mb-2">
+            <Checkbox
+              inputId="incluirExtraRecurso"
+              checked={incluirExtraRecurso}
+              onChange={(e) => setIncluirExtraRecurso(e.checked)}
+            />
+            <label htmlFor="incluirExtraRecurso" className="p5">
+              Incluir nota extra de recurso no total
+            </label>
           </div>
           {Object.keys(comboChartData).length > 0 ? (
             <div>

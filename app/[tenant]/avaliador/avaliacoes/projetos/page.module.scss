@@ -457,6 +457,149 @@
     color: $primary-normal;
 }
 
+// ================ ÍCONE DE AJUDA + MODAL "COMO FUNCIONA" ================
+.botaoAjuda{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: $gray-500;
+    padding: 4px;
+    transition: color 0.15s;
+    &:hover{
+        color: $primary-normal;
+    }
+}
+
+.explicacaoHeader{
+    display:flex;
+    align-items:flex-start;
+    gap: $gap-2;
+    margin-bottom: $gap-2;
+}
+.explicacaoIcon{
+    flex-shrink:0;
+    margin-top: 2px;
+    color: $primary-normal;
+}
+.explicacaoTitulo{
+    margin:0 0 4px;
+    font-size:1.05rem;
+    font-weight:600;
+    color: $gray-800;
+}
+.explicacaoSubtitulo{
+    margin:0;
+    font-size:0.875rem;
+    color:$gray-500;
+}
+
+.comoFuncionaBox{
+    padding:$gap-3;
+    background:$gray-50;
+    border-radius:8px;
+    border:1px solid $gray-200;
+    margin-bottom:$gap-2;
+}
+.comoFuncionaLista{
+    margin:0;
+    padding:0 0 0 20px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    font-size:0.875rem;
+    color:$gray-600;
+    line-height:1.5;
+    strong{ color:$gray-800; }
+}
+
+.sugestaoModo{
+    display:flex;
+    gap:$gap-2;
+    padding:$gap-3;
+    background-color: $success-lighten;
+    border:1px solid $success-normal;
+    border-radius:10px;
+    margin-bottom:$gap-2;
+}
+.sugestaoModoIcon{
+    flex-shrink:0;
+    margin-top:2px;
+    color:$success-dark;
+}
+.sugestaoModoContent{ flex:1; }
+.sugestaoModoTitulo{
+    margin:0 0 6px;
+    color:$success-dark;
+    font-size:0.95rem;
+    font-weight:600;
+}
+.sugestaoModoTexto{
+    margin:0;
+    color:$gray-700;
+    font-size:0.85rem;
+    line-height:1.4;
+}
+
+.impedimentos{
+    display:flex;
+    gap:$gap-2;
+    padding:$gap-3;
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    border:1px solid #f59e0b;
+    border-radius:10px;
+    margin-bottom: $gap-2;
+}
+.impedimentosIcon{
+    flex-shrink:0;
+    margin-top:2px;
+    color:#d97706;
+}
+.impedimentosContent{ flex:1; }
+.impedimentosTitulo{
+    margin:0 0 6px;
+    color:#92400e;
+    font-size:0.95rem;
+    font-weight:600;
+}
+.impedimentosTexto{
+    margin:0 0 8px;
+    color:#92400e;
+    font-size:0.85rem;
+    line-height:1.4;
+    &:last-child{ margin-bottom:0; }
+}
+.impedimentosListaRegras{
+    margin:0 0 8px;
+    padding-left:1.1rem;
+    li{ margin-bottom:6px; color:#92400e; font-size:0.85rem; line-height:1.4; }
+}
+
+.modalAcoes{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $gap-2;
+    flex-wrap: wrap;
+    :global(.button){
+        width: auto;
+        height: auto;
+        padding: $gap-1 $gap-3;
+    }
+}
+.checkboxRow{
+    display: flex;
+    align-items: center;
+    gap: $gap-1;
+    label{
+        cursor: pointer;
+        font-size: 0.875rem;
+        color: $gray-600;
+    }
+}
+
 
 
 
