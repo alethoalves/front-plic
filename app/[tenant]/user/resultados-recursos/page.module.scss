@@ -240,6 +240,26 @@ $shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04
     white-space: nowrap;
   }
 
+  // Aviso informativo (não é um resultado positivo/negativo como o extra
+  // acima) — por isso paleta neutra/primária, não $success-*.
+  .notaMiniBadgeRecurso {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 0.625rem;
+    font-weight: 700;
+    color: $primary-dark;
+    background-color: $primary-lighten;
+    border-radius: 999px;
+    padding: 1px 6px;
+    white-space: nowrap;
+
+    svg {
+      width: 10px;
+      height: 10px;
+    }
+  }
+
   &.semNota .notaMiniValor {
     color: $gray-300;
     font-weight: 600;

@@ -6,6 +6,7 @@ import {
   RiGroupLine,
   RiCursorLine,
   RiLockLine,
+  RiFileTextLine,
 } from "@remixicon/react";
 import { Card } from "primereact/card";
 import { Toast } from "primereact/toast";
@@ -154,6 +155,15 @@ const PlanoCard = ({ plano, tenant, toast }) => {
                   ? plano.notaExtraRecursoPlano || 0
                   : 0;
             const temExtraNoCard = mostrarNotaFinal && extraDoCard > 0;
+            // Só projeto e plano têm recurso por item (orientador/aluno usam
+            // um recurso único "geral", sem badge por item aqui) — mostra o
+            // selo a partir de QUALQUER card da família (ver recursoStatus em
+            // getResultadosByUser), não só do plano onde o recurso foi aberto.
+            const statusRecurso =
+              slug === "projeto" || slug === "plano"
+                ? plano.recursoStatus?.[slug]
+                : null;
+            const temRecursoEnviado = (statusRecurso?.total || 0) > 0;
             return (
               <Link
                 key={key}
@@ -185,6 +195,14 @@ const PlanoCard = ({ plano, tenant, toast }) => {
                 {temExtraNoCard && (
                   <span className={styles.notaMiniBadgeExtra}>
                     +{formatarNota(extraDoCard)} recurso
+                  </span>
+                )}
+                {temRecursoEnviado && (
+                  <span className={styles.notaMiniBadgeRecurso}>
+                    <RiFileTextLine />
+                    {statusRecurso.total === 1
+                      ? "Recurso enviado"
+                      : `${statusRecurso.total} recursos enviados`}
                   </span>
                 )}
               </Link>
