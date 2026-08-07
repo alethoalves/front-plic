@@ -71,6 +71,11 @@ const BLOQUEIO_OPCOES = [
   { label: "Não bloqueado", value: false },
 ];
 
+const SOLICITOU_RECURSO_OPCOES = [
+  { label: "Sim", value: true },
+  { label: "Não", value: false },
+];
+
 // Registra filtro personalizado para intervalo de notas
 FilterService.register("nota_intervalo", (value, filters) => {
   const [min, max] = filters ?? [undefined, undefined];
@@ -97,6 +102,7 @@ const getInitialFilters = () => ({
     value: [],
     matchMode: FilterMatchMode.IN,
   },
+  solicitouRecurso: { value: [], matchMode: FilterMatchMode.IN },
   "inscricao.edital.titulo": {
     value: [],
     matchMode: FilterMatchMode.IN,
@@ -258,6 +264,7 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
             ),
             alunosString: alunos.join(", "),
             orientadoresString: orientadores.join(", "),
+            solicitouRecurso: (item.Recurso?.length ?? 0) > 0,
             quantidadeFichas: fichasProjeto.length,
             quantidadeAvaliadores: avaliadoresProjeto.length,
             avaliadoresString:
@@ -473,6 +480,7 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
       { header: "ID_Plano", key: "id", width: 12 },
       { header: "Status Avaliação", key: "statusAvaliacao", width: 20 },
       { header: "Bloqueio", key: "bloqueio", width: 16 },
+      { header: "Solicitou Recurso", key: "solicitouRecurso", width: 16 },
       { header: "Status Classificação do Plano", key: "statusClassificacao", width: 22 },
       { header: "Edital", key: "edital", width: 25 },
       { header: "Nome do Projeto", key: "projetoTitulo", width: 30 },
@@ -502,6 +510,7 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
         bloqueio: item.inscricaoProjeto?.bloqueadoAvaliacao
           ? "Bloqueado"
           : "Não bloqueado",
+        solicitouRecurso: item.solicitouRecurso ? "Sim" : "Não",
         statusClassificacao: formatStatusText(item.statusClassificacao),
         edital: item.inscricao?.edital?.titulo || "-",
         projetoTitulo: item.inscricaoProjeto?.projeto?.titulo || "-",
@@ -696,6 +705,21 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
                 ) : (
                   "-"
                 )
+              }
+              style={{ width: "10rem" }}
+            />
+            <Column
+              field="solicitouRecurso"
+              header="Solicitou Recurso"
+              sortable
+              filter
+              filterElement={(options) =>
+                editalRowFilterTemplate(options, SOLICITOU_RECURSO_OPCOES)
+              }
+              showFilterMenu={false}
+              filterField="solicitouRecurso"
+              body={(rowData) =>
+                rowData.solicitouRecurso ? <Tag severity="info">Sim</Tag> : "-"
               }
               style={{ width: "10rem" }}
             />

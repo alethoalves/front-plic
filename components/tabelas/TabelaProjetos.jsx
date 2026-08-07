@@ -58,6 +58,10 @@ const BLOQUEIO_OPCOES = [
   { label: "Bloqueado", value: true },
   { label: "Não bloqueado", value: false },
 ];
+const SOLICITOU_RECURSO_OPCOES = [
+  { label: "Sim", value: true },
+  { label: "Não", value: false },
+];
 
 const TabelaProjetos = ({ params }) => {
   // ESTADOS
@@ -98,6 +102,7 @@ const TabelaProjetos = ({ params }) => {
     "inscricao.edital.titulo": { value: [], matchMode: FilterMatchMode.IN },
     statusAvaliacao: { value: "", matchMode: FilterMatchMode.CONTAINS },
     bloqueadoAvaliacao: { value: [], matchMode: FilterMatchMode.IN },
+    solicitouRecurso: { value: [], matchMode: FilterMatchMode.IN },
     notaMedia: {
       value: [undefined, undefined],
       matchMode: "intervalo_numerico",
@@ -143,6 +148,9 @@ const TabelaProjetos = ({ params }) => {
             notaMedia,
             avaliadores,
             quantidadeAvaliadores: inscricao.InscricaoProjetoAvaliador?.length || 0,
+            solicitouRecurso: (inscricao.PlanoDeTrabalho || []).some(
+              (plano) => (plano.Recurso?.length ?? 0) > 0
+            ),
           };
         }) || [];
 
@@ -563,6 +571,20 @@ const TabelaProjetos = ({ params }) => {
                   ) : (
                     "-"
                   )
+                }
+                style={{ width: "10rem" }}
+              />
+              <Column
+                field="solicitouRecurso"
+                header="Solicitou Recurso"
+                filter
+                filterElement={(options) =>
+                  editalRowFilterTemplate(options, SOLICITOU_RECURSO_OPCOES)
+                }
+                showFilterMenu={false}
+                filterField="solicitouRecurso"
+                body={(rowData) =>
+                  rowData.solicitouRecurso ? <Tag severity="info">Sim</Tag> : "-"
                 }
                 style={{ width: "10rem" }}
               />
