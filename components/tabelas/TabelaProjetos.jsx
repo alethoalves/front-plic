@@ -113,7 +113,7 @@ const TabelaProjetos = ({ params }) => {
     try {
       const inscricoesProjetos = await getInscricaoProjetoByTenant(
         params.tenant,
-        null,
+        "enviada",
         params.ano || null
       );
 
