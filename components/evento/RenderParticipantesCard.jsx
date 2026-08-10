@@ -10,6 +10,7 @@ import Select2 from "../Select2";
 export const RenderParticipantesCard = ({
   cpf,
   type,
+  proponenteUserId,
   initialParticipantes = [],
   onSaveParticipantes,
 }) => {
@@ -20,9 +21,17 @@ export const RenderParticipantesCard = ({
   const [nomeParticipante, setNomeParticipante] = useState("");
   const [cpfVerificado, setCpfVerificado] = useState(false);
   const [cpfParticipante, setCpfParticipante] = useState("");
+  const [cpfParticipanteUserId, setCpfParticipanteUserId] = useState(null);
+  // Participantes pré-preenchidos a partir de um plano/projeto não trazem
+  // `cpf` (só `userId`) — a resposta de getPlanosOuProjetos não expõe mais
+  // CPF de terceiros. `limparCPF` precisa tolerar isso.
   const limparCPF = (cpf) => {
-    return cpf.replace(/\D/g, ""); // Remove tudo que não é dígito
+    return cpf ? cpf.replace(/\D/g, "") : null;
   };
+  const mesmoParticipante = (a, b) =>
+    a?.userId != null && b?.userId != null
+      ? a.userId === b.userId
+      : limparCPF(a?.cpf) === limparCPF(b?.cpf) && limparCPF(a?.cpf) !== null;
   const {
     control,
     handleSubmit,
@@ -37,11 +46,9 @@ export const RenderParticipantesCard = ({
     },
   });
   // Determina quais participantes são iniciais e não podem ser removidos
-  const isParticipanteInicial = (participanteCpf) => {
+  const isParticipanteInicial = (participante) => {
     if (type !== "PLANO" && type !== "PROJETO") return false;
-    return initialParticipantes.some(
-      (p) => limparCPF(p.cpf) === limparCPF(participanteCpf),
-    );
+    return initialParticipantes.some((p) => mesmoParticipante(p, participante));
   };
   const tiposParticipante = [
     { label: "AUTOR", value: "AUTOR" },
@@ -56,7 +63,7 @@ export const RenderParticipantesCard = ({
   const verificarCPF = async (cpf) => {
     const cpfLimpo = limparCPF(cpf);
 
-    if (participantes.some((p) => limparCPF(p.cpf) === cpfLimpo)) {
+    if (participantes.some((p) => p.cpf && limparCPF(p.cpf) === cpfLimpo)) {
       toast.current.show({
         severity: "error",
         summary: "Erro",
@@ -69,8 +76,20 @@ export const RenderParticipantesCard = ({
     setLoading(true);
     try {
       const response = await cpfVerificationForInscricao(cpf);
+
+      if (participantes.some((p) => p.userId === response.id)) {
+        toast.current.show({
+          severity: "error",
+          summary: "Erro",
+          detail: "Este CPF já foi adicionado à lista de participantes",
+          life: 5000,
+        });
+        return;
+      }
+
       setNomeParticipante(response.nome);
       setCpfParticipante(cpf);
+      setCpfParticipanteUserId(response.id);
       setCpfVerificado(true);
       toast.current.show({
         severity: "success",
@@ -101,9 +120,14 @@ export const RenderParticipantesCard = ({
       return;
     }
 
-    const cpfLimpo = limparCPF(cpfParticipante);
+    const novoParticipante = {
+      cpf: cpfParticipante,
+      userId: cpfParticipanteUserId,
+      nome: nomeParticipante,
+      tipo: data.tipo,
+    };
 
-    if (participantes.some((p) => limparCPF(p.cpf) === cpfLimpo)) {
+    if (participantes.some((p) => mesmoParticipante(p, novoParticipante))) {
       toast.current.show({
         severity: "error",
         summary: "Erro",
@@ -113,12 +137,6 @@ export const RenderParticipantesCard = ({
       return;
     }
 
-    const novoParticipante = {
-      cpf: cpfParticipante,
-      nome: nomeParticipante,
-      tipo: data.tipo,
-    };
-
     setParticipantes([...participantes, novoParticipante]);
     reset({
       cpf: "",
@@ -126,13 +144,13 @@ export const RenderParticipantesCard = ({
     });
     setNomeParticipante("");
     setCpfParticipante("");
+    setCpfParticipanteUserId(null);
     setCpfVerificado(false);
   };
 
-  const removerParticipante = (cpf) => {
-    const cpfLimpo = limparCPF(cpf);
+  const removerParticipante = (participanteRemovido) => {
     setParticipantes(
-      participantes.filter((p) => limparCPF(p.cpf) !== cpfLimpo),
+      participantes.filter((p) => !mesmoParticipante(p, participanteRemovido)),
     );
     toast.current.show({
       severity: "success",
@@ -143,9 +161,8 @@ export const RenderParticipantesCard = ({
   };
 
   const canSave = () => {
-    const cpfLimpo = limparCPF(cpf);
-    const hasMainParticipant = participantes.some(
-      (p) => limparCPF(p.cpf) === cpfLimpo,
+    const hasMainParticipant = participantes.some((p) =>
+      mesmoParticipante(p, { userId: proponenteUserId, cpf }),
     );
     const hasAluno = participantes.some((p) => p.tipo === "AUTOR");
     const hasOrientador = participantes.some((p) => p.tipo === "ORIENTADOR");
@@ -160,7 +177,11 @@ export const RenderParticipantesCard = ({
 
   const salvarParticipantes = () => {
     if (!canSave()) {
-      if (!participantes.some((p) => p.cpf === cpf)) {
+      if (
+        !participantes.some((p) =>
+          mesmoParticipante(p, { userId: proponenteUserId, cpf }),
+        )
+      ) {
         toast.current.show({
           severity: "error",
           summary: "Erro",
@@ -218,10 +239,10 @@ export const RenderParticipantesCard = ({
           ) : (
             <ul style={{ listStyle: "none", padding: 0 }}>
               {participantes.map((participante) => {
-                const isInicial = isParticipanteInicial(participante.cpf);
+                const isInicial = isParticipanteInicial(participante);
                 return (
                   <li
-                    key={participante.cpf}
+                    key={participante.userId ?? participante.cpf}
                     style={{
                       display: "flex",
                       justifyContent: "space-between",
@@ -241,7 +262,7 @@ export const RenderParticipantesCard = ({
                       <Button
                         icon="pi pi-trash"
                         className="p-button-rounded p-button-danger p-button-sm"
-                        onClick={() => removerParticipante(participante.cpf)}
+                        onClick={() => removerParticipante(participante)}
                       />
                     )}
                   </li>
@@ -325,6 +346,7 @@ export const RenderParticipantesCard = ({
                       reset();
                       setNomeParticipante("");
                       setCpfParticipante("");
+                      setCpfParticipanteUserId(null);
                       setCpfVerificado(false);
                     }}
                   />
@@ -346,8 +368,8 @@ export const RenderParticipantesCard = ({
               <li>
                 <p
                   className={
-                    participantes.some(
-                      (p) => limparCPF(p.cpf) === limparCPF(cpf),
+                    participantes.some((p) =>
+                      mesmoParticipante(p, { userId: proponenteUserId, cpf }),
                     )
                       ? "text-green-500"
                       : "text-red-500"

@@ -90,9 +90,9 @@ export const deleteSubmissaoByUser = async (submissaoId, cpf) => {
 };
 export const criarInscricaoEvento = async (body) => {
   try {
-    // Para instituição parceira não há headers (não tem conta no PLIC); para
-    // um tenant real, o backend agora exige o header de autenticação (ver
-    // verificarAutenticacaoTenant no back) — enviamos se já estiver logado.
+    // O backend identifica o proponente só pelo CPF enviado no corpo, sem
+    // exigir login — o header é enviado só se o usuário já estiver logado
+    // em outra parte do sistema (inofensivo, o backend não o exige).
     const headers = getAuthHeadersClient();
     const response = await req.post(
         `/evenplic/criarInscricaoEvento`,
@@ -121,7 +121,8 @@ export const getTenantsByEventoSlug = async (slug) => {
 export const getPlanosOuProjetos = async (cpf,slugEvento, slugTenant) => {
   try {
     // Este endpoint é sempre chamado no fluxo de tenant real (nunca para
-    // instituição parceira) — o backend exige autenticação.
+    // instituição parceira) — identifica o usuário só pelo CPF, sem exigir
+    // login; o header é enviado só se o usuário já estiver logado (inofensivo).
     const headers = getAuthHeadersClient();
     const response = await req.get(
       `/evenplic/getTenantsByEventoSlug/${cpf}/${slugEvento}/${slugTenant}`,

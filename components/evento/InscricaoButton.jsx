@@ -3,7 +3,6 @@ import { RiCouponLine, RiIdCardLine } from "@remixicon/react";
 import styles from "./InscricaoButton.module.scss";
 import { useState, useEffect, useRef, useMemo } from "react";
 import Modal from "../Modal";
-import LoginCpfConhecido from "./LoginCpfConhecido";
 
 import { Stepper } from "primereact/stepper";
 import { StepperPanel } from "primereact/stepperpanel";
@@ -49,7 +48,7 @@ export const InscricaoButton = ({ params }) => {
   const [loadingSubmissoes, setLoadingSubmissoes] = useState(false);
   const [submissoesLoaded, setSubmissoesLoaded] = useState(false);
   const [type, setType] = useState(false);
-  const [awaitingLogin, setAwaitingLogin] = useState(false);
+  const [proponenteUserId, setProponenteUserId] = useState(null);
 
   const stepperRef = useRef(null);
   const toast = useRef(null);
@@ -98,7 +97,7 @@ export const InscricaoButton = ({ params }) => {
     setApresentacaoData(null);
     setType();
     setSelectedPlano();
-    setAwaitingLogin(false);
+    setProponenteUserId(null);
   };
 
   const handleConfirmarEnviar = () => {
@@ -224,25 +223,24 @@ export const InscricaoButton = ({ params }) => {
       return;
     }
 
-    // Instituição real: o backend agora exige login de verdade (não basta o
-    // CPF) para garantir que quem está se inscrevendo é o dono do CPF —
-    // mostra o formulário de login/cadastro embutido antes de buscar planos.
-    setAwaitingLogin(true);
+    // Instituição real: busca direto os planos/projetos vinculados ao CPF
+    // informado, sem exigir login.
+    buscarPlanos(data.cpf);
   };
 
-  const buscarPlanosAposLogin = async () => {
-    setAwaitingLogin(false);
+  const buscarPlanos = async (cpf) => {
     setLoading(true);
     setError(null);
 
     try {
       const planosData = await getPlanosOuProjetos(
-        cpfValue,
+        cpf,
         params.edicao,
         selectedTenant.slug,
       );
       setPlanos(planosData.data);
       setType(planosData.type);
+      setProponenteUserId(planosData.proponenteUserId ?? null);
       if (planosData.type === "PLANO" || planosData.type === "PROJETO") {
         setActiveStep(2);
       } else {
@@ -250,8 +248,7 @@ export const InscricaoButton = ({ params }) => {
       }
     } catch (error) {
       console.error("Erro ao buscar planos:", error);
-      const errorMessage =
-        "Erro ao buscar planos. Faça login novamente e tente outra vez.";
+      const errorMessage = "Erro ao buscar planos. Tente novamente.";
       setError(error.response?.data?.message || errorMessage);
       showError(error.response?.data?.message || errorMessage);
     } finally {
@@ -327,6 +324,18 @@ export const InscricaoButton = ({ params }) => {
     }
 
     // LÓGICA PARA POPULAR PARTICIPANTES =================================
+    // Identifica os participantes pelo `id` retornado pelo backend, não pelo
+    // CPF (que não é mais exposto pra terceiros nessa resposta). O próprio
+    // proponente (que acabou de digitar seu CPF) é a única exceção — pra
+    // ele, incluímos também o `cpf`, autoconhecido, sem risco de exposição.
+    const criarParticipanteData = (participacaoUser, tipo) => ({
+      userId: participacaoUser?.id,
+      ...(participacaoUser?.id === proponenteUserId ? { cpf: cpfValue } : {}),
+      nome: participacaoUser?.nome,
+      tipo,
+      instituicao: selectedTenant?.nome || "",
+    });
+
     const participantesData = [];
     if (type === "PLANO") {
       // 1. Adiciona AUTORES (participantes com status ATIVA)
@@ -334,24 +343,18 @@ export const InscricaoButton = ({ params }) => {
         plano.participacoes
           .filter((p) => p.statusParticipacao === "ATIVA")
           .forEach((participacao) => {
-            participantesData.push({
-              cpf: participacao.user?.cpf,
-              nome: participacao.user?.nome,
-              tipo: "AUTOR",
-              instituicao: selectedTenant?.nome || "",
-            });
+            participantesData.push(
+              criarParticipanteData(participacao.user, "AUTOR"),
+            );
           });
       }
 
       // 2. Adiciona ORIENTADORES (da inscrição)
       if (plano.inscricao?.participacoes) {
         plano.inscricao.participacoes.forEach((participacao) => {
-          participantesData.push({
-            cpf: participacao.user?.cpf,
-            nome: participacao.user?.nome,
-            tipo: "ORIENTADOR",
-            instituicao: selectedTenant?.nome || "",
-          });
+          participantesData.push(
+            criarParticipanteData(participacao.user, "ORIENTADOR"),
+          );
         });
       }
     }
@@ -372,12 +375,9 @@ export const InscricaoButton = ({ params }) => {
           )
           .filter((p) => p.tipo === "aluno")
           .forEach((participacao) => {
-            participantesData.push({
-              cpf: participacao.user?.cpf,
-              nome: participacao.user?.nome,
-              tipo: "AUTOR",
-              instituicao: selectedTenant?.nome || "",
-            });
+            participantesData.push(
+              criarParticipanteData(participacao.user, "AUTOR"),
+            );
           });
       }
 
@@ -392,12 +392,9 @@ export const InscricaoButton = ({ params }) => {
           )
           .filter((p) => p.tipo === "orientador")
           .forEach((participacao) => {
-            participantesData.push({
-              cpf: participacao.user?.cpf,
-              nome: participacao.user?.nome,
-              tipo: "ORIENTADOR",
-              instituicao: selectedTenant?.nome || "",
-            });
+            participantesData.push(
+              criarParticipanteData(participacao.user, "ORIENTADOR"),
+            );
           });
       }
     }
@@ -464,27 +461,6 @@ export const InscricaoButton = ({ params }) => {
               <StepperPanel header="Informe seu CPF">
                 <div className={styles.contentBox}>
                   <div className={styles.content}>
-                    {awaitingLogin ? (
-                      <div>
-                        <p className="mb-2">
-                          Esta instituição é cadastrada no PLIC. Entre com o
-                          CPF <strong>{cpfValue}</strong> para continuar.
-                        </p>
-                        <LoginCpfConhecido
-                          cpf={cpfValue}
-                          onSuccess={buscarPlanosAposLogin}
-                        />
-                        <div className="flex pt-2">
-                          <Button
-                            label="Voltar"
-                            severity="secondary"
-                            icon="pi pi-arrow-left"
-                            onClick={() => setAwaitingLogin(false)}
-                            type="button"
-                          />
-                        </div>
-                      </div>
-                    ) : (
                     <form onSubmit={handleSubmit(onSubmit)}>
                       <div className="flex flex-column gap-2">
                         <Input
@@ -545,7 +521,6 @@ export const InscricaoButton = ({ params }) => {
                         </Button>
                       </div>
                     </form>
-                    )}
                   </div>
                 </div>
               </StepperPanel>
@@ -646,6 +621,7 @@ export const InscricaoButton = ({ params }) => {
                     <RenderParticipantesCard
                       cpf={cpfValue}
                       type={type}
+                      proponenteUserId={proponenteUserId}
                       initialParticipantes={participantesData} // Passa participantes salvos
                       onSaveParticipantes={(participantesSalvos) => {
                         setParticipantesData(participantesSalvos);
