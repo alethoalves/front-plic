@@ -14,6 +14,7 @@ import { RiDeleteBinLine } from "@remixicon/react";
 //COMPONENTES
 import Button from "@/components/Button";
 import Input from "@/components/Input";
+import Select from "@/components/Select";
 import SearchableSelect from "../SearchableSelect";
 import Atividades from "../Atividades";
 import { Dialog } from "primereact/dialog";
@@ -137,6 +138,9 @@ const FormGestorPlanoDeTrabalhoCreateOrEdit = ({
       )
       .optional(),
     camposDinamicos: dynamicSchema, // Adiciona campos dinâmicos ao schema
+    statusClassificacao: z
+      .enum(["EM_ANALISE", "CLASSIFICADO", "DESCLASSIFICADO"])
+      .optional(),
   });
   //CONTROLA O FORMULARIO
   const {
@@ -176,6 +180,7 @@ const FormGestorPlanoDeTrabalhoCreateOrEdit = ({
     if (initialData) {
       setValue("titulo", initialData.titulo);
       setValue("areaId", initialData.areaId);
+      setValue("statusClassificacao", initialData.statusClassificacao);
       // Popula cronograma
       if (initialData.CronogramaPlanoDeTrabalho) {
         const mappedCronograma = initialData.CronogramaPlanoDeTrabalho.map(
@@ -332,6 +337,21 @@ const FormGestorPlanoDeTrabalhoCreateOrEdit = ({
                 disabled={loading}
               />
             </div>
+            {initialData?.id && (
+              <div className={`${styles.input}`}>
+                <Select
+                  control={control}
+                  name="statusClassificacao"
+                  label="Status de Classificação"
+                  options={[
+                    { value: "EM_ANALISE", label: "Em Análise" },
+                    { value: "CLASSIFICADO", label: "Classificado" },
+                    { value: "DESCLASSIFICADO", label: "Desclassificado" },
+                  ]}
+                  disabled={loading}
+                />
+              </div>
+            )}
             <div className={`${styles.camposDinamicos}`}>
               {renderDynamicFields(
                 formularioEdital,

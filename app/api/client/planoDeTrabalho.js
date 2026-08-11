@@ -15,6 +15,10 @@ const convertToFormData = (data) => {
     formData.append("cronograma", JSON.stringify(data.cronograma));
   }
 
+  if (data.statusClassificacao) {
+    formData.append("statusClassificacao", data.statusClassificacao);
+  }
+
   // Campos dinâmicos
   if (data.camposDinamicos) {
     Object.keys(data.camposDinamicos).forEach((key) => {

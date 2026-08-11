@@ -116,7 +116,9 @@ const FormGestorProjetoCreateOrEdit = ({
   const campos = formularioEdital?.campos ?? [];
 
   // 2) gera o schema para os campos dinâmicos
-  const dynamicSchemaBase = createDynamicSchema(campos); // ← sua função
+  const dynamicSchemaBase = createDynamicSchema(campos, {
+    skipRequired: !projetoId,
+  }); // ← sua função
 
   // 3) se o array estiver vazio, torna-o opcional
   const dynamicSchema =
@@ -771,7 +773,9 @@ const FormGestorProjetoCreateOrEdit = ({
                   loading,
                   register,
                   errors,
-                  watch
+                  watch,
+                  undefined,
+                  { skipRequired: !projetoId }
                 )}
               </div>
             </div>

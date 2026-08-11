@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import styles from "./ParticipacaoGestorController.module.scss";
 import {
   ativarOuPendenteParticipacao,
+  deleteParticipacao,
   getParticipacao,
   inativarParticipacao,
   substituirAlunoParticipacao,
@@ -12,6 +13,7 @@ import {
 import {
   RiArrowRightSLine,
   RiCheckboxCircleLine,
+  RiDeleteBinLine,
   RiErrorWarningLine,
   RiExchangeLine,
   RiForbid2Line,
@@ -24,6 +26,7 @@ import {
 } from "@remixicon/react";
 import { getFormulario } from "@/app/api/client/formulario";
 import Modal from "../Modal";
+import ModalDelete from "@/components/ModalDelete";
 import { Button } from "primereact/button";
 import { Toast } from "primereact/toast";
 import {
@@ -48,9 +51,12 @@ const ParticipacaoGestorController = ({
   ano,
   participacaoId,
   onSuccess,
+  onClose,
 }) => {
   // ================ ESTADOS PRINCIPAIS ================
   const [item, setItem] = useState(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [errorDelete, setErrorDelete] = useState("");
   const [loading, setLoading] = useState(false);
   const [editalInfo, setEditalInfo] = useState(null);
   const [tipoParticipacao, setTipoParticipacao] = useState(null);
@@ -297,6 +303,27 @@ const ParticipacaoGestorController = ({
       });
     } finally {
       setSaving(false);
+    }
+  };
+
+  // ================ HANDLER PARA EXCLUSÃO ================
+  const handleDeleteParticipacao = async () => {
+    setErrorDelete("");
+    try {
+      await deleteParticipacao(tenant, participacaoId);
+      toast.current?.show({
+        severity: "success",
+        summary: "Sucesso",
+        detail: "Participação excluída com sucesso!",
+        life: 3000,
+      });
+      setDeleteModalOpen(false);
+      if (onSuccess) await onSuccess();
+      if (onClose) onClose();
+    } catch (error) {
+      setErrorDelete(
+        error.response?.data?.message ?? "Erro ao excluir participação."
+      );
     }
   };
 
@@ -883,6 +910,17 @@ const ParticipacaoGestorController = ({
       {renderModalOpcoes()}
       {renderModalPendenciaVinculo()}
       {renderModalCancelVinculo()}
+      <ModalDelete
+        isOpen={deleteModalOpen}
+        title="Excluir participação"
+        confirmationText={`Tem certeza que deseja excluir a participação de ${item?.user?.nome}? Solicitações de bolsa, vínculos e históricos relacionados a este aluno também serão apagados.`}
+        errorDelete={errorDelete}
+        handleDelete={handleDeleteParticipacao}
+        onClose={() => {
+          setDeleteModalOpen(false);
+          setErrorDelete("");
+        }}
+      />
 
       {loading && <p>Carregando...</p>}
       {item && !loading && (
@@ -1038,6 +1076,16 @@ const ParticipacaoGestorController = ({
                         <RiUserUnfollowLine />
                         <p>Cancelar</p>
                       </div>
+                      {item.tipo === "aluno" && (
+                        <div
+                          onClick={() => setDeleteModalOpen(true)}
+                          className={`${styles.action} ${styles.error}`}
+                          title="Excluir participação"
+                        >
+                          <RiDeleteBinLine />
+                          <p>Excluir</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className={styles.contentCard}>
