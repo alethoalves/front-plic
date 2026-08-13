@@ -265,6 +265,9 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
             alunosString: alunos.join(", "),
             orientadoresString: orientadores.join(", "),
             solicitouRecurso: (item.Recurso?.length ?? 0) > 0,
+            solicitouBolsa:
+              item.participacoes?.some((p) => p.solicitarBolsa === true) ??
+              false,
             quantidadeFichas: fichasProjeto.length,
             quantidadeAvaliadores: avaliadoresProjeto.length,
             avaliadoresString:
@@ -481,6 +484,7 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
       { header: "Status Avaliação", key: "statusAvaliacao", width: 20 },
       { header: "Bloqueio", key: "bloqueio", width: 16 },
       { header: "Solicitou Recurso", key: "solicitouRecurso", width: 16 },
+      { header: "Bolsa Solicitada", key: "solicitouBolsa", width: 16 },
       { header: "Status Classificação do Plano", key: "statusClassificacao", width: 22 },
       { header: "Edital", key: "edital", width: 25 },
       { header: "Nome do Projeto", key: "projetoTitulo", width: 30 },
@@ -511,6 +515,7 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
           ? "Bloqueado"
           : "Não bloqueado",
         solicitouRecurso: item.solicitouRecurso ? "Sim" : "Não",
+        solicitouBolsa: item.solicitouBolsa ? "Sim" : "Não",
         statusClassificacao: formatStatusText(item.statusClassificacao),
         edital: item.inscricao?.edital?.titulo || "-",
         projetoTitulo: item.inscricaoProjeto?.projeto?.titulo || "-",
