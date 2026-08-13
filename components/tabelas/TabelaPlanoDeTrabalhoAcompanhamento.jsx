@@ -76,6 +76,18 @@ const SOLICITOU_RECURSO_OPCOES = [
   { label: "Não", value: false },
 ];
 
+// Mesmo mapa usado em participacoes/selecao/orientadores/page.jsx — não há
+// util compartilhado pra isso ainda, cada tela mantém sua própria cópia.
+const LABELS_TITULACAO = {
+  GRADUACAO: "Graduação",
+  ESPECIALIZACAO: "Especialização",
+  MESTRADO: "Mestrado",
+  DOUTORADO: "Doutorado",
+  POS_DOUTORADO: "Pós-Doutorado",
+};
+const formatarTitulacao = (titulacao) =>
+  LABELS_TITULACAO[titulacao] || titulacao || "-";
+
 // Registra filtro personalizado para intervalo de notas
 FilterService.register("nota_intervalo", (value, filters) => {
   const [min, max] = filters ?? [undefined, undefined];
@@ -215,6 +227,17 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
           const orientadores =
             item.inscricao?.participacoes?.map((p) => p.user.nome) || [];
 
+          // Titulação/ano de titulação do(s) orientador(es) — mesmo array
+          // de participações acima, um plano pode ter mais de um orientador.
+          const titulacoesOrientadores =
+            item.inscricao?.participacoes?.map((p) =>
+              formatarTitulacao(p.user.titulacao)
+            ) || [];
+          const anosTitulacaoOrientadores =
+            item.inscricao?.participacoes?.map(
+              (p) => p.user.anoTitulacao ?? "-"
+            ) || [];
+
           // Campos herdados do projeto (mesmos que existiam na tabela
           // "Avaliações de Projetos", agora trazidos pra cá).
           const fichasProjeto = item.inscricaoProjeto?.FichaAvaliacao || [];
@@ -264,6 +287,9 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
             ),
             alunosString: alunos.join(", "),
             orientadoresString: orientadores.join(", "),
+            titulacaoOrientadoresString: titulacoesOrientadores.join(", "),
+            anoTitulacaoOrientadoresString:
+              anosTitulacaoOrientadores.join(", "),
             solicitouRecurso: (item.Recurso?.length ?? 0) > 0,
             solicitouBolsa:
               item.participacoes?.some((p) => p.solicitarBolsa === true) ??
@@ -492,6 +518,8 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
       { header: "Área do Projeto", key: "areaProjeto", width: 20 },
       { header: "Área do Plano", key: "areaPlano", width: 20 },
       { header: "Orientador", key: "orientadores", width: 30 },
+      { header: "Titulação Orientador", key: "titulacaoOrientadores", width: 20 },
+      { header: "Ano Titulação Orientador", key: "anoTitulacaoOrientadores", width: 14 },
       { header: "Aluno", key: "alunos", width: 30 },
       { header: "Nota Total Plano de Trabalho", key: "notaTotal", width: 18 },
       { header: "Nota Projeto", key: "notaProjeto", width: 14 },
@@ -523,6 +551,8 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
         areaProjeto: item.inscricaoProjeto?.projeto?.area?.area || "-",
         areaPlano: item.area?.area || "-",
         orientadores: item.orientadoresString,
+        titulacaoOrientadores: item.titulacaoOrientadoresString,
+        anoTitulacaoOrientadores: item.anoTitulacaoOrientadoresString,
         alunos: item.alunosString,
         notaTotal: item.notaTotal,
         notaProjeto: item.notaProjeto,
