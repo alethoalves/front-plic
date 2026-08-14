@@ -57,6 +57,10 @@ const getInitialFilters = () => ({
     value: null,
     matchMode: FilterMatchMode.IN,
   },
+  resultadoFinal: {
+    value: null,
+    matchMode: FilterMatchMode.IN,
+  },
   notaTotal: {
     value: [null, null],
     matchMode: "intervalo",
@@ -212,6 +216,8 @@ const Resultado = ({}) => {
 
       // Definindo as colunas (com as novas colunas adicionadas)
       worksheet.columns = [
+        { header: "ID Inscrição", key: "idInscricao", width: 12 },
+        { header: "ID Plano", key: "idPlano", width: 12 },
         { header: "Edital", key: "edital", width: 30 },
         { header: "Plano de Trabalho", key: "planoTrabalho", width: 30 },
         { header: "Status Plano", key: "statusPlano", width: 20 },
@@ -237,6 +243,7 @@ const Resultado = ({}) => {
         { header: "Conta", key: "conta", width: 15 }, // NOVA COLUNA
         { header: "Status Aluno", key: "statusAluno", width: 20 },
         { header: "Justificativa Aluno", key: "justificativaAluno", width: 30 },
+        { header: "Resultado Final", key: "resultadoFinal", width: 20 },
         {
           header: "Status Solicitação de Bolsa",
           key: "statusSolicitacaoBolsa",
@@ -263,6 +270,12 @@ const Resultado = ({}) => {
           key: "notaTotal",
           width: 15,
           style: { numFmt: "0.0000" },
+        },
+        {
+          header: "Justificativas",
+          key: "justificativasConsolidadas",
+          width: 40,
+          style: { alignment: { wrapText: true, vertical: "top" } },
         },
         // Novas colunas de histórico de participação (como datas reais)
         {
@@ -414,6 +427,38 @@ const Resultado = ({}) => {
           ? vinculo?.motivoRecusa || ""
           : "";
 
+        // Resultado Final: pior caso vence — reprovado > pendente > aprovado.
+        const planoReprovado =
+          part.planoDeTrabalho?.statusClassificacao === "DESCLASSIFICADO";
+        const planoPendente =
+          !part.planoDeTrabalho ||
+          part.planoDeTrabalho.statusClassificacao === "EM_ANALISE";
+        const orientadorReprovado = statusOrientador === "RECUSADA";
+        const orientadorPendente =
+          !statusOrientador || statusOrientador === "EM_ANALISE";
+        const alunoReprovado = isAlunoRecusado;
+        const alunoPendente =
+          !part.statusParticipacao || part.statusParticipacao === "EM_ANALISE";
+
+        let resultadoFinal;
+        if (planoReprovado || orientadorReprovado || alunoReprovado) {
+          resultadoFinal = "DESCLASSIFICADO";
+        } else if (planoPendente || orientadorPendente || alunoPendente) {
+          resultadoFinal = "EM_ANALISE";
+        } else {
+          resultadoFinal = "CLASSIFICADO";
+        }
+
+        // Justificativas consolidadas — só as preenchidas, uma por linha.
+        const justificativasConsolidadas = [
+          justificativaPlano && `Plano: ${justificativaPlano}`,
+          justificativaOrientador && `Orientador: ${justificativaOrientador}`,
+          justificativaAluno && `Aluno: ${justificativaAluno}`,
+          motivoRecusaVinculacao && `Vínculo de Bolsa: ${motivoRecusaVinculacao}`,
+        ]
+          .filter(Boolean)
+          .join("\n");
+
         // Ordem de recebimento de input (original)
         const ordemRecebimentoInput = vinculo?.solicitacaoBolsa
           ?.ordemRecebimentoBolsa
@@ -464,6 +509,8 @@ const Resultado = ({}) => {
         // Extrai histórico (inicio/fim) para esta participação
         const historicoRange = getHistoricoRange(part);
         return {
+          idInscricao: part.inscricao?.id ?? "",
+          idPlano: part.planoDeTrabalho?.id ?? "",
           edital: part.inscricao?.edital?.titulo || "",
           planoTrabalho: part.planoDeTrabalho?.titulo || "",
           orientador: formatarOrientadores(part),
@@ -483,12 +530,14 @@ const Resultado = ({}) => {
             ? "-"
             : part.statusParticipacao || "",
           justificativaAluno: justificativaAluno,
+          resultadoFinal: resultadoFinal,
           statusSolicitacaoBolsa: statusSolicitacaoBolsa,
           motivoRecusaVinculacao: motivoRecusaVinculacao,
           ordemRecebimentoInput: ordemRecebimentoInput,
           ordemRecebimentoFinal: ordemRecebimentoFinal,
           fontePagadora: fontePagadora,
           notaTotal: part.notaTotal || null,
+          justificativasConsolidadas: justificativasConsolidadas,
           // Campos de histórico adicionados
           inicioParticipacao: historicoRange.inicioParticipacao,
           statusInicioParticipacao: historicoRange.statusInicioParticipacao,
@@ -510,6 +559,8 @@ const Resultado = ({}) => {
           showRowStripes: true,
         },
         columns: [
+          { name: "ID Inscrição", filterButton: true },
+          { name: "ID Plano", filterButton: true },
           { name: "Edital", filterButton: true },
           { name: "Plano de Trabalho", filterButton: true },
           { name: "Status Plano", filterButton: true },
@@ -527,12 +578,14 @@ const Resultado = ({}) => {
           { name: "Conta", filterButton: true }, // NOVA COLUNA
           { name: "Status Aluno", filterButton: true },
           { name: "Justificativa Aluno", filterButton: true },
+          { name: "Resultado Final", filterButton: true },
           { name: "Status Solicitação de Bolsa", filterButton: true },
           { name: "Motivo Recusa Vinculação", filterButton: true },
           { name: "Qnt Sol Bolsa Por Orientador", filterButton: true },
           { name: "Ordem de recebimento de bolsa", filterButton: true },
           { name: "Fonte Pagadora", filterButton: true },
           { name: "Nota Total", filterButton: true },
+          { name: "Justificativas", filterButton: true },
           // Cabeçalhos das colunas de histórico
           { name: "Início Participação (mais antigo)", filterButton: true },
           { name: "Status Início Participação", filterButton: true },
@@ -540,6 +593,8 @@ const Resultado = ({}) => {
           { name: "Status Fim Participação", filterButton: true },
         ],
         rows: dataToExport.map((item) => [
+          item.idInscricao,
+          item.idPlano,
           item.edital,
           item.planoTrabalho,
           item.statusPlano,
@@ -557,12 +612,14 @@ const Resultado = ({}) => {
           item.conta, // NOVA COLUNA
           item.statusAluno,
           item.justificativaAluno,
+          item.resultadoFinal,
           item.statusSolicitacaoBolsa,
           item.motivoRecusaVinculacao,
           item.ordemRecebimentoInput,
           item.ordemRecebimentoFinal,
           item.fontePagadora,
           item.notaTotal,
+          item.justificativasConsolidadas,
           // Valores das novas colunas de histórico
           item.inicioParticipacao,
           item.statusInicioParticipacao,
@@ -570,6 +627,14 @@ const Resultado = ({}) => {
           item.statusFimParticipacao,
         ]),
       });
+
+      // Garante a quebra de linha na coluna "Justificativas" mesmo que o
+      // addTable acima tenha reescrito o range de células por cima do
+      // style já definido em worksheet.columns.
+      worksheet.getColumn("justificativasConsolidadas").alignment = {
+        wrapText: true,
+        vertical: "top",
+      };
 
       // Formatação do cabeçalho
       worksheet.getRow(1).eachCell((cell) => {
@@ -822,6 +887,30 @@ const Resultado = ({}) => {
           (o) => o.userId === p.inscricao?.proponenteId
         ) || p.inscricao?.participacoes?.[0];
 
+      // Resultado Final: pior caso vence — reprovado > pendente > aprovado.
+      // Mesma regra usada no export Excel (exportToExcel).
+      const planoReprovado =
+        p.planoDeTrabalho?.statusClassificacao === "DESCLASSIFICADO";
+      const planoPendente =
+        !p.planoDeTrabalho ||
+        p.planoDeTrabalho.statusClassificacao === "EM_ANALISE";
+      const statusOrientador = orientadorProponente?.statusParticipacao;
+      const orientadorReprovado = statusOrientador === "RECUSADA";
+      const orientadorPendente =
+        !statusOrientador || statusOrientador === "EM_ANALISE";
+      const alunoReprovado = p.statusParticipacao === "RECUSADA";
+      const alunoPendente =
+        !p.statusParticipacao || p.statusParticipacao === "EM_ANALISE";
+
+      let resultadoFinal;
+      if (planoReprovado || orientadorReprovado || alunoReprovado) {
+        resultadoFinal = "DESCLASSIFICADO";
+      } else if (planoPendente || orientadorPendente || alunoPendente) {
+        resultadoFinal = "EM_ANALISE";
+      } else {
+        resultadoFinal = "CLASSIFICADO";
+      }
+
       return {
         ...p,
         notaTotal: notaTotal ? parseFloat(notaTotal) : null,
@@ -838,6 +927,7 @@ const Resultado = ({}) => {
         statusParticipacaoOrientador:
           orientadorProponente?.statusParticipacao || null,
         justificativaOrientador: orientadorProponente?.justificativa || null,
+        resultadoFinal,
       };
     });
 
@@ -1333,6 +1423,24 @@ const Resultado = ({}) => {
                     onShowJustificativa: showJustificativaDialog,
                   }
                 )
+              }
+              style={{ width: "12rem" }}
+            />
+            <Column
+              field="resultadoFinal"
+              header="Resultado Final"
+              sortable
+              filter
+              filterElement={(options) =>
+                statusClassificacaoFilterTemplate(
+                  options,
+                  classificacaoStatusOptions
+                )
+              }
+              showFilterMenu={false}
+              filterField="resultadoFinal"
+              body={(rowData) =>
+                renderStatusTagWithJustificativa(rowData.resultadoFinal)
               }
               style={{ width: "12rem" }}
             />
