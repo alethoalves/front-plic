@@ -214,7 +214,10 @@ const Resultado = ({}) => {
       worksheet.columns = [
         { header: "Edital", key: "edital", width: 30 },
         { header: "Plano de Trabalho", key: "planoTrabalho", width: 30 },
+        { header: "Status Plano", key: "statusPlano", width: 20 },
+        { header: "Justificativa Plano", key: "justificativaPlano", width: 30 },
         { header: "Orientador", key: "orientador", width: 25 },
+        { header: "CPF Orientador", key: "cpfOrientador", width: 15 },
         {
           header: "Status Orientador",
           key: "statusOrientador",
@@ -232,8 +235,6 @@ const Resultado = ({}) => {
         { header: "Banco", key: "banco", width: 15 }, // NOVA COLUNA
         { header: "Agência", key: "agencia", width: 15 }, // NOVA COLUNA
         { header: "Conta", key: "conta", width: 15 }, // NOVA COLUNA
-        { header: "Status Plano", key: "statusPlano", width: 20 },
-        { header: "Justificativa Plano", key: "justificativaPlano", width: 30 },
         { header: "Status Aluno", key: "statusAluno", width: 20 },
         { header: "Justificativa Aluno", key: "justificativaAluno", width: 30 },
         {
@@ -466,6 +467,7 @@ const Resultado = ({}) => {
           edital: part.inscricao?.edital?.titulo || "",
           planoTrabalho: part.planoDeTrabalho?.titulo || "",
           orientador: formatarOrientadores(part),
+          cpfOrientador: orientadorProponente?.user?.cpf || "",
           statusOrientador: statusOrientador,
           justificativaOrientador: justificativaOrientador,
           aluno: part.user?.nome || "",
@@ -510,7 +512,10 @@ const Resultado = ({}) => {
         columns: [
           { name: "Edital", filterButton: true },
           { name: "Plano de Trabalho", filterButton: true },
+          { name: "Status Plano", filterButton: true },
+          { name: "Justificativa Plano", filterButton: true },
           { name: "Orientador", filterButton: true },
+          { name: "CPF Orientador", filterButton: true },
           { name: "Status Orientador", filterButton: true },
           { name: "Justificativa Orientador", filterButton: true },
           { name: "Aluno", filterButton: true },
@@ -520,8 +525,6 @@ const Resultado = ({}) => {
           { name: "Banco", filterButton: true }, // NOVA COLUNA
           { name: "Agência", filterButton: true }, // NOVA COLUNA
           { name: "Conta", filterButton: true }, // NOVA COLUNA
-          { name: "Status Plano", filterButton: true },
-          { name: "Justificativa Plano", filterButton: true },
           { name: "Status Aluno", filterButton: true },
           { name: "Justificativa Aluno", filterButton: true },
           { name: "Status Solicitação de Bolsa", filterButton: true },
@@ -539,7 +542,10 @@ const Resultado = ({}) => {
         rows: dataToExport.map((item) => [
           item.edital,
           item.planoTrabalho,
+          item.statusPlano,
+          item.justificativaPlano,
           item.orientador,
+          item.cpfOrientador,
           item.statusOrientador,
           item.justificativaOrientador,
           item.aluno,
@@ -549,8 +555,6 @@ const Resultado = ({}) => {
           item.banco, // NOVA COLUNA
           item.agencia, // NOVA COLUNA
           item.conta, // NOVA COLUNA
-          item.statusPlano,
-          item.justificativaPlano,
           item.statusAluno,
           item.justificativaAluno,
           item.statusSolicitacaoBolsa,
