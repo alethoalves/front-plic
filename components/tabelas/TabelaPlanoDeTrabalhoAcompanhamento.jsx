@@ -18,6 +18,7 @@ import { Toast } from "primereact/toast";
 import { FilterService } from "primereact/api";
 import { Button as PrimeButton } from "primereact/button";
 import { InputNumber } from "primereact/inputnumber";
+import { InputTextarea } from "primereact/inputtextarea";
 import { Dialog } from "primereact/dialog";
 import { Tag } from "primereact/tag";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
@@ -35,16 +36,25 @@ import {
   importarNotasParticipacoes,
 } from "@/app/api/client/planoDeTrabalho";
 import { alterarStatusAvaliacao } from "@/app/api/client/projeto";
+import {
+  aprovarParticipacoes,
+  reprovarParticipacoes,
+} from "@/app/api/client/participacao";
 import { arquivarFichaAvaliacao } from "@/app/api/client/avaliador";
 import { handleDefinirNotaCorte } from "@/lib/notaCorteUtils";
 import { handleArquivarFichaMenorNota } from "@/lib/arquivarFichaMenorNotaUtils";
 import { handleImportarNotasParticipacoes } from "@/lib/importarNotasParticipacoesUtils";
-import { formatStatusText } from "@/lib/tagUtils";
+import {
+  formatStatusText,
+  renderStatusTagWithJustificativa,
+} from "@/lib/tagUtils";
+import { statusOptions } from "@/lib/statusOptions";
 import {
   editalRowFilterTemplate,
   notaRowFilterTemplate,
   statusClassificacaoBodyTemplate,
   statusClassificacaoFilterTemplate,
+  nomeStatusFilterTemplate,
 } from "@/lib/tableTemplates";
 import Modal from "../Modal";
 import ProjetoAvaliacaoResumo from "../ProjetoAvaliacaoResumo";
@@ -70,6 +80,10 @@ const BLOQUEIO_OPCOES = [
   { label: "Bloqueado", value: true },
   { label: "Não bloqueado", value: false },
 ];
+
+// Mesmo valor usado em participacoes/selecao/alunos e orientadores/page.jsx
+// pro batching de aprovar/reprovar participação.
+const BATCH_SIZE_PARTICIPACAO = 20;
 
 const SOLICITOU_RECURSO_OPCOES = [
   { label: "Sim", value: true },
@@ -129,14 +143,15 @@ const getInitialFilters = () => ({
     matchMode: FilterMatchMode.IN,
   },
   "area.area": { value: [], matchMode: FilterMatchMode.IN },
-  orientadoresString: {
-    value: "",
-    matchMode: FilterMatchMode.CONTAINS,
+  orientadoresDetalhes: {
+    value: { nome: "", status: [] },
+    matchMode: "nome_status_in",
   },
   alunosString: {
     value: "",
     matchMode: FilterMatchMode.CONTAINS,
   },
+  statusParticipacaoAlunoArray: { value: [], matchMode: "status_lista_in" },
   notaTotal: {
     value: [undefined, undefined],
     matchMode: "nota_intervalo",
@@ -198,6 +213,14 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
     useState(false);
   const [justificativaBloqueioAtual, setJustificativaBloqueioAtual] =
     useState("");
+  const [justificativaParticipacao, setJustificativaParticipacao] =
+    useState("");
+  const [mostrarCampoJustificativa, setMostrarCampoJustificativa] =
+    useState(false);
+  const [loadingAprovarParticipacao, setLoadingAprovarParticipacao] =
+    useState(false);
+  const [loadingReprovarParticipacao, setLoadingReprovarParticipacao] =
+    useState(false);
 
   // REFS
   const toast = useRef(null);
@@ -221,22 +244,43 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
       const itensProcessados =
         itens?.map((item) => {
           // Extrai nomes dos alunos (participacoes diretas do item)
-          const alunos = item.participacoes?.map((p) => p.user.nome) || [];
+          const participacoesAluno = item.participacoes || [];
+          const alunos = participacoesAluno.map((p) => p.user.nome);
+          // Status de cada participação de aluno do plano — normalmente uma
+          // só, mas pode haver histórico (SUBSTITUIDA/CANCELADA) junto da
+          // ativa, por isso é tratado como lista tanto pra exibição quanto
+          // pro filtro.
+          const alunosDetalhes = participacoesAluno.map((p) => ({
+            nome: p.user.nome,
+            status: p.statusParticipacao,
+            justificativa: p.justificativa,
+          }));
+          const statusParticipacaoAlunoArray = participacoesAluno.map(
+            (p) => p.statusParticipacao
+          );
 
-          // Extrai nomes dos orientadores (participacoes da inscricao)
-          const orientadores =
-            item.inscricao?.participacoes?.map((p) => p.user.nome) || [];
+          // inscricao.participacoes agora traz orientador E coorientador (pra
+          // ação em lote de aprovar/recusar participação de orientador) — a
+          // coluna "Orientador" e o Excel continuam mostrando só orientador,
+          // por isso filtramos aqui antes de derivar as strings de exibição.
+          const participacoesOrientador = (
+            item.inscricao?.participacoes || []
+          ).filter((p) => p.tipo === "orientador");
+          const orientadores = participacoesOrientador.map((p) => p.user.nome);
+          const orientadoresDetalhes = participacoesOrientador.map((p) => ({
+            nome: p.user.nome,
+            status: p.statusParticipacao,
+            justificativa: p.justificativa,
+          }));
 
           // Titulação/ano de titulação do(s) orientador(es) — mesmo array
           // de participações acima, um plano pode ter mais de um orientador.
-          const titulacoesOrientadores =
-            item.inscricao?.participacoes?.map((p) =>
-              formatarTitulacao(p.user.titulacao)
-            ) || [];
-          const anosTitulacaoOrientadores =
-            item.inscricao?.participacoes?.map(
-              (p) => p.user.anoTitulacao ?? "-"
-            ) || [];
+          const titulacoesOrientadores = participacoesOrientador.map((p) =>
+            formatarTitulacao(p.user.titulacao)
+          );
+          const anosTitulacaoOrientadores = participacoesOrientador.map(
+            (p) => p.user.anoTitulacao ?? "-"
+          );
 
           // Campos herdados do projeto (mesmos que existiam na tabela
           // "Avaliações de Projetos", agora trazidos pra cá).
@@ -286,7 +330,10 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
               ).toFixed(4)
             ),
             alunosString: alunos.join(", "),
+            alunosDetalhes,
+            statusParticipacaoAlunoArray,
             orientadoresString: orientadores.join(", "),
+            orientadoresDetalhes,
             titulacaoOrientadoresString: titulacoesOrientadores.join(", "),
             anoTitulacaoOrientadoresString:
               anosTitulacaoOrientadores.join(", "),
@@ -367,6 +414,9 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
     setActiveModal(null);
     setNovoStatus(null);
     setNotaCorte(0);
+    setProgress(0);
+    setJustificativaParticipacao("");
+    setMostrarCampoJustificativa(false);
   };
 
   const openJustificativaModal = (rowData) => {
@@ -392,6 +442,125 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
       selectedItems.map((item) => item.inscricaoProjeto?.id).filter(Boolean)
     ),
   ];
+
+  // Participações de aluno: relação direta do plano — um plano tem no
+  // máximo uma participação de aluno.
+  const participacaoAlunoIdsSelecionadas = [
+    ...new Set(
+      selectedItems.flatMap((item) => (item.participacoes || []).map((p) => p.id))
+    ),
+  ];
+
+  // Participações de orientador/coorientador: vinculadas à inscrição, não
+  // ao plano — planos irmãos da mesma inscrição compartilham a mesma
+  // participação, por isso o dedup por id é essencial aqui.
+  const participacaoOrientadorIdsSelecionadas = [
+    ...new Set(
+      selectedItems.flatMap((item) =>
+        (item.inscricao?.participacoes || [])
+          .filter((p) => p.tipo === "orientador" || p.tipo === "coorientador")
+          .map((p) => p.id)
+      )
+    ),
+  ];
+
+  // Ids únicos de inscrição por trás dos planos selecionados, usados pra
+  // avisar o impacto real da ação de orientador (que vale pra inscrição
+  // inteira, não só pro(s) plano(s) marcado(s) na tabela).
+  const inscricaoIdsAfetadasPorOrientador = [
+    ...new Set(selectedItems.map((item) => item.inscricao?.id).filter(Boolean)),
+  ];
+  const totalPlanosAfetadosPorOrientador = itens.filter((i) =>
+    inscricaoIdsAfetadasPorOrientador.includes(i.inscricao?.id)
+  ).length;
+
+  const processarParticipacoesEmLotes = async (ids, callback) => {
+    const total = ids.length;
+    for (let i = 0; i < total; i += BATCH_SIZE_PARTICIPACAO) {
+      await callback(ids.slice(i, i + BATCH_SIZE_PARTICIPACAO));
+      setProgress(Math.round(((i + BATCH_SIZE_PARTICIPACAO) / total) * 100));
+    }
+  };
+
+  const handleAprovarParticipacao = async (ids) => {
+    if (!ids.length) return;
+    setLoadingAprovarParticipacao(true);
+    setProgress(0);
+    try {
+      let ignoradas = 0;
+      await processarParticipacoesEmLotes(ids, async (lote) => {
+        const r = await aprovarParticipacoes(params.tenant, lote);
+        ignoradas += (r.participacoesIgnoradas || []).length;
+      });
+      toast.current?.show({
+        severity: "success",
+        summary: "Sucesso",
+        detail: `Participações aprovadas${
+          ignoradas ? ` (${ignoradas} ignoradas)` : ""
+        }.`,
+        life: 5000,
+      });
+      fecharModalAcao();
+      setSelectedItems([]);
+      fetchInitialData();
+    } catch (error) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Erro",
+        detail:
+          error.response?.data?.message || "Erro ao aprovar participações.",
+        life: 5000,
+      });
+    } finally {
+      setLoadingAprovarParticipacao(false);
+    }
+  };
+
+  const handleReprovarParticipacao = async (ids) => {
+    if (!justificativaParticipacao.trim()) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Erro",
+        detail: "Informe a justificativa.",
+        life: 3000,
+      });
+      return;
+    }
+    setLoadingReprovarParticipacao(true);
+    setProgress(0);
+    try {
+      let ignoradas = 0;
+      await processarParticipacoesEmLotes(ids, async (lote) => {
+        const r = await reprovarParticipacoes(
+          params.tenant,
+          lote,
+          justificativaParticipacao
+        );
+        ignoradas += (r.participacoesIgnoradas || []).length;
+      });
+      toast.current?.show({
+        severity: "success",
+        summary: "Sucesso",
+        detail: `Participações recusadas${
+          ignoradas ? ` (${ignoradas} ignoradas)` : ""
+        }.`,
+        life: 5000,
+      });
+      fecharModalAcao();
+      setSelectedItems([]);
+      fetchInitialData();
+    } catch (error) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Erro",
+        detail:
+          error.response?.data?.message || "Erro ao recusar participações.",
+        life: 5000,
+      });
+    } finally {
+      setLoadingReprovarParticipacao(false);
+    }
+  };
 
   const confirmarAlterarStatus = async () => {
     setSalvandoStatus(true);
@@ -846,9 +1015,37 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
               header="Orientador"
               sortable
               filter
-              showFilterMenu={true}
-              filterField="orientadoresString"
-              filterPlaceholder="Filtrar por nome"
+              filterElement={(options) =>
+                nomeStatusFilterTemplate(options, statusOptions.participacao)
+              }
+              showFilterMenu={false}
+              filterField="orientadoresDetalhes"
+              filterMatchMode="nome_status_in"
+              body={(rowData) =>
+                rowData.orientadoresDetalhes?.length ? (
+                  <div
+                    className="flex flex-column gap-1"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {rowData.orientadoresDetalhes.map((d, idx) => (
+                      <div key={idx} className="flex align-items-center gap-1">
+                        <span>{d.nome}</span>
+                        {renderStatusTagWithJustificativa(
+                          d.status,
+                          d.justificativa,
+                          {
+                            onShowJustificativa: (j) =>
+                              openJustificativaModal({ justificativa: j }),
+                          }
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  "-"
+                )
+              }
+              style={{ minWidth: "14rem" }}
             />
             <Column
               field="alunosString"
@@ -858,6 +1055,44 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
               showFilterMenu={true}
               filterField="alunosString"
               filterPlaceholder="Filtrar por nome"
+            />
+            <Column
+              field="statusParticipacaoAlunoArray"
+              header="Status Participação Aluno"
+              filter
+              filterElement={(options) =>
+                statusClassificacaoFilterTemplate(
+                  options,
+                  statusOptions.participacao
+                )
+              }
+              showFilterMenu={false}
+              filterField="statusParticipacaoAlunoArray"
+              filterMatchMode="status_lista_in"
+              body={(rowData) =>
+                rowData.alunosDetalhes?.length ? (
+                  <div
+                    className="flex flex-column gap-1"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {rowData.alunosDetalhes.map((d, idx) => (
+                      <span key={idx}>
+                        {renderStatusTagWithJustificativa(
+                          d.status,
+                          d.justificativa,
+                          {
+                            onShowJustificativa: (j) =>
+                              openJustificativaModal({ justificativa: j }),
+                          }
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  "-"
+                )
+              }
+              style={{ minWidth: "12rem" }}
             />
 
             <Column
@@ -1027,6 +1262,12 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
                     <li onClick={() => setActiveModal("arquivarMenorNota")}>
                       <p>Arquivar ficha de menor nota</p>
                     </li>
+                    <li onClick={() => setActiveModal("participacaoAluno")}>
+                      <p>Aprovar/recusar participação de aluno</p>
+                    </li>
+                    <li onClick={() => setActiveModal("participacaoOrientador")}>
+                      <p>Aprovar/recusar participação de orientador</p>
+                    </li>
                   </ul>
                 </div>
               );
@@ -1163,6 +1404,175 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
                   </div>
                 </div>
               );
+            case "participacaoAluno": {
+              const ids = participacaoAlunoIdsSelecionadas;
+              return (
+                <div className={styles.formNotaManual}>
+                  <h5 className="mb-2">
+                    Aprovar/recusar participação de aluno
+                  </h5>
+                  <p className="mb-2">
+                    {ids.length} participação(ões) de aluno vinculada(s) aos
+                    planos de trabalho selecionados.
+                  </p>
+                  {!mostrarCampoJustificativa ? (
+                    <div className="flex justify-content-end gap-2 mt-3">
+                      <Button
+                        className="button btn-secondary"
+                        onClick={fecharModalAcao}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        className="button btn-error-outline"
+                        onClick={() => setMostrarCampoJustificativa(true)}
+                        disabled={!ids.length}
+                      >
+                        Recusar
+                      </Button>
+                      <Button
+                        className="button btn-primary"
+                        onClick={() => handleAprovarParticipacao(ids)}
+                        loading={loadingAprovarParticipacao}
+                        disabled={!ids.length}
+                      >
+                        Aprovar
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <label htmlFor="justificativaParticipacaoAluno">
+                        Justificativa da recusa
+                      </label>
+                      <InputTextarea
+                        id="justificativaParticipacaoAluno"
+                        rows={3}
+                        autoResize
+                        className="w-100 mt-1"
+                        value={justificativaParticipacao}
+                        onChange={(e) =>
+                          setJustificativaParticipacao(e.target.value)
+                        }
+                      />
+                      <div className="flex justify-content-end gap-2 mt-3">
+                        <Button
+                          className="button btn-secondary"
+                          onClick={() => setMostrarCampoJustificativa(false)}
+                        >
+                          Voltar
+                        </Button>
+                        <Button
+                          className="button btn-error"
+                          onClick={() => handleReprovarParticipacao(ids)}
+                          loading={loadingReprovarParticipacao}
+                        >
+                          Confirmar recusa
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                  {(loadingAprovarParticipacao ||
+                    loadingReprovarParticipacao) && (
+                    <div className="mt-3">
+                      <ProgressBar
+                        value={progress}
+                        style={{ height: "6px" }}
+                        showValue={false}
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            }
+            case "participacaoOrientador": {
+              const ids = participacaoOrientadorIdsSelecionadas;
+              return (
+                <div className={styles.formNotaManual}>
+                  <h5 className="mb-2">
+                    Aprovar/recusar participação de orientador
+                  </h5>
+                  <p className="mb-2">
+                    A participação de orientador/coorientador é vinculada à
+                    inscrição, não a um plano de trabalho específico. Esta
+                    ação afetará TODOS os {totalPlanosAfetadosPorOrientador}{" "}
+                    plano(s) de trabalho d
+                    {inscricaoIdsAfetadasPorOrientador.length > 1
+                      ? "as"
+                      : "a"}{" "}
+                    {inscricaoIdsAfetadasPorOrientador.length} inscrição(ões)
+                    relacionada(s) aos itens selecionados — não apenas os
+                    planos selecionados agora. {ids.length} participação(ões)
+                    de orientador/coorientador serão afetadas.
+                  </p>
+                  {!mostrarCampoJustificativa ? (
+                    <div className="flex justify-content-end gap-2 mt-3">
+                      <Button
+                        className="button btn-secondary"
+                        onClick={fecharModalAcao}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        className="button btn-error-outline"
+                        onClick={() => setMostrarCampoJustificativa(true)}
+                        disabled={!ids.length}
+                      >
+                        Recusar
+                      </Button>
+                      <Button
+                        className="button btn-primary"
+                        onClick={() => handleAprovarParticipacao(ids)}
+                        loading={loadingAprovarParticipacao}
+                        disabled={!ids.length}
+                      >
+                        Aprovar
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <label htmlFor="justificativaParticipacaoOrientador">
+                        Justificativa da recusa
+                      </label>
+                      <InputTextarea
+                        id="justificativaParticipacaoOrientador"
+                        rows={3}
+                        autoResize
+                        className="w-100 mt-1"
+                        value={justificativaParticipacao}
+                        onChange={(e) =>
+                          setJustificativaParticipacao(e.target.value)
+                        }
+                      />
+                      <div className="flex justify-content-end gap-2 mt-3">
+                        <Button
+                          className="button btn-secondary"
+                          onClick={() => setMostrarCampoJustificativa(false)}
+                        >
+                          Voltar
+                        </Button>
+                        <Button
+                          className="button btn-error"
+                          onClick={() => handleReprovarParticipacao(ids)}
+                          loading={loadingReprovarParticipacao}
+                        >
+                          Confirmar recusa
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                  {(loadingAprovarParticipacao ||
+                    loadingReprovarParticipacao) && (
+                    <div className="mt-3">
+                      <ProgressBar
+                        value={progress}
+                        style={{ height: "6px" }}
+                        showValue={false}
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            }
             case "importarNotasParticipacoes":
               return (
                 <div className={styles.formNotaManual}>
