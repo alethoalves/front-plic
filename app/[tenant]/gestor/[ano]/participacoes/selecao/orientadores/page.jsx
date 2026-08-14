@@ -45,6 +45,7 @@ import {
   ordenarColunasPorChave,
 } from "@/lib/tableTemplates";
 import { statusOptions } from "@/lib/statusOptions";
+import { resumirParticipacoesIgnoradas } from "@/lib/participacaoUtils";
 import generateLattesText from "@/lib/generateLattesText";
 import { comRetry } from "@/lib/retry";
 import {
@@ -237,6 +238,29 @@ const computeAgregados = (participacoes, getEditalTitulo) => {
   });
 };
 
+// Fábrica dos filtros iniciais — usada tanto no useState quanto no botão
+// "Limpar Filtros", pra não duplicar o objeto em dois lugares (mesmo padrão
+// usado em TabelaPlanoDeTrabalhoAcompanhamento.jsx e em selecao/alunos).
+const getInitialFiltersOrientadores = () => ({
+  global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  "inscricao.edital.titulo": { value: null, matchMode: FilterMatchMode.IN },
+  statusParticipacao: { value: null, matchMode: FilterMatchMode.IN },
+  "user.nome": { value: null, matchMode: FilterMatchMode.CONTAINS },
+  "user.cpf": { value: null, matchMode: FilterMatchMode.CONTAINS },
+  id: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  "inscricao.id": { value: null, matchMode: FilterMatchMode.CONTAINS },
+  "user.titulacao": { value: null, matchMode: FilterMatchMode.IN },
+  "user.anoTitulacao": { value: [undefined, undefined], matchMode: "intervalo_numerico" },
+  totalAlunosInscricao: { value: [undefined, undefined], matchMode: "intervalo_numerico" },
+  totalAlunosUser: { value: [undefined, undefined], matchMode: "intervalo_numerico" },
+  totalBolsaUserEdital: { value: [undefined, undefined], matchMode: "intervalo_numerico" },
+  totalBolsaUser: { value: [undefined, undefined], matchMode: "intervalo_numerico" },
+  "fichaAvaliacao.nota": { value: [undefined, undefined], matchMode: "intervalo_numerico" },
+  totalNotasExtras: { value: [undefined, undefined], matchMode: "intervalo_numerico" },
+  quantidadeNotasExtras: { value: [undefined, undefined], matchMode: "intervalo_numerico" },
+  notaTotalGeral: { value: [undefined, undefined], matchMode: "intervalo_numerico" },
+});
+
 // -------- Página principal --------
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(true);
@@ -292,25 +316,7 @@ const Page = ({ params }) => {
 
   const getEditalTitulo = (item) => item.inscricao?.edital?.titulo || "N/A";
 
-  const [filters, setFilters] = useState({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    "inscricao.edital.titulo": { value: null, matchMode: FilterMatchMode.IN },
-    statusParticipacao: { value: null, matchMode: FilterMatchMode.IN },
-    "user.nome": { value: null, matchMode: FilterMatchMode.CONTAINS },
-    "user.cpf": { value: null, matchMode: FilterMatchMode.CONTAINS },
-    id: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    "inscricao.id": { value: null, matchMode: FilterMatchMode.CONTAINS },
-    "user.titulacao": { value: null, matchMode: FilterMatchMode.IN },
-    "user.anoTitulacao": { value: [undefined, undefined], matchMode: "intervalo_numerico" },
-    totalAlunosInscricao: { value: [undefined, undefined], matchMode: "intervalo_numerico" },
-    totalAlunosUser: { value: [undefined, undefined], matchMode: "intervalo_numerico" },
-    totalBolsaUserEdital: { value: [undefined, undefined], matchMode: "intervalo_numerico" },
-    totalBolsaUser: { value: [undefined, undefined], matchMode: "intervalo_numerico" },
-    "fichaAvaliacao.nota": { value: [undefined, undefined], matchMode: "intervalo_numerico" },
-    totalNotasExtras: { value: [undefined, undefined], matchMode: "intervalo_numerico" },
-    quantidadeNotasExtras: { value: [undefined, undefined], matchMode: "intervalo_numerico" },
-    notaTotalGeral: { value: [undefined, undefined], matchMode: "intervalo_numerico" },
-  });
+  const [filters, setFilters] = useState(getInitialFiltersOrientadores());
 
   const fetchData = async () => {
     setLoading(true);
@@ -481,6 +487,11 @@ const Page = ({ params }) => {
     setGlobalFilterValue(value);
   };
 
+  const limparFiltros = () => {
+    setFilters(getInitialFiltersOrientadores());
+    setGlobalFilterValue("");
+  };
+
   const processarEmLotes = async (ids, callback) => {
     const total = ids.length;
     for (let i = 0; i < total; i += BATCH_SIZE) {
@@ -497,15 +508,21 @@ const Page = ({ params }) => {
     setLoadingAprovar(true);
     setProgress(0);
     let aprovados = [];
+    let ignoradasTotal = [];
     try {
       await processarEmLotes(selectedItems.map((i) => i.id), async (lote) => {
         const r = await aprovarParticipacoes(params.tenant, lote);
         const ignoradas = r.participacoesIgnoradas || [];
-        aprovados.push(...lote.filter((id) => !ignoradas.includes(id)));
-        if (ignoradas.length)
-          toast.current.show({ severity: "warn", summary: "Atenção", detail: `${ignoradas.length} ignoradas`, life: 4000 });
+        const idsIgnorados = ignoradas.map((x) => x.id);
+        aprovados.push(...lote.filter((id) => !idsIgnorados.includes(id)));
+        ignoradasTotal.push(...ignoradas);
       });
-      toast.current.show({ severity: "success", summary: "Sucesso", detail: `${aprovados.length} aprovadas!`, life: 5000 });
+      toast.current.show({
+        severity: "success",
+        summary: "Sucesso",
+        detail: `${aprovados.length} aprovadas!${resumirParticipacoesIgnoradas(ignoradasTotal)}`,
+        life: 5000,
+      });
       const updated = itens.map((i) =>
         aprovados.includes(i.id) ? { ...i, statusParticipacao: "APROVADA", justificativa: null } : i
       );
@@ -535,15 +552,21 @@ const Page = ({ params }) => {
     setLoadingReprovar(true);
     setProgress(0);
     let reprovados = [];
+    let ignoradasTotal = [];
     try {
       await processarEmLotes(selectedItems.map((i) => i.id), async (lote) => {
         const r = await reprovarParticipacoes(params.tenant, lote, motivoReprova);
         const ignoradas = r.participacoesIgnoradas || [];
-        reprovados.push(...lote.filter((id) => !ignoradas.includes(id)));
-        if (ignoradas.length)
-          toast.current.show({ severity: "warn", summary: "Atenção", detail: `${ignoradas.length} ignoradas`, life: 4000 });
+        const idsIgnorados = ignoradas.map((x) => x.id);
+        reprovados.push(...lote.filter((id) => !idsIgnorados.includes(id)));
+        ignoradasTotal.push(...ignoradas);
       });
-      toast.current.show({ severity: "success", summary: "Sucesso", detail: `${reprovados.length} reprovadas!`, life: 5000 });
+      toast.current.show({
+        severity: "success",
+        summary: "Sucesso",
+        detail: `${reprovados.length} reprovadas!${resumirParticipacoesIgnoradas(ignoradasTotal)}`,
+        life: 5000,
+      });
       const updated = itens.map((i) =>
         reprovados.includes(i.id) ? { ...i, statusParticipacao: "RECUSADA", justificativa: motivoReprova } : i
       );
@@ -835,6 +858,12 @@ const Page = ({ params }) => {
           onChange={onGlobalFilterChange}
           placeholder="Pesquisar..."
           style={{ width: "100%" }}
+        />
+        <Button
+          icon="pi pi-filter-slash"
+          label="Limpar Filtros"
+          onClick={limparFiltros}
+          className="p-button-outlined p-button-secondary"
         />
         <RiSettings5Line
           className={styles.configIcon}

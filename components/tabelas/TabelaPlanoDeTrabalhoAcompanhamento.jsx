@@ -49,6 +49,7 @@ import {
   renderStatusTagWithJustificativa,
 } from "@/lib/tagUtils";
 import { statusOptions } from "@/lib/statusOptions";
+import { resumirParticipacoesIgnoradas } from "@/lib/participacaoUtils";
 import {
   editalRowFilterTemplate,
   notaRowFilterTemplate,
@@ -487,17 +488,15 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
     setLoadingAprovarParticipacao(true);
     setProgress(0);
     try {
-      let ignoradas = 0;
+      let ignoradasTotal = [];
       await processarParticipacoesEmLotes(ids, async (lote) => {
         const r = await aprovarParticipacoes(params.tenant, lote);
-        ignoradas += (r.participacoesIgnoradas || []).length;
+        ignoradasTotal.push(...(r.participacoesIgnoradas || []));
       });
       toast.current?.show({
         severity: "success",
         summary: "Sucesso",
-        detail: `Participações aprovadas${
-          ignoradas ? ` (${ignoradas} ignoradas)` : ""
-        }.`,
+        detail: `Participações aprovadas${resumirParticipacoesIgnoradas(ignoradasTotal)}.`,
         life: 5000,
       });
       fecharModalAcao();
@@ -529,21 +528,19 @@ const TabelaPlanoDeTrabalhoAcompanhamento = ({ params }) => {
     setLoadingReprovarParticipacao(true);
     setProgress(0);
     try {
-      let ignoradas = 0;
+      let ignoradasTotal = [];
       await processarParticipacoesEmLotes(ids, async (lote) => {
         const r = await reprovarParticipacoes(
           params.tenant,
           lote,
           justificativaParticipacao
         );
-        ignoradas += (r.participacoesIgnoradas || []).length;
+        ignoradasTotal.push(...(r.participacoesIgnoradas || []));
       });
       toast.current?.show({
         severity: "success",
         summary: "Sucesso",
-        detail: `Participações recusadas${
-          ignoradas ? ` (${ignoradas} ignoradas)` : ""
-        }.`,
+        detail: `Participações recusadas${resumirParticipacoesIgnoradas(ignoradasTotal)}.`,
         life: 5000,
       });
       fecharModalAcao();
