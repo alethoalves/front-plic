@@ -747,8 +747,15 @@ const Resultado = ({}) => {
 
   const getParticipacoes = async () => {
     const response = await getParticipacoesByTenant(tenant, "aluno", ano);
+    // Só inscrições já enviadas contam pro resultado final (exclui
+    // rascunhos) — mesmo filtro usado em participacoes/selecao/alunos e
+    // participacoes/selecao/orientadores, que também consomem
+    // getParticipacoesByTenant.
+    const participacoesEnviadas = response.filter(
+      (p) => p.inscricao?.status === "enviada"
+    );
     // Processa os dados recebidos
-    const comColunasVirtuais = response.map((p) => {
+    const comColunasVirtuais = participacoesEnviadas.map((p) => {
       const plano = p.planoDeTrabalho;
       const notaTotal = plano
         ? (
