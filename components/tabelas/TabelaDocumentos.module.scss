@@ -1,0 +1,9 @@
+@import "./styles/partials/colors";
+@import "./styles/partials/layout";
+@import "./styles/partials/spacing";
+
+.acaoLote{
+    padding: $gap-1 $gap-2;
+    background-color: $white-darken;
+    border-radius: $gap-1;
+}

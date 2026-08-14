@@ -22,6 +22,11 @@ import {
 } from "@/app/api/client/documentos";
 import { formatStatusText, getSeverityByStatus } from "@/lib/tagUtils";
 import { statusClassificacaoFilterTemplate } from "@/lib/tableTemplates";
+import styles from "./TabelaDocumentos.module.scss";
+
+// Tamanho do lote de exclusões simultâneas ao excluir em massa, pra não
+// disparar todas as requisições de uma vez só.
+const BATCH_SIZE_EXCLUSAO = 5;
 
 const TIPO_DOCUMENTO_OPCOES = [
   "EXTERNO",
@@ -49,6 +54,9 @@ const TabelaDocumentos = ({ params }) => {
   const [itens, setItens] = useState([]);
   const [globalFilterValue, setGlobalFilterValue] = useState("");
   const [expandedRows, setExpandedRows] = useState(null);
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [excluindoSelecionados, setExcluindoSelecionados] = useState(false);
+  const [progressoExclusao, setProgressoExclusao] = useState(0);
 
   const toast = useRef(null);
 
@@ -183,6 +191,61 @@ const TabelaDocumentos = ({ params }) => {
     });
   };
 
+  const handleExcluirSelecionados = () => {
+    const idsSelecionados = selectedItems.map((item) => item.id);
+    if (!idsSelecionados.length) return;
+
+    confirmDialog({
+      message: `Excluir definitivamente ${idsSelecionados.length} documento(s) selecionado(s)? Esta ação não pode ser desfeita.`,
+      header: "Excluir documentos selecionados",
+      icon: "pi pi-exclamation-triangle",
+      acceptLabel: "Sim, excluir",
+      rejectLabel: "Cancelar",
+      accept: async () => {
+        setExcluindoSelecionados(true);
+        setProgressoExclusao(0);
+        const excluidos = [];
+        const falhas = [];
+
+        try {
+          const total = idsSelecionados.length;
+          for (let i = 0; i < total; i += BATCH_SIZE_EXCLUSAO) {
+            const lote = idsSelecionados.slice(i, i + BATCH_SIZE_EXCLUSAO);
+            const resultados = await Promise.allSettled(
+              lote.map((id) => deleteDocumentoNaoAssinado(params.tenant, id))
+            );
+            resultados.forEach((resultado, index) => {
+              if (resultado.status === "fulfilled") {
+                excluidos.push(lote[index]);
+              } else {
+                falhas.push(lote[index]);
+              }
+            });
+            setProgressoExclusao(
+              Math.round((Math.min(i + BATCH_SIZE_EXCLUSAO, total) / total) * 100)
+            );
+          }
+
+          toast.current?.show({
+            severity: falhas.length ? "warn" : "success",
+            summary: falhas.length ? "Concluído com falhas" : "Sucesso",
+            detail: `${excluidos.length} documento(s) excluído(s)${
+              falhas.length ? `, ${falhas.length} não puderam ser excluídos` : ""
+            }.`,
+            life: 4000,
+          });
+
+          setItens((prev) => prev.filter((item) => !excluidos.includes(item.id)));
+          setSelectedItems((prev) =>
+            prev.filter((item) => !excluidos.includes(item.id))
+          );
+        } finally {
+          setExcluindoSelecionados(false);
+        }
+      },
+    });
+  };
+
   // TEMPLATES
   const renderHeader = () => {
     return (
@@ -252,16 +315,39 @@ const TabelaDocumentos = ({ params }) => {
             <ProgressBar mode="indeterminate" style={{ height: "6px" }} />
           </div>
         ) : (
+          <>
+          {selectedItems.length > 0 && (
+            <div className={`flex align-items-center gap-2 mb-2 ${styles.acaoLote}`}>
+              <span>{selectedItems.length} documento(s) selecionado(s)</span>
+              <Button
+                label="Excluir selecionados"
+                icon="pi pi-trash"
+                className="p-button-danger p-button-sm"
+                onClick={handleExcluirSelecionados}
+                disabled={excluindoSelecionados}
+              />
+            </div>
+          )}
+          {excluindoSelecionados && (
+            <ProgressBar value={progressoExclusao} style={{ height: "6px" }} className="mb-2" />
+          )}
           <DataTable
             value={itens}
             paginator
             rows={10}
             rowsPerPageOptions={[10, 20, 50]}
             scrollable
+            selectionMode="checkbox"
+            selection={selectedItems}
+            onSelectionChange={(e) => setSelectedItems(e.value)}
+            isDataSelectable={(e) => STATUS_EXCLUIVEIS.includes(e.data.status)}
             dataKey="id"
             header={renderHeader()}
             filters={filters}
-            onFilter={(e) => setFilters(e.filters)}
+            onFilter={(e) => {
+              setFilters(e.filters);
+              setSelectedItems([]);
+            }}
             filterDisplay="row"
             globalFilterFields={[
               "id",
@@ -276,6 +362,7 @@ const TabelaDocumentos = ({ params }) => {
             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
             currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros"
           >
+            <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
             <Column expander style={{ width: "3rem" }} />
             <Column field="id" header="ID" sortable filter filterField="id" />
             <Column
@@ -325,6 +412,7 @@ const TabelaDocumentos = ({ params }) => {
             />
             <Column header="Ações" body={acoesBodyTemplate} style={{ width: "14rem" }} />
           </DataTable>
+          </>
         )}
       </Card>
       <ConfirmDialog />
