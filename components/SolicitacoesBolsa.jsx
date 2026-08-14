@@ -57,6 +57,20 @@ FilterService.register("intervalo", (value, filters) => {
   return true;
 });
 
+// Mesmo mapa usado em TabelaPlanoDeTrabalhoAcompanhamento.jsx — não há util
+// compartilhado pra isso ainda, cada tela mantém sua própria cópia.
+const LABELS_TITULACAO = {
+  GRADUACAO: "Graduação",
+  ESPECIALIZACAO: "Especialização",
+  MESTRADO: "Mestrado",
+  DOUTORADO: "Doutorado",
+  POS_DOUTORADO: "Pós-Doutorado",
+};
+const formatarTitulacao = (t) => LABELS_TITULACAO[t] || t || "-";
+const TITULACAO_OPTIONS = Object.entries(LABELS_TITULACAO).map(
+  ([value, label]) => ({ value, label })
+);
+
 const getInitialFilters = () => ({
   global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   /* ---------- filtros já existentes ---------- */
@@ -74,6 +88,8 @@ const getInitialFilters = () => ({
   },
   "solicitacaoBolsa.status": { value: null, matchMode: FilterMatchMode.IN },
   orientadores: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  titulacaoOrientador: { value: null, matchMode: FilterMatchMode.IN },
+  anoTitulacaoOrientador: { value: [null, null], matchMode: "intervalo" },
   status: { value: null, matchMode: FilterMatchMode.IN },
   "participacao.user.nome": {
     value: null,
@@ -214,6 +230,17 @@ export default function SolicitacoesBolsa() {
           .filter(Boolean)
           .join(", ") || "N/A";
 
+      // Orientador proponente: entre as participações de orientador da
+      // inscrição, pega a do userId que é o proponente (fallback pro
+      // primeiro registro em caso de inconsistência) — mesma lógica já
+      // usada em Resultado.jsx.
+      const participacoesOrientador =
+        item.participacao?.inscricao?.participacoes || [];
+      const orientadorProponente =
+        participacoesOrientador.find(
+          (o) => o.userId === item.participacao?.inscricao?.proponenteId
+        ) || participacoesOrientador[0];
+
       // Extrair forma de ingresso
       const formaIngresso =
         item.participacao?.userTenant?.formaIngresso?.formaIngresso || "N/A";
@@ -225,6 +252,9 @@ export default function SolicitacoesBolsa() {
           item.participacao?.user?.UserTenant[0]?.rendimentoAcademico,
         vinculosAprovados: countAprovados[item.participacao.user.id] || 0,
         orientadores,
+        titulacaoOrientador: orientadorProponente?.user?.titulacao || null,
+        anoTitulacaoOrientador:
+          orientadorProponente?.user?.anoTitulacao || null,
         formaIngresso, // Nova propriedade adicionada
         /* --------- campo usado para coluna/filtragem de bolsa ---------- */
         instituicaoPagadora:
@@ -1030,6 +1060,28 @@ export default function SolicitacoesBolsa() {
             showFilterMenu
             filterField="orientadores"
             filterPlaceholder="Filtrar por nome"
+          />
+          <Column
+            field="titulacaoOrientador"
+            header="Titulação Orientador"
+            sortable
+            filter
+            filterElement={(opts) =>
+              statusClassificacaoFilterTemplate(opts, TITULACAO_OPTIONS)
+            }
+            showFilterMenu={false}
+            filterField="titulacaoOrientador"
+            body={(row) => formatarTitulacao(row.titulacaoOrientador)}
+            style={{ width: "12rem" }}
+          />
+          <Column
+            field="anoTitulacaoOrientador"
+            header="Ano Titulação Orientador"
+            sortable
+            filter
+            filterElement={notaRowFilterTemplate}
+            filterMatchMode="intervalo"
+            style={{ width: "10rem", textAlign: "center" }}
           />
 
           {/* VÍNCULOS APROVADOS */}
