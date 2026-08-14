@@ -53,6 +53,10 @@ const getInitialFilters = () => ({
     value: null,
     matchMode: FilterMatchMode.CONTAINS,
   },
+  statusParticipacaoOrientador: {
+    value: null,
+    matchMode: FilterMatchMode.IN,
+  },
   notaTotal: {
     value: [null, null],
     matchMode: "intervalo",
@@ -211,6 +215,16 @@ const Resultado = ({}) => {
         { header: "Edital", key: "edital", width: 30 },
         { header: "Plano de Trabalho", key: "planoTrabalho", width: 30 },
         { header: "Orientador", key: "orientador", width: 25 },
+        {
+          header: "Status Orientador",
+          key: "statusOrientador",
+          width: 20,
+        },
+        {
+          header: "Justificativa Orientador",
+          key: "justificativaOrientador",
+          width: 30,
+        },
         { header: "Aluno", key: "aluno", width: 25 },
         { header: "CPF Aluno", key: "cpfAluno", width: 15 }, // NOVA COLUNA
         { header: "Email Aluno", key: "emailAluno", width: 25 },
@@ -339,6 +353,18 @@ const Resultado = ({}) => {
           .join(", ");
       };
 
+      // Uma inscrição pode ter mais de uma participação de orientador (ex.:
+      // histórico de substituição) — por ora, considera só o orientador
+      // proponente (userId === inscricao.proponenteId) pra status/justificativa.
+      const obterOrientadorProponente = (participacao) => {
+        const orientadores = participacao.inscricao?.participacoes || [];
+        return (
+          orientadores.find(
+            (o) => o.userId === participacao.inscricao?.proponenteId
+          ) || orientadores[0]
+        );
+      };
+
       // Função para obter o curso do aluno
       const obterCursoAluno = (participacao) => {
         const userTenant = participacao.user?.UserTenant?.[0];
@@ -375,6 +401,13 @@ const Resultado = ({}) => {
         const justificativaAluno = isAlunoRecusado
           ? part.justificativa || ""
           : "";
+
+        const orientadorProponente = obterOrientadorProponente(part);
+        const statusOrientador = orientadorProponente?.statusParticipacao || "";
+        const justificativaOrientador =
+          statusOrientador === "RECUSADA"
+            ? orientadorProponente?.justificativa || ""
+            : "";
 
         const motivoRecusaVinculacao = isVinculacaoRecusada
           ? vinculo?.motivoRecusa || ""
@@ -433,6 +466,8 @@ const Resultado = ({}) => {
           edital: part.inscricao?.edital?.titulo || "",
           planoTrabalho: part.planoDeTrabalho?.titulo || "",
           orientador: formatarOrientadores(part),
+          statusOrientador: statusOrientador,
+          justificativaOrientador: justificativaOrientador,
           aluno: part.user?.nome || "",
           cpfAluno: part.user?.cpf || "",
           emailAluno: part.user?.email || "", // NOVA COLUNA
@@ -476,6 +511,8 @@ const Resultado = ({}) => {
           { name: "Edital", filterButton: true },
           { name: "Plano de Trabalho", filterButton: true },
           { name: "Orientador", filterButton: true },
+          { name: "Status Orientador", filterButton: true },
+          { name: "Justificativa Orientador", filterButton: true },
           { name: "Aluno", filterButton: true },
           { name: "CPF Aluno", filterButton: true },
           { name: "Email Aluno", filterButton: true }, // NOVA COLUNA
@@ -503,6 +540,8 @@ const Resultado = ({}) => {
           item.edital,
           item.planoTrabalho,
           item.orientador,
+          item.statusOrientador,
+          item.justificativaOrientador,
           item.aluno,
           item.cpfAluno,
           item.emailAluno, // NOVA COLUNA
@@ -770,6 +809,15 @@ const Resultado = ({}) => {
 
       const vinculo = p.VinculoSolicitacaoBolsa?.[0];
 
+      // Uma inscrição pode ter mais de uma participação de orientador (ex.:
+      // histórico de substituição) — por ora, considera só o orientador
+      // proponente (userId === inscricao.proponenteId) pra status/justificativa,
+      // já que não faz sentido mostrar status de um orientador substituído.
+      const orientadorProponente =
+        p.inscricao?.participacoes?.find(
+          (o) => o.userId === p.inscricao?.proponenteId
+        ) || p.inscricao?.participacoes?.[0];
+
       return {
         ...p,
         notaTotal: notaTotal ? parseFloat(notaTotal) : null,
@@ -783,6 +831,9 @@ const Resultado = ({}) => {
         fontePagadora:
           vinculo?.solicitacaoBolsa?.bolsa?.cota?.instituicaoPagadora ||
           "Voluntária",
+        statusParticipacaoOrientador:
+          orientadorProponente?.statusParticipacao || null,
+        justificativaOrientador: orientadorProponente?.justificativa || null,
       };
     });
 
@@ -1193,6 +1244,30 @@ const Resultado = ({}) => {
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
               }}
+            />
+            <Column
+              field="statusParticipacaoOrientador"
+              header="Status Orientador"
+              sortable
+              filter
+              filterElement={(options) =>
+                statusClassificacaoFilterTemplate(
+                  options,
+                  participacaoStatusOptions
+                )
+              }
+              showFilterMenu={false}
+              filterField="statusParticipacaoOrientador"
+              body={(rowData) =>
+                renderStatusTagWithJustificativa(
+                  rowData.statusParticipacaoOrientador,
+                  rowData.justificativaOrientador,
+                  {
+                    onShowJustificativa: showJustificativaDialog,
+                  }
+                )
+              }
+              style={{ width: "12rem" }}
             />
 
             <Column
