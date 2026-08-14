@@ -498,7 +498,10 @@ const Resultado = ({}) => {
                 "N/A"
               }`;
             } else {
-              fontePagadora = "Voluntária em Lista de Espera";
+              fontePagadora =
+                ordemRecebimentoFinal && ordemRecebimentoFinal !== "-"
+                  ? `Voluntária em Lista de Espera (Posição ${ordemRecebimentoFinal})`
+                  : "Voluntária em Lista de Espera";
             }
           } else if (isVinculacaoRecusada) {
             fontePagadora = "Voluntária - solicitação de bolsa recusada";
