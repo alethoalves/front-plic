@@ -95,16 +95,15 @@ const Page = ({ params }) => {
 
         // Para cada plano, ordenar suas atividades por data de início
         // (a API já devolve só os planos visíveis para o usuário)
-        const planosComAtividadesOrdenadas = response
-          .map((plano) => ({
-            ...plano,
-            registroAtividades:
-              plano.registroAtividades?.sort(
-                (a, b) =>
-                  new Date(a.atividade.dataInicio) -
-                  new Date(b.atividade.dataInicio),
-              ) || [],
-          }));
+        const planosComAtividadesOrdenadas = response.map((plano) => ({
+          ...plano,
+          registroAtividades:
+            plano.registroAtividades?.sort(
+              (a, b) =>
+                new Date(a.atividade.dataInicio) -
+                new Date(b.atividade.dataInicio),
+            ) || [],
+        }));
 
         setRegistrosAtividadesEditaisVigentes(
           planosComAtividadesOrdenadas || [],
@@ -812,17 +811,11 @@ const Page = ({ params }) => {
                   <span>
                     {resumoAtividadesObrigatorias.pendentes > 0
                       ? `${resumoAtividadesObrigatorias.pendentes} atividade${
-                          resumoAtividadesObrigatorias.pendentes > 1
-                            ? "s"
-                            : ""
+                          resumoAtividadesObrigatorias.pendentes > 1 ? "s" : ""
                         } obrigatória${
-                          resumoAtividadesObrigatorias.pendentes > 1
-                            ? "s"
-                            : ""
+                          resumoAtividadesObrigatorias.pendentes > 1 ? "s" : ""
                         } pendente${
-                          resumoAtividadesObrigatorias.pendentes > 1
-                            ? "s"
-                            : ""
+                          resumoAtividadesObrigatorias.pendentes > 1 ? "s" : ""
                         }`
                       : "Atividades obrigatórias em dia"}
                   </span>
@@ -876,7 +869,7 @@ const Page = ({ params }) => {
             )}
 
             {!loading && registroAtividadesEditaisVigentes.length === 0 && (
-              <NoData description="Não há planos de trabalho cadastrados para o seu perfil nesta instituição." />
+              <NoData description="Não há planos de trabalho válidos para o seu perfil nesta instituição." />
             )}
 
             {!loading && registroAtividadesEditaisVigentes.length > 0 && (
@@ -1156,9 +1149,7 @@ const Page = ({ params }) => {
                                       />
                                     </button>
                                     <div
-                                      className={`${
-                                        styles.respostasCollapse
-                                      } ${
+                                      className={`${styles.respostasCollapse} ${
                                         expandedRespostas[atividade.id]
                                           ? styles.respostasCollapseOpen
                                           : ""
