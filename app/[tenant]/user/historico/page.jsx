@@ -374,7 +374,7 @@ const HistoricoParticipacao = ({ params }) => {
                 )}
 
                 {tipo !== "aluno" &&
-                  participacao.inscricao.planosDeTrabalho && (
+                  participacao.inscricao.planosDeTrabalho?.length > 0 && (
                     <div className={styles.orientadosSection}>
                       <div className={styles.orientadosHeader}>
                         <RiUserLine size={14} />

@@ -94,8 +94,8 @@ const Page = ({ params }) => {
         setFilteredAreas(transformedArray(getAreasResponse));
 
         // Para cada plano, ordenar suas atividades por data de início
+        // (a API já devolve só os planos visíveis para o usuário)
         const planosComAtividadesOrdenadas = response
-          .filter((plano) => plano.statusClassificacao === "CLASSIFICADO")
           .map((plano) => ({
             ...plano,
             registroAtividades:
