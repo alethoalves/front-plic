@@ -1,0 +1,56 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+.vazio {
+  color: $gray-500;
+}
+
+.truncado {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin: 0;
+}
+
+.verMais {
+  display: inline-block;
+  color: $primary-normal;
+  cursor: pointer;
+  font-size: 0.8rem;
+  text-decoration: underline;
+}
+
+.fileLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  color: $primary-dark;
+  text-decoration: none;
+
+  svg {
+    color: $error-normal;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.tagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $gap-1;
+}
+
+.tag {
+  font-size: 0.8rem;
+  padding: 2px 10px;
+  background: $white-darken;
+  border: 1px solid $gray-50;
+  border-radius: 50px;
+  color: $black-light;
+}

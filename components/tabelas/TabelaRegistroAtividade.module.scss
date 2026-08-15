@@ -123,7 +123,16 @@
     gap: 0.5rem;
     width: 100%;
   }
-  
+
+  .columnHeaderTitle {
+    cursor: pointer;
+
+    &:hover {
+      color: $primary-normal;
+      text-decoration: underline;
+    }
+  }
+
   .statusFilter {
     width: 100%;
     font-size: 0.8rem;

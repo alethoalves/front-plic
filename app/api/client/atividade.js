@@ -60,6 +60,24 @@ export const createAtividade = async (tenantSlug, editalId, atividadeData) => {
       throw error;
     }
   };
+  export const getRespostasAtividadeByFormulario = async (tenantSlug, ano, formularioId) => {
+    try {
+      const headers = getAuthHeadersClient();
+      if (!headers) {
+        return false;
+      }
+      const response = await req.get(
+        `/private/${tenantSlug}/${ano}/getRespostasAtividadeByFormulario/${formularioId}`,
+        {
+          headers,
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao obter respostas da atividade:", error);
+      throw error;
+    }
+  };
   export const getRegistroAtividadesByCpf = async (tenantSlug,perfil) => {
     try {
       const headers = getAuthHeadersClient();

@@ -2,6 +2,7 @@
 
 "use client";
 import { useEffect, useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 
 // ESTILO
 import styles from "./TabelaRegistroAtividade.module.scss";
@@ -38,6 +39,7 @@ import NoData from "../NoData";
 import { updateRegistroAtividade } from "@/app/api/client/registroAtividade";
 
 const TabelaRegistroAtividade = ({ params }) => {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [atividades, setAtividades] = useState([]);
   const [planos, setPlanos] = useState([]);
@@ -531,7 +533,17 @@ const TabelaRegistroAtividade = ({ params }) => {
   const atividadeHeader = (atividade) => {
     return (
       <div className={styles.columnHeader}>
-        <div>{atividade.titulo}</div>
+        <div
+          className={styles.columnHeaderTitle}
+          onClick={() =>
+            router.push(
+              `/${params.tenant}/gestor/${params.ano}/atividades/${atividade.formularioId}`
+            )
+          }
+          title="Ver respostas desta atividade"
+        >
+          {atividade.titulo}
+        </div>
         <MultiSelect
           value={statusFilters[atividade.formularioId] || []}
           options={statusOptions}

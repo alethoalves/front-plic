@@ -1,0 +1,26 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+.main {
+  padding: $gap-2;
+}
+
+.voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: $primary-darken;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
