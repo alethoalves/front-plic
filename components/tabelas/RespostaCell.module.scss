@@ -6,12 +6,12 @@
   color: $gray-500;
 }
 
-.truncado {
+.texto {
   max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .verMais {
@@ -24,15 +24,22 @@
 
 .fileLink {
   display: inline-flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 6px;
   font-size: 0.875rem;
   color: $primary-dark;
   text-decoration: none;
+  max-width: 100%;
+
+  span {
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
 
   svg {
     color: $error-normal;
     flex-shrink: 0;
+    margin-top: 2px;
   }
 
   &:hover {

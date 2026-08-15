@@ -10,11 +10,10 @@ const BlockNoteField = dynamic(
   { ssr: false }
 );
 
-const MAX_CHARS = 120;
-
-// Mesmo switch por campo.tipo já usado em VerProjeto.jsx (FieldValue), com
-// truncamento/"ver mais" adicional porque aqui o valor vive dentro de uma
-// célula de tabela, não de uma página inteira.
+// Mesmo switch por campo.tipo já usado em VerProjeto.jsx (FieldValue). As
+// colunas têm largura máxima fixa (ver TabelaRespostasAtividade.jsx) e o
+// texto quebra linha dentro da célula em vez de truncar — só o blockNote
+// (conteúdo rico/estruturado) continua abrindo em um Dialog à parte.
 const RespostaCell = ({ campo, value }) => {
   const [expandido, setExpandido] = useState(false);
 
@@ -37,27 +36,6 @@ const RespostaCell = ({ campo, value }) => {
           onHide={() => setExpandido(false)}
         >
           <BlockNoteField value={value} readOnly={true} label={null} />
-        </Dialog>
-      </>
-    );
-  }
-
-  if (tipo === "textLong" && value.length > MAX_CHARS) {
-    return (
-      <>
-        <p className={styles.truncado} title={value}>
-          {value.slice(0, MAX_CHARS)}…
-        </p>
-        <span className={styles.verMais} onClick={() => setExpandido(true)}>
-          Ver mais
-        </span>
-        <Dialog
-          header={campo.label}
-          visible={expandido}
-          style={{ width: "50vw" }}
-          onHide={() => setExpandido(false)}
-        >
-          <p style={{ whiteSpace: "pre-wrap" }}>{value}</p>
         </Dialog>
       </>
     );
@@ -122,12 +100,8 @@ const RespostaCell = ({ campo, value }) => {
     return <p>{value === "true" ? "Sim" : "Não"}</p>;
   }
 
-  // text, number, date, select
-  return (
-    <p className={styles.truncado} title={value}>
-      {value}
-    </p>
-  );
+  // text, textLong, number, date, select
+  return <p className={styles.texto}>{value}</p>;
 };
 
 export default RespostaCell;
