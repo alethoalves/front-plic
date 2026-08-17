@@ -2,11 +2,64 @@
 @import "/styles/partials/layout";
 @import "/styles/partials/spacing";
 
+.tableHeader {
+  display: flex;
+  padding: $gap-2;
+}
+
+.searchContainer {
+  width: 100%;
+}
+
+.searchInput {
+  display: block;
+  width: 100%;
+}
+
 .table {
   td {
     border: none;
     vertical-align: top;
     background-color: #fff;
+    white-space: normal;
+  }
+}
+
+// PrimeReact deixa o rótulo do header em uma linha só por padrão — força
+// quebra pra campos com label mais longo (mesmo padrão de
+// TabelaRecursosGestor.module.scss).
+.headerWrap {
+  white-space: normal !important;
+
+  :global(.p-column-header-content),
+  :global(.p-column-title) {
+    white-space: normal !important;
+    word-break: break-word;
+  }
+}
+
+.columnHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.columnHeaderTitle {
+  white-space: normal;
+  word-break: break-word;
+}
+
+.columnFilter {
+  width: 100%;
+  font-size: 0.8rem;
+
+  &.p-inputtext {
+    padding: 0.25rem 0.5rem;
+  }
+
+  :global(.p-multiselect-label) {
+    padding: 0.25rem 0.5rem;
   }
 }
 

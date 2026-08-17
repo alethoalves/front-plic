@@ -83,6 +83,9 @@ padding: 0 $gap-2 $gap-2 $gap-2;
  
   .p-datatable-wrapper{
     margin: 0 0;
+    svg{
+        width: 14px;
+    }
   }
 .table-responsive {
 overflow-x: auto; // Mantém o scroll apenas dentro dessa di

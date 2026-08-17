@@ -14,6 +14,31 @@
   word-break: break-word;
 }
 
+// Preview de poucas linhas para textLong/blockNote (mesma técnica de
+// -webkit-line-clamp já usada em .rowCel h6 na tabela) — o resto do
+// conteúdo fica disponível no Dialog "Ver mais"/"Ver conteúdo completo".
+.clampText {
+  max-width: 100%;
+  margin: 0;
+  cursor: pointer;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.clampBlockNote {
+  max-width: 100%;
+  cursor: pointer;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .verMais {
   display: inline-block;
   color: $primary-normal;

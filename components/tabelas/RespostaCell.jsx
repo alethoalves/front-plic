@@ -1,19 +1,15 @@
 "use client";
 import { useState } from "react";
-import dynamic from "next/dynamic";
 import { RiFilePdfLine, RiExternalLinkLine } from "@remixicon/react";
 import { Dialog } from "primereact/dialog";
+import BlockNoteContent from "@/components/BlockNoteContent";
 import styles from "./RespostaCell.module.scss";
 
-const BlockNoteField = dynamic(
-  () => import("@/components/Formularios/BlockNoteField"),
-  { ssr: false }
-);
-
 // Mesmo switch por campo.tipo já usado em VerProjeto.jsx (FieldValue). As
-// colunas têm largura máxima fixa (ver TabelaRespostasAtividade.jsx) e o
-// texto quebra linha dentro da célula em vez de truncar — só o blockNote
-// (conteúdo rico/estruturado) continua abrindo em um Dialog à parte.
+// colunas têm largura máxima fixa (ver TabelaRespostasAtividade.jsx); textos
+// curtos quebram linha livremente, mas textLong/blockNote mostram só um
+// preview de poucas linhas (não faz sentido renderizar uma resposta inteira
+// dentro de uma célula de tabela) com um Dialog pra ver o conteúdo completo.
 const RespostaCell = ({ campo, value }) => {
   const [expandido, setExpandido] = useState(false);
 
@@ -26,8 +22,14 @@ const RespostaCell = ({ campo, value }) => {
   if (tipo === "blockNote") {
     return (
       <>
+        <div
+          className={styles.clampBlockNote}
+          onClick={() => setExpandido(true)}
+        >
+          <BlockNoteContent value={value} />
+        </div>
         <span className={styles.verMais} onClick={() => setExpandido(true)}>
-          Ver conteúdo
+          Ver conteúdo completo
         </span>
         <Dialog
           header={campo.label}
@@ -35,7 +37,28 @@ const RespostaCell = ({ campo, value }) => {
           style={{ width: "50vw" }}
           onHide={() => setExpandido(false)}
         >
-          <BlockNoteField value={value} readOnly={true} label={null} />
+          <BlockNoteContent value={value} />
+        </Dialog>
+      </>
+    );
+  }
+
+  if (tipo === "textLong") {
+    return (
+      <>
+        <p className={styles.clampText} onClick={() => setExpandido(true)}>
+          {value}
+        </p>
+        <span className={styles.verMais} onClick={() => setExpandido(true)}>
+          Ver mais
+        </span>
+        <Dialog
+          header={campo.label}
+          visible={expandido}
+          style={{ width: "50vw" }}
+          onHide={() => setExpandido(false)}
+        >
+          <p style={{ whiteSpace: "pre-wrap" }}>{value}</p>
         </Dialog>
       </>
     );
@@ -54,7 +77,7 @@ const RespostaCell = ({ campo, value }) => {
         title={fileName}
       >
         <RiFilePdfLine size={14} />
-        <span>{fileName}</span>
+        <span>Ver</span>
       </a>
     );
   }
@@ -100,7 +123,7 @@ const RespostaCell = ({ campo, value }) => {
     return <p>{value === "true" ? "Sim" : "Não"}</p>;
   }
 
-  // text, textLong, number, date, select
+  // text, number, date, select
   return <p className={styles.texto}>{value}</p>;
 };
 
