@@ -45,7 +45,7 @@ const TabelaRespostasAtividade = ({ formulario, planos }) => {
         respostasPorCampo: Object.fromEntries(
           plano.respostas.map((r) => [r.campoId, r.value])
         ),
-        searchText: `${plano.titulo} ${plano.orientadores} ${plano.alunos}`.toLowerCase(),
+        searchText: `${plano.titulo} ${plano.orientadores} ${plano.alunos} ${plano.orientadoresNomeCompleto} ${plano.alunosNomeCompleto}`.toLowerCase(),
       }));
   }, [planos]);
 

@@ -5,9 +5,11 @@ import { req } from "./../axios.js";
  * Área
 **************************/
 
+
+
 export const getAreas = async (tenantSlug) => {
   try {
-    
+    //teste
     const response = await req.get(`/areas`, );
     return response.data.areas;
   } catch (error) {
