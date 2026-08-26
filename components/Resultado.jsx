@@ -390,13 +390,8 @@ const Resultado = ({}) => {
           return "N/A";
         }
 
-        // Formatar cada orientador com nome e CPF entre parênteses
         return orientadores
-          .map((orientador) => {
-            const nome = orientador.user.nome || "N/A";
-            const cpf = orientador.user.cpf ? `(${orientador.user.cpf})` : "";
-            return `${nome} ${cpf}`.trim();
-          })
+          .map((orientador) => orientador.user.nome || "N/A")
           .join(", ");
       };
 
