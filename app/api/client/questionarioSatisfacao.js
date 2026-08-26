@@ -60,6 +60,15 @@ export const getRespostasQuestionario = async (tenantSlug, id) => {
   return response.data;
 };
 
+export const deleteRespostaAberta = async (tenantSlug, questionarioId, respostaId, questaoId) => {
+  const headers = getAuthHeadersClient();
+  const response = await req.delete(
+    `/private/${tenantSlug}/questionarios-satisfacao/${questionarioId}/respostas/${respostaId}/aberta/${encodeURIComponent(questaoId)}`,
+    { headers }
+  );
+  return response.data;
+};
+
 export const generateTokenPublico = async (tenantSlug, id) => {
   const headers = getAuthHeadersClient();
   const response = await req.post(`/private/${tenantSlug}/questionarios-satisfacao/${id}/token`, {}, { headers });

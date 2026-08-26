@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -7,6 +8,7 @@ import {
   BarElement,
   Tooltip,
 } from "chart.js";
+import { RiDeleteBinLine } from "@remixicon/react";
 import styles from "./QuestionarioResultados.module.scss";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
@@ -81,7 +83,7 @@ function aggMatriz(questao, respostas) {
 function aggAberta(questao, respostas) {
   return respostas
     .filter(r => r.respostas[questao.id])
-    .map((r, i) => ({ idx: i + 1, texto: r.respostas[questao.id] }));
+    .map((r, i) => ({ idx: i + 1, id: r.id, texto: r.respostas[questao.id] }));
 }
 
 // ─── Gráfico de barras ────────────────────────────────────────────────────────
@@ -227,15 +229,55 @@ function VisMatriz({ questao, respostas }) {
   );
 }
 
-function VisAberta({ questao, respostas }) {
+function VisAberta({ questao, respostas, editable, onDeleteResposta }) {
   const textos = aggAberta(questao, respostas);
+  const [confirmandoId, setConfirmandoId] = useState(null);
+  const [excluindoId, setExcluindoId] = useState(null);
+
   if (textos.length === 0) return <p className={styles.semResposta}>Nenhuma resposta de texto registrada.</p>;
+
+  const handleExcluir = async (id) => {
+    setExcluindoId(id);
+    try {
+      await onDeleteResposta(id, questao.id);
+    } finally {
+      setExcluindoId(null);
+      setConfirmandoId(null);
+    }
+  };
+
   return (
     <div className={styles.abertaList}>
       {textos.map(t => (
-        <div key={t.idx} className={styles.abertaItem}>
+        <div key={t.id} className={styles.abertaItem}>
           <span className={styles.abertaIdx}>{t.idx}</span>
           <p>{t.texto}</p>
+          {editable && (
+            confirmandoId === t.id ? (
+              <span className={styles.abertaConfirm}>
+                <button
+                  type="button"
+                  className={styles.btnExcluirRespostaConfirm}
+                  disabled={excluindoId === t.id}
+                  onClick={() => handleExcluir(t.id)}
+                >
+                  {excluindoId === t.id ? "Excluindo..." : "Confirmar exclusão?"}
+                </button>
+                <button type="button" className={styles.btnCancelar} onClick={() => setConfirmandoId(null)}>
+                  Cancelar
+                </button>
+              </span>
+            ) : (
+              <button
+                type="button"
+                className={styles.btnExcluirResposta}
+                title="Excluir esta resposta"
+                onClick={() => setConfirmandoId(t.id)}
+              >
+                <RiDeleteBinLine size={14} />
+              </button>
+            )
+          )}
         </div>
       ))}
     </div>
@@ -254,7 +296,7 @@ const TIPO_LABEL = {
   resposta_aberta: "Resposta aberta",
 };
 
-function QuestaoCard({ questao, respostas }) {
+function QuestaoCard({ questao, respostas, editable, onDeleteResposta }) {
   const responderam = respostas.filter(r => r.respostas[questao.id] != null).length;
   return (
     <div className={styles.questaoCard}>
@@ -274,7 +316,9 @@ function QuestaoCard({ questao, respostas }) {
         {questao.tipo === "likert_com_nao_se_aplica" && <VisEscala questao={questao} respostas={respostas} showExtra />}
         {questao.tipo === "nps" && <VisNPS questao={questao} respostas={respostas} />}
         {questao.tipo === "matriz_likert" && <VisMatriz questao={questao} respostas={respostas} />}
-        {questao.tipo === "resposta_aberta" && <VisAberta questao={questao} respostas={respostas} />}
+        {questao.tipo === "resposta_aberta" && (
+          <VisAberta questao={questao} respostas={respostas} editable={editable} onDeleteResposta={onDeleteResposta} />
+        )}
       </div>
     </div>
   );
@@ -282,7 +326,7 @@ function QuestaoCard({ questao, respostas }) {
 
 // ─── Componente principal (display-only) ─────────────────────────────────────
 
-export default function QuestionarioResultados({ titulo, descricao, schema, respostas }) {
+export default function QuestionarioResultados({ titulo, descricao, schema, respostas, editable = false, onDeleteRespostaAberta }) {
   const blocos = schema?.blocos ?? [];
 
   return (
@@ -301,7 +345,13 @@ export default function QuestionarioResultados({ titulo, descricao, schema, resp
           <div key={bloco.id} className={styles.blocoWrap}>
             {bloco.titulo && <h5 className={styles.blocoTitulo}>{bloco.titulo}</h5>}
             {bloco.questoes.map(q => (
-              <QuestaoCard key={q.id} questao={q} respostas={respostas} />
+              <QuestaoCard
+                key={q.id}
+                questao={q}
+                respostas={respostas}
+                editable={editable}
+                onDeleteResposta={onDeleteRespostaAberta}
+              />
             ))}
           </div>
         ))

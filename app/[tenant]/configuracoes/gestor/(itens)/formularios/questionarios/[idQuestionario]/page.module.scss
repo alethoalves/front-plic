@@ -275,6 +275,13 @@
   }
 }
 
+.btnIconSmDangerConfirm {
+  @extend .btnIconSmDanger;
+  color: $error-normal;
+  border-color: $error-normal;
+  background: rgba($error-normal, 0.08);
+}
+
 .btnAddSmall {
   display: flex;
   align-items: center;

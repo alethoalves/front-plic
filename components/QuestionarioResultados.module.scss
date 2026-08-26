@@ -256,3 +256,65 @@
   min-width: 20px;
   padding-top: 0.45rem;
 }
+
+.abertaConfirm {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+  flex-shrink: 0;
+}
+
+.btnExcluirResposta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 0.35rem;
+  padding: 0.3rem;
+  border: 1px solid rgba(#000, 0.15);
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+  color: $gray-500;
+  transition: color 0.15s, border-color 0.15s;
+
+  &:hover {
+    color: $error-normal;
+    border-color: $error-normal;
+  }
+}
+
+.btnExcluirRespostaConfirm {
+  flex-shrink: 0;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid $error-normal;
+  border-radius: 6px;
+  background: rgba($error-normal, 0.05);
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $error-normal;
+  font-family: inherit;
+  white-space: nowrap;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.btnCancelar {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: $gray-500;
+  font-family: inherit;
+  padding: 0.3rem 0.5rem;
+  text-decoration: underline;
+
+  &:hover {
+    color: $gray-700;
+  }
+}

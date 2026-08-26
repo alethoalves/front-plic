@@ -5,6 +5,7 @@ import {
   getRespostasQuestionario,
   generateTokenPublico,
   revokeTokenPublico,
+  deleteRespostaAberta,
 } from "@/app/api/client/questionarioSatisfacao";
 import QuestionarioResultados from "@/components/QuestionarioResultados";
 import styles from "./RespostasView.module.scss";
@@ -135,6 +136,15 @@ export default function RespostasView({ params, schema, tokenPublicoInicial }) {
     fetchRespostas();
   }, [params.tenant, params.idQuestionario]);
 
+  const handleDeleteRespostaAberta = async (respostaId, questaoId) => {
+    await deleteRespostaAberta(params.tenant, params.idQuestionario, respostaId, questaoId);
+    setRespostas(prev => prev.map(r => {
+      if (r.id !== respostaId) return r;
+      const { [questaoId]: _omit, ...rest } = r.respostas;
+      return { ...r, respostas: rest };
+    }));
+  };
+
   return (
     <div className={styles.wrap}>
       <LinkPublicoPanel params={params} tokenInicial={tokenPublicoInicial ?? null} />
@@ -143,7 +153,12 @@ export default function RespostasView({ params, schema, tokenPublicoInicial }) {
       {error && <p className={styles.error}>{error}</p>}
 
       {!loading && !error && (
-        <QuestionarioResultados schema={schema} respostas={respostas} />
+        <QuestionarioResultados
+          schema={schema}
+          respostas={respostas}
+          editable
+          onDeleteRespostaAberta={handleDeleteRespostaAberta}
+        />
       )}
     </div>
   );

@@ -13,6 +13,8 @@ import {
   RiEyeLine,
   RiEditLine,
   RiBarChartLine,
+  RiCheckLine,
+  RiCloseLine,
 } from "@remixicon/react";
 
 import styles from "./page.module.scss";
@@ -189,6 +191,7 @@ function EditorCondicional({ questao, onChange, questoesAnteriores }) {
 
 function QuestaoEditor({ questao, onUpdate, onRemove, onMoveUp, onMoveDown, questoesAnteriores }) {
   const set = (patch) => onUpdate({ ...questao, ...patch });
+  const [confirmandoRemocao, setConfirmandoRemocao] = useState(false);
 
   const handleTipoChange = (tipo) => {
     const novo = novaQuestao(tipo);
@@ -211,7 +214,18 @@ function QuestaoEditor({ questao, onUpdate, onRemove, onMoveUp, onMoveDown, ques
         <div className={styles.questaoAcoes}>
           <button type="button" className={styles.btnIconSm} onClick={onMoveUp} title="Mover acima"><RiArrowUpLine size={14} /></button>
           <button type="button" className={styles.btnIconSm} onClick={onMoveDown} title="Mover abaixo"><RiArrowDownLine size={14} /></button>
-          <button type="button" className={styles.btnIconSmDanger} onClick={onRemove} title="Excluir questão"><RiDeleteBinLine size={14} /></button>
+          {confirmandoRemocao ? (
+            <>
+              <button type="button" className={styles.btnIconSmDangerConfirm} onClick={onRemove} title="Confirmar exclusão da questão (e das respostas já coletadas para ela)">
+                <RiCheckLine size={14} />
+              </button>
+              <button type="button" className={styles.btnIconSm} onClick={() => setConfirmandoRemocao(false)} title="Cancelar">
+                <RiCloseLine size={14} />
+              </button>
+            </>
+          ) : (
+            <button type="button" className={styles.btnIconSmDanger} onClick={() => setConfirmandoRemocao(true)} title="Excluir questão"><RiDeleteBinLine size={14} /></button>
+          )}
         </div>
       </div>
 
