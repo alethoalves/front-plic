@@ -31,6 +31,21 @@ import {
   getDocumentoTemplates,
 } from "@/app/api/client/documentos";
 import { Dropdown } from "primereact/dropdown";
+
+// Mesmo mapa usado em SolicitacoesBolsa.jsx / TabelaPlanoDeTrabalhoAcompanhamento.jsx
+// — não há util compartilhado pra isso ainda, cada tela mantém sua própria cópia.
+const LABELS_TITULACAO = {
+  GRADUACAO: "Graduação",
+  ESPECIALIZACAO: "Especialização",
+  MESTRADO: "Mestrado",
+  DOUTORADO: "Doutorado",
+  POS_DOUTORADO: "Pós-Doutorado",
+};
+const formatarTitulacao = (t) => LABELS_TITULACAO[t] || t || "-";
+const TITULACAO_OPTIONS = Object.entries(LABELS_TITULACAO).map(
+  ([value, label]) => ({ value, label })
+);
+
 const getInitialFilters = () => ({
   global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   "inscricao.edital.titulo": {
@@ -52,6 +67,14 @@ const getInitialFilters = () => ({
   orientadores: {
     value: null,
     matchMode: FilterMatchMode.CONTAINS,
+  },
+  titulacaoOrientador: {
+    value: null,
+    matchMode: FilterMatchMode.IN,
+  },
+  anoTitulacaoOrientador: {
+    value: [null, null],
+    matchMode: "intervalo",
   },
   statusParticipacaoOrientador: {
     value: null,
@@ -224,6 +247,16 @@ const Resultado = ({}) => {
         { header: "Justificativa Plano", key: "justificativaPlano", width: 30 },
         { header: "Orientador", key: "orientador", width: 25 },
         { header: "CPF Orientador", key: "cpfOrientador", width: 15 },
+        {
+          header: "Titulação Orientador",
+          key: "titulacaoOrientador",
+          width: 18,
+        },
+        {
+          header: "Ano Titulação Orientador",
+          key: "anoTitulacaoOrientador",
+          width: 12,
+        },
         {
           header: "Status Orientador",
           key: "statusOrientador",
@@ -518,6 +551,11 @@ const Resultado = ({}) => {
           planoTrabalho: part.planoDeTrabalho?.titulo || "",
           orientador: formatarOrientadores(part),
           cpfOrientador: orientadorProponente?.user?.cpf || "",
+          titulacaoOrientador: formatarTitulacao(
+            orientadorProponente?.user?.titulacao
+          ),
+          anoTitulacaoOrientador:
+            orientadorProponente?.user?.anoTitulacao || "",
           statusOrientador: statusOrientador,
           justificativaOrientador: justificativaOrientador,
           aluno: part.user?.nome || "",
@@ -570,6 +608,8 @@ const Resultado = ({}) => {
           { name: "Justificativa Plano", filterButton: true },
           { name: "Orientador", filterButton: true },
           { name: "CPF Orientador", filterButton: true },
+          { name: "Titulação Orientador", filterButton: true },
+          { name: "Ano Titulação Orientador", filterButton: true },
           { name: "Status Orientador", filterButton: true },
           { name: "Justificativa Orientador", filterButton: true },
           { name: "Aluno", filterButton: true },
@@ -604,6 +644,8 @@ const Resultado = ({}) => {
           item.justificativaPlano,
           item.orientador,
           item.cpfOrientador,
+          item.titulacaoOrientador,
+          item.anoTitulacaoOrientador,
           item.statusOrientador,
           item.justificativaOrientador,
           item.aluno,
@@ -930,6 +972,9 @@ const Resultado = ({}) => {
         statusParticipacaoOrientador:
           orientadorProponente?.statusParticipacao || null,
         justificativaOrientador: orientadorProponente?.justificativa || null,
+        titulacaoOrientador: orientadorProponente?.user?.titulacao || null,
+        anoTitulacaoOrientador:
+          orientadorProponente?.user?.anoTitulacao || null,
         resultadoFinal,
       };
     });
@@ -1341,6 +1386,31 @@ const Resultado = ({}) => {
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
               }}
+            />
+            <Column
+              field="titulacaoOrientador"
+              header="Titulação Orientador"
+              sortable
+              filter
+              filterElement={(options) =>
+                statusClassificacaoFilterTemplate(options, TITULACAO_OPTIONS)
+              }
+              showFilterMenu={false}
+              filterField="titulacaoOrientador"
+              body={(rowData) => formatarTitulacao(rowData.titulacaoOrientador)}
+              style={{ width: "10rem" }}
+            />
+            <Column
+              field="anoTitulacaoOrientador"
+              header="Ano Titulação Orientador"
+              sortable
+              filter
+              filterElement={notaRowFilterTemplate}
+              filterMatchMode="intervalo"
+              showFilterMenu={false}
+              filterField="anoTitulacaoOrientador"
+              body={(rowData) => rowData.anoTitulacaoOrientador ?? "-"}
+              style={{ width: "8rem", textAlign: "center" }}
             />
             <Column
               field="statusParticipacaoOrientador"
