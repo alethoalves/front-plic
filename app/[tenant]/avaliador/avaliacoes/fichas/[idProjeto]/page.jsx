@@ -13,6 +13,7 @@ import { RiQuillPenLine } from "@remixicon/react";
 import Button from "@/components/Button";
 import { flattenRespostas, listarCriterios, calcularArvoreComNotas } from "@/lib/fichaAvaliacaoScoring";
 import FichaAvaliacaoTree from "@/components/avaliacoes/FichaAvaliacaoTree";
+import { abrirArquivoPrivado, urlDownloadResposta } from "@/app/api/client/arquivos";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(true);
@@ -132,10 +133,20 @@ const Page = ({ params }) => {
                     <div className={`${styles.value}`}>
                       {["link", "arquivo"].includes(item.campo.tipo) ? (
                         <a
-                          href={item.value}
-                          target="_blank"
+                          href={item.campo.tipo === "arquivo" ? "#" : item.value}
+                          target={item.campo.tipo === "arquivo" ? undefined : "_blank"}
                           rel="noopener noreferrer"
                           className={styles.link}
+                          onClick={
+                            item.campo.tipo === "arquivo"
+                              ? (e) => {
+                                  e.preventDefault();
+                                  abrirArquivoPrivado(
+                                    urlDownloadResposta(params.tenant, item.id)
+                                  );
+                                }
+                              : undefined
+                          }
                         >
                           {item.campo.tipo === "arquivo" && "📁 "}
                           {item.campo.tipo === "link" && "🔗 "}

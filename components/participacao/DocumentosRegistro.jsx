@@ -15,6 +15,7 @@ import {
   validarDocumento,
 } from "@/app/api/client/documentos";
 import DocumentoDialog from "./DocumentoDialog";
+import { abrirArquivoPrivado, urlDownloadDocumentoAnexo } from "@/app/api/client/arquivos";
 import { Toast } from "primereact/toast";
 import { confirmDialog, ConfirmDialog } from "primereact/confirmdialog";
 
@@ -238,7 +239,15 @@ const DocumentosRegistro = ({
                     "Não"
                   )
                 ) : typeof value === "string" && value.startsWith("http") ? (
-                  <a href={value} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      abrirArquivoPrivado(
+                        urlDownloadDocumentoAnexo(tenant, documento.id, key)
+                      );
+                    }}
+                  >
                     Ver arquivo
                   </a>
                 ) : (

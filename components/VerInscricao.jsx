@@ -8,6 +8,7 @@ import {
 import { RiAlertLine } from "@remixicon/react";
 import { useRouter } from "next/navigation";
 import { parseDateBR } from "@/lib/formatarDatas";
+import { abrirArquivoPrivado, urlDownloadResposta } from "@/app/api/client/arquivos";
 
 const VerInscricao = ({ inscricaoSelected, tenant, setErrors, onClose }) => {
   const [inscricao, setInscricao] = useState(null);
@@ -139,10 +140,20 @@ const VerInscricao = ({ inscricaoSelected, tenant, setErrors, onClose }) => {
                                   item.campo.tipo
                                 ) ? (
                                   <a
-                                    href={item.value}
-                                    target="_blank"
+                                    href={item.campo.tipo === "arquivo" ? "#" : item.value}
+                                    target={item.campo.tipo === "arquivo" ? undefined : "_blank"}
                                     rel="noopener noreferrer"
                                     className={styles.link}
+                                    onClick={
+                                      item.campo.tipo === "arquivo"
+                                        ? (e) => {
+                                            e.preventDefault();
+                                            abrirArquivoPrivado(
+                                              urlDownloadResposta(tenant, item.id)
+                                            );
+                                          }
+                                        : undefined
+                                    }
                                   >
                                     {item.campo.tipo === "arquivo" && "📁 "}
                                     {item.campo.tipo === "link" && "🔗 "}
@@ -228,10 +239,20 @@ const VerInscricao = ({ inscricaoSelected, tenant, setErrors, onClose }) => {
                                         item.campo.tipo
                                       ) ? (
                                         <a
-                                          href={item.value}
-                                          target="_blank"
+                                          href={item.campo.tipo === "arquivo" ? "#" : item.value}
+                                          target={item.campo.tipo === "arquivo" ? undefined : "_blank"}
                                           rel="noopener noreferrer"
                                           className={styles.link}
+                                          onClick={
+                                            item.campo.tipo === "arquivo"
+                                              ? (e) => {
+                                                  e.preventDefault();
+                                                  abrirArquivoPrivado(
+                                                    urlDownloadResposta(tenant, item.id)
+                                                  );
+                                                }
+                                              : undefined
+                                          }
                                         >
                                           {item.campo.tipo === "arquivo" &&
                                             "📁 "}

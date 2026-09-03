@@ -23,6 +23,7 @@ import FormRegistroAtividadeCreateOrEdit from "@/components/Formularios/FormRegi
 import { Toast } from "primereact/toast";
 import { Accordion, AccordionTab } from "primereact/accordion";
 import { aprovarAtividade } from "@/app/api/client/registroAtividade";
+import { abrirArquivoPrivado, urlDownloadResposta } from "@/app/api/client/arquivos";
 import Button from "@/components/Button";
 import { getAreas } from "@/app/api/client/area";
 import { transformedArray } from "@/lib/transformedArray";
@@ -295,11 +296,19 @@ const Page = ({ params }) => {
               {resposta.campo?.tipo === "arquivo" ||
               resposta.campo?.tipo === "link" ? (
                 <a
-                  href={resposta.value}
-                  target="_blank"
+                  href={resposta.campo.tipo === "arquivo" ? "#" : resposta.value}
+                  target={resposta.campo.tipo === "arquivo" ? undefined : "_blank"}
                   rel="noopener noreferrer"
                   className={styles.link}
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (resposta.campo.tipo === "arquivo") {
+                      e.preventDefault();
+                      abrirArquivoPrivado(
+                        urlDownloadResposta(params.tenant, resposta.id)
+                      );
+                    }
+                  }}
                 >
                   {resposta.campo.tipo === "arquivo" ? "📁 " : "🔗 "}
                   {resposta.value.split("/").pop()}

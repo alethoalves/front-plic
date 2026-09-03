@@ -18,6 +18,12 @@ import {
   editarRespostaCampoGestor,
 } from "@/app/api/client/participacao";
 import { getInscricaoUserById } from "@/app/api/client/inscricao";
+import {
+  abrirArquivoPrivado,
+  urlDownloadResposta,
+  urlDownloadHistoricoEscolar,
+  urlDownloadCvLattes,
+} from "@/app/api/client/arquivos";
 import { getFormulario } from "@/app/api/client/formulario";
 import {
   getConfiguracaoTabela,
@@ -127,10 +133,29 @@ const USER_TENANT_CAMPOS = [
   { id: "conta", label: "Conta", getValor: (ut) => ut?.conta || "-", campoDb: "conta", tipoEditor: "text" },
 ];
 
-// Renderiza uma célula de coluna dinâmica como link clicável quando há uma URL
-// por trás do valor exibido (campo do tipo "link"/"arquivo", ou UserTenant com getUrl).
+// Renderiza uma célula de coluna dinâmica como link clicável quando há um
+// arquivo/link por trás do valor exibido (campo do tipo "link"/"arquivo", ou
+// UserTenant com getUrl). Campo do tipo "link" ainda usa a URL crua (não é
+// arquivo do GCS); campo do tipo "arquivo" e o histórico escolar passam por
+// `downloadPath`, que já vem resolvido (endpoint autenticado) pelo chamador.
 const renderCelulaComLink = (valor, url, textoLink) => {
   if (!url) return valor;
+  if (typeof url === "object" && url.downloadPath) {
+    return (
+      <button
+        type="button"
+        className={styles.externalLink}
+        style={{ background: "none", border: "none", cursor: "pointer" }}
+        onClick={(e) => {
+          e.stopPropagation();
+          abrirArquivoPrivado(url.downloadPath);
+        }}
+      >
+        <RiExternalLinkLine size={14} />
+        {textoLink}
+      </button>
+    );
+  }
   return (
     <a
       href={url}
@@ -1015,15 +1040,17 @@ const Page = ({ params }) => {
                       Enviado em {lattesInfo.formattedDate} às {lattesInfo.formattedTime}
                     </p>
                   )}
-                  <a
-                    href={lattesMaisRecente.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    type="button"
                     className={styles.externalLink}
+                    style={{ background: "none", border: "none", cursor: "pointer" }}
+                    onClick={() =>
+                      abrirArquivoPrivado(urlDownloadCvLattes(params.tenant, user.id))
+                    }
                   >
                     <RiExternalLinkLine size={15} />
                     Visualizar CV Lattes
-                  </a>
+                  </button>
                   {user?.identificadorLattes && (
                     <a
                       href={`https://lattes.cnpq.br/${user.identificadorLattes}`}
@@ -1295,9 +1322,15 @@ const Page = ({ params }) => {
           }
           if (campo.tipo === "link" || campo.tipo === "arquivo") {
             const resposta = rowData.respostas?.find((r) => r.campoId === campoId);
+            const url =
+              campo.tipo === "arquivo"
+                ? resposta?.id
+                  ? { downloadPath: urlDownloadResposta(params.tenant, resposta.id) }
+                  : null
+                : resposta?.value;
             return renderCelulaComLink(
               valor,
-              resposta?.value,
+              url,
               campo.tipo === "link" ? "Abrir link" : "Ver arquivo"
             );
           }
@@ -1333,9 +1366,18 @@ const Page = ({ params }) => {
           const valor = rowData[field];
           if (campo.tipo === "link" || campo.tipo === "arquivo") {
             const userTenant = rowData.user?.UserTenant?.[0];
+            // Histórico escolar deixou de ser público — único campo "arquivo"
+            // deste catálogo hoje, então o caso é resolvido aqui em vez de
+            // generalizar getUrl pra devolver um downloadPath.
+            const url =
+              campo.tipo === "arquivo"
+                ? userTenant?.historicoEscolarUrl && rowData.user?.id
+                  ? { downloadPath: urlDownloadHistoricoEscolar(params.tenant, rowData.user.id, params.ano) }
+                  : null
+                : campo.getUrl?.(userTenant);
             return renderCelulaComLink(
               valor,
-              campo.getUrl?.(userTenant),
+              url,
               campo.tipo === "link" ? "Abrir link" : "Ver arquivo"
             );
           }

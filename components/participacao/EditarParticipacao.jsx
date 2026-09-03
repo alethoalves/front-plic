@@ -36,6 +36,7 @@ import {
 } from "@/app/api/client/cvLattes";
 import FichaAvaliacaoManual from "./FichaAvaliacaoManual";
 import { xmlLattes } from "@/app/api/clientReq";
+import { abrirArquivoPrivado, urlDownloadCvLattes } from "@/app/api/client/arquivos";
 import { Stepper } from "primereact/stepper";
 import { StepperPanel } from "primereact/stepperpanel";
 import { Card } from "primereact/card";
@@ -959,13 +960,17 @@ const EditarParticipacao = ({
                       <h3>Currículo Lattes</h3>
                       {participacaoInfo?.user?.cvLattes?.length > 0 ? (
                         <a
-                          href={
-                            participacaoInfo.user.cvLattes[
-                              participacaoInfo.user.cvLattes?.length - 1
-                            ]?.url
-                          }
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            abrirArquivoPrivado(
+                              urlDownloadCvLattes(
+                                tenant,
+                                participacaoInfo.user.id,
+                                inscricaoSelected
+                              )
+                            );
+                          }}
                           className={styles.cvLink}
                         >
                           Clique para visualizar{" "}

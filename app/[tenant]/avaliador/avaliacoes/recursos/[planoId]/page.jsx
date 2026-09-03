@@ -20,10 +20,11 @@ import {
   analisarRecursosEmLoteAvaliador,
   devolverFamiliaRecursoAvaliador,
 } from "@/app/api/client/avaliador";
+import { abrirArquivoPrivado, urlDownloadResposta } from "@/app/api/client/arquivos";
 
 // Mesma lógica de exibição usada na avaliação (avaliador/avaliacoes/projetos/[idProjeto])
 // e na análise de recurso do gestor — switch pelo tipo de campo do formulário de inscrição.
-const renderRespostaValor = (item) => {
+const renderRespostaValor = (item, tenant) => {
   const extractFileName = (url) => {
     if (typeof url !== "string" || url === "[object FileList]") return "";
     const parts = url.split("/");
@@ -42,10 +43,18 @@ const renderRespostaValor = (item) => {
   if (isFileOrLink) {
     return hasValidFileOrLink ? (
       <a
-        href={item.value}
-        target="_blank"
+        href={item.campo.tipo === "arquivo" ? "#" : item.value}
+        target={item.campo.tipo === "arquivo" ? undefined : "_blank"}
         rel="noopener noreferrer"
         className={styles.link}
+        onClick={
+          item.campo.tipo === "arquivo"
+            ? (e) => {
+                e.preventDefault();
+                abrirArquivoPrivado(urlDownloadResposta(tenant, item.id));
+              }
+            : undefined
+        }
       >
         {item.campo.tipo === "arquivo" && "📁 "}
         {item.campo.tipo === "link" && "🔗 "}
@@ -452,7 +461,7 @@ const Page = ({ params }) => {
                   <Accordion>
                     {stepAtivo.conteudo.map((item) => (
                       <AccordionTab key={item.id} header={item.campo?.label || "Campo"}>
-                        {renderRespostaValor(item)}
+                        {renderRespostaValor(item, params.tenant)}
                       </AccordionTab>
                     ))}
                     {stepAtivo.cronograma?.length > 0 && (

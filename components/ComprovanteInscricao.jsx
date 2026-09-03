@@ -16,6 +16,11 @@ import {
   RiUser3Line,
 } from "@remixicon/react";
 import { getInscricaoUserById } from "@/app/api/client/inscricao";
+import {
+  abrirArquivoPrivado,
+  urlDownloadCvLattes,
+  urlDownloadAnexoProjeto,
+} from "@/app/api/client/arquivos";
 import NoData from "@/components/NoData";
 import Button from "@/components/Button";
 import { ProgressSpinner } from "primereact/progressspinner";
@@ -294,9 +299,11 @@ const EticaSection = ({ projeto }) => {
               {AnexoProjeto.map((a) => (
                 <a
                   key={a.id}
-                  href={a.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    abrirArquivoPrivado(urlDownloadAnexoProjeto(tenant, a.id));
+                  }}
                   className={styles.fileLink}
                 >
                   <RiFileTextLine size={13} />
@@ -438,9 +445,13 @@ const ComprovanteInscricao = ({ tenant, idInscricao }) => {
                     <span className={styles.participanteCpf}>CPF: {o.user.cpf}</span>
                     {o.user.cvLattes?.length > 0 && (
                       <a
-                        href={o.user.cvLattes[0].url}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          abrirArquivoPrivado(
+                            urlDownloadCvLattes(tenant, o.user.id, idInscricao)
+                          );
+                        }}
                         className={styles.lattesLink}
                       >
                         Currículo Lattes <RiExternalLinkLine size={11} />

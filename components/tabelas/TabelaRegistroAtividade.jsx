@@ -21,6 +21,7 @@ import { Button } from "primereact/button";
 // SERVIÇOS
 import { getRegistrosAtividadesByAno } from "@/app/api/client/atividade";
 import { validarJustificativaManualmente } from "@/app/api/client/eventos";
+import { abrirArquivoPrivado, urlDownloadJustificativa } from "@/app/api/client/arquivos";
 import {
   RiCheckLine,
   RiCheckboxCircleLine,
@@ -728,9 +729,13 @@ const TabelaRegistroAtividade = ({ params }) => {
             {justificativaSelecionada.anexoUrl && (
               <a
                 className={styles.pdfLink}
-                href={justificativaSelecionada.anexoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  abrirArquivoPrivado(
+                    urlDownloadJustificativa(params.tenant, justificativaSelecionada.id)
+                  );
+                }}
               >
                 <RiFilePdfLine /> Ver comprovante anexado
               </a>

@@ -28,8 +28,7 @@ import {
   updateResposta,
   updateRespostaByParticipante,
 } from "@/app/api/client/resposta";
-
-import Link from "next/link";
+import { abrirArquivoPrivado, urlDownloadResposta } from "@/app/api/client/arquivos";
 
 const Campo = ({
   perfil = "gestor",
@@ -264,18 +263,26 @@ const Campo = ({
             <>
               {schema?.tipo === "arquivo" && !editar && initialData && (
                 <div className="mt-2">
-                  <Link
-                    prefetch={false}
-                    href={initialData.value}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    type="button"
+                    onClick={() =>
+                      abrirArquivoPrivado(
+                        urlDownloadResposta(tenantSlug, initialData.id)
+                      )
+                    }
+                    style={{
+                      background: "none",
+                      border: "none",
+                      padding: 0,
+                      cursor: "pointer",
+                    }}
                   >
                     <div className={styles.linkFile}>
                       <RiEyeLine />
 
                       <p>Ver arquivo</p>
                     </div>
-                  </Link>
+                  </button>
                 </div>
               )}
               {(editar || schema?.tipo !== "arquivo" || !initialData) && (

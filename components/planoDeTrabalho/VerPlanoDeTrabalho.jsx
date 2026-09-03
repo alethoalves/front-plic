@@ -10,6 +10,7 @@ import {
 import styles from "./VerPlanoDeTrabalho.module.scss";
 import NoData from "../NoData";
 import GanttChart from "../GanttChart";
+import { abrirArquivoPrivado, urlDownloadResposta } from "@/app/api/client/arquivos";
 import { useState } from "react";
 import {
   linkProjetoToInscricao,
@@ -90,10 +91,20 @@ const VerPlanoDeTrabalho = ({
                     <div className={`${styles.value}`}>
                       {["link", "arquivo"].includes(item.campo.tipo) ? (
                         <a
-                          href={item.value}
-                          target="_blank"
+                          href={item.campo.tipo === "arquivo" ? "#" : item.value}
+                          target={item.campo.tipo === "arquivo" ? undefined : "_blank"}
                           rel="noopener noreferrer"
                           className={styles.link}
+                          onClick={
+                            item.campo.tipo === "arquivo"
+                              ? (e) => {
+                                  e.preventDefault();
+                                  abrirArquivoPrivado(
+                                    urlDownloadResposta(tenant, item.id)
+                                  );
+                                }
+                              : undefined
+                          }
                         >
                           {item.campo.tipo === "arquivo" && "📁 "}
                           {item.campo.tipo === "link" && "🔗 "}

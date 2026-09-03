@@ -21,6 +21,7 @@ import styles from "./DocumentoDialog.module.scss";
 import { useState, useEffect } from "react";
 import { getDocumentById } from "@/app/api/client/documentos";
 import { renderizarTextoComLinks } from "@/lib/renderizaTextoComLink";
+import { abrirArquivoPrivado, urlDownloadDocumentoAnexo } from "@/app/api/client/arquivos";
 
 const DocumentoDialog = ({
   visible,
@@ -146,9 +147,13 @@ const DocumentoDialog = ({
                   )
                 ) : valor && valor.toString().startsWith("http") ? (
                   <a
-                    href={valor}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      abrirArquivoPrivado(
+                        urlDownloadDocumentoAnexo(tenant, documentoId, campo)
+                      );
+                    }}
                     className={styles.linkArquivo}
                   >
                     Ver arquivo <RiExternalLinkLine size={14} />

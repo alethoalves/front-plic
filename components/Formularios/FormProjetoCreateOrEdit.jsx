@@ -31,6 +31,7 @@ import { renderDynamicFields } from "@/lib/renderDynamicFields";
 import { transformedArray } from "@/lib/transformedArray";
 import { createProjeto, updateProjetoById } from "@/app/api/client/projeto";
 import { uploadFileProjeto } from "@/app/api/clientReq";
+import { abrirArquivoPrivado, urlDownloadAnexoProjeto } from "@/app/api/client/arquivos";
 import { Checkbox } from "primereact/checkbox";
 
 const FormProjetoCreateOrEdit = ({
@@ -351,7 +352,16 @@ const FormProjetoCreateOrEdit = ({
               {existingDocCEPCONEP && (
                 <div className={styles.pdfDoc}>
                   <span className={styles.pdfIcon}><RiFilePdfLine size={16} /></span>
-                  <a className={styles.pdfName} href={existingDocCEPCONEP.link} target="_blank" rel="noopener noreferrer">
+                  <a
+                    className={styles.pdfName}
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      abrirArquivoPrivado(
+                        urlDownloadAnexoProjeto(tenantSlug, existingDocCEPCONEP.id)
+                      );
+                    }}
+                  >
                     {existingDocCEPCONEP.nomeAnexo}
                   </a>
                 </div>
@@ -406,7 +416,16 @@ const FormProjetoCreateOrEdit = ({
               {existingDocOGM && (
                 <div className={styles.pdfDoc}>
                   <span className={styles.pdfIcon}><RiFilePdfLine size={16} /></span>
-                  <a className={styles.pdfName} href={existingDocOGM.link} target="_blank" rel="noopener noreferrer">
+                  <a
+                    className={styles.pdfName}
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      abrirArquivoPrivado(
+                        urlDownloadAnexoProjeto(tenantSlug, existingDocOGM.id)
+                      );
+                    }}
+                  >
                     {existingDocOGM.nomeAnexo}
                   </a>
                 </div>
@@ -481,7 +500,16 @@ const FormProjetoCreateOrEdit = ({
               {existingDocComiteEtica && (
                 <div className={styles.pdfDoc}>
                   <span className={styles.pdfIcon}><RiFilePdfLine size={16} /></span>
-                  <a className={styles.pdfName} href={existingDocComiteEtica.link} target="_blank" rel="noopener noreferrer">
+                  <a
+                    className={styles.pdfName}
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      abrirArquivoPrivado(
+                        urlDownloadAnexoProjeto(tenantSlug, existingDocComiteEtica.id)
+                      );
+                    }}
+                  >
                     {existingDocComiteEtica.nomeAnexo}
                   </a>
                 </div>

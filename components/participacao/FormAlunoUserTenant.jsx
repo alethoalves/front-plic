@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Button } from "primereact/button";
 import { processarHistoricoEscolar } from "@/app/api/client/userTenant";
+import { abrirArquivoPrivado, urlDownloadHistoricoEscolar } from "@/app/api/client/arquivos";
 import styles from "./EditarParticipacao.module.scss";
 
 const FormAlunoUserTenant = ({
@@ -128,9 +129,13 @@ const FormAlunoUserTenant = ({
                 )}
                 {" · "}
                 <a
-                  href={historicoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    abrirArquivoPrivado(
+                      urlDownloadHistoricoEscolar(tenantSlug, userId, ano)
+                    );
+                  }}
                 >
                   Visualizar arquivo
                 </a>

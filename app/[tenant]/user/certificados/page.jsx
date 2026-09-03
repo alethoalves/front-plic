@@ -39,6 +39,7 @@ import {
   updatePlanoDeTrabalho,
 } from "@/app/api/client/planoDeTrabalho";
 import { generateAndDownloadCertificatePlanoPDF } from "@/app/api/client/certificadoPlanoDeTrabalho";
+import { abrirArquivoPrivado, urlDownloadResposta } from "@/app/api/client/arquivos";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
@@ -346,10 +347,20 @@ const Page = ({ params }) => {
               {resposta.campo?.tipo === "arquivo" ||
               resposta.campo?.tipo === "link" ? (
                 <a
-                  href={resposta.value}
-                  target="_blank"
+                  href={resposta.campo.tipo === "arquivo" ? "#" : resposta.value}
+                  target={resposta.campo.tipo === "arquivo" ? undefined : "_blank"}
                   rel="noopener noreferrer"
                   className={styles.respostaLinks}
+                  onClick={
+                    resposta.campo.tipo === "arquivo"
+                      ? (e) => {
+                          e.preventDefault();
+                          abrirArquivoPrivado(
+                            urlDownloadResposta(params.tenant, resposta.id)
+                          );
+                        }
+                      : undefined
+                  }
                 >
                   {resposta.campo.tipo === "arquivo" ? "📁 " : "🔗 "}
                   {resposta.value.split("/").pop()}

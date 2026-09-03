@@ -37,6 +37,7 @@ import Textarea from "../Textarea";
 import { formatDateToISO } from "@/lib/formatarDatas";
 import Link from "next/link";
 import { uploadFile, uploadFileProjeto } from "@/app/api/clientReq";
+import { abrirArquivoPrivado, urlDownloadAnexoProjeto } from "@/app/api/client/arquivos";
 import GanttChart from "../GanttChart";
 // Função auxiliar para transformar datas no formato DD/MM/AAAA para Date
 const parseDate = (dateStr) => {
@@ -187,6 +188,7 @@ const FormProjeto = ({
       // Popula anexos
       if (initialData.AnexoProjeto) {
         const mappedAnexos = initialData.AnexoProjeto.map((anexo) => ({
+          id: anexo.id,
           name: anexo.nomeAnexo,
           file: null, // Arquivo real não está disponível, mas podemos usar a URL para exibição
           previewUrl: anexo.link,
@@ -711,14 +713,30 @@ const FormProjeto = ({
                     !initialData ? styles.withIcon : ""
                   }`}
                 >
-                  {/* Link para visualização em nova aba */}
-                  <a
-                    href={anexo.previewUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {anexo.name}
-                  </a>
+                  {/* Link para visualização em nova aba — anexo já salvo (tem
+                  id) usa o download autenticado; arquivo recém-selecionado,
+                  ainda não enviado, continua com a blob: URL local. */}
+                  {anexo.id ? (
+                    <a
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        abrirArquivoPrivado(
+                          urlDownloadAnexoProjeto(tenantSlug, anexo.id)
+                        );
+                      }}
+                    >
+                      {anexo.name}
+                    </a>
+                  ) : (
+                    <a
+                      href={anexo.previewUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {anexo.name}
+                    </a>
+                  )}
                 </div>
               </div>
             ))}

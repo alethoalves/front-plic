@@ -27,6 +27,7 @@ import { deleteParticipacao } from "@/app/api/client/participacao";
 import Button from "./Button";
 import NoData from "./NoData";
 import { getProjetoById, getProjetosDoUsuario } from "@/app/api/client/projeto";
+import { abrirArquivoPrivado, urlDownloadAnexoProjeto } from "@/app/api/client/arquivos";
 import Input from "./Input";
 import GanttChart from "./GanttChart";
 
@@ -261,9 +262,13 @@ const ModalProjeto = ({
                     <div className={`${styles.content}`}>
                       {/* Link para visualização em nova aba */}
                       <a
-                        href={anexo.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          abrirArquivoPrivado(
+                            urlDownloadAnexoProjeto(tenant, anexo.id)
+                          );
+                        }}
                       >
                         {anexo.nomeAnexo}
                       </a>

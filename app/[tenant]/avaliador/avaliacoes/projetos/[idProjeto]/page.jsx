@@ -31,6 +31,7 @@ import {
   arvoreParaValores,
 } from "@/lib/fichaAvaliacaoScoring";
 import { parseDateBR } from "@/lib/formatarDatas";
+import { abrirArquivoPrivado, urlDownloadResposta } from "@/app/api/client/arquivos";
 
 // Mesmo critério de ordenação usado pelo GanttChart (components/GanttChart.jsx)
 // para exibir as atividades do cronograma em ordem cronológica de início.
@@ -41,7 +42,7 @@ const ordenarCronograma = (cronograma) =>
 
 // Extrai o valor de uma Resposta no mesmo formato usado tanto pela visão
 // interativa (Accordion) quanto pelo documento estático de impressão/PDF.
-const renderRespostaValor = (item) => {
+const renderRespostaValor = (item, tenant) => {
   const extractFileName = (url) => {
     if (typeof url !== "string" || url === "[object FileList]") return "";
     const parts = url.split("/");
@@ -60,10 +61,18 @@ const renderRespostaValor = (item) => {
   if (isFileOrLink) {
     return hasValidFileOrLink ? (
       <a
-        href={item.value}
-        target="_blank"
+        href={item.campo.tipo === "arquivo" ? "#" : item.value}
+        target={item.campo.tipo === "arquivo" ? undefined : "_blank"}
         rel="noopener noreferrer"
         className={styles.link}
+        onClick={
+          item.campo.tipo === "arquivo"
+            ? (e) => {
+                e.preventDefault();
+                abrirArquivoPrivado(urlDownloadResposta(tenant, item.id));
+              }
+            : undefined
+        }
       >
         {item.campo.tipo === "arquivo" && "📁 "}
         {item.campo.tipo === "link" && "🔗 "}
@@ -97,7 +106,7 @@ const renderRespostaValor = (item) => {
 // colapsadas) — conteúdo compartilhado entre a visualização em tela (toggle
 // "texto corrido") e o documento de impressão/PDF, que precisa trazer tudo
 // expandido independente do que estiver aberto no accordion.
-const RespostasCorridas = ({ respostas, cronograma, cronogramaTitulo }) => (
+const RespostasCorridas = ({ respostas, cronograma, cronogramaTitulo, tenant }) => (
   <>
     <div className={styles.printRespostas}>
       {[...(respostas || [])]
@@ -108,7 +117,7 @@ const RespostasCorridas = ({ respostas, cronograma, cronogramaTitulo }) => (
         .map((item) => (
           <div key={`corrido-${item.id}`} className={styles.printField}>
             <h6>{item.campo.label}</h6>
-            {renderRespostaValor(item)}
+            {renderRespostaValor(item, tenant)}
           </div>
         ))}
     </div>
@@ -147,6 +156,7 @@ const PrintDocument = ({
   respostas,
   cronograma,
   cronogramaTitulo,
+  tenant,
 }) => (
   <div className={`${styles.printDocument} printOnly`}>
     <h4>{titulo}</h4>
@@ -160,6 +170,7 @@ const PrintDocument = ({
       respostas={respostas}
       cronograma={cronograma}
       cronogramaTitulo={cronogramaTitulo}
+      tenant={tenant}
     />
   </div>
 );
@@ -498,7 +509,7 @@ const Page = ({ params }) => {
                   headerClassName={styles.accordionHeader}
                 >
                   <div className={styles.value}>
-                    {renderRespostaValor(item)}
+                    {renderRespostaValor(item, params.tenant)}
                   </div>
                 </AccordionTab>
               ))}
@@ -523,6 +534,7 @@ const Page = ({ params }) => {
               respostas={inscricaoProjeto?.projeto?.Resposta}
               cronograma={inscricaoProjeto?.projeto?.CronogramaProjeto}
               cronogramaTitulo="Cronograma"
+              tenant={params.tenant}
             />
           )}
         </div>
@@ -575,6 +587,7 @@ const Page = ({ params }) => {
         respostas={inscricaoProjeto?.projeto?.Resposta}
         cronograma={inscricaoProjeto?.projeto?.CronogramaProjeto}
         cronogramaTitulo="Cronograma do Projeto"
+        tenant={params.tenant}
       />
     </div>
   );
@@ -634,7 +647,7 @@ const Page = ({ params }) => {
                     headerClassName={styles.accordionHeader}
                   >
                     <div className={styles.value}>
-                      {renderRespostaValor(item)}
+                      {renderRespostaValor(item, params.tenant)}
                     </div>
                   </AccordionTab>
                 ))}
@@ -658,6 +671,7 @@ const Page = ({ params }) => {
                 respostas={plano.Resposta}
                 cronograma={plano.CronogramaPlanoDeTrabalho}
                 cronogramaTitulo="Cronograma"
+                tenant={params.tenant}
               />
             )}
           </div>
@@ -699,6 +713,7 @@ const Page = ({ params }) => {
           respostas={plano.Resposta}
           cronograma={plano.CronogramaPlanoDeTrabalho}
           cronogramaTitulo="Cronograma do Plano de Trabalho"
+          tenant={params.tenant}
         />
       </div>
     );

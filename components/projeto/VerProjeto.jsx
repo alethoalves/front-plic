@@ -5,6 +5,11 @@ import Button from "@/components/Button";
 import { RiLink, RiFilePdfLine, RiCheckLine, RiExternalLinkLine } from "@remixicon/react";
 import styles from "./VerProjeto.module.scss";
 import { linkProjetoToInscricao } from "@/app/api/client/projeto";
+import {
+  abrirArquivoPrivado,
+  urlDownloadResposta,
+  urlDownloadAnexoProjeto,
+} from "@/app/api/client/arquivos";
 
 const BlockNoteField = dynamic(
   () => import("@/components/Formularios/BlockNoteField"),
@@ -12,11 +17,13 @@ const BlockNoteField = dynamic(
 );
 
 // Subcomponente: link para um arquivo PDF anexado
-const DocLink = ({ doc }) => (
+const DocLink = ({ doc, tenant }) => (
   <a
-    href={doc.link}
-    target="_blank"
-    rel="noopener noreferrer"
+    href="#"
+    onClick={(e) => {
+      e.preventDefault();
+      abrirArquivoPrivado(urlDownloadAnexoProjeto(tenant, doc.id));
+    }}
     className={styles.pdfLink}
   >
     <RiFilePdfLine size={14} />
@@ -25,7 +32,7 @@ const DocLink = ({ doc }) => (
 );
 
 // Subcomponente: valor de um campo dinâmico
-const FieldValue = ({ item }) => {
+const FieldValue = ({ item, tenant }) => {
   const { tipo } = item.campo;
 
   if (tipo === "blockNote") {
@@ -45,9 +52,11 @@ const FieldValue = ({ item }) => {
     const fileName = lastName.split("_").slice(1).join("_") || lastName;
     return (
       <a
-        href={raw}
-        target="_blank"
-        rel="noopener noreferrer"
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          abrirArquivoPrivado(urlDownloadResposta(tenant, item.id));
+        }}
         className={styles.fileLink}
       >
         <RiFilePdfLine size={14} />
@@ -182,7 +191,7 @@ const VerProjeto = ({
                       : "Envolve animais"}
                   </span>
                 </div>
-                {docCEPCONEP && <DocLink doc={docCEPCONEP} />}
+                {docCEPCONEP && <DocLink doc={docCEPCONEP} tenant={tenant} />}
                 {projetoDetalhes.numeroCEPCONEP && (
                   <p className={styles.protocolText}>
                     Protocolo CEP/CONEP:{" "}
@@ -199,7 +208,7 @@ const VerProjeto = ({
                   <RiCheckLine size={14} className={styles.checkIcon} />
                   <span>Envolve Organismo Geneticamente Modificado (OGM)</span>
                 </div>
-                {docOGM && <DocLink doc={docOGM} />}
+                {docOGM && <DocLink doc={docOGM} tenant={tenant} />}
               </div>
             )}
 
@@ -229,7 +238,7 @@ const VerProjeto = ({
                   <RiCheckLine size={14} className={styles.checkIcon} />
                   <span>Submetido a comitê de ética da área</span>
                 </div>
-                {docComiteEtica && <DocLink doc={docComiteEtica} />}
+                {docComiteEtica && <DocLink doc={docComiteEtica} tenant={tenant} />}
                 {projetoDetalhes.numeroProtocoloEtica && (
                   <p className={styles.protocolText}>
                     Protocolo:{" "}
@@ -251,7 +260,7 @@ const VerProjeto = ({
             .map((item) => (
               <div key={item.id} className={styles.field}>
                 <p className={styles.fieldLabel}>{item.campo.label}</p>
-                <FieldValue item={item} />
+                <FieldValue item={item} tenant={tenant} />
               </div>
             ))}
         </div>

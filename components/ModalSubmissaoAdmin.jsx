@@ -20,6 +20,7 @@ import { useCallback, useEffect, useState } from "react";
 import { formatarData, formatarHora } from "@/lib/formatarDatas";
 import { desvincularSubmissao } from "@/app/api/client/square";
 import { getInstituicaoSigla } from "@/lib/instituicaoDisplay";
+import { abrirArquivoPrivado, urlDownloadJustificativaAdmin } from "@/app/api/client/arquivos";
 
 const Modal = ({ isOpen, onClose, eventoSlug, idSubmissao, onDataUpdated }) => {
   const [visible, setVisible] = useState(false);
@@ -422,7 +423,15 @@ const Modal = ({ isOpen, onClose, eventoSlug, idSubmissao, onDataUpdated }) => {
                       <p>{justificativa.justificativa}</p>
                       {justificativa.anexoUrl && (
                         <p>
-                          <a href={justificativa.anexoUrl} target="_blank" rel="noopener noreferrer">
+                          <a
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              abrirArquivoPrivado(
+                                urlDownloadJustificativaAdmin(eventoSlug, justificativa.id)
+                              );
+                            }}
+                          >
                             Ver comprovante em PDF
                           </a>
                         </p>

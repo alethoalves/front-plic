@@ -37,6 +37,11 @@ import { ProgressSpinner } from "primereact/progressspinner";
 import { Message } from "primereact/message";
 import { Divider } from "primereact/divider";
 import { renderizarTextoComLinks } from "@/lib/renderizaTextoComLink";
+import {
+  abrirArquivoPrivado,
+  urlDownloadDocumentoAnexo,
+  urlDownloadJustificativa,
+} from "@/app/api/client/arquivos";
 
 const DocumentoDetailPage = ({ params }) => {
   const [loading, setLoading] = useState(true);
@@ -509,9 +514,13 @@ const DocumentoDetailPage = ({ params }) => {
                   )
                 ) : valor && valor.toString().startsWith("http") ? (
                   <a
-                    href={valor}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      abrirArquivoPrivado(
+                        urlDownloadDocumentoAnexo(params.tenant, documento.id, campo)
+                      );
+                    }}
                     className={styles.linkArquivo}
                   >
                     Ver arquivo
@@ -714,9 +723,16 @@ const DocumentoDetailPage = ({ params }) => {
                 </span>
                 <a
                   className={formStyles.pdfName}
-                  href={documento.justificativaApresentacaoCongresso.anexoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    abrirArquivoPrivado(
+                      urlDownloadJustificativa(
+                        params.tenant,
+                        documento.justificativaApresentacaoCongresso.id
+                      )
+                    );
+                  }}
                 >
                   Comprovante anexado
                 </a>
