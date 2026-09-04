@@ -173,7 +173,7 @@ const Page = ({ params }) => {
 
       const aceite = await aceitarConvite(params.token, newData);
       router.replace(
-        `/evento/cicdf25/avaliador/convite/${aceite.convite.token}`
+        `/evento/${aceite.convite.evento.slug}/avaliador/convite/${aceite.convite.token}`
       );
     } catch (error) {
       console.error("Error:", error);
