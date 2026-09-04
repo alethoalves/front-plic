@@ -2,6 +2,10 @@
 "use client";
 import Image from "next/image";
 import styles from "./page.module.scss";
+import {
+  resolveEventoImageSrc,
+  DEFAULT_EVENTO_BANNER,
+} from "@/lib/resolveEventoImage";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { conviteAvaliadorSchema } from "@/lib/zodSchemas/conviteAvaliadorSchema";
@@ -194,7 +198,7 @@ const Page = ({ params }) => {
             <Image
               priority
               fill
-              src={`/image/${evento.pathBanner}`}
+              src={resolveEventoImageSrc(evento.pathBanner, DEFAULT_EVENTO_BANNER)}
               alt="logo"
               sizes="300 500 700"
             />

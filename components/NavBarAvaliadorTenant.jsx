@@ -4,6 +4,7 @@ import styles from "./NavBarAvaliadorTenant.module.scss";
 import { logout } from "@/app/api/client/auth";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { resolveEventoImageSrc } from "@/lib/resolveEventoImage";
 
 // Navegação (menu de itens + comportamento hamburguer no mobile) é
 // responsabilidade do SideNav (menuType="avaliadorTenant") — este componente
@@ -25,7 +26,7 @@ const NavBarAvaliadorTenant = ({ pathLogo, slug }) => {
             <Image
               priority
               sizes="300 500 700"
-              src={`/image/${pathLogo}`}
+              src={resolveEventoImageSrc(pathLogo)}
               fill={true}
               alt="Logomarca da PLIC - Plataforma de Iniciação Científica"
             />

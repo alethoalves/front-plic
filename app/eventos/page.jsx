@@ -5,6 +5,10 @@ import NoData from "@/components/NoData";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getAllEvents } from "../api/client/eventos";
+import {
+  resolveEventoImageSrc,
+  DEFAULT_EVENTO_BANNER,
+} from "@/lib/resolveEventoImage";
 
 const Page = () => {
   const [loading, setLoading] = useState(false);
@@ -53,7 +57,7 @@ const Page = () => {
                     <Image
                       priority
                       fill
-                      src={`/image/${evento.pathBanner}`}
+                      src={resolveEventoImageSrc(evento.pathBanner, DEFAULT_EVENTO_BANNER)}
                       alt="logo"
                       sizes="300 500 700"
                     />

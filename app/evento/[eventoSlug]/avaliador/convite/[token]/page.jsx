@@ -24,6 +24,10 @@ import {
   consultarConviteByToken,
   recusarConvite,
 } from "@/app/api/client/conviteEvento";
+import {
+  resolveEventoImageSrc,
+  DEFAULT_EVENTO_BANNER,
+} from "@/lib/resolveEventoImage";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
@@ -227,7 +231,7 @@ const Page = ({ params }) => {
             <Image
               priority
               fill
-              src={`/image/${evento.pathBanner}`}
+              src={resolveEventoImageSrc(evento.pathBanner, DEFAULT_EVENTO_BANNER)}
               alt="logo"
               sizes="300 500 700"
             />

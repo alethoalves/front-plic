@@ -14,6 +14,7 @@ import itensMenuAvaliadorEvento from "@/lib/menuItensAvaliadorEvento";
 import styles from "./SideNav.module.scss";
 import { RiQuestionAnswerLine } from "@remixicon/react";
 import { useState } from "react";
+import { resolveEventoImageSrc } from "@/lib/resolveEventoImage";
 
 const SideNav = ({
   pathLogo,
@@ -67,9 +68,7 @@ const SideNav = ({
             <Image
               priority
               sizes="300 500 700"
-              src={`${
-                pathLogoExtended ? pathLogoExtended : `/image/${pathLogo}`
-              }`}
+              src={pathLogoExtended ? pathLogoExtended : resolveEventoImageSrc(pathLogo)}
               fill={true}
               alt="Logomarca da PLIC - Plataforma de Iniciação Científica"
             />

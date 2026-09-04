@@ -10,6 +10,7 @@ import {
 import styles from "./page.module.scss";
 import { useEffect, useState, useRef } from "react";
 import { getHistoricoParticipacaoByCPF } from "@/app/api/client/historico";
+import { resolveEventoImageSrc } from "@/lib/resolveEventoImage";
 
 const HistoricoParticipacao = ({ params }) => {
   const [loading, setLoading] = useState(true);
@@ -126,7 +127,7 @@ const HistoricoParticipacao = ({ params }) => {
       <div className={styles.logoSection}>
         {tenant.pathLogo && (
           <img
-            src={`/image/${tenant.pathLogo}`}
+            src={resolveEventoImageSrc(tenant.pathLogo)}
             alt={`Logo ${tenant.nome}`}
             className={styles.logo}
           />

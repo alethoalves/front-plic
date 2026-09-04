@@ -4,6 +4,7 @@ import styles from "./NavBarAluno.module.scss";
 import { logout } from "@/app/api/client/auth";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { resolveEventoImageSrc } from "@/lib/resolveEventoImage";
 
 const NavBarAluno = ({ pathLogo, slug }) => {
   const router = useRouter();
@@ -19,7 +20,7 @@ const NavBarAluno = ({ pathLogo, slug }) => {
             <Image
               priority
               sizes="300 500 700"
-              src={`/image/${pathLogo}`}
+              src={resolveEventoImageSrc(pathLogo)}
               fill={true}
               alt="Logomarca da PLIC - Plataforma de Iniciação Científica"
             />

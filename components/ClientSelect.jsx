@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import styles from "./ClientSelect.module.scss";
+import { resolveEventoImageSrc } from "@/lib/resolveEventoImage";
 
 const ClientSelect = ({ tenants }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -54,7 +55,7 @@ const ClientSelect = ({ tenants }) => {
             <>
               <span className={styles.selectedLogo}>
                 <Image
-                  src={`/image/${selectedTenant.pathLogo}`}
+                  src={resolveEventoImageSrc(selectedTenant.pathLogo)}
                   alt={selectedTenant.name || "Instituição"}
                   fill
                   sizes="24"
@@ -82,7 +83,7 @@ const ClientSelect = ({ tenants }) => {
               >
                 <span className={styles.itemLogo}>
                   <Image
-                    src={`/image/${tenant.pathLogo}`}
+                    src={resolveEventoImageSrc(tenant.pathLogo)}
                     alt={tenant.name || "Logo"}
                     fill
                     sizes="32"

@@ -7,6 +7,7 @@ import Button from "@/components/Button";
 import Signin from "@/components/Signin";
 import { consultarConviteByToken } from "@/app/api/client/avaliador";
 import { sanitize } from "@/lib/sanitize";
+import { resolveEventoImageSrc } from "@/lib/resolveEventoImage";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
@@ -51,7 +52,7 @@ const Page = ({ params }) => {
               <Image
                 priority
                 fill
-                src={`/image/${tenant.pathLogo}`}
+                src={resolveEventoImageSrc(tenant.pathLogo)}
                 alt="logo do tenant"
                 sizes="300 500 700"
               />

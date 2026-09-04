@@ -3,6 +3,7 @@ import Image from "next/image";
 import styles from "./page.module.scss";
 import { useEffect, useState } from "react";
 import { recusarConvitePorToken } from "@/app/api/client/avaliador";
+import { resolveEventoImageSrc } from "@/lib/resolveEventoImage";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
@@ -43,7 +44,7 @@ const Page = ({ params }) => {
               <Image
                 priority
                 fill
-                src={`/image/${tenant.pathLogo}`}
+                src={resolveEventoImageSrc(tenant.pathLogo)}
                 alt="logo do tenant"
                 sizes="300 500 700"
               />

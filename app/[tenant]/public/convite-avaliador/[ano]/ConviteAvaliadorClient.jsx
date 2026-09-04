@@ -11,6 +11,7 @@ import SolicitacaoLattesForm from "@/components/Formularios/SolicitacaoLattesFor
 import { RiCalendarEventLine, RiIdCardLine, RiWhatsappFill } from "@remixicon/react";
 import { elegibilidadeAvaliadorSchema } from "@/lib/zodSchemas/avaliadorLattesSchema";
 import { verificarElegibilidadeAvaliador } from "@/app/api/client/avaliador";
+import { resolveEventoImageSrc } from "@/lib/resolveEventoImage";
 
 // Suporte do PLIC (não é o contato do tenant) — mesmo número já usado em
 // FluxoInscricaoEdital.jsx e EditarParticipacao.jsx.
@@ -69,7 +70,7 @@ const ConviteAvaliadorClient = ({ tenant, ano, pathLogo, avaliacoesEncerradas })
   const Logo = () => (
     <div className={styles.logo}>
       {pathLogo ? (
-        <Image priority fill src={`/image/${pathLogo}`} alt="logo do tenant" sizes="300 500 700" />
+        <Image priority fill src={resolveEventoImageSrc(pathLogo)} alt="logo do tenant" sizes="300 500 700" />
       ) : (
         <div style={{ height: 120 }} />
       )}

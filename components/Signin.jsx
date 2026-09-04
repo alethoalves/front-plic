@@ -33,6 +33,7 @@ import Link from "next/link";
 import { cadastrarAvaliador, vincularConviteAvaliador, vincularAvaliadorDireto } from "@/app/api/client/avaliador";
 import { getEditais } from "@/app/api/client/edital";
 import { getUserTenant, getUserAreas } from "@/app/api/client/userTenant";
+import { resolveEventoImageSrc } from "@/lib/resolveEventoImage";
 import LotacaoSelector from "./Formularios/LotacaoSelector";
 import AreaSelector from "./Formularios/AreaSelector";
 
@@ -290,7 +291,7 @@ const Auth = ({
           <Image
             priority
             fill
-            src={`/image/${pathLogo}`}
+            src={resolveEventoImageSrc(pathLogo)}
             alt="logo"
             sizes="300 500 700"
           />
