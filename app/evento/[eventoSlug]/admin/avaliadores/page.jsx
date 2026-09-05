@@ -1,14 +1,20 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { InputText } from "primereact/inputtext";
-import { Button } from "primereact/button";
 import { Toast } from "primereact/toast";
 import { MultiSelect } from "primereact/multiselect";
 import { Dropdown } from "primereact/dropdown";
 import { Dialog } from "primereact/dialog";
+import {
+  RiCheckLine,
+  RiCloseLine,
+  RiFileCopyLine,
+  RiFileExcelLine,
+} from "@remixicon/react";
+import Button from "@/components/Button";
 import {
   consultarAvaliadoresEvento,
   editarAvaliadorEvento,
@@ -16,6 +22,7 @@ import {
 import { FilterMatchMode } from "primereact/api";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
+import { formatarData, formatarHora } from "@/lib/formatarDatas";
 import styles from "./page.module.scss";
 
 const Page = ({ params }) => {
@@ -37,6 +44,9 @@ const Page = ({ params }) => {
   const [opcoesTenants, setOpcoesTenants] = useState([]);
   const [opcoesLotacoes, setOpcoesLotacoes] = useState([]);
   const [salvandoVinculacao, setSalvandoVinculacao] = useState(false); // ← Novo estado
+  const [isExportando, setIsExportando] = useState(false);
+  const [filtroAreaIds, setFiltroAreaIds] = useState([]);
+  const [filtroSubsessaoIds, setFiltroSubsessaoIds] = useState([]);
 
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -73,6 +83,72 @@ const Page = ({ params }) => {
 
     return "Não informado";
   };
+
+  // Opções do filtro de Área, derivadas dos avaliadores já carregados
+  // (UserArea não é escopado por evento — reflete toda área que o
+  // avaliador já escolheu em qualquer evento/edital, não só este).
+  const opcoesArea = useMemo(() => {
+    const porId = new Map();
+    avaliadores.forEach((avaliador) => {
+      (avaliador.user?.userArea || []).forEach(({ areaId, area }) => {
+        if (!area || porId.has(areaId)) return;
+        porId.set(areaId, {
+          value: areaId,
+          label: `${area.area} (${area.grandeArea?.grandeArea})`,
+        });
+      });
+    });
+    return [...porId.values()].sort((a, b) => a.label.localeCompare(b.label));
+  }, [avaliadores]);
+
+  // Opções do filtro de Subsessão, derivadas dos avaliadores já carregados.
+  const opcoesSubsessao = useMemo(() => {
+    const porId = new Map();
+    avaliadores.forEach((avaliador) => {
+      (avaliador.user?.ConviteAvaliadorEvento || []).forEach((convite) => {
+        (convite.conviteSubsessao || []).forEach(({ subsessaoApresentacao: sub }) => {
+          if (!sub || porId.has(sub.id)) return;
+          porId.set(sub.id, {
+            value: sub.id,
+            label: `${sub.sessaoApresentacao?.titulo} — ${formatarData(
+              sub.inicio,
+            )} ${formatarHora(sub.inicio)}`,
+          });
+        });
+      });
+    });
+    return [...porId.values()].sort((a, b) => a.label.localeCompare(b.label));
+  }, [avaliadores]);
+
+  const avaliadoresFiltrados = useMemo(() => {
+    return avaliadores.filter((avaliador) => {
+      if (filtroAreaIds.length > 0) {
+        const areasDoAvaliador = (avaliador.user?.userArea || []).map(
+          (ua) => ua.areaId,
+        );
+        if (!filtroAreaIds.some((id) => areasDoAvaliador.includes(id))) {
+          return false;
+        }
+      }
+
+      if (filtroSubsessaoIds.length > 0) {
+        const subsessoesDoAvaliador = (
+          avaliador.user?.ConviteAvaliadorEvento || []
+        ).flatMap((convite) =>
+          (convite.conviteSubsessao || []).map(
+            (cs) => cs.subsessaoApresentacao?.id,
+          ),
+        );
+        if (
+          !filtroSubsessaoIds.some((id) => subsessoesDoAvaliador.includes(id))
+        ) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [avaliadores, filtroAreaIds, filtroSubsessaoIds]);
 
   const fetchData = async (eventoSlug) => {
     setLoading(true);
@@ -238,7 +314,7 @@ const Page = ({ params }) => {
 
     return (
       <div
-        className="cursor-pointer text-primary hover:underline flex align-items-center gap-2"
+        className={`${styles.vinculacaoLink} cursor-pointer flex align-items-center gap-2`}
         onClick={() => abrirDialogVinculacao(rowData)}
       >
         <i className="pi pi-pencil" style={{ fontSize: "0.875rem" }}></i>
@@ -369,47 +445,54 @@ const Page = ({ params }) => {
   };
 
   const exportExcel = async () => {
-    const dadosParaExportar =
-      dataTableRef.current?.getFilteredValue?.() ?? avaliadores;
+    setIsExportando(true);
+    try {
+      const dadosParaExportar =
+        dataTableRef.current?.getFilteredValue?.() ?? avaliadores;
 
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Avaliadores");
-    worksheet.columns = [
-      { header: "Nome", key: "nome", width: 30 },
-      { header: "CPF", key: "cpf", width: 18 },
-      { header: "E-mail", key: "email", width: 30 },
-      { header: "Vinculação", key: "vinculacao", width: 30 },
-      { header: "Avaliador Root", key: "avaliadorRoot", width: 15 },
-      { header: "Avaliações Realizadas", key: "qntAvaliacoes", width: 20 },
-    ];
-    dadosParaExportar.forEach((avaliador) => {
-      worksheet.addRow({
-        nome: avaliador.user.nome,
-        cpf: avaliador.user.cpf,
-        email: emailBodyTemplate(avaliador),
-        vinculacao: getVinculacao(avaliador),
-        avaliadorRoot: avaliador.avaliadorRoot ? "Sim" : "Não",
-        qntAvaliacoes: avaliador.qntAvaliacoes ?? 0,
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet("Avaliadores");
+      worksheet.columns = [
+        { header: "Nome", key: "nome", width: 30 },
+        { header: "CPF", key: "cpf", width: 18 },
+        { header: "E-mail", key: "email", width: 30 },
+        { header: "Vinculação", key: "vinculacao", width: 30 },
+        { header: "Avaliador Root", key: "avaliadorRoot", width: 15 },
+        { header: "Avaliações Realizadas", key: "qntAvaliacoes", width: 20 },
+      ];
+      dadosParaExportar.forEach((avaliador) => {
+        worksheet.addRow({
+          nome: avaliador.user.nome,
+          cpf: avaliador.user.cpf,
+          email: emailBodyTemplate(avaliador),
+          vinculacao: getVinculacao(avaliador),
+          avaliadorRoot: avaliador.avaliadorRoot ? "Sim" : "Não",
+          qntAvaliacoes: avaliador.qntAvaliacoes ?? 0,
+        });
       });
-    });
-    const buffer = await workbook.xlsx.writeBuffer();
-    saveAs(new Blob([buffer]), `Avaliadores-${params.eventoSlug}.xlsx`);
+      const buffer = await workbook.xlsx.writeBuffer();
+      saveAs(new Blob([buffer]), `Avaliadores-${params.eventoSlug}.xlsx`);
+    } finally {
+      setIsExportando(false);
+    }
   };
 
   const header = (
     <div className="flex justify-content-between align-items-center">
       <InputText
-        className="w-100"
+        className={`${styles.eventoInput} w-100`}
         value={globalFilterValue}
         onChange={onGlobalFilterChange}
         placeholder="Buscar..."
       />
       <Button
-        icon="pi pi-file-excel"
-        label="Exportar"
+        icon={RiFileExcelLine}
         onClick={exportExcel}
-        className="ml-2"
-      />
+        className="btn-secondary ml-2"
+        disabled={isExportando}
+      >
+        {isExportando ? "Exportando..." : "Exportar"}
+      </Button>
     </div>
   );
 
@@ -418,21 +501,27 @@ const Page = ({ params }) => {
   const dialogFooter = (
     <div>
       <Button
-        label="Cancelar"
-        icon="pi pi-times"
+        icon={RiCloseLine}
         onClick={() => setVinculacaoDialogVisible(false)}
-        className="p-button-text"
+        className="btn-link"
         disabled={salvandoVinculacao}
-      />
+      >
+        Cancelar
+      </Button>
       <Button
-        label={salvandoVinculacao ? "Salvando..." : "Salvar"}
-        icon={salvandoVinculacao ? "pi pi-spinner pi-spin" : "pi pi-check"}
+        icon={RiCheckLine}
         onClick={salvarVinculacao}
-        autoFocus
+        className="btn-primary"
         disabled={salvandoVinculacao}
-      />
+      >
+        {salvandoVinculacao ? "Salvando..." : "Salvar"}
+      </Button>
     </div>
   );
+
+  if (loading && avaliadores.length === 0) {
+    return <div className={styles.loading}>Carregando...</div>;
+  }
 
   return (
     <div className={styles.navContent}>
@@ -444,12 +533,12 @@ const Page = ({ params }) => {
         style={{ width: "500px" }}
         header="Editar Vinculação"
         modal
-        className="p-fluid"
+        className={`p-fluid ${styles.eventoDialog}`}
         footer={dialogFooter}
         onHide={() => setVinculacaoDialogVisible(false)}
       >
         {avaliadorSelecionado && (
-          <div className="field">
+          <div>
             <Dropdown
               value={tenantSelecionado}
               options={opcoesTenants}
@@ -464,8 +553,10 @@ const Page = ({ params }) => {
             {tenantSelecionado &&
               tenantSelecionado !== "externo" &&
               opcoesLotacoes.length > 0 && (
-                <div className="field mt-3">
-                  <label>Selecione a lotação:</label>
+                <div className="mt-3">
+                  <label className={styles.eventoLabel}>
+                    Selecione a lotação:
+                  </label>
                   <Dropdown
                     value={lotacaoSelecionada}
                     options={opcoesLotacoes}
@@ -483,91 +574,139 @@ const Page = ({ params }) => {
         )}
       </Dialog>
 
-      <div className="card mb-4">
-        <div>
-          <label htmlFor="conviteLink" className="mb-1">
-            Convite Avaliador:
-          </label>
+      <div className={styles.dashboard}>
+        <div className={styles.tituloPagina}>
+          <h5>Lista de Avaliadores</h5>
+        </div>
+
+        <section className={styles.section}>
+          <div className={styles.sectionHead}>
+            <h6>Convite</h6>
+            <p>
+              Compartilhe este link para que avaliadores se cadastrem no
+              evento.
+            </p>
+          </div>
 
           <div className="flex mt-1 flex-1 align-items-center gap-1">
             <InputText
               id="conviteLink"
+              aria-label="Link de convite do avaliador"
               value={tokenConvite ? getConviteLink() : "Carregando..."}
               readOnly
-              className="w-100"
+              className={`${styles.eventoInput} w-100`}
             />
             <Button
-              icon="pi pi-copy"
+              icon={RiFileCopyLine}
               onClick={copyToClipboard}
-              tooltip="Copiar link"
-              tooltipOptions={{ position: "top" }}
-              severity="secondary"
-              className="p-button-outlined"
+              title="Copiar link"
+              className="btn-secondary"
               disabled={!tokenConvite}
             />
           </div>
-        </div>
-      </div>
+        </section>
 
-      <div className="card">
-        <DataTable
-          ref={dataTableRef}
-          value={avaliadores}
-          paginator
-          filterDisplay="row"
-          rows={10}
-          rowsPerPageOptions={[5, 10, 25, 50]}
-          loading={loading}
-          filters={filters}
-          globalFilterFields={["user.nome", "user.email", "avaliadorRoot"]}
-          header={header}
-          emptyMessage="Nenhum avaliador encontrado."
-          currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} avaliadores"
-          paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-        >
-          <Column
-            field="user.nome"
-            header="Nome"
-            sortable
-            filter
-            filterPlaceholder="Buscar por nome"
-          />
-          <Column
-            field="user.email"
-            header="E-mail"
-            body={emailBodyTemplate}
-            sortable
-            filter
-            filterPlaceholder="Buscar por e-mail"
-          />
-          <Column
-            header="Vinculação"
-            body={vinculacaoBodyTemplate}
-            sortable
-            sortField={(rowData) => getVinculacao(rowData)}
-            style={{ width: "280px", maxWidth: "280px" }}
-            bodyStyle={{
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          />
-          <Column
-            field="avaliadorRoot"
-            header="Avaliador Root"
-            body={rootBodyTemplate}
-            sortable
-            filter
-            filterField="avaliadorRoot"
-            showFilterMenu={false}
-            filterElement={rootFilterTemplate}
-          />
-          <Column
-            field="qntAvaliacoes"
-            header="Avaliações Realizadas"
-            sortable
-          />
-        </DataTable>
+        <section className={styles.section}>
+          <div className={styles.sectionHead}>
+            <h6>Avaliadores</h6>
+            <p>
+              Busque, edite vínculos e exporte a lista de avaliadores do
+              evento.
+            </p>
+          </div>
+
+          <div className={styles.filterBar}>
+            <div>
+              <label className={styles.eventoLabel}>Área</label>
+              <MultiSelect
+                value={filtroAreaIds}
+                options={opcoesArea}
+                onChange={(e) => setFiltroAreaIds(e.value)}
+                placeholder="Todas as áreas"
+                filter
+                className="w-100"
+                display="chip"
+              />
+            </div>
+            <div>
+              <label className={styles.eventoLabel}>Subsessão</label>
+              <MultiSelect
+                value={filtroSubsessaoIds}
+                options={opcoesSubsessao}
+                onChange={(e) => setFiltroSubsessaoIds(e.value)}
+                placeholder="Todas as subsessões"
+                filter
+                className="w-100"
+                display="chip"
+              />
+            </div>
+          </div>
+
+          <p className={styles.contador}>
+            {avaliadoresFiltrados.length} de {avaliadores.length}{" "}
+            {avaliadores.length === 1 ? "avaliador" : "avaliadores"}
+          </p>
+
+          <DataTable
+            ref={dataTableRef}
+            className={styles.eventoTable}
+            value={avaliadoresFiltrados}
+            paginator
+            filterDisplay="row"
+            rows={10}
+            rowsPerPageOptions={[5, 10, 25, 50]}
+            loading={loading}
+            filters={filters}
+            globalFilterFields={["user.nome", "user.email", "avaliadorRoot"]}
+            header={header}
+            emptyMessage="Nenhum avaliador encontrado."
+            currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} avaliadores"
+            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+          >
+            <Column
+              field="user.nome"
+              header="Nome"
+              sortable
+              filter
+              filterPlaceholder="Buscar por nome"
+            />
+            <Column
+              field="user.email"
+              header="E-mail"
+              body={emailBodyTemplate}
+              sortable
+              filter
+              filterPlaceholder="Buscar por e-mail"
+            />
+            <Column
+              header="Vinculação"
+              body={vinculacaoBodyTemplate}
+              sortable
+              sortField={(rowData) => getVinculacao(rowData)}
+              style={{ width: "280px", maxWidth: "280px" }}
+              bodyStyle={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            />
+            <Column
+              field="avaliadorRoot"
+              header="Avaliador Root"
+              body={rootBodyTemplate}
+              sortable
+              filter
+              filterField="avaliadorRoot"
+              showFilterMenu={false}
+              filterElement={rootFilterTemplate}
+            />
+            <Column
+              field="qntAvaliacoes"
+              header="Avaliações Realizadas"
+              sortable
+            />
+          </DataTable>
+        </section>
       </div>
     </div>
   );

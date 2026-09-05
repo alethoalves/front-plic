@@ -1,9 +1,6 @@
 import styles from "./layout.module.scss";
-import MenuAdminEvento from "@/components/MenuAdminEvento";
-import { redirect } from "next/navigation";
-import { getSessoesBySlug } from "@/app/api/serverReq";
 
-const Layout = async ({ children, params }) => {
+const Layout = ({ children }) => {
   return (
     <main className={styles.main}>
       <div className={styles.content}>

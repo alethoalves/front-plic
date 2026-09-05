@@ -1,7 +1,6 @@
 @import "/styles/partials/colors";
 @import "/styles/partials/layout";
 @import "/styles/partials/spacing";
-@import "/styles/partials/eventoTable";
 @import "/styles/partials/eventoAdmin";
 
 .navContent {
@@ -24,38 +23,6 @@
 
 .sectionHead {
     @include eventoSectionHead;
-}
-
-.vinculacaoLink {
-    color: $primary-normal;
-
-    &:hover {
-        text-decoration: underline;
-    }
-}
-
-.eventoTable {
-    @include eventoTable;
-}
-
-.eventoLabel {
-    @include eventoLabel;
-}
-
-.eventoInput {
-    @include eventoInput;
-}
-
-.eventoDialog {
-    @include eventoDialog;
-}
-
-.filterBar {
-    @include eventoFilterBar;
-}
-
-.contador {
-    @include eventoContador;
 }
 
 .loading {

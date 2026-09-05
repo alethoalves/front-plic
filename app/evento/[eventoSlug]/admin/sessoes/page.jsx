@@ -23,15 +23,34 @@ const Page = ({ params }) => {
     fetchData();
   }, []);
 
+  if (loading && !sessoes) {
+    return <div className={styles.loading}>Carregando...</div>;
+  }
+
   return (
     <div className={styles.navContent}>
-      {sessoes && (
-        <FormSessoes
-          eventoSlug={params.eventoSlug}
-          initialSessoes={sessoes}
-          basePath={`/evento/${params.eventoSlug}/admin/submissao`}
-        />
-      )}
+      <div className={styles.dashboard}>
+        <div className={styles.tituloPagina}>
+          <h5>Sessões</h5>
+        </div>
+
+        <section className={styles.section}>
+          <div className={styles.sectionHead}>
+            <p>
+              Crie e gerencie os horários e locais de apresentação do
+              evento.
+            </p>
+          </div>
+
+          {sessoes && (
+            <FormSessoes
+              eventoSlug={params.eventoSlug}
+              initialSessoes={sessoes}
+              basePath={`/evento/${params.eventoSlug}/admin/sessoes`}
+            />
+          )}
+        </section>
+      </div>
     </div>
   );
 };

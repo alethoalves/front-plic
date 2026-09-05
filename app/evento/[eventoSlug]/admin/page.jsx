@@ -1237,56 +1237,61 @@ const Page = ({ params }) => {
             {evento.info.sessaoInfo[0] &&
             evento.info.sessaoInfo[0].subsessoes[0] ? (
               evento.info.sessaoInfo.map((sessao) => {
-                const sessaoLabel = sessao.titulo;
                 const capacidadeTotal = sessao.capacidade;
-                return sessao.subsessoes.map((subs) => (
-                  <div className={styles.sessao} key={subs.inicio}>
-                    <h6>{sessaoLabel}</h6>
+                const subsessoesOrdenadas = [...sessao.subsessoes].sort(
+                  (a, b) => new Date(a.inicio) - new Date(b.inicio),
+                );
+                return (
+                  <div className={styles.sessao} key={sessao.sessaoId}>
+                    <h6>{sessao.titulo}</h6>
                     <div className={styles.subsessoes}>
-                      <div className={styles.subsessao}>
-                        <div className={styles.description}>
-                          <div className={styles.icon}>
-                            <RiCalendarLine />
+                      {subsessoesOrdenadas.map((subs) => (
+                        <div className={styles.subsessao} key={subs.inicio}>
+                          <div className={styles.description}>
+                            <div className={styles.icon}>
+                              <RiCalendarLine />
+                            </div>
+                            <div className={styles.infoBoxDescription}>
+                              <p>
+                                <strong>Início: </strong>
+                                {formatarData(subs.inicio)} -{" "}
+                                {formatarHora(subs.inicio)}
+                              </p>
+                              <p>
+                                <strong>Fim: </strong>
+                                {formatarData(subs.fim)} -{" "}
+                                {formatarHora(subs.fim)}
+                              </p>
+                            </div>
                           </div>
-                          <div className={styles.infoBoxDescription}>
-                            <p>
-                              <strong>Início: </strong>
-                              {formatarData(subs.inicio)} -{" "}
-                              {formatarHora(subs.inicio)}
-                            </p>
-                            <p>
-                              <strong>Fim: </strong>
-                              {formatarData(subs.fim)} - {formatarHora(subs.fim)}
-                            </p>
+                          <div className={styles.description}>
+                            <div className={styles.icon}>
+                              <RiBatteryLowLine />
+                            </div>
+                            <div className={styles.infoBoxDescription}>
+                              <p>
+                                <strong>Capacidade: </strong>
+                                {subs.submissaoTotal} inscritos | capacidade:{" "}
+                                {capacidadeTotal}
+                              </p>
+                            </div>
+                          </div>
+                          <div className={styles.description}>
+                            <div className={styles.icon}>
+                              <RiGroupLine />
+                            </div>
+                            <div className={styles.infoBoxDescription}>
+                              <p>
+                                <strong>Avaliadores: </strong>
+                                {subs.convitesAceitos}
+                              </p>
+                            </div>
                           </div>
                         </div>
-                        <div className={styles.description}>
-                          <div className={styles.icon}>
-                            <RiBatteryLowLine />
-                          </div>
-                          <div className={styles.infoBoxDescription}>
-                            <p>
-                              <strong>Capacidade: </strong>
-                              {subs.submissaoTotal} inscritos | capacidade:{" "}
-                              {capacidadeTotal}
-                            </p>
-                          </div>
-                        </div>
-                        <div className={styles.description}>
-                          <div className={styles.icon}>
-                            <RiGroupLine />
-                          </div>
-                          <div className={styles.infoBoxDescription}>
-                            <p>
-                              <strong>Avaliadores: </strong>
-                              {subs.convitesAceitos}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
+                      ))}
                     </div>
                   </div>
-                ));
+                );
               })
             ) : (
               <NoData description="Este evento ainda não tem sessões cadastradas." />

@@ -1,0 +1,237 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+@import "/styles/partials/eventoAdmin";
+
+.navContent {
+    display: flex;
+    flex-direction: column;
+    gap: $gap-2;
+}
+
+.pageCard {
+    @include eventoCard;
+}
+
+.pageSection {
+    @include eventoSection;
+}
+
+.sectionHead {
+    @include eventoSectionHead;
+}
+
+.loading {
+    @include eventoLoading;
+}
+
+// Grade de estatísticas da subsessão — mesmo tratamento de tile da home
+// (admin/page.module.scss .statTile): fundo neutro, número em destaque,
+// rótulo pequeno em maiúsculas.
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: $gap-1;
+    margin-bottom: $gap-2;
+}
+
+.statTile {
+    display: flex;
+    align-items: center;
+    gap: $gap-1;
+    background-color: $white-darken;
+    border-radius: $gap-1;
+    padding: $gap-2;
+
+    .description {
+        display: flex;
+        align-items: center;
+        gap: $gap-1;
+    }
+
+    .icon {
+        width: 22px;
+        color: $primary-normal;
+        flex-shrink: 0;
+    }
+
+    .infoBoxDescription {
+        h6 {
+            font-size: 18px;
+            color: $primary-darken;
+            margin-bottom: 2px;
+        }
+
+        p {
+            margin: 0;
+            font-size: 12px;
+            color: $gray-500;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+    }
+}
+
+.squares {
+    display: grid;
+    gap: $gap-1;
+
+    .square {
+        @include eventoCard;
+        display: flex;
+        padding: 3px;
+
+        @include responsive(s) {
+            flex-direction: column;
+        }
+
+        .squareHeader,
+        .squareContent,
+        .squareContentEmpty {
+            background-color: $white-darken;
+            padding: $gap-1;
+            border-radius: 6px;
+        }
+
+        .premios {
+            display: flex;
+            flex-wrap: wrap;
+            margin-left: 4px;
+
+            p {
+                text-wrap: wrap;
+            }
+
+            @include responsive(s) {
+                margin-left: 0;
+                margin-top: 4px;
+            }
+
+            :not(:last-child) {
+                margin-right: 4px;
+            }
+
+            .squareHeader {
+                flex: 1;
+                background-color: $warning-lighten;
+                color: $warning-darken;
+
+                svg {
+                    margin: 0;
+                }
+            }
+        }
+
+        .squareHeader {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: center;
+
+            @include responsive(s) {
+                margin-right: 0px;
+            }
+
+            h6 {
+                font-size: 22px;
+            }
+        }
+
+        .squareContentEmpty {
+            flex: 1;
+            margin-left: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: transparent;
+            border: 1px solid $white-darken;
+            transition: ease 0.3s;
+            cursor: pointer;
+
+            p {
+                text-align: center;
+                transition: ease 0.3s;
+                cursor: pointer;
+            }
+
+            &:hover {
+                background-color: $white-darken;
+
+                p {
+                    text-decoration: underline;
+                }
+            }
+        }
+
+        .squareContent {
+            flex: 1;
+            margin-left: 4px;
+            cursor: pointer;
+            transition: ease 0.3s;
+            border: 1px solid transparent;
+            border-radius: $gap-1;
+
+            @include responsive(s) {
+                margin-left: 0;
+                margin-top: 4px;
+            }
+
+            &:hover {
+                border: 1px solid $primary-light;
+            }
+
+            .info {
+                display: flex;
+                margin-bottom: 6px;
+
+                .status {
+                    background-color: $primary-light;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    color: $white-normal;
+                    font-size: 10px;
+                    margin-right: 6px;
+
+                    &.error {
+                        background-color: $error-lighten;
+                        color: $error-dark;
+                    }
+
+                    &.warning {
+                        background-color: $warning-light;
+                        color: $error-dark;
+                    }
+
+                    &.success {
+                        background-color: $success-light;
+                        color: $primary-darken;
+                    }
+
+                    &.inativada {
+                        background-color: $white-light;
+                        color: $primary-darken;
+                    }
+                }
+
+                .area {
+                    border: 1px solid $primary-light;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    color: $primary-light;
+                    font-size: 10px;
+                }
+            }
+
+            .submissaoData {
+                .participacoes {
+                    font-size: 12px;
+                }
+            }
+        }
+    }
+}
+
+.icon {
+    width: 24px;
+    color: $primary-normal;
+}

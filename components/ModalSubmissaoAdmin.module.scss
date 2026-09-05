@@ -206,6 +206,18 @@
             .squareHeaderInfo{
                 width: 100%;
                 padding: $gap-1;
+                flex-wrap: wrap;
+
+                // Button.jsx renderiza a classe global .button, que vem com
+                // width:100% por padrão — aqui os botões de status ficam
+                // lado a lado numa linha flex, então precisam de largura
+                // automática (mesmo ajuste já usado em várias telas do
+                // admin de evento).
+                :global(.button) {
+                    width: auto;
+                    white-space: nowrap;
+                }
+
                 .emAvaliacao{
                     display: flex;
                     justify-content: space-between;

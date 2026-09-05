@@ -1,6 +1,7 @@
 @import "/styles/partials/colors";
 @import "/styles/partials/layout";
 @import "/styles/partials/spacing";
+@import "/styles/partials/eventoAdmin";
 
 
 .main {display: grid;
@@ -12,13 +13,9 @@
       display: block; /* Para telas menores, exibe os elementos em blocos */
     }}
 .dashboard {
- 
+  @include eventoCard;
 margin-right: 0; /* Remova o margin-right já que o grid-gap gerencia o espaçamento */
-border: 1px solid $gray-50;
-box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
-border-radius: $gap-1;
-  overflow: hidden;
-  
+
   width: 100%;
   margin-bottom: $gap-2;
 
@@ -159,35 +156,11 @@ border-radius: $gap-1;
     }
 
     .section{
-        padding: $gap-2 $gap-2 0 $gap-2;
-        &:last-child{
-            padding-bottom: $gap-2;
-        }
-        &:not(:last-child){
-            border-bottom: 1px solid $gray-50;
-            padding-bottom: $gap-3;
-        }
+        @include eventoSection;
     }
 
     .sectionHead{
-        display: flex;
-        align-items: baseline;
-        gap: $gap-2;
-        margin-bottom: $gap-2;
-        h6{
-            color: $gray-700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-size: 13px;
-            font-weight: 700;
-        }
-        p{
-            color: $gray-400;
-            font-size: 13px;
-            @include responsive(xs){
-                display: none;
-            }
-        }
+        @include eventoSectionHead;
     }
 
     .statHero{
@@ -343,4 +316,8 @@ border-radius: $gap-1;
 .icon{
     width: 24px;
     color: $primary-normal;
+}
+
+.loading {
+    @include eventoLoading;
 }

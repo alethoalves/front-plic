@@ -1,6 +1,7 @@
 import {
   getSubmissaoByIdForAdmin,
   updateSubmissaoStatus,
+  updateSubmissaoPremiacao,
 } from "@/app/api/client/submissao";
 import { validarJustificativaManualmente } from "@/app/api/client/eventos";
 import { vincularAutomaticamenteSubmissao } from "@/app/api/client/square"; // Importa a função de vinculação automática
@@ -29,6 +30,7 @@ const Modal = ({ isOpen, onClose, eventoSlug, idSubmissao, onDataUpdated }) => {
   const [excluindo, setExcluindo] = useState(false);
   const [vinculando, setVinculando] = useState(false); // Estado para controlar a vinculação automática
   const [alterandoStatus, setAlterandoStatus] = useState(false);
+  const [atualizandoPremiacao, setAtualizandoPremiacao] = useState(false);
   const [motivoValidacaoManual, setMotivoValidacaoManual] = useState("");
   const [validandoManualmente, setValidandoManualmente] = useState(false);
   const fetchData = async (eventoSlug, idSubmissao) => {
@@ -106,6 +108,31 @@ const Modal = ({ isOpen, onClose, eventoSlug, idSubmissao, onDataUpdated }) => {
       setAlterandoStatus(false);
     }
   };
+  const handlePremiacaoChange = async (campo, valor) => {
+    setAtualizandoPremiacao(true);
+    try {
+      const dados = {
+        premio: submissao?.premio || false,
+        indicacaoPremio: submissao?.indicacaoPremio || false,
+        mencaoHonrosa: submissao?.mencaoHonrosa || false,
+        [campo]: valor,
+      };
+      const submissaoAtualizada = await updateSubmissaoPremiacao(
+        eventoSlug,
+        idSubmissao,
+        dados
+      );
+      setSubmissao((prev) => ({ ...prev, ...submissaoAtualizada }));
+      if (onDataUpdated) {
+        onDataUpdated();
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar a premiação da submissão:", error);
+    } finally {
+      setAtualizandoPremiacao(false);
+    }
+  };
+
   const handleValidarManualmente = async () => {
     if (!motivoValidacaoManual.trim()) return;
     setValidandoManualmente(true);
@@ -181,7 +208,7 @@ const Modal = ({ isOpen, onClose, eventoSlug, idSubmissao, onDataUpdated }) => {
                     </p>
                   </div>
                   <div className={styles.submissaoData}>
-                    <h6>{submissao?.planoDeTrabalho?.titulo}</h6>
+                    <h6>{submissao?.Resumo?.titulo}</h6>
                     <p className={styles.participacoes}>
                       <strong>Orientadores: </strong>
                       {submissao?.Resumo?.participacoes
@@ -362,45 +389,108 @@ const Modal = ({ isOpen, onClose, eventoSlug, idSubmissao, onDataUpdated }) => {
                       </div>
                     </div>
                     {submissao && (
-                      <div className={styles.squareHeaderInfo}>
+                      <div className={`${styles.squareHeaderInfo} flex gap-1`}>
                         {alterandoStatus && <p className="mb-2">Aguarde...</p>}
-                        <ul>
-                          <li
-                            className={`${
-                              submissao?.status === "AUSENTE"
-                                ? styles.selected
-                                : ""
-                            }`}
-                            onClick={() => handleStatusUpdate("AUSENTE")} // Chama a função para atualizar o status
-                          >
-                            <p>Ausente</p>
-                          </li>
-                          <li
-                            className={`${
-                              submissao?.status === "DISTRIBUIDA" ||
-                              submissao?.status === "SELECIONADA"
-                                ? styles.selected
-                                : ""
-                            }`}
-                            onClick={() => handleStatusUpdate("DISTRIBUIDA")} // Chama a função para atualizar o status
-                          >
-                            <p>Checkin pendente</p>
-                          </li>
-                          <li
-                            className={`${
-                              submissao?.status === "AGUARDANDO_AVALIACAO"
-                                ? styles.selected
-                                : ""
-                            }`}
-                            onClick={() =>
-                              handleStatusUpdate("AGUARDANDO_AVALIACAO")
-                            } // Chama a função para atualizar o status
-                          >
-                            <p>Aguardando avaliação</p>
-                          </li>
-                        </ul>
+                        <Button
+                          className={
+                            submissao?.status === "AUSENTE"
+                              ? "btn-primary"
+                              : "btn-secondary"
+                          }
+                          disabled={alterandoStatus}
+                          onClick={() => handleStatusUpdate("AUSENTE")}
+                        >
+                          Ausente
+                        </Button>
+                        <Button
+                          className={
+                            submissao?.status === "DISTRIBUIDA" ||
+                            submissao?.status === "SELECIONADA"
+                              ? "btn-primary"
+                              : "btn-secondary"
+                          }
+                          disabled={alterandoStatus}
+                          onClick={() => handleStatusUpdate("DISTRIBUIDA")}
+                        >
+                          Checkin pendente
+                        </Button>
+                        <Button
+                          className={
+                            submissao?.status === "AGUARDANDO_AVALIACAO"
+                              ? "btn-primary"
+                              : "btn-secondary"
+                          }
+                          disabled={alterandoStatus}
+                          onClick={() =>
+                            handleStatusUpdate("AGUARDANDO_AVALIACAO")
+                          }
+                        >
+                          Aguardando avaliação
+                        </Button>
                       </div>
                     )}
+                  </div>
+                )}
+                {submissao && (
+                  <div className={styles.squareHeader}>
+                    <div className={styles.squareHeaderNumero}>
+                      <div>
+                        <p>Premiação:</p>
+                      </div>
+                    </div>
+                    <div className={styles.squareHeaderInfo}>
+                      {atualizandoPremiacao && (
+                        <p className="mb-2">Aguarde...</p>
+                      )}
+                      <div className="checkbox-container mb-1">
+                        <input
+                          type="checkbox"
+                          id="indicacaoPremio"
+                          checked={!!submissao?.indicacaoPremio}
+                          disabled={atualizandoPremiacao}
+                          onChange={() =>
+                            handlePremiacaoChange(
+                              "indicacaoPremio",
+                              !submissao?.indicacaoPremio
+                            )
+                          }
+                        />
+                        <label htmlFor="indicacaoPremio">
+                          <p>Indicação a prêmio</p>
+                        </label>
+                      </div>
+                      <div className="checkbox-container mb-1">
+                        <input
+                          type="checkbox"
+                          id="mencaoHonrosa"
+                          checked={!!submissao?.mencaoHonrosa}
+                          disabled={atualizandoPremiacao}
+                          onChange={() =>
+                            handlePremiacaoChange(
+                              "mencaoHonrosa",
+                              !submissao?.mencaoHonrosa
+                            )
+                          }
+                        />
+                        <label htmlFor="mencaoHonrosa">
+                          <p>Menção honrosa</p>
+                        </label>
+                      </div>
+                      <div className="checkbox-container">
+                        <input
+                          type="checkbox"
+                          id="premio"
+                          checked={!!submissao?.premio}
+                          disabled={atualizandoPremiacao}
+                          onChange={() =>
+                            handlePremiacaoChange("premio", !submissao?.premio)
+                          }
+                        />
+                        <label htmlFor="premio">
+                          <p>Premiado</p>
+                        </label>
+                      </div>
+                    </div>
                   </div>
                 )}
                 {justificativa && (

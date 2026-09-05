@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { TreeSelect } from "primereact/treeselect";
 import { Calendar } from "primereact/calendar";
+import { Menu } from "primereact/menu";
 import Link from "next/link";
 import formStyles from "@/components/Formularios/Form.module.scss";
 import styles from "./FormSessoes.module.scss";
@@ -19,8 +20,7 @@ import {
   RiGroupLine,
   RiSurveyLine,
   RiAddCircleLine,
-  RiPencilLine,
-  RiDeleteBinLine,
+  RiSettings4Line,
   RiSave2Line,
 } from "@remixicon/react";
 import { getAreas } from "@/app/api/client/area";
@@ -417,6 +417,12 @@ const FormSessoes = ({ eventoSlug, initialSessoes, basePath }) => {
   const [sessoes, setSessoes] = useState(initialSessoes || []);
   const [areaTree, setAreaTree] = useState([]);
 
+  // Uma aba por sessão + a aba fixa "nova" — evita empilhar todas as
+  // sessões sempre abertas na tela (só o conteúdo da aba ativa renderiza).
+  const [abaAtiva, setAbaAtiva] = useState(
+    (initialSessoes || [])[0]?.id ?? "nova",
+  );
+
   const [editandoSessao, setEditandoSessao] = useState(null);
   const [excluindoSessao, setExcluindoSessao] = useState(null);
   const [erroExclusaoSessao, setErroExclusaoSessao] = useState("");
@@ -427,6 +433,49 @@ const FormSessoes = ({ eventoSlug, initialSessoes, basePath }) => {
   const [erroExclusaoSubsessao, setErroExclusaoSubsessao] = useState("");
   const [excluindoSubsessaoLoading, setExcluindoSubsessaoLoading] =
     useState(false);
+
+  // Menu de ações (engrenagem) — uma instância de <Menu> por nível
+  // (sessão/subsessão), reaproveitada pra qualquer linha: guarda "qual
+  // item" foi clicado, monta o `model` a partir dele.
+  const menuSessaoRef = useRef(null);
+  const [sessaoMenuAlvo, setSessaoMenuAlvo] = useState(null);
+  const itensMenuSessao = [
+    {
+      label: "Editar sessão",
+      icon: "pi pi-pencil",
+      command: () => setEditandoSessao(sessaoMenuAlvo),
+    },
+    {
+      label: "Excluir sessão",
+      icon: "pi pi-trash",
+      command: () => {
+        setErroExclusaoSessao("");
+        setExcluindoSessao(sessaoMenuAlvo);
+      },
+    },
+  ];
+
+  const menuSubsessaoRef = useRef(null);
+  const [subsessaoMenuAlvo, setSubsessaoMenuAlvo] = useState(null);
+  const itensMenuSubsessao = [
+    {
+      label: "Editar subsessão",
+      icon: "pi pi-pencil",
+      command: () =>
+        setSubsessaoModal({
+          sessaoId: subsessaoMenuAlvo?.sessaoId,
+          subsessao: subsessaoMenuAlvo?.subsessao,
+        }),
+    },
+    {
+      label: "Excluir subsessão",
+      icon: "pi pi-trash",
+      command: () => {
+        setErroExclusaoSubsessao("");
+        setExcluindoSubsessao(subsessaoMenuAlvo);
+      },
+    },
+  ];
 
   useEffect(() => {
     setSessoes(initialSessoes || []);
@@ -452,7 +501,11 @@ const FormSessoes = ({ eventoSlug, initialSessoes, basePath }) => {
     setExcluindoSessaoLoading(true);
     try {
       await excluirSessao(eventoSlug, excluindoSessao.id);
-      setSessoes((prev) => prev.filter((s) => s.id !== excluindoSessao.id));
+      const restantes = sessoes.filter((s) => s.id !== excluindoSessao.id);
+      setSessoes(restantes);
+      if (abaAtiva === excluindoSessao.id) {
+        setAbaAtiva(restantes[0]?.id ?? "nova");
+      }
       setExcluindoSessao(null);
     } catch (error) {
       setErroExclusaoSessao(
@@ -491,52 +544,99 @@ const FormSessoes = ({ eventoSlug, initialSessoes, basePath }) => {
     }
   };
 
+  const sessaoAtiva = sessoes.find((s) => s.id === abaAtiva);
+
   return (
     <>
-      {sessoes.map((sessao) => (
-        <div key={sessao.id} className={styles.content}>
-          <div className={styles.header}>
-            <h5>Sessão {sessao.titulo}</h5>
-            <div className={formStyles.listaItemActions}>
-              <div
-                className={`${formStyles.actionIcon} ${formStyles.actionIconEdit}`}
-                onClick={() => setEditandoSessao(sessao)}
-                title="Editar sessão"
-              >
-                <RiPencilLine />
+      <div className={styles.abas}>
+        {sessoes.map((sessao) => (
+          <button
+            key={sessao.id}
+            type="button"
+            className={`${styles.aba} ${
+              abaAtiva === sessao.id ? styles.abaAtiva : ""
+            }`}
+            onClick={() => setAbaAtiva(sessao.id)}
+          >
+            {sessao.titulo}
+          </button>
+        ))}
+        <button
+          type="button"
+          className={`${styles.aba} ${
+            abaAtiva === "nova" ? styles.abaAtiva : ""
+          }`}
+          onClick={() => setAbaAtiva("nova")}
+        >
+          + Nova sessão
+        </button>
+      </div>
+
+      {abaAtiva === "nova" && (
+        <div className={formStyles.secao}>
+          <div className={formStyles.secaoHead}>
+            <div className={formStyles.secaoIcon}>
+              <RiCalendarEventLine />
+            </div>
+            <h6>Nova sessão</h6>
+          </div>
+          <div className={formStyles.secaoContent}>
+            <SessaoForm
+              eventoSlug={eventoSlug}
+              areaTree={areaTree}
+              onSuccess={(nova) => {
+                setSessoes((prev) => [...prev, nova]);
+                setAbaAtiva(nova.id);
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {sessaoAtiva && (
+        <div className={formStyles.secao}>
+          <div className={`${formStyles.secaoHead} ${styles.sessaoHeadRow}`}>
+            <div className="flex align-items-center gap-1">
+              <div className={formStyles.secaoIcon}>
+                <RiCalendarEventLine />
               </div>
-              <div
-                className={`${formStyles.actionIcon} ${formStyles.actionIconDelete}`}
-                onClick={() => {
-                  setErroExclusaoSessao("");
-                  setExcluindoSessao(sessao);
-                }}
-                title="Excluir sessão"
-              >
-                <RiDeleteBinLine />
-              </div>
+              <h6>Sessão {sessaoAtiva.titulo}</h6>
+            </div>
+            <div
+              className={styles.menuTrigger}
+              onClick={(e) => {
+                setSessaoMenuAlvo(sessaoAtiva);
+                menuSessaoRef.current.toggle(e);
+              }}
+              title="Ações da sessão"
+            >
+              <RiSettings4Line />
             </div>
           </div>
-          <div className={styles.mainContent}>
+          <div
+            className={`${formStyles.secaoContent} ${styles.sessaoContentBody}`}
+          >
             <p>
               <strong>Tipo de sessão: </strong>
-              {tipoLabel(sessao.tipo)}
+              {tipoLabel(sessaoAtiva.tipo)}
             </p>
             <p>
               <strong>Capacidade de cada subsessão: </strong>
-              {sessao.capacidade}
+              {sessaoAtiva.capacidade}
             </p>
-            {sessao.sessaoArea?.length > 0 && (
+            {sessaoAtiva.sessaoArea?.length > 0 && (
               <p>
                 <strong>Áreas: </strong>
-                {sessao.sessaoArea.map((sa) => sa.area.area).join(", ")}
+                {sessaoAtiva.sessaoArea.map((sa) => sa.area.area).join(", ")}
               </p>
             )}
             <p className="mt-2">
               <strong>Subsessões: </strong>
             </p>
             <div className={styles.subsessoes}>
-              {sessao.subsessaoApresentacao?.map((subs) => (
+              {[...(sessaoAtiva.subsessaoApresentacao || [])]
+                .sort((a, b) => new Date(a.inicio) - new Date(b.inicio))
+                .map((subs) => (
                 <div key={subs.id} className={styles.subsessao}>
                   <Link
                     href={`${basePath}/${subs.id}`}
@@ -583,35 +683,18 @@ const FormSessoes = ({ eventoSlug, initialSessoes, basePath }) => {
                     </div>
                   </Link>
                   <div
-                    className={`${formStyles.listaItemActions} ${styles.subsessaoActions}`}
+                    className={`${styles.menuTrigger} ${styles.subsessaoActions}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setSubsessaoMenuAlvo({
+                        sessaoId: sessaoAtiva.id,
+                        subsessao: subs,
+                      });
+                      menuSubsessaoRef.current.toggle(e);
+                    }}
+                    title="Ações da subsessão"
                   >
-                    <div
-                      className={`${formStyles.actionIcon} ${formStyles.actionIconEdit}`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setSubsessaoModal({
-                          sessaoId: sessao.id,
-                          subsessao: subs,
-                        });
-                      }}
-                      title="Editar subsessão"
-                    >
-                      <RiPencilLine />
-                    </div>
-                    <div
-                      className={`${formStyles.actionIcon} ${formStyles.actionIconDelete}`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setErroExclusaoSubsessao("");
-                        setExcluindoSubsessao({
-                          sessaoId: sessao.id,
-                          subsessao: subs,
-                        });
-                      }}
-                      title="Excluir subsessão"
-                    >
-                      <RiDeleteBinLine />
-                    </div>
+                    <RiSettings4Line />
                   </div>
                 </div>
               ))}
@@ -620,29 +703,26 @@ const FormSessoes = ({ eventoSlug, initialSessoes, basePath }) => {
               icon={RiAddCircleLine}
               className="btn-secondary mt-2"
               type="button"
-              onClick={() => setSubsessaoModal({ sessaoId: sessao.id })}
+              onClick={() => setSubsessaoModal({ sessaoId: sessaoAtiva.id })}
             >
               Adicionar subsessão
             </Button>
           </div>
         </div>
-      ))}
+      )}
 
-      <div className={formStyles.secao}>
-        <div className={formStyles.secaoHead}>
-          <div className={formStyles.secaoIcon}>
-            <RiCalendarEventLine />
-          </div>
-          <h6>Nova sessão</h6>
-        </div>
-        <div className={formStyles.secaoContent}>
-          <SessaoForm
-            eventoSlug={eventoSlug}
-            areaTree={areaTree}
-            onSuccess={(nova) => setSessoes((prev) => [...prev, nova])}
-          />
-        </div>
-      </div>
+      <Menu
+        model={itensMenuSessao}
+        popup
+        ref={menuSessaoRef}
+        className={styles.menuAcoes}
+      />
+      <Menu
+        model={itensMenuSubsessao}
+        popup
+        ref={menuSubsessaoRef}
+        className={styles.menuAcoes}
+      />
 
       <Modal
         isOpen={!!editandoSessao}

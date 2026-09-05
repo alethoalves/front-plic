@@ -138,6 +138,26 @@ export const getAvaliadoresComSubmissoesPendentes = async (
     }
   };
 
+  export const updateSubmissaoPremiacao = async (
+    eventoSlug,idSubmissao,dados
+  ) => {
+    try {
+      const headers = getAuthHeadersClient();
+      if (!headers) {
+        return false;
+      }
+      const response = await req.put(
+        `/evenplic/evento/${eventoSlug}/submissao/atualizarPremiacao/${idSubmissao}`,
+        dados,
+        { headers }
+      );
+      return response.data.submissao;
+    } catch (error) {
+      console.error("Erro ao atualizar premiação:", error);
+      throw error;
+    }
+  };
+
   export const getSubmissoesSemPage = async () => {
     try {
       const headers = getAuthHeadersClient();

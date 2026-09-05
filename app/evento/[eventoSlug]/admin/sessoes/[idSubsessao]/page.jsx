@@ -24,15 +24,19 @@ import {
   RiTimeLine,
 } from "@remixicon/react";
 import styles from "./page.module.scss";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Toast } from "primereact/toast";
 import { getSubsessaoById } from "@/app/api/client/subsessoes";
 import Button from "@/components/Button";
 import Modal from "@/components/Modal";
 import ModalSubmissaoAdmin from "@/components/ModalSubmissaoAdmin";
 
 import BuscadorBack from "@/components/BuscadorBack";
-import { vincularSubmissao } from "@/app/api/client/square";
+import {
+  vincularSubmissao,
+  gerarSquareParaSubsessao,
+} from "@/app/api/client/square";
 import { getInstituicaoSigla } from "@/lib/instituicaoDisplay";
 
 const Page = ({ params }) => {
@@ -51,9 +55,29 @@ const Page = ({ params }) => {
   const [progress, setProgress] = useState(0);
   const [total, setTotal] = useState(0);
   const [loadingAlocacao, setLoadingAlocacao] = useState(false);
+  const [loadingGerarPoster, setLoadingGerarPoster] = useState(false);
 
   // ROTEAMENTO
   const router = useRouter();
+  const toast = useRef(null);
+
+  const showSuccess = (message) => {
+    toast.current.show({
+      severity: "success",
+      summary: "Sucesso",
+      detail: message,
+      life: 3000,
+    });
+  };
+
+  const showError = (message) => {
+    toast.current.show({
+      severity: "error",
+      summary: "Erro",
+      detail: message,
+      life: 5000,
+    });
+  };
 
   // Função de busca dos dados ao renderizar o componente
   const fetchData = async (eventoSlug, idSubsessao, filters = {}) => {
@@ -124,6 +148,29 @@ const Page = ({ params }) => {
     // Atualiza o estado com os itens filtrados
     setSubsessaoFiltered(filteredItems);
   };
+  const handleGerarPosters = async () => {
+    setLoadingGerarPoster(true);
+    try {
+      const resultado = await gerarSquareParaSubsessao(
+        params.eventoSlug,
+        params.idSubsessao
+      );
+      if (resultado.status === "success") {
+        showSuccess(resultado.message);
+        await fetchData(params.eventoSlug, params.idSubsessao);
+      } else {
+        showError("Erro ao gerar pôsteres: " + resultado.message);
+      }
+    } catch (error) {
+      console.error("Erro ao gerar pôsteres:", error);
+      showError(
+        "Erro ao gerar pôsteres. Verifique o console para mais detalhes."
+      );
+    } finally {
+      setLoadingGerarPoster(false);
+    }
+  };
+
   const alocarSubmissao = async (item) => {
     try {
       setLoading(true);
@@ -334,117 +381,131 @@ const Page = ({ params }) => {
     />
   );
 
+  if (loading && !subsessao) {
+    return <div className={styles.loading}>Carregando...</div>;
+  }
+
   return (
     <div className={styles.navContent}>
+      <Toast ref={toast} position="top-right" />
       {renderModalContent()}
       {renderModalSubmissao()}
-      <h6 className="mb-1">
-        {subsessao?.sessaoApresentacao?.titulo.toUpperCase()}
-      </h6>
-      {subsessao && (
-        <p>
-          {formatarData(subsessao?.inicio)} - de{" "}
-          {formatarHora(subsessao?.inicio)} às {formatarHora(subsessao?.fim)}
-        </p>
-      )}
-      {true && subsessao && (
-        <div className={styles.dashboard}>
-          <div className={styles.subsessao}>
-            <div className={styles.description}>
-              <div className={styles.icon}>
-                <RiPercentLine />
-              </div>
-              <div className={styles.infoBoxDescription}>
-                <p>Avaliados</p>
-                <h6>
-                  {(subsessao.info.avaliadas / subsessao.info.total).toFixed(2)}
-                  % (faltam {subsessao.info.total - subsessao.info.avaliadas})
-                </h6>
-              </div>
-            </div>
-            <div className={styles.description}>
-              <div className={styles.icon}>
-                <RiAlarmLine />
-              </div>
-              <div className={styles.infoBoxDescription}>
-                <p>Aguardando Checkin</p>
-                <h6>{subsessao.info.distribuidas}</h6>
-              </div>
-            </div>
-            <div className={styles.description}>
-              <div className={styles.icon}>
-                <RiPresentationLine />
-              </div>
-              <div className={styles.infoBoxDescription}>
-                <p>Aguardando Avaliação</p>
-                <h6>{subsessao.info.aguardando}</h6>
-              </div>
-            </div>
-            <div className={styles.description}>
-              <div className={styles.icon}>
-                <RiQuillPenLine />
-              </div>
-              <div className={styles.infoBoxDescription}>
-                <p>em Avaliação</p>
-                <h6>{subsessao.info.emAvaliacao}</h6>
-              </div>
-            </div>
-            <div className={styles.description}>
-              <div className={styles.icon}>
-                <RiMedalLine />
-              </div>
-              <div className={styles.infoBoxDescription}>
-                <p>Indicados ao Prêmio</p>
-                <h6>{subsessao.info.indicadosPremio}</h6>
-              </div>
-            </div>
-            <div className={styles.description}>
-              <div className={styles.icon}>
-                <RiStarLine />
-              </div>
-              <div className={styles.infoBoxDescription}>
-                <p>Menção Honrosa</p>
-                <h6>{subsessao.info.mencaoHonrosa}</h6>
-              </div>
-            </div>
-            <div className={styles.description}>
-              <div className={styles.icon}>
-                <RiThumbDownLine />
-              </div>
-              <div className={styles.infoBoxDescription}>
-                <p>Notas baixas</p>
-                <h6>{subsessao.info.notasMenores4}</h6>
-              </div>
-            </div>
-            <div className={styles.description}>
-              <div className={styles.icon}>
-                <RiAlertLine />
-              </div>
-              <div className={styles.infoBoxDescription}>
-                <p>Trabalhos sem Pôster</p>
-                <h6>{subsessao.info.submissoesNaoAlocadas}</h6>
-              </div>
-            </div>
+
+      <div className={styles.pageCard}>
+        <section className={styles.pageSection}>
+          <div className={styles.sectionHead}>
+            <h6>{subsessao?.sessaoApresentacao?.titulo?.toUpperCase()}</h6>
+            {subsessao && (
+              <p>
+                {formatarData(subsessao?.inicio)} - de{" "}
+                {formatarHora(subsessao?.inicio)} às{" "}
+                {formatarHora(subsessao?.fim)}
+              </p>
+            )}
           </div>
-        </div>
-      )}
-      <div className="mt-2 mb-2">
-        <BuscadorBack onSearch={handleSearch} />
-      </div>
-      <div className={styles.actions}>
-        {subsessao?.Square.length < 1 && (
-          <Button
-            onClick={() => {}}
-            icon={RiMapPinLine}
-            className="btn-primary"
-            type="submit"
-          >
-            Gerar {subsessao?.sessaoApresentacao?.capacidade} Pôsteres
-          </Button>
-        )}
-      </div>
-      {loading && <p className="mb-2">Carregando...</p>}
-      <div className={styles.squares}>
+
+          {subsessao && (
+            <div className={styles.statsGrid}>
+              <div className={styles.statTile}>
+                <div className={styles.icon}>
+                  <RiPercentLine />
+                </div>
+                <div className={styles.infoBoxDescription}>
+                  <h6>
+                    {(subsessao.info.avaliadas / subsessao.info.total).toFixed(
+                      2
+                    )}
+                    % (faltam {subsessao.info.total - subsessao.info.avaliadas})
+                  </h6>
+                  <p>Avaliados</p>
+                </div>
+              </div>
+              <div className={styles.statTile}>
+                <div className={styles.icon}>
+                  <RiAlarmLine />
+                </div>
+                <div className={styles.infoBoxDescription}>
+                  <h6>{subsessao.info.distribuidas}</h6>
+                  <p>Aguardando Checkin</p>
+                </div>
+              </div>
+              <div className={styles.statTile}>
+                <div className={styles.icon}>
+                  <RiPresentationLine />
+                </div>
+                <div className={styles.infoBoxDescription}>
+                  <h6>{subsessao.info.aguardando}</h6>
+                  <p>Aguardando Avaliação</p>
+                </div>
+              </div>
+              <div className={styles.statTile}>
+                <div className={styles.icon}>
+                  <RiQuillPenLine />
+                </div>
+                <div className={styles.infoBoxDescription}>
+                  <h6>{subsessao.info.emAvaliacao}</h6>
+                  <p>em Avaliação</p>
+                </div>
+              </div>
+              <div className={styles.statTile}>
+                <div className={styles.icon}>
+                  <RiMedalLine />
+                </div>
+                <div className={styles.infoBoxDescription}>
+                  <h6>{subsessao.info.indicadosPremio}</h6>
+                  <p>Indicados ao Prêmio</p>
+                </div>
+              </div>
+              <div className={styles.statTile}>
+                <div className={styles.icon}>
+                  <RiStarLine />
+                </div>
+                <div className={styles.infoBoxDescription}>
+                  <h6>{subsessao.info.mencaoHonrosa}</h6>
+                  <p>Menção Honrosa</p>
+                </div>
+              </div>
+              <div className={styles.statTile}>
+                <div className={styles.icon}>
+                  <RiThumbDownLine />
+                </div>
+                <div className={styles.infoBoxDescription}>
+                  <h6>{subsessao.info.notasMenores4}</h6>
+                  <p>Notas baixas</p>
+                </div>
+              </div>
+              <div className={styles.statTile}>
+                <div className={styles.icon}>
+                  <RiAlertLine />
+                </div>
+                <div className={styles.infoBoxDescription}>
+                  <h6>{subsessao.info.submissoesNaoAlocadas}</h6>
+                  <p>Trabalhos sem Pôster</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="mt-2 mb-2">
+            <BuscadorBack onSearch={handleSearch} />
+          </div>
+          <div className={styles.actions}>
+            {subsessao?.Square.length < 1 && (
+              <Button
+                onClick={handleGerarPosters}
+                icon={RiMapPinLine}
+                className="btn-primary"
+                type="button"
+                disabled={loadingGerarPoster}
+              >
+                {loadingGerarPoster
+                  ? "Gerando..."
+                  : `Gerar ${subsessao?.sessaoApresentacao?.capacidade} Pôsteres`}
+              </Button>
+            )}
+          </div>
+          {loading && <p className="mb-2">Carregando...</p>}
+          <div className={styles.squares}>
         {subsessaoFiltered?.map((item) => (
           <div key={item.id} className={styles.square}>
             {item.square.map((squareItem) => (
@@ -565,6 +626,8 @@ const Page = ({ params }) => {
             )}
           </div>
         ))}
+          </div>
+        </section>
       </div>
     </div>
   );

@@ -14,7 +14,14 @@
     }
     .item2{
         flex: 1;
-        
+        // Sem isso, um item flex nunca encolhe abaixo do conteúdo mínimo
+        // dos seus filhos (min-width:auto é o padrão) — se algo lá dentro
+        // tiver conteúdo largo (ex.: DataTable com white-space:nowrap), esse
+        // tamanho mínimo se propaga por .content/.dashboard/.section e
+        // empurra a página inteira além de 100vw, gerando rolagem horizontal
+        // na página (em vez do scroll interno do próprio elemento largo).
+        min-width: 0;
+
         .content{
             margin-top: 70px;
             margin-left: 210px;

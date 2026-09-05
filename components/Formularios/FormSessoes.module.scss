@@ -2,93 +2,181 @@
 @import "/styles/partials/layout";
 @import "/styles/partials/spacing";
 
-// Reproduz o card de sessão/subsessão já usado em admin/apresentacao e
-// admin/submissao (page.module.scss), para o CRUD ficar visualmente igual
-// à listagem read-only que ele substitui.
-.content {
+// Abas (uma por sessão + "+ Nova sessão") — padrão próprio do projeto pra
+// alternar conteúdo por clique (CLAUDE.md do front, regra 0), mesmo CSS já
+// usado em app/[tenant]/configuracoes/gestor/(itens)/formularios/page.module.scss.
+// Evita ter as N sessões sempre abertas e empilhadas na tela.
+.abas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    border-bottom: 2px solid rgba(#000, 0.1);
     margin-bottom: $gap-2;
-    max-width: 990px;
-    border: 1px solid $gray-50;
-    box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
-    border-radius: $gap-1;
-    @include responsive(s) {
-        flex-direction: column;
+}
+
+.aba {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    padding: $gap-2 $gap-3;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: $gray-500;
+    transition: color 0.15s, border-color 0.15s;
+
+    &:hover {
+        color: $primary-normal;
+    }
+
+    &.abaAtiva {
+        color: $primary-normal;
+        border-bottom-color: $primary-normal;
+        font-weight: 700;
     }
 }
 
-.header {
+// Ícone único de engrenagem que abre o menu popup (Editar/Excluir) — troca
+// o par de ícones coloridos (formStyles.actionIcon*) por uma única ação,
+// tanto no cabeçalho da sessão quanto em cada tile de subsessão.
+.menuTrigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: $gap-1;
+    color: $gray-500;
+    cursor: pointer;
+    transition: ease .2s;
+
+    svg {
+        width: 20px;
+    }
+
+    &:hover {
+        background-color: $white-darken;
+        color: $primary-normal;
+    }
+}
+
+// Menu popup (Editar/Excluir). Estilo próprio, não só ajuste pontual: o
+// PrimeReact v10 injeta o CSS estrutural do Menu via <style> em runtime
+// dentro de @layer primereact (visto no bundle de node_modules/primereact/menu),
+// e esse projeto já tinha esse mesmo problema de precedência documentado
+// pro TreeSelect logo abaixo — !important garante que aplica independente
+// da ordem desse layer. Aproveitado pra usar as cores da marca do evento
+// em vez do azul padrão do tema PrimeReact.
+.menuAcoes {
+    padding: $gap-1 0 !important;
+    background: $white-light !important;
+    border: 1px solid $gray-100 !important;
+    border-radius: $gap-1 !important;
+    box-shadow: 0px 4px 14px rgba(5, 17, 34, 0.12) !important;
+    min-width: 190px !important;
+
+    :global(.p-menuitem-link) {
+        padding: $gap-1 $gap-2 !important;
+        color: $gray-700 !important;
+        font-family: var(--font-lato) !important;
+        font-size: 14px !important;
+        gap: $gap-1 !important;
+    }
+
+    :global(.p-menuitem-icon) {
+        color: $gray-500 !important;
+        margin-right: $gap-1 !important;
+    }
+
+    :global(.p-menuitem-content:hover) {
+        background: $white-darken !important;
+    }
+
+    // Item "Excluir" em vermelho — sempre o último item do model (ver
+    // itensMenuSessao/itensMenuSubsessao em FormSessoes.jsx).
+    :global(.p-menuitem:last-child .p-menuitem-link),
+    :global(.p-menuitem:last-child .p-menuitem-icon) {
+        color: $error-normal !important;
+    }
+
+    :global(.p-menuitem:last-child .p-menuitem-content:hover) {
+        background: $error-lighten !important;
+    }
+}
+
+// Card de sessão existente reaproveita literalmente o mesmo card do
+// formulário "Nova sessão" logo abaixo (Form.module.scss .secao/.secaoHead/
+// .secaoIcon/.secaoContent) — só a linha abaixo faz .secaoHead (que por
+// padrão só tem ícone+título) também separar o grupo título das ações de
+// editar/excluir.
+.sessaoHeadRow {
+    justify-content: space-between;
+}
+
+// formStyles.secaoContent (que substituiu o antigo .mainContent como
+// wrapper no JSX) já dá o padding — aqui só o que sobra: os tiles de
+// subsessão e o espaçamento de parágrafo dentro do card.
+.subsessao {
+    background-color: $white-darken;
     padding: $gap-2;
-    border-bottom: 1px solid $gray-50;
+    transition: transform ease .3s, box-shadow ease .3s;
+    margin-bottom: $gap-1;
+    border-radius: $gap-1;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: $gap-2;
-    h5 {
-        color: $gray-600;
-        font-size: 18px;
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0px 4px 14px rgba(5, 17, 34, 0.1);
     }
-}
+    @include responsive(xs) {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 
-.mainContent {
-    padding: $gap-2;
-
-    .subsessao {
-        padding: $gap-2;
-        border: 1px solid $gray-50;
-        transition: ease .3s;
-        margin-bottom: $gap-1;
-        border-radius: $gap-1;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        @include responsive(xs) {
-            flex-direction: column;
-            align-items: flex-start;
+    .description {
+        &:not(:last-child) {
+            margin-right: $gap-2;
         }
-
-        .description {
-            &:not(:last-child) {
-                margin-right: $gap-2;
-            }
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        @include responsive(xs) {
+            flex-direction: row;
+            margin-bottom: $gap-1;
+        }
+        .infoBoxDescription {
             display: flex;
             flex-direction: column;
             align-items: center;
             @include responsive(xs) {
-                flex-direction: row;
-                margin-bottom: $gap-1;
-            }
-            .infoBoxDescription {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                @include responsive(xs) {
-                    align-items: flex-start;
-                }
-                p {
-                    margin-bottom: 0;
-                }
-                h6 {
-                    white-space: nowrap;
-                    @include responsive(xs) {
-                        font-size: 12px;
-                    }
-                }
-            }
-            .icon {
-                @include responsive(xs) {
-                    margin-right: $gap-2;
-                    width: 18px;
-                }
+                align-items: flex-start;
             }
             p {
-                font-size: 12px;
+                margin-bottom: 0;
+            }
+            h6 {
+                white-space: nowrap;
+                @include responsive(xs) {
+                    font-size: 12px;
+                }
             }
         }
+        .icon {
+            @include responsive(xs) {
+                margin-right: $gap-2;
+                width: 18px;
+            }
+        }
+        p {
+            font-size: 12px;
+        }
     }
+}
 
-    p {
-        margin-bottom: 5px;
-    }
+.sessaoContentBody p {
+    margin-bottom: 5px;
 }
 
 .icon {

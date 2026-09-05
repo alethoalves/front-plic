@@ -1,0 +1,227 @@
+// Elementos de UI (fora da tabela) do admin de evento — sibling de
+// _eventoTable.scss. Escopado por classe local (não entra em _input.scss/
+// _buttons.scss globais) porque o objetivo é essa rota ter um visual
+// diferente do resto do sistema, não mudar o app inteiro.
+//
+// Cor de marca é por evento — tudo aqui usa $primary-*/$white-* (que são
+// var(--primary-*)/var(--white-*), injetadas por evento), nunca hex fixo.
+
+// Label de campo fora de tabela ("Convite Avaliador:", "Selecione a
+// lotação:") — hoje é <label> nativo sem nenhuma classe, cai no preto
+// padrão do navegador. Deliberadamente NÃO uppercase (diferente do header
+// da tabela, que já é a etiqueta forte) pra manter hierarquia calma.
+@mixin eventoLabel {
+  display: block;
+  font-family: var(--font-lato);
+  font-size: 13px;
+  font-weight: 700;
+  color: $gray-700;
+  letter-spacing: 0.2px;
+  margin-bottom: $gap-1;
+}
+
+// Foco de marca pro <InputText> puro. Dropdown/MultiSelect já ficam verdes
+// no hover/foco via _input.scss global; InputText não tem equivalente e
+// herda o foco azul padrão do tema PrimeReact. Mesmos tokens de
+// .p-inputwrapper-focus (_input.scss:45-48) pra ficar idêntico ao foco do
+// Dropdown ao lado.
+@mixin eventoInput {
+  // Mesma altura de .button/.input-container (_buttons.scss/_input.scss) —
+  // sem isso o InputText do PrimeReact (~40px) fica mais baixo que o
+  // Button do projeto (48px) quando os dois ficam lado a lado.
+  height: $gap-5;
+
+  &:enabled:focus {
+    border-color: $primary-normal;
+    box-shadow: 0 0 0 0.2rem $white-darken;
+  }
+}
+
+// Card externo único da página — mesmo valor de admin/page.module.scss
+// .dashboard (a home só tem UM card destes por página; esse é o padrão
+// "de verdade" a reaproveitar, não a sombra de um elemento interno).
+@mixin eventoCard {
+  background-color: $white-light;
+  border: 1px solid $gray-50;
+  border-radius: $gap-1;
+  box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+  overflow: hidden;
+}
+
+// Divisor de seções dentro do card — mesmo valor de admin/page.module.scss
+// .content .section.
+@mixin eventoSection {
+  padding: $gap-2 $gap-2 0 $gap-2;
+
+  &:last-child {
+    padding-bottom: $gap-2;
+  }
+
+  &:not(:last-child) {
+    border-bottom: 1px solid $gray-50;
+    padding-bottom: $gap-3;
+  }
+
+  // Button.jsx renderiza a classe global .button, que em _buttons.scss vem
+  // com width:100% por padrão (pensado pra botão que ocupa a largura do
+  // pai). Dentro de uma seção, o Button fica ao lado de outro elemento
+  // (input, texto) numa linha flex, e sem isso ele estica pra ocupar o
+  // espaço todo. Mesmo problema e mesma solução que admin/page.module.scss
+  // já aplica pros botões da home (:global(.button){width:auto}).
+  :global(.button) {
+    width: auto;
+    white-space: nowrap;
+  }
+}
+
+// Eyebrow + descrição acima de cada seção — mesmo valor de
+// admin/page.module.scss .sectionHead.
+@mixin eventoSectionHead {
+  display: flex;
+  align-items: baseline;
+  gap: $gap-2;
+  margin-bottom: $gap-2;
+
+  h6 {
+    color: $gray-700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  p {
+    color: $gray-400;
+    font-size: 13px;
+
+    @include responsive(xs) {
+      display: none;
+    }
+  }
+}
+
+// Bloco de filtros externos à tabela (ex.: Área/Subsessão em Avaliadores) —
+// dois MultiSelect lado a lado, cada um com sua legenda (.eventoLabel).
+@mixin eventoFilterBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $gap-3;
+  margin-bottom: $gap-2;
+
+  > div {
+    flex: 1;
+    min-width: 220px;
+  }
+
+  // O MultiSelect fica fora do escopo do .eventoTable (que só cobre
+  // dropdowns *dentro* da tabela) — mesmo ajuste de fonte que eventoInput
+  // já faz pro InputText.
+  :global(.p-multiselect-label) {
+    font-family: var(--font-lato);
+  }
+}
+
+// Estado de carregamento de página inteira (troca o <dashboard> por só
+// "Carregando..." enquanto busca os dados) — hoje tanto a home quanto
+// Avaliadores usam `styles.loading`, mas nenhuma das duas define essa
+// classe: o texto sai cru, sem estilo nenhum. @keyframes fica fora do
+// mixin de propósito — declarado dentro de uma classe (via @include) não
+// bubbleia certo pro top-level do CSS.
+@keyframes eventoSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@mixin eventoLoading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $gap-2;
+  min-height: 240px;
+  color: $gray-500;
+  font-family: var(--font-lato);
+  font-size: 14px;
+
+  &::before {
+    content: "";
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 3px solid $gray-100;
+    border-top-color: $primary-normal;
+    animation: eventoSpin 0.8s linear infinite;
+  }
+}
+
+// Contador "X de Y ..." acima de uma tabela filtrada externamente (ex.:
+// Avaliadores, Lista de Submissões).
+@mixin eventoContador {
+  color: $gray-500;
+  font-size: 13px;
+  margin-bottom: $gap-1;
+}
+
+// Título vindo do <Header> compartilhado (components/Header.jsx), usado por
+// ~40 páginas do app inteiro — não dá pra tocar em Header.module.scss (todo
+// o resto do sistema seria afetado). Aplicado via className extra no
+// próprio <Header>, essa classe alcança o <h5> dele e bate com o tratamento
+// do título da home (admin/page.module.scss .head .title h5).
+@mixin eventoHeaderTitle {
+  h5 {
+    color: $primary-darken;
+    font-weight: 600;
+  }
+}
+
+// Nome da página dentro do próprio card branco (.eventoCard), no mesmo
+// tratamento visual de admin/page.module.scss .head .title h5 — usado
+// pelas páginas que abandonaram o <Header> fora do card (repetia o título)
+// em favor de mostrar o nome da página como 1º elemento dentro do card.
+@mixin eventoTituloPagina {
+  padding: $gap-2;
+
+  h5 {
+    color: $primary-darken;
+    font-weight: 600;
+    width: 100%;
+  }
+}
+
+// Aplicado via className no <Dialog> — o PrimeReact bota essa classe direto
+// no elemento raiz .p-dialog, então border-radius/shadow vão aqui mesmo;
+// header/content/footer são filhos renderizados pelo componente, por isso
+// :global().
+@mixin eventoDialog {
+  border-radius: $gap-1;
+  box-shadow: 0px 4px 20px rgba(5, 17, 34, 0.1);
+
+  :global(.p-dialog-header) {
+    font-family: var(--font-kanit);
+    color: $primary-darken;
+  }
+
+  :global(.p-dialog-content),
+  :global(.p-dialog-footer) {
+    font-family: var(--font-lato);
+  }
+
+  :global(.p-dialog-footer) {
+    display: flex;
+    justify-content: flex-end;
+    gap: $gap-1;
+
+    // Mesmo problema do .button (width:100% por padrão) que eventoSection
+    // já corrige — o rodapé do Dialog também é uma linha flex com dois
+    // Button lado a lado.
+    :global(.button) {
+      width: auto;
+      white-space: nowrap;
+    }
+  }
+
+  :global(.p-dropdown-label) {
+    font-family: var(--font-lato);
+  }
+}

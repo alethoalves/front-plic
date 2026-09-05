@@ -1,0 +1,75 @@
+// Estilo de DataTable dedicado às rotas de evento (/evento/[eventoSlug]/**) —
+// intencionalmente diferente do visual genérico do PrimeReact usado nas
+// tabelas de [tenant]/gestor/..., e não entra no _table.scss (global) por
+// isso. Reaproveita a mesma linguagem de _eventoEditorial.scss (borda fina
+// $gray-50, barra de destaque $primary-normal no hover) e a tipografia da
+// home do evento (Kanit maiúsculo/letter-spacing pros headers, como em
+// admin/page.module.scss .sectionHead h6).
+//
+// Uso: em qualquer page.module.scss de uma tabela de evento,
+//   @import "/styles/partials/eventoTable";
+//   .eventoTable { @include eventoTable; }
+// e passe className={styles.eventoTable} pro <DataTable>.
+
+@mixin eventoTable {
+  :global(.p-datatable-thead > tr > th) {
+    background: $white-normal;
+    border-bottom: 2px solid $primary-lighten;
+    padding: $gap-2;
+    font-family: var(--font-kanit);
+    font-size: 13px;
+    font-weight: 700;
+    color: $gray-700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  :global(.p-datatable-tbody > tr > td) {
+    padding: $gap-2;
+    font-family: var(--font-lato);
+    font-size: 14px;
+    color: $gray-600;
+    border-bottom: 1px solid $gray-50;
+    box-shadow: inset 0 0 0 0 $primary-normal;
+    transition: box-shadow 0.15s ease, background-color 0.15s ease;
+  }
+
+  :global(.p-datatable-tbody > tr:hover > td) {
+    background-color: $white-darken;
+  }
+
+  // Barra de destaque no hover — mesmo motivo de .eventoIndexItem/
+  // .eventoEditionItem em _eventoEditorial.scss, adaptado pra linha de tabela.
+  :global(.p-datatable-tbody > tr:hover > td:first-child) {
+    box-shadow: inset 3px 0 0 0 $primary-normal;
+  }
+
+  :global(.p-datatable-tbody > tr:last-child > td) {
+    border-bottom: none;
+  }
+
+  :global(.p-paginator),
+  :global(.p-paginator .p-paginator-current) {
+    font-family: var(--font-lato);
+    font-size: 13px;
+    color: $gray-600;
+  }
+
+  :global(.p-datatable-header) {
+    font-family: var(--font-lato);
+    // _table.scss (global) tem duas regras conflitantes pro padding daqui:
+    // `.p-datatable .p-datatable-header{padding:$gap-2}` (mais específica,
+    // 2 classes) sempre vence sobre `.p-datatable-header{padding:$gap-2 0}`
+    // (1 classe), mesmo vindo escrita depois. Resultado: o header ganha
+    // 16px de padding lateral que a .section (eventoSection) já dá,
+    // desalinhando a busca/exportar do resto do conteúdo da seção
+    // (eyebrow, filtros, contador). !important pra garantir que esse
+    // override vença independente de ordem de carregamento do CSS.
+    padding: $gap-2 0 !important;
+  }
+
+  :global(.p-inputtext),
+  :global(.p-dropdown-label) {
+    font-family: var(--font-lato);
+  }
+}

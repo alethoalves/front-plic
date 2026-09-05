@@ -29,7 +29,7 @@ const Page = ({ params }) => {
         <FormSessoes
           eventoSlug={params.eventoSlug}
           initialSessoes={sessoes}
-          basePath={`/evento/${params.eventoSlug}/admin/v2apresentacao`}
+          basePath={`/evento/${params.eventoSlug}/admin/apresentacao`}
         />
       )}
     </div>
