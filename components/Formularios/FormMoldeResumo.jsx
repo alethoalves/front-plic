@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import styles from "@/components/Formularios/Form.module.scss";
+import styleSecao from "@/components/Formularios/FormConfiguracoesEvento.module.scss";
 import Button from "@/components/Button";
 import Input from "@/components/Input";
 import {
@@ -128,23 +129,20 @@ const FormMoldeResumo = ({ eventoSlug, initialPartes }) => {
   };
 
   return (
-    <div className={styles.secao}>
-      <div className={styles.secaoHead}>
-        <div className={styles.secaoIcon}>
+    <section className={styleSecao.section}>
+      <div className={styleSecao.sectionHead}>
+        <div className={styleSecao.sectionIcon}>
           <RiFileTextLine />
         </div>
-        <h6>Molde do resumo</h6>
+        <div>
+          <h6>Molde do resumo</h6>
+          <p>Seções preenchidas pelo autor ao submeter um resumo.</p>
+        </div>
       </div>
-      <div className={styles.secaoContent}>
-        <p className={styles.dica}>
-          Seções que o autor preenche ao submeter um resumo (ex.: Introdução,
-          Metodologia, Resultados), cada uma com limite de caracteres e se é
-          obrigatória.
-        </p>
-
+      <div className={styleSecao.sectionGrid}>
         {partes.length === 0 && edicaoAnterior && (
           <div className="mb-2">
-            <p className={styles.dica}>
+            <p className={styleSecao.dica}>
               A edição anterior ({edicaoAnterior.nomeEvento} —{" "}
               {edicaoAnterior.edicaoEvento}) tem um molde de resumo com{" "}
               {edicaoAnterior.moldeResumo.partes.length} seção(ões) cadastrada(s).
@@ -242,11 +240,11 @@ const FormMoldeResumo = ({ eventoSlug, initialPartes }) => {
           </div>
         )}
 
-        <div className={`${styles.secaoGrid} mt-2`}>
+        <div className="mt-2">
           <Input control={control} name="label" label="Nome da seção" inputType="text" />
           <Input control={control} name="max" label="Limite de caracteres" inputType="number" />
         </div>
-        <div className={`${styles.checkboxGrid} mt-1`}>
+        <div className={`${styleSecao.checkboxGrid} mt-1`}>
           <Input control={control} name="required" label="Obrigatório" inputType="checkbox" />
         </div>
         <div className="mt-2">
@@ -254,24 +252,22 @@ const FormMoldeResumo = ({ eventoSlug, initialPartes }) => {
             Adicionar seção
           </Button>
         </div>
-        {erroAdd && <p className={styles.statusErro}>{erroAdd}</p>}
+        {erroAdd && <p className={styleSecao.statusErro}>{erroAdd}</p>}
       </div>
-      <div className={styles.secaoFooter}>
-        {sucesso && <p className={styles.statusSucesso}>Salvo!</p>}
-        {erro && <p className={styles.statusErro}>{erro}</p>}
-        <div className={styles.secaoBotao}>
-          <Button
-            icon={RiSave2Line}
-            className="btn-secondary"
-            type="button"
-            onClick={onSalvar}
-            disabled={salvando}
-          >
-            {salvando ? "Salvando..." : "Salvar"}
-          </Button>
-        </div>
+      <div className={styleSecao.sectionFooter}>
+        {sucesso && <p className={styleSecao.statusSucesso}>Salvo!</p>}
+        {erro && <p className={styleSecao.statusErro}>{erro}</p>}
+        <Button
+          icon={RiSave2Line}
+          className="btn-secondary"
+          type="button"
+          onClick={onSalvar}
+          disabled={salvando}
+        >
+          {salvando ? "Salvando..." : "Salvar"}
+        </Button>
       </div>
-    </div>
+    </section>
   );
 };
 

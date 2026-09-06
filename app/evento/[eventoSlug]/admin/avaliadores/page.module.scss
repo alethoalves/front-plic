@@ -50,6 +50,30 @@
     @include eventoDialog;
 }
 
+.dialogDescricao {
+    color: $gray-500;
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: $gap-2;
+}
+
+// .button (_buttons.scss) vem com width:100% por padrão, o que faz dois
+// botões lado a lado no rodapé de um dialog empilharem verticalmente em vez
+// de ficar em linha. !important porque a regra base tem a mesma
+// especificidade (uma classe) e viria depois na cascata.
+.footerButton {
+    width: auto !important;
+    flex: 0 0 auto;
+
+    // .btn-primary força .btn-icon branco (_buttons.scss) com mais
+    // especificidade que a regra global de "button:disabled svg" — sem
+    // isso, o ícone continua branco mesmo com o fundo virando quase-branco
+    // no estado desabilitado, ficando invisível pro usuário.
+    &:disabled svg {
+        color: $gray-600;
+    }
+}
+
 .filterBar {
     @include eventoFilterBar;
 }

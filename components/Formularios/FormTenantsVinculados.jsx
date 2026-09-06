@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import styles from "@/components/Formularios/Form.module.scss";
+import styleSecao from "@/components/Formularios/FormConfiguracoesEvento.module.scss";
 import {
   RiBuildingLine,
   RiToggleLine,
@@ -49,15 +50,18 @@ const FormTenantsVinculados = ({ eventoSlug, initialTenantsVinculados }) => {
   if (tenantsVinculados.length === 0) return null;
 
   return (
-    <div className={styles.secao}>
-      <div className={styles.secaoHead}>
-        <div className={styles.secaoIcon}>
+    <section className={styleSecao.section}>
+      <div className={styleSecao.sectionHead}>
+        <div className={styleSecao.sectionIcon}>
           <RiBuildingLine />
         </div>
-        <h6>Tenants vinculados</h6>
+        <div>
+          <h6>Tenants vinculados</h6>
+          <p>Exigência de apresentação para bolsistas de cada tenant.</p>
+        </div>
       </div>
-      <div className={styles.secaoContent}>
-        <p className={styles.dica}>
+      <div className={styleSecao.sectionGrid}>
+        <p className={styleSecao.dica}>
           Quando ativado para um tenant, os bolsistas/voluntários desse
           tenant só recebem o certificado de conclusão do plano de trabalho
           se apresentarem neste evento (ou justificarem a ausência, com
@@ -97,9 +101,9 @@ const FormTenantsVinculados = ({ eventoSlug, initialTenantsVinculados }) => {
             </div>
           ))}
         </div>
-        {erro && <p className={styles.statusErro}>{erro}</p>}
+        {erro && <p className={styleSecao.statusErro}>{erro}</p>}
       </div>
-    </div>
+    </section>
   );
 };
 

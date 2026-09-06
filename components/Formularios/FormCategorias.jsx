@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import styles from "@/components/Formularios/Form.module.scss";
+import styleSecao from "@/components/Formularios/FormConfiguracoesEvento.module.scss";
 import Button from "@/components/Button";
 import Input from "@/components/Input";
 import {
@@ -122,22 +123,21 @@ const FormCategorias = ({ eventoSlug, initialOptions }) => {
   };
 
   return (
-    <div className={styles.secao}>
-      <div className={styles.secaoHead}>
-        <div className={styles.secaoIcon}>
+    <section className={styleSecao.section}>
+      <div className={styleSecao.sectionHead}>
+        <div className={styleSecao.sectionIcon}>
           <RiPriceTag3Line />
         </div>
-        <h6>Categorias de submissão</h6>
+        <div>
+          <h6>Categorias de submissão</h6>
+          <p>Categorias usadas para classificar os resumos submetidos.</p>
+        </div>
       </div>
-      <div className={styles.secaoContent}>
-        <p className={styles.dica}>
-          Categorias usadas para classificar os resumos/apresentações
-          submetidos neste evento.
-        </p>
+      <div className={styleSecao.sectionGrid}>
 
         {options.length === 0 && edicaoAnterior && (
           <div className="mb-2">
-            <p className={styles.dica}>
+            <p className={styleSecao.dica}>
               A edição anterior ({edicaoAnterior.nomeEvento} —{" "}
               {edicaoAnterior.edicaoEvento}) tem{" "}
               {edicaoAnterior.categorias.options.length} categoria(s) cadastrada(s).
@@ -213,31 +213,29 @@ const FormCategorias = ({ eventoSlug, initialOptions }) => {
             e.preventDefault();
             handleAdd();
           }}
-          className={`${styles.secaoGrid} mt-2`}
+          className="mt-2"
         >
           <Input control={control} name="categoria" label="Nome da categoria" inputType="text" />
           <Button icon={RiAddCircleLine} className="btn-secondary" type="submit">
             Adicionar
           </Button>
         </form>
-        {erroAdd && <p className={styles.statusErro}>{erroAdd}</p>}
+        {erroAdd && <p className={styleSecao.statusErro}>{erroAdd}</p>}
       </div>
-      <div className={styles.secaoFooter}>
-        {sucesso && <p className={styles.statusSucesso}>Salvo!</p>}
-        {erro && <p className={styles.statusErro}>{erro}</p>}
-        <div className={styles.secaoBotao}>
-          <Button
-            icon={RiSave2Line}
-            className="btn-secondary"
-            type="button"
-            onClick={onSalvar}
-            disabled={salvando}
-          >
-            {salvando ? "Salvando..." : "Salvar"}
-          </Button>
-        </div>
+      <div className={styleSecao.sectionFooter}>
+        {sucesso && <p className={styleSecao.statusSucesso}>Salvo!</p>}
+        {erro && <p className={styleSecao.statusErro}>{erro}</p>}
+        <Button
+          icon={RiSave2Line}
+          className="btn-secondary"
+          type="button"
+          onClick={onSalvar}
+          disabled={salvando}
+        >
+          {salvando ? "Salvando..." : "Salvar"}
+        </Button>
       </div>
-    </div>
+    </section>
   );
 };
 

@@ -41,6 +41,7 @@ export const getSubmissoesComAvaliacoes = async (
 };
 
 export const gestorDesassociarAvaliadorSubmissao = async (
+  eventoSlug,
   submissaoAvaliadorId
 ) => {
   try {
@@ -49,12 +50,34 @@ export const gestorDesassociarAvaliadorSubmissao = async (
       return false;
     }
     const response = await req.get(
-      `/evenplic/submissoes/evento/${submissaoAvaliadorId}/desassociar-avaliador`,
+      `/evenplic/submissoes/evento/${eventoSlug}/${submissaoAvaliadorId}/desassociar-avaliador`,
       { headers }
     );
     return response.data.data;
   } catch (error) {
     console.error("Erro ao atualizar campo:", error);
+    throw error;
+  }
+};
+
+export const gestorAssociarAvaliadorSubmissao = async (
+  eventoSlug,
+  idSubmissao,
+  avaliadorId
+) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.post(
+      `/evenplic/submissoes/evento/${eventoSlug}/${idSubmissao}/atribuir-avaliador`,
+      { avaliadorId },
+      { headers }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao atribuir avaliador à submissão:", error);
     throw error;
   }
 };

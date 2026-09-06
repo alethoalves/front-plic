@@ -60,3 +60,40 @@ import { getCookie } from 'cookies-next';
       throw error;
     }
   };
+
+  export const cadastrarAvaliadorEvento = async (
+    eventoSlug,
+    cpf
+  ) => {
+    try {
+      const headers = getAuthHeadersClient();
+      if (!headers) return false;
+      const response = await req.post(
+        `/evenplic/${eventoSlug}/cadastrarAvaliadorEvento`,
+        { cpf },
+        { headers }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao cadastrar avaliador:", error);
+      throw error;
+    }
+  };
+
+  export const excluirAvaliadorEvento = async (
+    eventoSlug,
+    id
+  ) => {
+    try {
+      const headers = getAuthHeadersClient();
+      if (!headers) return false;
+      const response = await req.delete(
+        `/evenplic/${eventoSlug}/avaliadorEvento/${id}`,
+        { headers }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao excluir avaliador:", error);
+      throw error;
+    }
+  };

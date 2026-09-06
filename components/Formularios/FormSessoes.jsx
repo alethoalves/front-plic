@@ -409,10 +409,10 @@ const SessaoForm = ({ eventoSlug, sessao, areaTree, onClose, onSuccess }) => {
   );
 };
 
-// CRUD de sessões e subsessões, embutido em admin/apresentacao e
-// admin/submissao (que hoje só listam sessões em modo leitura). O vínculo
-// de área é obrigatório na criação: sem ele, a sessão nova não recebe
-// submissões automaticamente (ver getEventoBySlugForInscricao no backend).
+// CRUD de sessões e subsessões, embutido na aba "Sessões" de
+// admin/configuracoes. O vínculo de área é obrigatório na criação: sem
+// ele, a sessão nova não recebe submissões automaticamente (ver
+// getEventoBySlugForInscricao no backend).
 const FormSessoes = ({ eventoSlug, initialSessoes, basePath }) => {
   const [sessoes, setSessoes] = useState(initialSessoes || []);
   const [areaTree, setAreaTree] = useState([]);

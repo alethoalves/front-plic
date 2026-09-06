@@ -3,9 +3,132 @@ import { req } from "./../axios.js";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
-/************************** 
+/**************************
  * Certificado
 **************************/
+
+// Placeholders disponíveis por tipo de certificado — espelha
+// api-plic/src/services/certificadoTexto.js (CAMPOS_POR_TIPO/CAMPOS_COMUNS).
+// Front e back já mantêm rótulos por tipo duplicados hoje (ex.: os switch de
+// label em certificadoController.js e nas próprias páginas), então isso
+// segue a mesma convenção em vez de introduzir um endpoint só pra isso.
+export const CAMPOS_POR_TIPO = {
+  EXPOSITOR: [
+    { key: "tituloResumo", label: "Título do resumo" },
+    { key: "autores", label: "Autores" },
+    { key: "coautores", label: "Coautores" },
+    { key: "orientadores", label: "Orientadores" },
+    { key: "colaboradores", label: "Colaboradores" },
+    { key: "area", label: "Área" },
+    { key: "grandeArea", label: "Grande área" },
+    { key: "categoria", label: "Categoria" },
+  ],
+  PREMIADO: [
+    { key: "tituloResumo", label: "Título do resumo" },
+    { key: "autores", label: "Autores" },
+    { key: "coautores", label: "Coautores" },
+    { key: "orientadores", label: "Orientadores" },
+    { key: "colaboradores", label: "Colaboradores" },
+    { key: "area", label: "Área" },
+    { key: "grandeArea", label: "Grande área" },
+    { key: "categoria", label: "Categoria" },
+  ],
+  INDICADO: [
+    { key: "tituloResumo", label: "Título do resumo" },
+    { key: "autores", label: "Autores" },
+    { key: "coautores", label: "Coautores" },
+    { key: "orientadores", label: "Orientadores" },
+    { key: "colaboradores", label: "Colaboradores" },
+    { key: "area", label: "Área" },
+    { key: "grandeArea", label: "Grande área" },
+    { key: "categoria", label: "Categoria" },
+  ],
+  MENCAO: [
+    { key: "tituloResumo", label: "Título do resumo" },
+    { key: "autores", label: "Autores" },
+    { key: "coautores", label: "Coautores" },
+    { key: "orientadores", label: "Orientadores" },
+    { key: "colaboradores", label: "Colaboradores" },
+    { key: "area", label: "Área" },
+    { key: "grandeArea", label: "Grande área" },
+    { key: "categoria", label: "Categoria" },
+  ],
+  AVALIADOR: [
+    { key: "avaliador", label: "Nome do avaliador" },
+    { key: "qntAvaliacoes", label: "Quantidade de avaliações" },
+  ],
+};
+
+export const CAMPOS_COMUNS = [
+  { key: "nomeEvento", label: "Nome do evento" },
+  { key: "periodo", label: "Período do evento" },
+];
+
+// Valores de exemplo pra prévia — o admin edita o texto fora do contexto de
+// uma submissão/avaliador real, então não há dado de verdade pra mostrar.
+// Cada valor já inclui a frase ao redor exatamente como o backend monta em
+// generateCertificate/getAvaliadorCertificateData (ex.: "area" já vem como
+// "na área de ...", não só o nome da área).
+const CAMPOS_AMOSTRA = {
+  tituloResumo: "TÍTULO DE EXEMPLO DO TRABALHO",
+  autores: "FULANO DE TAL",
+  coautores: " com coautoria de CICLANO DE TAL,",
+  orientadores: " sob orientação de BELTRANO ORIENTADOR,",
+  colaboradores: " e com colaboração de SICRANO,",
+  area: "na área de CIÊNCIAS EXEMPLO",
+  grandeArea: "na grande área de EXEMPLO",
+  categoria: "na categoria EXEMPLO",
+  avaliador: "FULANO AVALIADOR",
+  qntAvaliacoes: "5",
+};
+
+// timeZone: 'UTC' pelo mesmo motivo do backend (certificadoTexto.js) —
+// inicio/fim são gravados à meia-noite UTC.
+const formatarDataPreview = (data) =>
+  new Date(data).toLocaleDateString("pt-BR", { timeZone: "UTC" });
+
+// Resolve o texto (ainda com placeholders) pra prévia: campos específicos do
+// tipo usam dado de exemplo, campos comuns (nomeEvento/periodo) usam o
+// evento real já que esses sempre existem.
+export const resolverTextoPreview = (texto, tipo, evento) => {
+  let resolvido = texto || "";
+
+  for (const campo of CAMPOS_POR_TIPO[tipo] || []) {
+    resolvido = resolvido
+      .split(`<<[${campo.key}]>>`)
+      .join(CAMPOS_AMOSTRA[campo.key] ?? `[${campo.label}]`);
+  }
+
+  const periodo =
+    evento?.inicio && evento?.fim
+      ? `${formatarDataPreview(evento.inicio)} a ${formatarDataPreview(evento.fim)}`
+      : `${evento?.edicaoEvento ?? "[Período do evento]"}`;
+
+  resolvido = resolvido
+    .split("<<[nomeEvento]>>")
+    .join(evento?.nomeEvento ?? "[Nome do evento]");
+  resolvido = resolvido.split("<<[periodo]>>").join(periodo);
+
+  return resolvido;
+};
+
+export const updateTextoCertificado = async (eventoSlug, idCertificado, texto) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) throw new Error("Token de autenticação não encontrado.");
+
+    const response = await req.put(
+      `/evenplic/${eventoSlug}/certificados/${idCertificado}/texto`,
+      { texto },
+      { headers }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao atualizar texto do certificado:", error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || "Erro ao atualizar texto. Tente novamente.");
+  }
+};
 
 export const uploadAndSaveCertificateImage = async (eventoSlug, idCertificado, formData) => {
   try {

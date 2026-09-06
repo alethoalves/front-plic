@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import styles from "@/components/Formularios/Form.module.scss";
+import styleSecao from "@/components/Formularios/FormConfiguracoesEvento.module.scss";
 import Button from "@/components/Button";
 import Input from "@/components/Input";
 import Modal from "@/components/Modal";
@@ -212,23 +213,20 @@ const FormInstituicoesParceiras = ({ eventoSlug, initialParceiras }) => {
   };
 
   return (
-    <div className={styles.secao}>
-      <div className={styles.secaoHead}>
-        <div className={styles.secaoIcon}>
+    <section className={styleSecao.section}>
+      <div className={styleSecao.sectionHead}>
+        <div className={styleSecao.sectionIcon}>
           <RiBuildingLine />
         </div>
-        <h6>Instituições parceiras</h6>
+        <div>
+          <h6>Instituições parceiras</h6>
+          <p>Instituições sem cadastro completo, só enviando resumos.</p>
+        </div>
       </div>
-      <div className={styles.secaoContent}>
-        <p className={styles.dica}>
-          Instituições que só participam deste congresso enviando resumos, sem
-          cadastro completo no plic. Aparecem junto com as instituições
-          cadastradas na etapa de inscrição do evento.
-        </p>
-
+      <div className={styleSecao.sectionGrid}>
         {parceiras.length === 0 && edicaoAnterior && (
           <div className="mb-2">
-            <p className={styles.dica}>
+            <p className={styleSecao.dica}>
               A edição anterior ({edicaoAnterior.nomeEvento} —{" "}
               {edicaoAnterior.edicaoEvento}) tem{" "}
               {edicaoAnterior.totalInstituicoes} instituição(ões) parceira(s)
@@ -244,7 +242,7 @@ const FormInstituicoesParceiras = ({ eventoSlug, initialParceiras }) => {
               {importando ? "Importando..." : "Importar da edição anterior"}
             </Button>
             {erroImportar && (
-              <p className={`${styles.statusErro} mt-1`}>{erroImportar}</p>
+              <p className={`${styleSecao.statusErro} mt-1`}>{erroImportar}</p>
             )}
           </div>
         )}
@@ -296,10 +294,7 @@ const FormInstituicoesParceiras = ({ eventoSlug, initialParceiras }) => {
           </div>
         )}
 
-        <form
-          onSubmit={handleSubmit(onCriar)}
-          className={`${styles.secaoGrid} mt-2`}
-        >
+        <form onSubmit={handleSubmit(onCriar)} className="mt-2">
           <Input
             control={control}
             name="nome"
@@ -316,7 +311,7 @@ const FormInstituicoesParceiras = ({ eventoSlug, initialParceiras }) => {
             {salvando ? "Adicionando..." : "Adicionar"}
           </Button>
         </form>
-        {erro && <p className={styles.statusErro}>{erro}</p>}
+        {erro && <p className={styleSecao.statusErro}>{erro}</p>}
       </div>
 
       <Modal
@@ -349,7 +344,7 @@ const FormInstituicoesParceiras = ({ eventoSlug, initialParceiras }) => {
         handleDelete={handleExcluir}
         txtBtn={excluindoLoading ? "Excluindo..." : "Excluir"}
       />
-    </div>
+    </section>
   );
 };
 

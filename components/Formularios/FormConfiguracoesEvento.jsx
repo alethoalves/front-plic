@@ -1,14 +1,14 @@
 "use client";
 
 //HOOKS
-import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { formConfiguracoesEvento } from "@/lib/zodSchemas/formConfiguracoesEvento";
 
 //ESTILOS E ÍCONES
-import styles from "@/components/Formularios/Form.module.scss";
+import styles from "@/components/Formularios/FormConfiguracoesEvento.module.scss";
 import {
   RiAwardLine,
   RiCalendarEventLine,
@@ -20,6 +20,9 @@ import {
 } from "@remixicon/react";
 import FormMoldeResumo from "@/components/Formularios/FormMoldeResumo";
 import FormCategorias from "@/components/Formularios/FormCategorias";
+import FormCriteriosAvaliacao from "@/components/Formularios/FormCriteriosAvaliacao";
+import FormSessoes from "@/components/Formularios/FormSessoes";
+import FormCertificados from "@/components/Formularios/FormCertificados";
 
 //COMPONENTES
 import Button from "@/components/Button";
@@ -31,6 +34,8 @@ import {
   updateEventoConfiguracoes,
   uploadImagemEvento,
 } from "@/app/api/client/eventos";
+import { getSessoesBySlug } from "@/app/api/client/sessoes";
+import { getLayoutCertificados } from "@/app/api/client/certificado";
 import { resolveEventoImageSrc } from "@/lib/resolveEventoImage";
 import FormInstituicoesParceiras from "@/components/Formularios/FormInstituicoesParceiras";
 import FormTenantsVinculados from "@/components/Formularios/FormTenantsVinculados";
@@ -136,39 +141,97 @@ const CampoImagem = ({ label, value, onChange, disabled }) => {
   );
 };
 
-// Cada card tem seu próprio botão de salvar, discreto, que envia só os
-// campos daquela seção (update parcial) em vez de um submit único da página.
-const Secao = ({ icon: Icon, titulo, status, onSalvar, children }) => (
-  <div className={styles.secao}>
-    <div className={styles.secaoHead}>
-      <div className={styles.secaoIcon}>
+// Cada seção tem seu próprio botão de salvar, discreto, que envia só os
+// campos dela (update parcial) em vez de um submit único da página. Mesmo
+// padrão visual de admin/page.module.scss .section (divisor entre seções
+// dentro de um único card, não cards separados).
+const Secao = ({ icon: Icon, titulo, descricao, status, onSalvar, children }) => (
+  <section className={styles.section}>
+    <div className={styles.sectionHead}>
+      <div className={styles.sectionIcon}>
         <Icon />
       </div>
-      <h6>{titulo}</h6>
-    </div>
-    <div className={styles.secaoContent}>{children}</div>
-    <div className={styles.secaoFooter}>
-      {status?.success && <p className={styles.statusSucesso}>Salvo!</p>}
-      {status?.error && <p className={styles.statusErro}>{status.error}</p>}
-      <div className={styles.secaoBotao}>
-        <Button
-          icon={RiSave2Line}
-          className="btn-secondary"
-          type="button"
-          onClick={onSalvar}
-          disabled={status?.loading}
-        >
-          {status?.loading ? "Salvando..." : "Salvar"}
-        </Button>
+      <div>
+        <h6>{titulo}</h6>
+        {descricao && <p>{descricao}</p>}
       </div>
     </div>
-  </div>
+    <div className={styles.sectionGrid}>{children}</div>
+    <div className={styles.sectionFooter}>
+      {status?.success && <p className={styles.statusSucesso}>Salvo!</p>}
+      {status?.error && <p className={styles.statusErro}>{status.error}</p>}
+      <Button
+        icon={RiSave2Line}
+        className="btn-secondary"
+        type="button"
+        onClick={onSalvar}
+        disabled={status?.loading}
+      >
+        {status?.loading ? "Salvando..." : "Salvar"}
+      </Button>
+    </div>
+  </section>
 );
+
+const ABAS = [
+  { id: "geral", label: "Geral" },
+  { id: "aparencia", label: "Aparência" },
+  { id: "convite", label: "Convite" },
+  { id: "avaliacao", label: "Avaliação" },
+  { id: "instituicoes", label: "Instituições" },
+  { id: "sessoes", label: "Sessões" },
+  { id: "certificados", label: "Certificados" },
+];
 
 const FormConfiguracoesEvento = ({ eventoSlug, initialData }) => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const abaInicial = searchParams.get("aba");
+  const [abaAtiva, setAbaAtiva] = useState(
+    ABAS.some((aba) => aba.id === abaInicial) ? abaInicial : "geral"
+  );
   //ESTADOS (um status independente por seção: { loading, error, success })
   const [statusSecoes, setStatusSecoes] = useState({});
+
+  // Sessões/subsessões (aba "Sessões") — busca só quando a aba é aberta,
+  // já que não faz parte de getEventoConfiguracoes.
+  const [sessoes, setSessoes] = useState(null);
+  const [carregandoSessoes, setCarregandoSessoes] = useState(false);
+
+  useEffect(() => {
+    if (abaAtiva !== "sessoes" || sessoes) return;
+    const fetchSessoes = async () => {
+      setCarregandoSessoes(true);
+      try {
+        setSessoes(await getSessoesBySlug(eventoSlug));
+      } catch (error) {
+        console.error("Erro ao buscar sessões:", error);
+      } finally {
+        setCarregandoSessoes(false);
+      }
+    };
+    fetchSessoes();
+  }, [abaAtiva, eventoSlug, sessoes]);
+
+  // Layouts de certificado (aba "Certificados") — mesmo padrão de busca sob
+  // demanda da aba "Sessões".
+  const [certificadosLayouts, setCertificadosLayouts] = useState(null);
+  const [carregandoCertificados, setCarregandoCertificados] = useState(false);
+
+  useEffect(() => {
+    if (abaAtiva !== "certificados" || certificadosLayouts) return;
+    const fetchCertificados = async () => {
+      setCarregandoCertificados(true);
+      try {
+        setCertificadosLayouts(await getLayoutCertificados(eventoSlug));
+      } catch (error) {
+        console.error("Erro ao buscar certificados:", error);
+      } finally {
+        setCarregandoCertificados(false);
+      }
+    };
+    fetchCertificados();
+  }, [abaAtiva, eventoSlug, certificadosLayouts]);
 
   const atualizarStatus = (id, patch) =>
     setStatusSecoes((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
@@ -263,121 +326,175 @@ const FormConfiguracoesEvento = ({ eventoSlug, initialData }) => {
   };
 
   return (
-    <div className={`${styles.formulario} ${styles.formularioConfiguracoes}`}>
-      <Secao
-        icon={RiInformationLine}
-        titulo="Geral"
-        status={statusSecoes.geral}
-        onSalvar={() => salvarSecao("geral", CAMPOS_GERAL)}
-      >
-        <div className={styles.secaoGrid}>
-          <Input control={control} name="nomeEvento" label="Nome do evento" inputType="text" />
-          <div>
-            <Input control={control} name="slug" label="Slug (URL)" inputType="text" />
-            <p className={styles.dica}>
-              Usado na URL pública e na URL desta página de administração
-              (/evento/<strong>slug</strong>/...). Apenas letras minúsculas,
-              números e hífen. Ao trocar, links antigos com o slug anterior
-              param de funcionar.
-            </p>
-          </div>
-          <Input control={control} name="local" label="Local" inputType="text" />
-          <Input control={control} name="telefone" label="Telefone" inputType="phone" />
-          <Input control={control} name="linkGrupo" label="Link do grupo" inputType="text" />
-          <Input control={control} name="isbn" label="ISBN" inputType="text" />
-        </div>
-      </Secao>
+    <div>
+      <div className={styles.abas}>
+        {ABAS.map((aba) => (
+          <button
+            key={aba.id}
+            type="button"
+            className={`${styles.aba} ${abaAtiva === aba.id ? styles.abaAtiva : ""}`}
+            onClick={() => setAbaAtiva(aba.id)}
+          >
+            {aba.label}
+          </button>
+        ))}
+      </div>
 
-      <Secao
-        icon={RiCalendarEventLine}
-        titulo="Datas"
-        status={statusSecoes.datas}
-        onSalvar={() => salvarSecao("datas", CAMPOS_DATAS)}
-      >
-        <div className={styles.secaoGrid}>
-          <Input control={control} name="inicio" label="Início" inputType="date" placeholder="DD/MM/AAAA" />
-          <Input control={control} name="fim" label="Fim" inputType="date" placeholder="DD/MM/AAAA" />
-        </div>
-      </Secao>
+      {abaAtiva === "geral" && (
+        <>
+          <Secao
+            icon={RiInformationLine}
+            titulo="Geral"
+            descricao="Identificação e informações de contato do evento."
+            status={statusSecoes.geral}
+            onSalvar={() => salvarSecao("geral", CAMPOS_GERAL)}
+          >
+            <Input control={control} name="nomeEvento" label="Nome do evento" inputType="text" />
+            <div>
+              <Input control={control} name="slug" label="Slug (URL)" inputType="text" />
+              <p className={styles.dica}>
+                Usado na URL pública e na URL desta página de administração
+                (/evento/<strong>slug</strong>/...). Apenas letras minúsculas,
+                números e hífen. Ao trocar, links antigos com o slug anterior
+                param de funcionar.
+              </p>
+            </div>
+            <Input control={control} name="local" label="Local" inputType="text" />
+            <Input control={control} name="telefone" label="Telefone" inputType="phone" />
+            <Input control={control} name="linkGrupo" label="Link do grupo" inputType="text" />
+            <Input control={control} name="isbn" label="ISBN" inputType="text" />
+          </Secao>
 
-      <Secao
-        icon={RiMailSendLine}
-        titulo="Convite e assinatura"
-        status={statusSecoes.convite}
-        onSalvar={() => salvarSecao("convite", CAMPOS_CONVITE)}
-      >
-        <div className={styles.secaoGrid}>
-          <Input control={control} name="assinatura" label="Assinatura" inputType="text" />
-        </div>
-        <div className={`${styles.secaoGrid} mt-2`}>
-          <Textarea control={control} name="conteudoDefaultConvite" label="Conteúdo padrão do convite" maxLength={1000} />
-        </div>
-      </Secao>
+          <Secao
+            icon={RiCalendarEventLine}
+            titulo="Datas"
+            descricao="Período de realização do evento."
+            status={statusSecoes.datas}
+            onSalvar={() => salvarSecao("datas", CAMPOS_DATAS)}
+          >
+            <Input control={control} name="inicio" label="Início" inputType="date" placeholder="DD/MM/AAAA" />
+            <Input control={control} name="fim" label="Fim" inputType="date" placeholder="DD/MM/AAAA" />
+          </Secao>
+        </>
+      )}
 
-      <Secao
-        icon={RiPaletteLine}
-        titulo="Aparência"
-        status={statusSecoes.aparencia}
-        onSalvar={() => salvarSecao("aparencia", CAMPOS_APARENCIA)}
-      >
-        <div className={styles.secaoGrid}>
+      {abaAtiva === "aparencia" && (
+        <Secao
+          icon={RiPaletteLine}
+          titulo="Aparência"
+          descricao="Cores, banner e logo exibidos na página pública do evento."
+          status={statusSecoes.aparencia}
+          onSalvar={() => salvarSecao("aparencia", CAMPOS_APARENCIA)}
+        >
           <CampoCor control={control} name="primaryColor" label="Cor primária" valor={primaryColor} onChangeSwatch={(v) => setValue("primaryColor", v)} />
           <CampoCor control={control} name="bgColor" label="Cor de fundo" valor={bgColor} onChangeSwatch={(v) => setValue("bgColor", v)} />
-        </div>
-        <div className={`${styles.imagensGrid} mt-2`}>
-          <div className={styles.campoImagemGroup}>
-            <div className={styles.campoImagemGroupImagens}>
-              <CampoImagem label="Banner (desktop)" value={pathBanner} onChange={(f) => setValue("pathBanner", f)} />
-              <CampoImagem label="Banner (mobile)" value={pathBannerMobile} onChange={(f) => setValue("pathBannerMobile", f)} />
+          <div className={styles.imagensGrid}>
+            <div className={styles.campoImagemGroup}>
+              <div className={styles.campoImagemGroupImagens}>
+                <CampoImagem label="Banner (desktop)" value={pathBanner} onChange={(f) => setValue("pathBanner", f)} />
+                <CampoImagem label="Banner (mobile)" value={pathBannerMobile} onChange={(f) => setValue("pathBannerMobile", f)} />
+              </div>
+              <p className={styles.dicaImagem}>
+                Desktop: proporção 2,6:1 (ex. 1560×600px). Mobile: proporção 4:3
+                (ex. 1200×900px). Formatos aceitos: JPG, PNG ou SVG, até 15MB.
+                Se não enviar a versão mobile, o banner do desktop é reaproveitado
+                (com faixas em branco nas laterais, já que a imagem não é cortada).
+              </p>
             </div>
-            <p className={styles.dicaImagem}>
-              Desktop: proporção 2,6:1 (ex. 1560×600px). Mobile: proporção 4:3
-              (ex. 1200×900px). Formatos aceitos: JPG, PNG ou SVG, até 15MB.
-              Se não enviar a versão mobile, o banner do desktop é reaproveitado
-              (com faixas em branco nas laterais, já que a imagem não é cortada).
-            </p>
+            <CampoImagem label="Logo" value={pathLogo} onChange={(f) => setValue("pathLogo", f)} />
           </div>
-          <CampoImagem label="Logo" value={pathLogo} onChange={(f) => setValue("pathLogo", f)} />
-        </div>
-      </Secao>
+        </Secao>
+      )}
 
-      <Secao
-        icon={RiAwardLine}
-        titulo="Avaliação"
-        status={statusSecoes.avaliacao}
-        onSalvar={() => salvarSecao("avaliacao", CAMPOS_AVALIACAO)}
-      >
-        <div className={styles.checkboxGrid}>
-          <Input control={control} name="permitirSubmissoes" label="Permitir submissões" inputType="checkbox" />
-          <Input control={control} name="liberarFichaAvaliacao" label="Liberar ficha de avaliação" inputType="checkbox" />
-          <Input control={control} name="depurarComentarioComIA" label="Depurar comentário com IA" inputType="checkbox" />
-        </div>
-        <div className={`${styles.secaoGrid} mt-2`}>
-          <Select control={control} name="metodoCalculoNota" label="Método de cálculo da nota" options={METODO_CALCULO_NOTA_OPTIONS} />
-          <Input control={control} name="notaMinimaMencaoHonrosa" label="Nota mínima para menção honrosa" inputType="number" />
-          <Input control={control} name="notaMinimaPremio" label="Nota mínima para prêmio" inputType="number" />
-        </div>
-      </Secao>
+      {abaAtiva === "convite" && (
+        <Secao
+          icon={RiMailSendLine}
+          titulo="Convite e assinatura"
+          descricao="Texto padrão e assinatura usados nos convites enviados a avaliadores."
+          status={statusSecoes.convite}
+          onSalvar={() => salvarSecao("convite", CAMPOS_CONVITE)}
+        >
+          <Input control={control} name="assinatura" label="Assinatura" inputType="text" />
+          <Textarea control={control} name="conteudoDefaultConvite" label="Conteúdo padrão do convite" maxLength={1000} />
+        </Secao>
+      )}
 
-      <FormMoldeResumo
-        eventoSlug={eventoSlug}
-        initialPartes={initialData?.moldeResumo?.partes}
-      />
+      {abaAtiva === "avaliacao" && (
+        <>
+          <Secao
+            icon={RiAwardLine}
+            titulo="Avaliação"
+            descricao="Regras de submissão e cálculo de nota."
+            status={statusSecoes.avaliacao}
+            onSalvar={() => salvarSecao("avaliacao", CAMPOS_AVALIACAO)}
+          >
+            <div className={styles.checkboxGrid}>
+              <Input control={control} name="permitirSubmissoes" label="Permitir submissões" inputType="checkbox" />
+              <Input control={control} name="liberarFichaAvaliacao" label="Liberar ficha de avaliação" inputType="checkbox" />
+              <Input control={control} name="depurarComentarioComIA" label="Depurar comentário com IA" inputType="checkbox" />
+            </div>
+            <Select control={control} name="metodoCalculoNota" label="Método de cálculo da nota" options={METODO_CALCULO_NOTA_OPTIONS} />
+            <Input control={control} name="notaMinimaMencaoHonrosa" label="Nota mínima para menção honrosa" inputType="number" />
+            <Input control={control} name="notaMinimaPremio" label="Nota mínima para prêmio" inputType="number" />
+          </Secao>
 
-      <FormCategorias
-        eventoSlug={eventoSlug}
-        initialOptions={initialData?.categorias?.options}
-      />
+          <FormMoldeResumo
+            eventoSlug={eventoSlug}
+            initialPartes={initialData?.moldeResumo?.partes}
+          />
 
-      <FormInstituicoesParceiras
-        eventoSlug={eventoSlug}
-        initialParceiras={initialData?.instituicoesParceiras}
-      />
+          <FormCategorias
+            eventoSlug={eventoSlug}
+            initialOptions={initialData?.categorias?.options}
+          />
 
-      <FormTenantsVinculados
-        eventoSlug={eventoSlug}
-        initialTenantsVinculados={initialData?.tenantsVinculados}
-      />
+          <FormCriteriosAvaliacao eventoSlug={eventoSlug} />
+        </>
+      )}
+
+      {abaAtiva === "instituicoes" && (
+        <>
+          <FormInstituicoesParceiras
+            eventoSlug={eventoSlug}
+            initialParceiras={initialData?.instituicoesParceiras}
+          />
+
+          <FormTenantsVinculados
+            eventoSlug={eventoSlug}
+            initialTenantsVinculados={initialData?.tenantsVinculados}
+          />
+        </>
+      )}
+
+      {abaAtiva === "sessoes" && (
+        <>
+          {carregandoSessoes && (
+            <p className={styles.dica}>Carregando sessões...</p>
+          )}
+          {!carregandoSessoes && sessoes && (
+            <FormSessoes
+              eventoSlug={eventoSlug}
+              initialSessoes={sessoes}
+              basePath={`/evento/${eventoSlug}/admin/sessoes`}
+            />
+          )}
+        </>
+      )}
+
+      {abaAtiva === "certificados" && (
+        <>
+          {carregandoCertificados && (
+            <p className={styles.dica}>Carregando certificados...</p>
+          )}
+          {!carregandoCertificados && certificadosLayouts && (
+            <FormCertificados
+              eventoSlug={eventoSlug}
+              initialCertificados={certificadosLayouts}
+              evento={initialData}
+            />
+          )}
+        </>
+      )}
     </div>
   );
 };

@@ -1159,7 +1159,7 @@ const Page = ({ params }) => {
             </a>
           )}
           <Button
-            linkTo={`/evento/${params.eventoSlug}/admin/apresentacao`}
+            linkTo={`/evento/${params.eventoSlug}/admin/configuracoes?aba=sessoes`}
             icon={RiPresentationFill}
             className="btn-secondary"
           >

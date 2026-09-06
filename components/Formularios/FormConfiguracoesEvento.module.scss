@@ -1,0 +1,171 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+@import "/styles/partials/eventoAdmin";
+
+// Abas simples (mesmo padrão de app/[tenant]/configuracoes/gestor/(itens)/
+// formularios/page.module.scss — troca de conteúdo por clique, sem TabView
+// do PrimeReact).
+.abas {
+    display: flex;
+    gap: 0;
+    padding: 0 $gap-2;
+    border-bottom: 2px solid rgba(#000, 0.1);
+    margin-bottom: $gap-2;
+}
+
+.aba {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    padding: $gap-2 $gap-3;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: $gray-500;
+    transition: color 0.15s, border-color 0.15s;
+
+    &:hover {
+        color: $primary-normal;
+    }
+
+    &.abaAtiva {
+        color: $primary-normal;
+        border-bottom-color: $primary-normal;
+        font-weight: 700;
+    }
+}
+
+.section {
+    @include eventoSection;
+}
+
+.sectionHead {
+    @include eventoSectionHead;
+    align-items: center;
+}
+
+.sectionIcon {
+    width: 20px;
+    height: 20px;
+    color: $primary-normal;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+
+    svg {
+        width: 100%;
+        height: 100%;
+    }
+}
+
+.sectionGrid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $gap-2;
+    flex-direction: column;
+}
+
+.sectionFooter {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: $gap-2;
+    margin-top: $gap-2;
+}
+
+.statusSucesso {
+    font-size: 0.85rem;
+    color: $success-dark;
+}
+
+.statusErro {
+    font-size: 0.85rem;
+    color: $error-normal;
+}
+
+.checkboxGrid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $gap-2 $gap-4;
+}
+
+.campoCor {
+    display: flex;
+    align-items: flex-end;
+    gap: $gap-1;
+    min-width: 200px;
+}
+
+.swatch {
+    width: 48px;
+    height: 48px;
+    padding: 2px;
+    border: 1px solid $gray-100;
+    border-radius: 4px;
+    cursor: pointer;
+    background: none;
+    flex-shrink: 0;
+}
+
+.imagensGrid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $gap-2;
+}
+
+.campoImagem {
+    flex: 1 1 200px;
+    min-width: 180px;
+    max-width: 260px;
+}
+
+.campoImagemGroup {
+    flex: 1 1 100%;
+}
+
+.campoImagemGroupImagens {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $gap-2;
+}
+
+.bgCertificado {
+    border: 1px solid $gray-50;
+    height: 160px;
+    width: 100%;
+    max-width: 280px;
+    border-radius: $gap-1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+
+    svg {
+        width: 32px;
+        height: 32px;
+        color: $primary-normal;
+    }
+}
+
+.certificadoImg {
+    position: relative;
+    height: 100%;
+    width: 100%;
+}
+
+.dica {
+    color: $gray-500;
+    font-size: 0.8rem;
+    margin-top: $gap-1;
+    max-width: 60ch;
+}
+
+.dicaImagem {
+    color: $gray-500;
+    font-size: 0.8rem;
+    margin-top: $gap-1;
+    flex: 1 1 100%;
+}

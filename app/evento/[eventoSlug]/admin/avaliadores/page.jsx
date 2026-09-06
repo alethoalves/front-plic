@@ -4,20 +4,26 @@ import { useEffect, useMemo, useState, useRef } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { InputText } from "primereact/inputtext";
+import { InputMask } from "primereact/inputmask";
 import { Toast } from "primereact/toast";
 import { MultiSelect } from "primereact/multiselect";
 import { Dropdown } from "primereact/dropdown";
 import { Dialog } from "primereact/dialog";
+import { Button as PrimeButton } from "primereact/button";
 import {
   RiCheckLine,
   RiCloseLine,
+  RiDeleteBinLine,
   RiFileCopyLine,
   RiFileExcelLine,
+  RiUserAddLine,
 } from "@remixicon/react";
 import Button from "@/components/Button";
 import {
   consultarAvaliadoresEvento,
   editarAvaliadorEvento,
+  cadastrarAvaliadorEvento,
+  excluirAvaliadorEvento,
 } from "@/app/api/client/avaliadoresEvento";
 import { FilterMatchMode } from "primereact/api";
 import ExcelJS from "exceljs";
@@ -47,6 +53,16 @@ const Page = ({ params }) => {
   const [isExportando, setIsExportando] = useState(false);
   const [filtroAreaIds, setFiltroAreaIds] = useState([]);
   const [filtroSubsessaoIds, setFiltroSubsessaoIds] = useState([]);
+
+  // Estados para o diálogo de cadastro direto de avaliador
+  const [cadastroDialogVisible, setCadastroDialogVisible] = useState(false);
+  const [cpfCadastro, setCpfCadastro] = useState("");
+  const [salvandoCadastro, setSalvandoCadastro] = useState(false);
+
+  // Estados para o diálogo de remoção de vínculo
+  const [excluirDialogVisible, setExcluirDialogVisible] = useState(false);
+  const [avaliadorParaExcluir, setAvaliadorParaExcluir] = useState(null);
+  const [salvandoExclusao, setSalvandoExclusao] = useState(false);
 
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -306,6 +322,62 @@ const Page = ({ params }) => {
     }
   };
 
+  // Função para cadastrar um avaliador diretamente pelo CPF
+  const cadastrarAvaliador = async () => {
+    if (!cpfCadastro) return;
+
+    setSalvandoCadastro(true);
+
+    try {
+      const response = await cadastrarAvaliadorEvento(
+        params.eventoSlug,
+        cpfCadastro
+      );
+
+      if (response.avaliador) {
+        setAvaliadores((prev) => [response.avaliador, ...prev]);
+        showToast("success", "Sucesso", "Avaliador cadastrado com sucesso");
+        setCadastroDialogVisible(false);
+        setCpfCadastro("");
+      }
+    } catch (error) {
+      console.error("Erro ao cadastrar avaliador:", error);
+      const mensagem =
+        error?.response?.data?.message || "Falha ao cadastrar avaliador";
+      showToast("error", "Erro", mensagem);
+    } finally {
+      setSalvandoCadastro(false);
+    }
+  };
+
+  // Excluir o vínculo de um avaliador com o evento (só permitido quando ele
+  // ainda não avaliou nenhuma submissão neste evento — validado também no
+  // backend).
+  const handleExcluirVinculo = (rowData) => {
+    setAvaliadorParaExcluir(rowData);
+    setExcluirDialogVisible(true);
+  };
+
+  const confirmarExclusaoVinculo = async () => {
+    if (!avaliadorParaExcluir) return;
+
+    setSalvandoExclusao(true);
+    try {
+      await excluirAvaliadorEvento(params.eventoSlug, avaliadorParaExcluir.id);
+      setAvaliadores((prev) =>
+        prev.filter((a) => a.id !== avaliadorParaExcluir.id)
+      );
+      showToast("success", "Sucesso", "Vínculo removido com sucesso");
+      setExcluirDialogVisible(false);
+    } catch (error) {
+      const mensagem =
+        error?.response?.data?.message || "Falha ao remover vínculo";
+      showToast("error", "Erro", mensagem);
+    } finally {
+      setSalvandoExclusao(false);
+    }
+  };
+
   // Template para a coluna de vinculação com clique e ícone de edição
   const vinculacaoBodyTemplate = (rowData) => {
     if (rowData.vinculoAtivo === false) {
@@ -395,6 +467,23 @@ const Page = ({ params }) => {
         className="p-column-filter"
         maxSelectedLabels={2}
         style={{ minWidth: "120px" }}
+      />
+    );
+  };
+
+  // Só permite excluir o vínculo de avaliadores sem nenhuma avaliação
+  // registrada neste evento — evita apagar histórico de quem já avaliou.
+  const acoesBodyTemplate = (rowData) => {
+    if (rowData.vinculoAtivo === false || rowData.qntAvaliacoes > 0) {
+      return null;
+    }
+
+    return (
+      <PrimeButton
+        icon="pi pi-trash"
+        className="p-button-danger p-button-text p-button-sm"
+        title="Remover vínculo com o evento"
+        onClick={() => handleExcluirVinculo(rowData)}
       />
     );
   };
@@ -519,6 +608,52 @@ const Page = ({ params }) => {
     </div>
   );
 
+  // Footer do diálogo de cadastro de avaliador
+  const cadastroDialogFooter = (
+    <div className="flex justify-content-end align-items-center gap-1">
+      <Button
+        icon={RiCloseLine}
+        onClick={() => setCadastroDialogVisible(false)}
+        className={`btn-secondary ${styles.footerButton}`}
+        disabled={salvandoCadastro}
+      >
+        Cancelar
+      </Button>
+      <Button
+        icon={RiCheckLine}
+        onClick={cadastrarAvaliador}
+        className={`btn-primary ${styles.footerButton}`}
+        disabled={
+          salvandoCadastro || !cpfCadastro || cpfCadastro.includes("_")
+        }
+      >
+        {salvandoCadastro ? "Cadastrando..." : "Cadastrar"}
+      </Button>
+    </div>
+  );
+
+  // Footer do diálogo de remoção de vínculo
+  const excluirDialogFooter = (
+    <div className="flex justify-content-end align-items-center gap-1">
+      <Button
+        icon={RiCloseLine}
+        onClick={() => setExcluirDialogVisible(false)}
+        className={`btn-secondary ${styles.footerButton}`}
+        disabled={salvandoExclusao}
+      >
+        Cancelar
+      </Button>
+      <Button
+        icon={RiDeleteBinLine}
+        onClick={confirmarExclusaoVinculo}
+        className={`btn-error ${styles.footerButton}`}
+        disabled={salvandoExclusao}
+      >
+        {salvandoExclusao ? "Removendo..." : "Sim, remover"}
+      </Button>
+    </div>
+  );
+
   if (loading && avaliadores.length === 0) {
     return <div className={styles.loading}>Carregando...</div>;
   }
@@ -574,6 +709,55 @@ const Page = ({ params }) => {
         )}
       </Dialog>
 
+      {/* Diálogo de cadastro direto de avaliador */}
+      <Dialog
+        visible={cadastroDialogVisible}
+        style={{ width: "500px" }}
+        header="Cadastrar Avaliador"
+        modal
+        className={`p-fluid ${styles.eventoDialog}`}
+        footer={cadastroDialogFooter}
+        onHide={() => {
+          setCadastroDialogVisible(false);
+          setCpfCadastro("");
+        }}
+      >
+        <p className={styles.dialogDescricao}>
+          Informe o CPF do avaliador. Se já houver cadastro com esse CPF, a
+          pessoa será apenas vinculada a este evento; caso contrário, um
+          novo cadastro é criado automaticamente.
+        </p>
+
+        <label className={styles.eventoLabel}>CPF</label>
+        <InputMask
+          mask="999.999.999-99"
+          value={cpfCadastro}
+          onChange={(e) => setCpfCadastro(e.value || "")}
+          placeholder="000.000.000-00"
+          className={`${styles.eventoInput} mt-2`}
+          autoFocus
+        />
+      </Dialog>
+
+      {/* Diálogo de remoção de vínculo */}
+      <Dialog
+        visible={excluirDialogVisible}
+        style={{ width: "500px" }}
+        header="Remover avaliador"
+        modal
+        className={`p-fluid ${styles.eventoDialog}`}
+        footer={excluirDialogFooter}
+        onHide={() => setExcluirDialogVisible(false)}
+      >
+        {avaliadorParaExcluir && (
+          <p className={styles.dialogDescricao}>
+            Remover o vínculo de{" "}
+            <strong>{avaliadorParaExcluir.user?.nome}</strong> com este
+            evento? Essa ação não pode ser desfeita.
+          </p>
+        )}
+      </Dialog>
+
       <div className={styles.dashboard}>
         <div className={styles.tituloPagina}>
           <h5>Lista de Avaliadores</h5>
@@ -607,12 +791,22 @@ const Page = ({ params }) => {
         </section>
 
         <section className={styles.section}>
-          <div className={styles.sectionHead}>
-            <h6>Avaliadores</h6>
-            <p>
-              Busque, edite vínculos e exporte a lista de avaliadores do
-              evento.
-            </p>
+          <div
+            className={`${styles.sectionHead} flex justify-content-between align-items-center`}
+          >
+            <div>
+              <h6>Avaliadores</h6>
+              <p>
+                Busque, edite vínculos e exporte a lista de avaliadores do
+                evento.
+              </p>
+            </div>
+            <Button
+              icon={RiUserAddLine}
+              className="btn-primary"
+              title="Cadastrar Avaliador"
+              onClick={() => setCadastroDialogVisible(true)}
+            />
           </div>
 
           <div className={styles.filterBar}>
@@ -704,6 +898,11 @@ const Page = ({ params }) => {
               field="qntAvaliacoes"
               header="Avaliações Realizadas"
               sortable
+            />
+            <Column
+              header="Ações"
+              body={acoesBodyTemplate}
+              style={{ width: "80px", textAlign: "center" }}
             />
           </DataTable>
         </section>

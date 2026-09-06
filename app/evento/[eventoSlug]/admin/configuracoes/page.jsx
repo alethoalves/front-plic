@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Skeleton from "@/components/Skeleton";
+import { Suspense, useEffect, useState } from "react";
 import FormConfiguracoesEvento from "@/components/Formularios/FormConfiguracoesEvento";
 import { getEventoConfiguracoes } from "@/app/api/client/eventos";
+import styles from "./page.module.scss";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(true);
@@ -27,21 +27,28 @@ const Page = ({ params }) => {
   }, [params.eventoSlug]);
 
   if (loading) {
-    return (
-      <>
-        <Skeleton />
-        <Skeleton />
-        <Skeleton />
-      </>
-    );
-  }
-
-  if (error) {
-    return <p>{error}</p>;
+    return <div className={styles.loading}>Carregando...</div>;
   }
 
   return (
-    <FormConfiguracoesEvento eventoSlug={params.eventoSlug} initialData={evento} />
+    <div className={styles.navContent}>
+      <div className={styles.dashboard}>
+        <div className={styles.tituloPagina}>
+          <h5>Configurações</h5>
+        </div>
+
+        {error ? (
+          <p>{error}</p>
+        ) : (
+          <Suspense fallback={<div className={styles.loading}>Carregando...</div>}>
+            <FormConfiguracoesEvento
+              eventoSlug={params.eventoSlug}
+              initialData={evento}
+            />
+          </Suspense>
+        )}
+      </div>
+    </div>
   );
 };
 
