@@ -181,6 +181,25 @@ export const getAvaliadoresComSubmissoesPendentes = async (
     }
   };
 
+  export const excluirAvaliacao = async (
+    eventoSlug,idAvaliacao
+  ) => {
+    try {
+      const headers = getAuthHeadersClient();
+      if (!headers) {
+        return false;
+      }
+      const response = await req.delete(
+        `/evenplic/evento/${eventoSlug}/avaliacao/${idAvaliacao}`,
+        { headers }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao excluir avaliação:", error);
+      throw error;
+    }
+  };
+
   export const getSubmissoesSemPage = async () => {
     try {
       const headers = getAuthHeadersClient();

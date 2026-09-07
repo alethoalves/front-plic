@@ -39,13 +39,14 @@ import { getLayoutCertificados } from "@/app/api/client/certificado";
 import { resolveEventoImageSrc } from "@/lib/resolveEventoImage";
 import FormInstituicoesParceiras from "@/components/Formularios/FormInstituicoesParceiras";
 import FormTenantsVinculados from "@/components/Formularios/FormTenantsVinculados";
+import SecaoQrCodeCheckin from "@/components/Formularios/SecaoQrCodeCheckin";
 
 const METODO_CALCULO_NOTA_OPTIONS = [
   { value: "MEDIA", label: "Média das avaliações" },
   { value: "ULTIMA_AVALIACAO", label: "Última avaliação" },
 ];
 
-const CAMPOS_GERAL = ["nomeEvento", "slug", "local", "telefone", "linkGrupo", "isbn"];
+const CAMPOS_GERAL = ["nomeEvento", "slug", "local", "latitude", "longitude", "raioCheckinMetros", "telefone", "linkGrupo", "isbn"];
 const CAMPOS_DATAS = ["inicio", "fim"];
 const CAMPOS_CONVITE = ["assinatura", "conteudoDefaultConvite"];
 const CAMPOS_APARENCIA = ["primaryColor", "bgColor", "pathBanner", "pathBannerMobile", "pathLogo"];
@@ -242,6 +243,10 @@ const FormConfiguracoesEvento = ({ eventoSlug, initialData }) => {
       nomeEvento: initialData?.nomeEvento || "",
       slug: initialData?.slug || "",
       local: initialData?.local || "",
+      latitude: initialData?.latitude != null ? String(initialData.latitude) : "",
+      longitude: initialData?.longitude != null ? String(initialData.longitude) : "",
+      raioCheckinMetros:
+        initialData?.raioCheckinMetros != null ? String(initialData.raioCheckinMetros) : "",
       telefone: initialData?.telefone || "",
       linkGrupo: initialData?.linkGrupo || "",
       assinatura: initialData?.assinatura || "",
@@ -281,8 +286,13 @@ const FormConfiguracoesEvento = ({ eventoSlug, initialData }) => {
     if (["permitirSubmissoes", "liberarFichaAvaliacao", "depurarComentarioComIA"].includes(nome)) {
       return valor === "true";
     }
-    if (["notaMinimaMencaoHonrosa", "notaMinimaPremio"].includes(nome)) {
+    if (["notaMinimaMencaoHonrosa", "notaMinimaPremio", "raioCheckinMetros"].includes(nome)) {
       return valor !== "" ? Number(valor) : undefined;
+    }
+    if (["latitude", "longitude"].includes(nome)) {
+      // Aceita vírgula como separador decimal (padrão ao copiar coordenadas
+      // do Google Maps em pt-BR) antes de converter pro número que a API espera.
+      return valor !== "" ? Number(valor.trim().replace(",", ".")) : undefined;
     }
     if (["pathBanner", "pathBannerMobile", "pathLogo"].includes(nome)) {
       if (!(valor instanceof File)) return valor || undefined;
@@ -360,6 +370,23 @@ const FormConfiguracoesEvento = ({ eventoSlug, initialData }) => {
               </p>
             </div>
             <Input control={control} name="local" label="Local" inputType="text" />
+            <Input control={control} name="latitude" label="Latitude do evento" inputType="text" placeholder="-15.845401" />
+            <Input control={control} name="longitude" label="Longitude do evento" inputType="text" placeholder="-48.028818" />
+            <div>
+              <Input
+                control={control}
+                name="raioCheckinMetros"
+                label="Raio de tolerância do check-in (metros)"
+                inputType="number"
+              />
+              <p className={styles.dica}>
+                Usados para liberar o check-in presencial dos alunos (QR Code
+                logo abaixo). Copie a latitude e longitude clicando no local
+                do evento no Google Maps. Ambientes fechados costumam exigir
+                um raio maior, por causa da imprecisão do GPS em locais
+                internos.
+              </p>
+            </div>
             <Input control={control} name="telefone" label="Telefone" inputType="phone" />
             <Input control={control} name="linkGrupo" label="Link do grupo" inputType="text" />
             <Input control={control} name="isbn" label="ISBN" inputType="text" />
@@ -375,6 +402,11 @@ const FormConfiguracoesEvento = ({ eventoSlug, initialData }) => {
             <Input control={control} name="inicio" label="Início" inputType="date" placeholder="DD/MM/AAAA" />
             <Input control={control} name="fim" label="Fim" inputType="date" placeholder="DD/MM/AAAA" />
           </Secao>
+
+          <SecaoQrCodeCheckin
+            eventoSlug={eventoSlug}
+            eventoRootSlug={initialData?.eventoRoot?.slug}
+          />
         </>
       )}
 

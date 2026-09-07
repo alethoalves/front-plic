@@ -1,0 +1,28 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+.lista {
+    display: flex;
+    flex-direction: column;
+    gap: $gap-1;
+}
+
+.item {
+    display: flex;
+    align-items: center;
+    gap: $gap-1;
+    border: 1px solid $gray-100;
+    border-radius: $gap-1;
+    padding: $gap-2;
+    cursor: pointer;
+
+    input {
+        flex-shrink: 0;
+    }
+
+    &:has(input:checked) {
+        border-color: $primary-normal;
+        background: $primary-lighten;
+    }
+}

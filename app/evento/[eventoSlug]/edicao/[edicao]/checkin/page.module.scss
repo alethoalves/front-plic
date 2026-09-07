@@ -1,0 +1,21 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+@import "/styles/partials/eventoEditorial";
+
+.mainDiv {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: $gap-3 $gap-2;
+    gap: $gap-2;
+}
+
+// Mesmo tratamento de largura do banner na tela de login do avaliador — essa
+// é uma tela de fluxo único, não a página cheia do evento.
+.eventoPlate {
+    width: 100%;
+    max-width: 420px;
+}

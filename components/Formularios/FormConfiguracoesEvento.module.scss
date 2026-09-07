@@ -156,6 +156,10 @@
     width: 100%;
 }
 
+.eventoInput {
+    @include eventoInput;
+}
+
 .dica {
     color: $gray-500;
     font-size: 0.8rem;

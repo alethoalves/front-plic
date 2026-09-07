@@ -2,6 +2,7 @@ import {
   getSubmissaoByIdForAdmin,
   updateSubmissaoStatus,
   updateSubmissaoPremiacao,
+  excluirAvaliacao,
 } from "@/app/api/client/submissao";
 import { validarJustificativaManualmente } from "@/app/api/client/eventos";
 import { vincularAutomaticamenteSubmissao } from "@/app/api/client/square"; // Importa a função de vinculação automática
@@ -33,6 +34,7 @@ const Modal = ({ isOpen, onClose, eventoSlug, idSubmissao, onDataUpdated }) => {
   const [atualizandoPremiacao, setAtualizandoPremiacao] = useState(false);
   const [motivoValidacaoManual, setMotivoValidacaoManual] = useState("");
   const [validandoManualmente, setValidandoManualmente] = useState(false);
+  const [excluindoAvaliacao, setExcluindoAvaliacao] = useState(null);
   const fetchData = async (eventoSlug, idSubmissao) => {
     setLoading(true); // Define o estado de carregamento como verdadeiro
     try {
@@ -75,6 +77,24 @@ const Modal = ({ isOpen, onClose, eventoSlug, idSubmissao, onDataUpdated }) => {
       console.error("Erro ao desvincular submissão:", error);
     } finally {
       setExcluindo(false);
+    }
+  };
+
+  const handleDeleteAvaliacao = async (idAvaliacao) => {
+    if (!window.confirm("Excluir esta avaliação? Essa ação não pode ser desfeita.")) {
+      return;
+    }
+    setExcluindoAvaliacao(idAvaliacao);
+    try {
+      await excluirAvaliacao(eventoSlug, idAvaliacao);
+      fetchData(eventoSlug, idSubmissao);
+      if (onDataUpdated) {
+        onDataUpdated();
+      }
+    } catch (error) {
+      console.error("Erro ao excluir avaliação:", error);
+    } finally {
+      setExcluindoAvaliacao(null);
     }
   };
 
@@ -353,9 +373,21 @@ const Modal = ({ isOpen, onClose, eventoSlug, idSubmissao, onDataUpdated }) => {
                     {submissao?.Avaliacao?.sort((a, b) => a.id - b.id).map(
                       (item) => (
                         <div key={item.id} className={styles.avaliador}>
-                          <p>
-                            ID da avaliação: <strong>{item.id}</strong>
-                          </p>
+                          <div className={styles.squareHeaderNumero}>
+                            <div>
+                              <p>
+                                ID da avaliação: <strong>{item.id}</strong>
+                              </p>
+                            </div>
+                            <div
+                              className={styles.deleteSquare}
+                              onClick={() => handleDeleteAvaliacao(item.id)}
+                              title="Excluir avaliação"
+                            >
+                              <RiDeleteBinLine />
+                              {excluindoAvaliacao === item.id && <p>Excluindo...</p>}
+                            </div>
+                          </div>
                           <p>
                             Avaliador: <strong>{item.avaliador?.nome}</strong>
                           </p>

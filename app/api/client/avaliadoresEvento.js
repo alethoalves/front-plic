@@ -61,6 +61,25 @@ import { getCookie } from 'cookies-next';
     }
   };
 
+  export const atualizarCodAvaliadorEvento = async (
+    eventoSlug,
+    codAvaliador
+  ) => {
+    try {
+      const headers = getAuthHeadersClient();
+      if (!headers) return false;
+      const response = await req.put(
+        `/evenplic/${eventoSlug}/codAvaliadorEvento`,
+        { codAvaliador },
+        { headers }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao atualizar token de avaliador:", error);
+      throw error;
+    }
+  };
+
   export const cadastrarAvaliadorEvento = async (
     eventoSlug,
     cpf

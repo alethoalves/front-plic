@@ -24,6 +24,7 @@ import {
   editarAvaliadorEvento,
   cadastrarAvaliadorEvento,
   excluirAvaliadorEvento,
+  atualizarCodAvaliadorEvento,
 } from "@/app/api/client/avaliadoresEvento";
 import { FilterMatchMode } from "primereact/api";
 import ExcelJS from "exceljs";
@@ -35,6 +36,9 @@ const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
   const [avaliadores, setAvaliadores] = useState([]);
   const [tokenConvite, setTokenConvite] = useState("");
+  const [codAvaliador, setCodAvaliador] = useState("");
+  const [codAvaliadorInput, setCodAvaliadorInput] = useState("");
+  const [salvandoCodAvaliador, setSalvandoCodAvaliador] = useState(false);
   const [eventoNome, setEventoNome] = useState("");
   const [globalFilterValue, setGlobalFilterValue] = useState("");
   const [rootOptions] = useState([
@@ -172,6 +176,8 @@ const Page = ({ params }) => {
       const response = await consultarAvaliadoresEvento(eventoSlug);
       setAvaliadores(response.avaliadores || []);
       setTokenConvite(response.evento?.tokenConvite || "");
+      setCodAvaliador(response.evento?.codAvaliador || "");
+      setCodAvaliadorInput(response.evento?.codAvaliador || "");
       setEventoNome(response.evento?.nomeEvento || "");
 
       // Preparar opções de tenants para o dropdown
@@ -510,6 +516,26 @@ const Page = ({ params }) => {
       });
   };
 
+  const salvarCodAvaliador = async () => {
+    setSalvandoCodAvaliador(true);
+    try {
+      const response = await atualizarCodAvaliadorEvento(
+        params.eventoSlug,
+        codAvaliadorInput.trim()
+      );
+      const novoValor = response.evento?.codAvaliador || "";
+      setCodAvaliador(novoValor);
+      setCodAvaliadorInput(novoValor);
+      showToast("success", "Sucesso", "Token de avaliador atualizado com sucesso");
+    } catch (error) {
+      const mensagem =
+        error?.response?.data?.message || "Falha ao atualizar o token de avaliador";
+      showToast("error", "Erro", mensagem);
+    } finally {
+      setSalvandoCodAvaliador(false);
+    }
+  };
+
   useEffect(() => {
     fetchData(params.eventoSlug);
   }, [params.eventoSlug]);
@@ -786,6 +812,36 @@ const Page = ({ params }) => {
               title="Copiar link"
               className="btn-secondary"
               disabled={!tokenConvite}
+            />
+          </div>
+
+          <div className={`${styles.sectionHead} mt-3`}>
+            <h6>Token de avaliador</h6>
+            <p>
+              Exigido de quem tentar acessar como avaliador sem estar
+              cadastrado no evento.
+            </p>
+          </div>
+
+          <div className="flex mt-1 align-items-center gap-1">
+            <InputText
+              id="codAvaliador"
+              aria-label="Token de avaliador"
+              value={codAvaliadorInput}
+              onChange={(e) => setCodAvaliadorInput(e.target.value)}
+              placeholder="Sem token definido"
+              className={styles.eventoInput}
+              style={{ maxWidth: "220px" }}
+            />
+            <Button
+              icon={RiCheckLine}
+              onClick={salvarCodAvaliador}
+              title="Salvar token"
+              className="btn-secondary"
+              disabled={
+                salvandoCodAvaliador ||
+                codAvaliadorInput.trim() === (codAvaliador || "")
+              }
             />
           </div>
         </section>
