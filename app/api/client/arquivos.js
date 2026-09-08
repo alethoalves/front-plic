@@ -13,7 +13,11 @@ export const abrirArquivoPrivado = async (downloadPath) => {
   if (!headers) throw new Error("Não autenticado");
 
   const response = await req.get(downloadPath, { headers, responseType: "blob" });
-  const url = URL.createObjectURL(new Blob([response.data]));
+  // response.data já é um Blob com o content-type correto (setado pelo
+  // axios a partir do header da resposta) — reembrulhar em `new Blob([...])`
+  // sem passar `type` descartava esse content-type e o navegador exibia o
+  // PDF como texto bruto em vez de renderizar.
+  const url = URL.createObjectURL(response.data);
   window.open(url, "_blank", "noopener,noreferrer");
 };
 

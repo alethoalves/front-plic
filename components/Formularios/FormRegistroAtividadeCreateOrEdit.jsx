@@ -326,6 +326,11 @@ const FormRegistroAtividadeCreateOrEdit = ({
       setLoading(false);
     }
   };
+  const respostaIdByCampoId = {};
+  (initialData?.respostas || []).forEach((resposta) => {
+    respostaIdByCampoId[resposta.campoId] = resposta.id;
+  });
+
   return (
     <form
       className={`${styles.formulario}`}
@@ -342,6 +347,7 @@ const FormRegistroAtividadeCreateOrEdit = ({
             errors,
             watch,
             handleFieldChangeWithRules,
+            { tenantSlug, respostaIdByCampoId }
           )}
         </div>
       </div>

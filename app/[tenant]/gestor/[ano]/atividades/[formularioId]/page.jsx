@@ -71,7 +71,11 @@ const Page = ({ params }) => {
         ) : erro ? (
           <NoData description={erro} />
         ) : (
-          <TabelaRespostasAtividade formulario={formulario} planos={planos} />
+          <TabelaRespostasAtividade
+            formulario={formulario}
+            planos={planos}
+            tenantSlug={params.tenant}
+          />
         )}
       </Card>
     </main>

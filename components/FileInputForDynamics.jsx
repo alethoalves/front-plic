@@ -1,7 +1,7 @@
 import { useState } from "react";
 import styles from "./FileInput.module.scss";
-import Link from "next/link";
 import { RiEyeLine } from "@remixicon/react";
+import { abrirArquivoPrivado, urlDownloadResposta } from "@/app/api/client/arquivos";
 
 const FileInput = ({
   campo,
@@ -10,6 +10,8 @@ const FileInput = ({
   handleOnChange,
   watch,
   loading,
+  tenantSlug,
+  respostaId,
 }) => {
   // Desestruturamos o retorno do register para poder combinar o onChange do RHF com o nosso.
   const {
@@ -33,6 +35,8 @@ const FileInput = ({
     return lastPart.split("_")[1] || lastPart;
   };
 
+  const [abrindo, setAbrindo] = useState(false);
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     // Chama o onChange do React Hook Form para manter a integração
@@ -40,6 +44,21 @@ const FileInput = ({
     // Se uma função extra foi passada via prop, também a executa
     if (handleOnChange) {
       handleOnChange(e);
+    }
+  };
+
+  // O anexo deixou de ser público no GCS: não dá mais pra usar a URL salva
+  // como href direto (vira AccessDenied). Baixa autenticado via respostaId.
+  const handleVerArquivo = async (e) => {
+    e.preventDefault();
+    if (!respostaId || abrindo) return;
+    setAbrindo(true);
+    try {
+      await abrirArquivoPrivado(urlDownloadResposta(tenantSlug, respostaId));
+    } catch (err) {
+      console.error("Erro ao abrir anexo:", err);
+    } finally {
+      setAbrindo(false);
     }
   };
 
@@ -68,17 +87,18 @@ const FileInput = ({
                 : watchedFile[0]?.name}
             </p>
             {typeof watchedFile === "string" &&
-              watchedFile?.startsWith("https") && (
-                <Link
-                  prefetch={false}
-                  href={watchedFile}
-                  target="_blank"
-                  rel="noopener noreferrer"
+              watchedFile?.startsWith("https") &&
+              respostaId && (
+                <button
+                  type="button"
+                  onClick={handleVerArquivo}
+                  disabled={abrindo}
+                  className={styles.linkFileButton}
                 >
                   <div className={styles.linkFile}>
-                    <p>🔗 {extractFileName(watchedFile)}</p>
+                    <p>🔗 {abrindo ? "Abrindo..." : extractFileName(watchedFile)}</p>
                   </div>
-                </Link>
+                </button>
               )}
           </>
         )}

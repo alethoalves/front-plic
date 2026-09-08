@@ -223,6 +223,11 @@ const FormPlanoDeTrabalhoCreateOrEdit = ({
     }
   };
 
+  const respostaIdByCampoId = {};
+  (initialData?.Resposta || []).forEach((resposta) => {
+    respostaIdByCampoId[resposta.campoId] = resposta.id;
+  });
+
   return (
     <form
       className={`${styles.formulario}`}
@@ -278,7 +283,9 @@ const FormPlanoDeTrabalhoCreateOrEdit = ({
               loading,
               register,
               errors,
-              watch
+              watch,
+              undefined,
+              { tenantSlug, respostaIdByCampoId }
             )}
           </div>
         </div>

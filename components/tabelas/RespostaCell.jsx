@@ -3,6 +3,7 @@ import { useState } from "react";
 import { RiFilePdfLine, RiExternalLinkLine } from "@remixicon/react";
 import { Dialog } from "primereact/dialog";
 import BlockNoteContent from "@/components/BlockNoteContent";
+import { abrirArquivoPrivado, urlDownloadResposta } from "@/app/api/client/arquivos";
 import styles from "./RespostaCell.module.scss";
 
 // Mesmo switch por campo.tipo já usado em VerProjeto.jsx (FieldValue). As
@@ -10,8 +11,9 @@ import styles from "./RespostaCell.module.scss";
 // curtos quebram linha livremente, mas textLong/blockNote mostram só um
 // preview de poucas linhas (não faz sentido renderizar uma resposta inteira
 // dentro de uma célula de tabela) com um Dialog pra ver o conteúdo completo.
-const RespostaCell = ({ campo, value }) => {
+const RespostaCell = ({ campo, value, respostaId, tenantSlug }) => {
   const [expandido, setExpandido] = useState(false);
+  const [abrindo, setAbrindo] = useState(false);
 
   if (value === undefined || value === null || value === "") {
     return <span className={styles.vazio}>–</span>;
@@ -68,17 +70,32 @@ const RespostaCell = ({ campo, value }) => {
     const parts = value.split("/");
     const lastName = parts[parts.length - 1];
     const fileName = lastName.split("_").slice(1).join("_") || lastName;
+
+    // Anexo não é mais público no GCS: baixa autenticado via respostaId
+    // em vez de linkar direto pra URL salva (vira AccessDenied).
+    const handleVerArquivo = async () => {
+      if (!respostaId || abrindo) return;
+      setAbrindo(true);
+      try {
+        await abrirArquivoPrivado(urlDownloadResposta(tenantSlug, respostaId));
+      } catch (err) {
+        console.error("Erro ao abrir anexo:", err);
+      } finally {
+        setAbrindo(false);
+      }
+    };
+
     return (
-      <a
-        href={value}
-        target="_blank"
-        rel="noopener noreferrer"
+      <button
+        type="button"
+        onClick={handleVerArquivo}
+        disabled={!respostaId || abrindo}
         className={styles.fileLink}
         title={fileName}
       >
         <RiFilePdfLine size={14} />
-        <span>Ver</span>
-      </a>
+        <span>{abrindo ? "Abrindo..." : "Ver"}</span>
+      </button>
     );
   }
 

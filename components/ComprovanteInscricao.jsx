@@ -20,6 +20,7 @@ import {
   abrirArquivoPrivado,
   urlDownloadCvLattes,
   urlDownloadAnexoProjeto,
+  urlDownloadResposta,
 } from "@/app/api/client/arquivos";
 import NoData from "@/components/NoData";
 import Button from "@/components/Button";
@@ -36,7 +37,7 @@ const extractFileName = (url) => {
   return withoutTs || last;
 };
 
-const FieldValue = ({ tipo, value }) => {
+const FieldValue = ({ tipo, value, tenant, respostaId }) => {
   if (!value || value === "") return <span className={styles.emptyValue}>—</span>;
 
   switch (tipo) {
@@ -44,7 +45,14 @@ const FieldValue = ({ tipo, value }) => {
       return <BlockNoteContent value={value} />;
     case "arquivo":
       return (
-        <a href={value} target="_blank" rel="noopener noreferrer" className={styles.fileLink}>
+        <a
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            abrirArquivoPrivado(urlDownloadResposta(tenant, respostaId));
+          }}
+          className={styles.fileLink}
+        >
           <RiFileTextLine size={13} />
           {extractFileName(value)}
           <RiExternalLinkLine size={11} />
@@ -70,7 +78,7 @@ const FieldValue = ({ tipo, value }) => {
 };
 
 // ─── Respostas grid ───────────────────────────────────────────────────────────
-const RespostasSection = ({ respostas }) => {
+const RespostasSection = ({ respostas, tenant }) => {
   if (!respostas?.length) return null;
   const sorted = [...respostas].sort(
     (a, b) => (a.campo?.ordem ?? 999) - (b.campo?.ordem ?? 999)
@@ -88,7 +96,7 @@ const RespostasSection = ({ respostas }) => {
         >
           <span className={styles.fieldLabel}>{r.campo?.label ?? r.label ?? "Campo"}</span>
           <div className={styles.fieldValue}>
-            <FieldValue tipo={r.campo?.tipo ?? "text"} value={r.value} />
+            <FieldValue tipo={r.campo?.tipo ?? "text"} value={r.value} tenant={tenant} respostaId={r.id} />
           </div>
         </div>
       ))}
@@ -220,7 +228,7 @@ const Cronograma = ({ items, titulo }) => {
 const flagLabel = (value, label) =>
   value ? <span className={styles.eticaFlag}>{label}</span> : null;
 
-const EticaSection = ({ projeto }) => {
+const EticaSection = ({ projeto, tenant }) => {
   const {
     envolveHumanos, envolveAnimais, envolveOGM, envolvePatrimonioGenetico,
     submetidoComiteEtica, numeroProtocoloEtica, numeroCEPCONEP, numeroSISGEN,
@@ -320,7 +328,7 @@ const EticaSection = ({ projeto }) => {
 };
 
 // ─── Respostas de participação ─────────────────────────────────────────────────
-const ParticipacaoRespostas = ({ respostas }) => {
+const ParticipacaoRespostas = ({ respostas, tenant }) => {
   if (!respostas?.length) return null;
   const sorted = [...respostas].sort(
     (a, b) => (a.campo?.ordem ?? 999) - (b.campo?.ordem ?? 999)
@@ -339,7 +347,7 @@ const ParticipacaoRespostas = ({ respostas }) => {
           >
             <span className={styles.fieldLabel}>{r.campo?.label ?? r.label ?? "Campo"}</span>
             <div className={styles.fieldValue}>
-              <FieldValue tipo={r.campo?.tipo ?? "text"} value={r.value} />
+              <FieldValue tipo={r.campo?.tipo ?? "text"} value={r.value} tenant={tenant} respostaId={r.id} />
             </div>
           </div>
         ))}
@@ -458,7 +466,7 @@ const ComprovanteInscricao = ({ tenant, idInscricao }) => {
                       </a>
                     )}
                   </div>
-                  <ParticipacaoRespostas respostas={o.respostas} />
+                  <ParticipacaoRespostas respostas={o.respostas} tenant={tenant} />
                   {o.fichaAvaliacao && (
                     <FichaAvaliacaoDisplay ficha={o.fichaAvaliacao} />
                   )}
@@ -482,7 +490,7 @@ const ComprovanteInscricao = ({ tenant, idInscricao }) => {
                     <span className={styles.participanteNome}>{c.user.nome}</span>
                     <span className={styles.participanteCpf}>CPF: {c.user.cpf}</span>
                   </div>
-                  <ParticipacaoRespostas respostas={c.respostas} />
+                  <ParticipacaoRespostas respostas={c.respostas} tenant={tenant} />
                   {c.fichaAvaliacao && (
                     <FichaAvaliacaoDisplay ficha={c.fichaAvaliacao} />
                   )}
@@ -528,9 +536,9 @@ const ComprovanteInscricao = ({ tenant, idInscricao }) => {
                   )}
                 </div>
 
-                <RespostasSection respostas={projeto.Resposta} />
+                <RespostasSection respostas={projeto.Resposta} tenant={tenant} />
                 <Cronograma items={projeto.CronogramaProjeto} titulo="Cronograma do Projeto" />
-                <EticaSection projeto={projeto} />
+                <EticaSection projeto={projeto} tenant={tenant} />
 
                 {/* Planos de Trabalho */}
                 {planos.map((plano, pli) => {
@@ -588,7 +596,7 @@ const ComprovanteInscricao = ({ tenant, idInscricao }) => {
                                     <span className={styles.alunoNome}>{a.user.nome}</span>
                                     <span className={styles.alunoCpf}>CPF: {a.user.cpf}</span>
                                   </div>
-                                  <ParticipacaoRespostas respostas={a.respostas} />
+                                  <ParticipacaoRespostas respostas={a.respostas} tenant={tenant} />
                                   {a.fichaAvaliacao && (
                                     <FichaAvaliacaoDisplay ficha={a.fichaAvaliacao} />
                                   )}
@@ -608,7 +616,7 @@ const ComprovanteInscricao = ({ tenant, idInscricao }) => {
                                     <span className={styles.alunoNome}>{a.user.nome}</span>
                                     <span className={styles.alunoCpf}>CPF: {a.user.cpf}</span>
                                   </div>
-                                  <ParticipacaoRespostas respostas={a.respostas} />
+                                  <ParticipacaoRespostas respostas={a.respostas} tenant={tenant} />
                                   {a.fichaAvaliacao && (
                                     <FichaAvaliacaoDisplay ficha={a.fichaAvaliacao} />
                                   )}
@@ -619,7 +627,7 @@ const ComprovanteInscricao = ({ tenant, idInscricao }) => {
                         </div>
                       )}
 
-                      <RespostasSection respostas={plano.Resposta} />
+                      <RespostasSection respostas={plano.Resposta} tenant={tenant} />
                       <Cronograma
                         items={plano.CronogramaPlanoDeTrabalho}
                         titulo="Cronograma do Plano de Trabalho"

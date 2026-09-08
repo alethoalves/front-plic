@@ -30,7 +30,7 @@ const getFilterTokens = (tipo, value) => {
   return [String(value)];
 };
 
-const TabelaRespostasAtividade = ({ formulario, planos }) => {
+const TabelaRespostasAtividade = ({ formulario, planos, tenantSlug }) => {
   const campos = useMemo(() => formulario?.campos || [], [formulario]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [columnFilters, setColumnFilters] = useState({});
@@ -44,6 +44,9 @@ const TabelaRespostasAtividade = ({ formulario, planos }) => {
         ...plano,
         respostasPorCampo: Object.fromEntries(
           plano.respostas.map((r) => [r.campoId, r.value])
+        ),
+        respostaIdPorCampo: Object.fromEntries(
+          plano.respostas.map((r) => [r.campoId, r.id])
         ),
         searchText: `${plano.titulo} ${plano.orientadores} ${plano.alunos} ${plano.orientadoresNomeCompleto} ${plano.alunosNomeCompleto}`.toLowerCase(),
       }));
@@ -188,6 +191,8 @@ const TabelaRespostasAtividade = ({ formulario, planos }) => {
                 <RespostaCell
                   campo={campo}
                   value={rowData.respostasPorCampo[campo.id]}
+                  respostaId={rowData.respostaIdPorCampo[campo.id]}
+                  tenantSlug={tenantSlug}
                 />
               )}
             />

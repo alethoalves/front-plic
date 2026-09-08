@@ -24,15 +24,16 @@ const PASSOS_INSTRUCAO = [
   {
     titulo: "Passo 2",
     corpo:
-      "Após seu check-in ser realizado você deverá ir imediatamente ao seu pôster e apresentar seu trabalho ao público.",
+      "Após seu check-in ser realizado você deverá ir imediatamente ao seu pôster e aguardar o avaliador.",
   },
   {
     titulo: "Passo 3",
-    corpo: "Apresente seu trabalho ao público e ao avaliador.",
+    corpo: "Apresente seu trabalho ao avaliador.",
   },
   {
     titulo: "Passo 4",
-    corpo: "Você poderá ser avaliado(a) por mais de um avaliador.",
+    corpo:
+      "Você poderá ser avaliado(a) por mais de um avaliador e poderá apresentar sua pesquisa para o público em geral.",
   },
   {
     titulo: "Passo 5",
@@ -79,7 +80,8 @@ const Page = ({ params }) => {
 
     sessionStorage.removeItem(chave);
     try {
-      const { token: tokenRetomado, submissaoId: submissaoIdRetomado } = JSON.parse(bruto);
+      const { token: tokenRetomado, submissaoId: submissaoIdRetomado } =
+        JSON.parse(bruto);
       setToken(tokenRetomado);
       setSubmissaoId(submissaoIdRetomado);
       setEtapa("localizacao");

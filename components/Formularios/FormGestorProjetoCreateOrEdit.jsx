@@ -587,6 +587,11 @@ const FormGestorProjetoCreateOrEdit = ({
       />
     </div>
   );
+  const respostaIdByCampoId = {};
+  (projetoDetalhes?.Resposta || []).forEach((resposta) => {
+    respostaIdByCampoId[resposta.campoId] = resposta.id;
+  });
+
   return (
     <>
       {renderModalContentNovoAvaliador()}
@@ -775,7 +780,7 @@ const FormGestorProjetoCreateOrEdit = ({
                   errors,
                   watch,
                   undefined,
-                  { skipRequired: !projetoId }
+                  { skipRequired: !projetoId, tenantSlug, respostaIdByCampoId }
                 )}
               </div>
             </div>

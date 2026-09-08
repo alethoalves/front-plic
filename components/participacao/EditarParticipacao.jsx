@@ -1505,6 +1505,16 @@ const EditarParticipacao = ({
                           register,
                           errors,
                           watch,
+                          undefined,
+                          {
+                            tenantSlug: tenant,
+                            respostaIdByCampoId: Object.fromEntries(
+                              (participacaoInfo?.respostas || []).map((resposta) => [
+                                resposta.campoId,
+                                resposta.id,
+                              ])
+                            ),
+                          }
                         )}
                       </div>
 
