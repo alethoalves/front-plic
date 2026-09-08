@@ -1,0 +1,13 @@
+@import "./../styles/partials/colors";
+
+.avatar {
+  border-radius: 50%;
+  background-color: $primary-normal;
+  color: $white-light;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+  user-select: none;
+}

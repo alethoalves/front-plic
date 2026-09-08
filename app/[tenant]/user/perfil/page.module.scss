@@ -1,0 +1,95 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+.content {
+  margin-top: $gap-3;
+  margin-bottom: $gap-7;
+  max-width: 640px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+  margin-bottom: $gap-3;
+
+  h4 {
+    color: $primary-darken;
+  }
+}
+
+.secao {
+  border: 1px solid $gray-50;
+  box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+  border-radius: $gap-1;
+  overflow: hidden;
+  margin-bottom: $gap-3;
+}
+
+.secaoHead {
+  padding: $gap-2 $gap-3;
+  background-color: $white-darken;
+  border-bottom: 1px solid $gray-50;
+
+  h6 {
+    color: $primary-darken;
+    font-weight: 600;
+  }
+}
+
+.secaoContent {
+  padding: $gap-3;
+  background-color: $white-light;
+}
+
+.formulario {
+  .input {
+    &:not(:last-child) {
+      margin-bottom: $gap-2;
+    }
+  }
+}
+
+// ─── Abas por ano ───────────────────────────────────────────────────────────
+.abas {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid rgba(#000, 0.1);
+  margin-bottom: $gap-2;
+}
+
+.aba {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  padding: $gap-1 $gap-2;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: $gray-500;
+  transition: color 0.15s, border-color 0.15s;
+
+  &:hover {
+    color: $primary-normal;
+  }
+
+  &.abaAtiva {
+    color: $primary-normal;
+    border-bottom-color: $primary-normal;
+    font-weight: 700;
+  }
+}
+
+.statusSucesso {
+  font-size: 0.85rem;
+  color: $success-dark;
+  margin-bottom: $gap-1;
+}
+
+.statusErro {
+  font-size: 0.85rem;
+  color: $error-normal;
+  margin-bottom: $gap-1;
+}

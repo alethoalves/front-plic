@@ -70,6 +70,34 @@ export const updateUser = async (tenantSlug, cpf, userData) => {
   }
 };
 
+export const getMe = async (tenantSlug) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+    const response = await req.get(`/private/${tenantSlug}/me`, {headers});
+    return response.data.user;
+  } catch (error) {
+    console.error("Erro ao obter os dados do usuário:", error);
+    throw error;
+  }
+};
+
+export const updateMe = async (tenantSlug, userData) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+    const response = await req.put(
+      `/private/${tenantSlug}/me`,
+      userData,
+      {headers}
+    );
+    return response.data.user;
+  } catch (error) {
+    console.error("Erro ao atualizar dados do usuário:", error);
+    throw error;
+  }
+};
+
 export const deleteUser = async (tenantSlug, cpf) => {
   try {
     const headers = getAuthHeadersClient();

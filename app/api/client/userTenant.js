@@ -97,6 +97,47 @@ export const upsertUserTenantLotacao = async (tenantSlug, userId, ano, lotacaoId
   }
 };
 
+export const getUserTenantsByUser = async (tenantSlug, userId) => {
+  try {
+    const headers = getAuthHeadersClient();
+    const response = await req.get(`/private/${tenantSlug}/user-tenant/${userId}`, { headers });
+    return response.data.userTenants;
+  } catch (error) {
+    console.error("Erro ao buscar UserTenants do usuário:", error);
+    throw error;
+  }
+};
+
+export const upsertUserTenantCargo = async (tenantSlug, userId, ano, cargoId) => {
+  try {
+    const headers = getAuthHeadersClient();
+    const response = await req.put(
+      `/private/${tenantSlug}/user-tenant/${userId}/${ano}/cargo`,
+      { cargoId },
+      { headers }
+    );
+    return response.data.userTenant;
+  } catch (error) {
+    console.error("Erro ao salvar cargo:", error);
+    throw error;
+  }
+};
+
+export const upsertUserTenantCurso = async (tenantSlug, userId, ano, cursoId) => {
+  try {
+    const headers = getAuthHeadersClient();
+    const response = await req.put(
+      `/private/${tenantSlug}/user-tenant/${userId}/${ano}/curso`,
+      { cursoId },
+      { headers }
+    );
+    return response.data.userTenant;
+  } catch (error) {
+    console.error("Erro ao salvar curso:", error);
+    throw error;
+  }
+};
+
 export const getUserAreas = async (tenantSlug, userId) => {
   try {
     const headers = getAuthHeadersClient();

@@ -48,6 +48,16 @@
         flex: 1;
     }
 }
+.perfilLink{
+    display: flex;
+    align-items: center;
+    margin-right: $gap-2;
+    cursor: pointer;
+    transition: .3s ease;
+    &:hover{
+        opacity: .8;
+    }
+}
 .logout{
     padding: $gap-1;
     border-radius: 4px;
