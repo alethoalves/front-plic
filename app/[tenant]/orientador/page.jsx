@@ -37,7 +37,7 @@ const Page = ({ params }) => {
         setAtividadesNaoEntregues(atividadesNaoEntregues);
         //
         const registroAtividades =
-          await getRegistroAtividadesByCpfEditaisVigentes(params.tenant);
+          await getRegistroAtividadesByCpfEditaisVigentes(params.tenant, "orientador");
         const eventos = await getEventosByTenant(params.tenant);
         setRegistroAtividadesNaoInscritos(
           contarTotalPlanosNaoInscritos(registroAtividades, eventos)

@@ -63,7 +63,8 @@ const Page = ({ params }) => {
       setLoading(true);
       try {
         const response = await getRegistroAtividadesByCpfEditaisVigentes(
-          params.tenant
+          params.tenant,
+          "aluno"
         );
         const eventos = await getEventosByTenant(params.tenant);
 
@@ -161,7 +162,8 @@ const Page = ({ params }) => {
     setLoading(true);
     try {
       const response = await getRegistroAtividadesByCpfEditaisVigentes(
-        params.tenant
+        params.tenant,
+        "aluno"
       );
       setPlanosDeTrabalho(transformData(response));
       setRegistrosAtividadesEditaisVigentes(

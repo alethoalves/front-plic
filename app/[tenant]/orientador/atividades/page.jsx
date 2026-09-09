@@ -45,7 +45,8 @@ const Page = ({ params }) => {
       setLoading(true);
       try {
         const response = await getRegistroAtividadesByCpfEditaisVigentes(
-          params.tenant
+          params.tenant,
+          "orientador"
         );
         setRegistrosAtividadesEditaisVigentes(
           response.sort(
@@ -67,7 +68,8 @@ const Page = ({ params }) => {
   const handleCreateOrEditSuccess = useCallback(async () => {
     try {
       const response = await getRegistroAtividadesByCpfEditaisVigentes(
-        params.tenant
+        params.tenant,
+        "orientador"
       );
 
       const itens = response.filter(

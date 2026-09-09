@@ -32,16 +32,17 @@ const Page = ({ params }) => {
   const [atividadesNaoEntregues, setAtividadesNaoEntregues] = useState(0);
   const [registroAtividadesNaoInscritos, setRegistroAtividadesNaoInscritos] =
     useState(0);
-  const [perfil, setPerfil] = useState(null);
+  const perfil = getCookie("perfilSelecionado") ?? null;
   // ROTEAMENTO
   const router = useRouter();
   //EFETUAR BUSCAS DE DADOS AO RENDERIZAR O COMPONENTE
-  useEffect(() => {
-    setPerfil(getCookie("perfilSelecionado") ?? null);
-  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!perfil) {
+        router.push(`/${params.tenant}`);
+        return;
+      }
       setLoading(true);
       try {
         const atividadesNaoEntregues =

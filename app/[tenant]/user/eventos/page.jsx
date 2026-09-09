@@ -76,6 +76,10 @@ const Page = ({ params }) => {
   }, [params.tenant]);
   useEffect(() => {
     const fetchData = async () => {
+      if (!perfil) {
+        router.push(`/${params.tenant}`);
+        return;
+      }
       setLoading(true);
       try {
         const response = await getRegistroAtividadesByCpfEditaisVigentes(
