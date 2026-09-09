@@ -25,6 +25,8 @@ import {
   RiMapPinLine,
   RiLinkUnlinkM,
   RiErrorWarningLine,
+  RiArrowLeftSLine,
+  RiArrowRightSLine,
 } from "@remixicon/react";
 import Button from "@/components/Button";
 import Modal from "@/components/Modal";
@@ -93,11 +95,19 @@ const STATUS_ALTERAVEIS = [
 // específicas (ex.: atribuir/retirar avaliador) via `colunasExtras`. Um
 // `ref` expõe `atualizarStatusSubmissao` pra quem, de fora, muda o status
 // de uma submissão e precisa refletir isso aqui sem refetch.
-const SubmissoesTable = forwardRef(({ eventoSlug, colunasExtras, enriquecerLinha }, ref) => {
+const SubmissoesTable = forwardRef(
+  ({ eventoSlug, colunasExtras, enriquecerLinha, renderCardExtra }, ref) => {
   const [loading, setLoading] = useState(false);
   const [submissoes, setSubmissoes] = useState([]);
   const [globalFilterValue, setGlobalFilterValue] = useState("");
   const [isExportando, setIsExportando] = useState(false);
+
+  // Paginação controlada (em vez de deixar o DataTable paginar por conta
+  // própria) — pra lista de cards do mobile (@include responsive(xs) em
+  // SubmissoesTable.module.scss) mostrar exatamente a mesma página que a
+  // tabela mostraria, sem duplicar a lógica de paginação.
+  const [first, setFirst] = useState(0);
+  const [rows, setRows] = useState(10);
 
   const [filtroAreaIds, setFiltroAreaIds] = useState([]);
   const [filtroCategorias, setFiltroCategorias] = useState([]);
@@ -245,6 +255,13 @@ const SubmissoesTable = forwardRef(({ eventoSlug, colunasExtras, enriquecerLinha
   }, [submissoes, enriquecerLinha]);
 
   const submissoesFiltradas = useMemo(() => {
+    // Mesmo critério de busca do `globalFilterFields` do DataTable —
+    // replicado aqui (em vez de deixar só o PrimeReact filtrar) pra lista
+    // de cards do mobile mostrar exatamente o mesmo resultado da tabela (o
+    // DataTable filtra internamente o `value` que ele recebe, então a
+    // busca não aparecia em `submissoesFiltradas`).
+    const termoBusca = globalFilterValue.trim().toLowerCase();
+
     return submissoesEnriquecidas.filter((submissao) => {
       if (filtroAreaIds.length > 0 && !filtroAreaIds.includes(submissao.Resumo?.area?.area)) {
         return false;
@@ -261,9 +278,36 @@ const SubmissoesTable = forwardRef(({ eventoSlug, colunasExtras, enriquecerLinha
       ) {
         return false;
       }
+      if (
+        termoBusca &&
+        !(submissao.Resumo?.titulo || "").toLowerCase().includes(termoBusca) &&
+        !(submissao.participantesBusca || "").toLowerCase().includes(termoBusca)
+      ) {
+        return false;
+      }
       return true;
     });
-  }, [submissoesEnriquecidas, filtroAreaIds, filtroCategorias, filtroStatus, filtroSubsessaoIds]);
+  }, [
+    submissoesEnriquecidas,
+    filtroAreaIds,
+    filtroCategorias,
+    filtroStatus,
+    filtroSubsessaoIds,
+    globalFilterValue,
+  ]);
+
+  // Volta pra primeira página sempre que um filtro muda ou os dados são
+  // recarregados — sem isso, `first` podia apontar pra além do fim da
+  // lista nova e a página (tabela ou cards) ficava em branco.
+  useEffect(() => {
+    setFirst(0);
+  }, [filtroAreaIds, filtroCategorias, filtroStatus, filtroSubsessaoIds, globalFilterValue, eventoSlug]);
+
+  const totalFiltradas = submissoesFiltradas.length;
+  const submissoesPaginaAtual = useMemo(
+    () => submissoesFiltradas.slice(first, first + rows),
+    [submissoesFiltradas, first, rows]
+  );
 
   const onGlobalFilterChange = (e) => {
     const value = e.target.value;
@@ -788,71 +832,159 @@ const SubmissoesTable = forwardRef(({ eventoSlug, colunasExtras, enriquecerLinha
         </div>
 
         <p className={styles.contador}>
-          {submissoesFiltradas.length} de {submissoes.length}{" "}
+          {totalFiltradas} de {submissoes.length}{" "}
           {submissoes.length === 1 ? "submissão" : "submissões"}
         </p>
 
-        <DataTable
-          ref={dataTableRef}
-          className={styles.eventoTable}
-          value={submissoesFiltradas}
-          paginator
-          rows={10}
-          rowsPerPageOptions={[5, 10, 25, 50]}
-          loading={loading}
-          filters={filters}
-          globalFilterFields={["Resumo.titulo", "participantesBusca"]}
-          header={header}
-          emptyMessage="Nenhuma submissão encontrada."
-          currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} submissões"
-          paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-        >
-          <Column header="Ver" body={acoesBodyTemplate} style={{ width: "60px", textAlign: "center" }} />
-          <Column
-            header="Status"
-            body={statusBodyTemplate}
-            sortable
-            sortField="statusOrdenacao"
-            style={{ width: "240px", maxWidth: "240px" }}
-          />
-          <Column
-            header="Pôster"
-            body={posterNumeroBodyTemplate}
-            sortable
-            sortField="posterNumero"
-            style={{ width: "80px", textAlign: "center" }}
-          />
-          <Column
-            header="Subsessão"
-            body={subsessaoBodyTemplate}
-            sortable
-            sortField="subsessaoOrdenacao"
-            style={{ minWidth: "220px" }}
-          />
-          <Column
-            header="Participantes"
-            body={participantesBodyTemplate}
-            style={{ width: "350px", maxWidth: "350px" }}
-          />
-          <Column
-            field="Resumo.titulo"
-            header="Título"
-            body={(rowData) => <span className={styles.tituloCell}>{rowData.Resumo?.titulo}</span>}
-            sortable
-            style={{ width: "200px", maxWidth: "200px" }}
-          />
-          <Column header="Área" body={areaBodyTemplate} sortable sortField="areaOrdenacao" />
-          <Column
-            header="Instituição"
-            body={instituicaoBodyTemplate}
-            sortable
-            sortField="instituicaoOrdenacao"
-          />
-          <Column field="categoria" header="Categoria" sortable />
-          <Column field="notaFinal" header="Nota Final" sortable />
-          <Column header="Prêmio" body={premioBodyTemplate} />
-          {colunasExtras}
-        </DataTable>
+        <div className={styles.tableWrapper}>
+          <DataTable
+            ref={dataTableRef}
+            className={styles.eventoTable}
+            value={submissoesFiltradas}
+            paginator
+            first={first}
+            rows={rows}
+            rowsPerPageOptions={[5, 10, 25, 50]}
+            onPage={(e) => {
+              setFirst(e.first);
+              setRows(e.rows);
+            }}
+            loading={loading}
+            filters={filters}
+            globalFilterFields={["Resumo.titulo", "participantesBusca"]}
+            header={header}
+            emptyMessage="Nenhuma submissão encontrada."
+            currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} submissões"
+            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+          >
+            <Column header="Ver" body={acoesBodyTemplate} style={{ width: "60px", textAlign: "center" }} />
+            <Column
+              header="Status"
+              body={statusBodyTemplate}
+              sortable
+              sortField="statusOrdenacao"
+              style={{ width: "240px", maxWidth: "240px" }}
+            />
+            <Column
+              header="Pôster"
+              body={posterNumeroBodyTemplate}
+              sortable
+              sortField="posterNumero"
+              style={{ width: "80px", textAlign: "center" }}
+            />
+            <Column
+              header="Subsessão"
+              body={subsessaoBodyTemplate}
+              sortable
+              sortField="subsessaoOrdenacao"
+              style={{ minWidth: "220px" }}
+            />
+            <Column
+              header="Participantes"
+              body={participantesBodyTemplate}
+              style={{ width: "350px", maxWidth: "350px" }}
+            />
+            <Column
+              field="Resumo.titulo"
+              header="Título"
+              body={(rowData) => <span className={styles.tituloCell}>{rowData.Resumo?.titulo}</span>}
+              sortable
+              style={{ width: "200px", maxWidth: "200px" }}
+            />
+            <Column header="Área" body={areaBodyTemplate} sortable sortField="areaOrdenacao" />
+            <Column
+              header="Instituição"
+              body={instituicaoBodyTemplate}
+              sortable
+              sortField="instituicaoOrdenacao"
+            />
+            <Column field="categoria" header="Categoria" sortable />
+            <Column field="notaFinal" header="Nota Final" sortable />
+            <Column header="Prêmio" body={premioBodyTemplate} />
+            {colunasExtras}
+          </DataTable>
+        </div>
+
+        <div className={styles.cardList}>
+          {loading && submissoes.length > 0 && <p className={styles.contador}>Atualizando...</p>}
+          {totalFiltradas === 0 && (
+            <p className={styles.contador}>Nenhuma submissão encontrada.</p>
+          )}
+          {submissoesPaginaAtual.map((rowData) => (
+            <div key={rowData.id} className={styles.cardItem}>
+              <div className={styles.cardHead}>
+                <span className={styles.tituloCell}>{rowData.Resumo?.titulo}</span>
+                <button
+                  type="button"
+                  className={styles.cardVerBtn}
+                  title="Ver submissão"
+                  onClick={() => abrirDetalhe(rowData)}
+                >
+                  <RiEyeLine size={20} />
+                </button>
+              </div>
+
+              {statusBodyTemplate(rowData)}
+
+              <div className={styles.cardRow}>
+                <span className={styles.cardRowLabel}>Pôster</span>
+                {posterNumeroBodyTemplate(rowData)}
+              </div>
+
+              {subsessaoBodyTemplate(rowData)}
+              {participantesBodyTemplate(rowData)}
+
+              <div className={styles.cardInfoGrid}>
+                <div>
+                  <span className={styles.cardRowLabel}>Área</span>
+                  <p>{areaBodyTemplate(rowData)}</p>
+                </div>
+                <div>
+                  <span className={styles.cardRowLabel}>Instituição</span>
+                  <p>{instituicaoBodyTemplate(rowData)}</p>
+                </div>
+                <div>
+                  <span className={styles.cardRowLabel}>Categoria</span>
+                  <p>{rowData.categoria || "—"}</p>
+                </div>
+                <div>
+                  <span className={styles.cardRowLabel}>Nota Final</span>
+                  <p>{rowData.notaFinal ?? "—"}</p>
+                </div>
+              </div>
+
+              {premioBodyTemplate(rowData)}
+
+              {renderCardExtra && (
+                <div className={styles.cardExtra}>{renderCardExtra(rowData)}</div>
+              )}
+            </div>
+          ))}
+
+          {totalFiltradas > 0 && (
+            <div className={styles.cardPager}>
+              <button
+                type="button"
+                className={styles.cardPagerBtn}
+                disabled={first === 0}
+                onClick={() => setFirst(Math.max(0, first - rows))}
+              >
+                <RiArrowLeftSLine size={20} /> Anterior
+              </button>
+              <span className={styles.contador}>
+                {first + 1}–{Math.min(first + rows, totalFiltradas)} de {totalFiltradas}
+              </span>
+              <button
+                type="button"
+                className={styles.cardPagerBtn}
+                disabled={first + rows >= totalFiltradas}
+                onClick={() => setFirst(first + rows)}
+              >
+                Próxima <RiArrowRightSLine size={20} />
+              </button>
+            </div>
+          )}
+        </div>
       </section>
     </>
   );

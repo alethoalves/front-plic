@@ -75,7 +75,8 @@ const Page = ({ params }) => {
   // mesmo avaliador duas vezes na mesma submissão.
   const avaliadorIdsJaAtribuidos = useMemo(() => {
     if (!submissaoSelecionada) return new Set();
-    const atuais = avaliacoesAtuaisPorSubmissaoId.get(submissaoSelecionada.id) || [];
+    const atuais =
+      avaliacoesAtuaisPorSubmissaoId.get(submissaoSelecionada.id) || [];
     return new Set(atuais.map((a) => a.avaliadorId));
   }, [submissaoSelecionada, avaliacoesAtuaisPorSubmissaoId]);
 
@@ -91,18 +92,20 @@ const Page = ({ params }) => {
     const cpfsParticipantes = new Set(
       (submissaoSelecionada.Resumo?.participacoes || [])
         .map((p) => p.user?.cpf)
-        .filter(Boolean)
+        .filter(Boolean),
     );
 
     const naoParticipantes = avaliadores.filter(
       (avaliador) =>
         !cpfsParticipantes.has(avaliador.user?.cpf) &&
-        !avaliadorIdsJaAtribuidos.has(avaliador.id)
+        !avaliadorIdsJaAtribuidos.has(avaliador.id),
     );
 
     const pertenceAArea = (avaliador) =>
       !areaSubmissao ||
-      (avaliador.user?.userArea || []).some((ua) => ua.area?.area === areaSubmissao);
+      (avaliador.user?.userArea || []).some(
+        (ua) => ua.area?.area === areaSubmissao,
+      );
 
     const termo = buscaAvaliador.trim().toLowerCase();
     const termoCpf = buscaAvaliador.replace(/\D/g, "");
@@ -113,7 +116,8 @@ const Page = ({ params }) => {
             ?.toLowerCase()
             .includes(termo);
           const cpfCorresponde =
-            termoCpf.length > 0 && avaliador.user?.cpf?.replace(/\D/g, "").includes(termoCpf);
+            termoCpf.length > 0 &&
+            avaliador.user?.cpf?.replace(/\D/g, "").includes(termoCpf);
           return nomeCorresponde || cpfCorresponde;
         })
       : naoParticipantes.filter(pertenceAArea);
@@ -124,7 +128,12 @@ const Page = ({ params }) => {
       avaliadas: avaliador.user?._count?.Avaliacao || 0,
       foraDaArea: !pertenceAArea(avaliador),
     }));
-  }, [submissaoSelecionada, avaliadores, buscaAvaliador, avaliadorIdsJaAtribuidos]);
+  }, [
+    submissaoSelecionada,
+    avaliadores,
+    buscaAvaliador,
+    avaliadorIdsJaAtribuidos,
+  ]);
 
   const handleAbrirAtribuicao = (submissao) => {
     setSubmissaoSelecionada(submissao);
@@ -144,7 +153,7 @@ const Page = ({ params }) => {
       const resposta = await gestorAssociarAvaliadorSubmissao(
         eventoSlug,
         submissaoSelecionada.id,
-        avaliador.id
+        avaliador.id,
       );
 
       // Atualiza o estado local em vez de recarregar tudo — já temos em
@@ -158,21 +167,31 @@ const Page = ({ params }) => {
       setAvaliadores((prev) =>
         prev.map((a) =>
           a.id === avaliador.id
-            ? { ...a, SubmissaoAvaliador: [...(a.SubmissaoAvaliador || []), novaAtribuicao] }
-            : a
-        )
+            ? {
+                ...a,
+                SubmissaoAvaliador: [
+                  ...(a.SubmissaoAvaliador || []),
+                  novaAtribuicao,
+                ],
+              }
+            : a,
+        ),
       );
-      tabelaRef.current?.atualizarStatusSubmissao(submissaoSelecionada.id, "EM_AVALIACAO");
+      tabelaRef.current?.atualizarStatusSubmissao(
+        submissaoSelecionada.id,
+        "EM_AVALIACAO",
+      );
 
       showToast(
         "success",
         "Sucesso",
-        `Submissão atribuída a ${avaliador.user.nome}.`
+        `Submissão atribuída a ${avaliador.user.nome}.`,
       );
       handleFecharAtribuicao();
     } catch (error) {
       const mensagem =
-        error.response?.data?.message || "Erro ao atribuir avaliador à submissão.";
+        error.response?.data?.message ||
+        "Erro ao atribuir avaliador à submissão.";
       showToast("error", "Erro", mensagem);
     } finally {
       setAtribuindoAvaliadorId(null);
@@ -186,7 +205,7 @@ const Page = ({ params }) => {
     try {
       const resultado = await gestorDesassociarAvaliadorSubmissao(
         eventoSlug,
-        atribuicaoParaRetirar.id
+        atribuicaoParaRetirar.id,
       );
 
       setAvaliadores((prev) =>
@@ -195,15 +214,15 @@ const Page = ({ params }) => {
             ? {
                 ...a,
                 SubmissaoAvaliador: (a.SubmissaoAvaliador || []).filter(
-                  (sa) => sa.id !== atribuicaoParaRetirar.id
+                  (sa) => sa.id !== atribuicaoParaRetirar.id,
                 ),
               }
-            : a
-        )
+            : a,
+        ),
       );
       tabelaRef.current?.atualizarStatusSubmissao(
         atribuicaoParaRetirar.submissaoId,
-        resultado?.novoStatus || "AGUARDANDO_AVALIACAO"
+        resultado?.novoStatus || "AGUARDANDO_AVALIACAO",
       );
 
       showToast("success", "Sucesso", "Avaliador desassociado com sucesso!");
@@ -211,7 +230,7 @@ const Page = ({ params }) => {
     } catch (error) {
       setErroRetirar(
         error.response?.data?.message ||
-          "Erro ao desassociar o avaliador da submissão."
+          "Erro ao desassociar o avaliador da submissão.",
       );
     } finally {
       setRetirando(false);
@@ -233,7 +252,9 @@ const Page = ({ params }) => {
           return (
             <div key={atual.id} className={styles.linhaAvaliador}>
               <div>
-                <p className={styles.nomeAvaliador}>{atual.avaliador.user.nome}</p>
+                <p className={styles.nomeAvaliador}>
+                  {atual.avaliador.user.nome}
+                </p>
                 <p className={styles.infoAvaliador}>
                   <RiTimeLine size={12} /> há {tempo.display}
                 </p>
@@ -278,7 +299,7 @@ const Page = ({ params }) => {
           : Math.min(...atuais.map((a) => new Date(a.createdAt).getTime()));
       return { tempoEmAtribuicaoOrdenacao };
     },
-    [avaliacoesAtuaisPorSubmissaoId]
+    [avaliacoesAtuaisPorSubmissaoId],
   );
 
   const colunasExtras = [
@@ -301,15 +322,12 @@ const Page = ({ params }) => {
       <Toast ref={toast} />
 
       <div className={styles.dashboard}>
-        <div className={styles.tituloPagina}>
-          <h5>Distribuição de Avaliadores</h5>
-        </div>
-
         <SubmissoesTable
           ref={tabelaRef}
           eventoSlug={eventoSlug}
           colunasExtras={colunasExtras}
           enriquecerLinha={enriquecerLinha}
+          renderCardExtra={avaliadoresBodyTemplate}
         />
       </div>
 
@@ -322,13 +340,17 @@ const Page = ({ params }) => {
         onHide={handleFecharAtribuicao}
       >
         <p className={styles.contador}>
-          Área: {submissaoSelecionada?.Resumo?.area?.area || "Sem área definida"}
+          Área:{" "}
+          {submissaoSelecionada?.Resumo?.area?.area || "Sem área definida"}
         </p>
 
-        {(avaliacoesAtuaisPorSubmissaoId.get(submissaoSelecionada?.id) || []).length > 0 && (
+        {(avaliacoesAtuaisPorSubmissaoId.get(submissaoSelecionada?.id) || [])
+          .length > 0 && (
           <p className={styles.contador}>
             Já atribuída a:{" "}
-            {(avaliacoesAtuaisPorSubmissaoId.get(submissaoSelecionada?.id) || [])
+            {(
+              avaliacoesAtuaisPorSubmissaoId.get(submissaoSelecionada?.id) || []
+            )
               .map((a) => a.avaliador.user.nome)
               .join(", ")}
           </p>
@@ -356,7 +378,8 @@ const Page = ({ params }) => {
                 <div>
                   <p className={styles.nomeAvaliador}>{avaliador.user.nome}</p>
                   <p className={styles.infoAvaliador}>
-                    {avaliador.emAndamento} em andamento · {avaliador.avaliadas} avaliadas
+                    {avaliador.emAndamento} em andamento · {avaliador.avaliadas}{" "}
+                    avaliadas
                   </p>
                   {avaliador.foraDaArea && (
                     <p className={styles.avisoOcupado}>

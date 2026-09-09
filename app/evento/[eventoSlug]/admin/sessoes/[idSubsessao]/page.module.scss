@@ -367,6 +367,10 @@
                 flex-wrap: wrap;
                 gap: 4px;
                 margin-bottom: 6px;
+
+                @include responsive(xs) {
+                    gap: $gap-1;
+                }
             }
 
             // Estado padrão (não é o status atual da submissão) — neutro,
@@ -395,6 +399,20 @@
                 &:disabled {
                     cursor: default;
                     opacity: 0.6;
+                }
+
+                // Área de toque maior no card do mobile — 20px é pequeno
+                // demais pro dedo (mesmo ajuste já usado em
+                // .btnRetirarAvaliador neste arquivo).
+                @include responsive(xs) {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: $gap-1;
+
+                    svg {
+                        width: 20px;
+                        height: 20px;
+                    }
                 }
             }
 

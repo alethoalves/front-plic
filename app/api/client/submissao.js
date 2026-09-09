@@ -181,6 +181,65 @@ export const getAvaliadoresComSubmissoesPendentes = async (
     }
   };
 
+  export const updateSubmissaoDados = async (
+    eventoSlug,idSubmissao,dados
+  ) => {
+    try {
+      const headers = getAuthHeadersClient();
+      if (!headers) {
+        return false;
+      }
+      const response = await req.put(
+        `/evenplic/evento/${eventoSlug}/submissao/atualizarDados/${idSubmissao}`,
+        dados,
+        { headers }
+      );
+      return response.data.submissao;
+    } catch (error) {
+      console.error("Erro ao atualizar dados da submissão:", error);
+      throw error;
+    }
+  };
+
+  export const adicionarParticipacaoSubmissao = async (
+    eventoSlug,idSubmissao,dados
+  ) => {
+    try {
+      const headers = getAuthHeadersClient();
+      if (!headers) {
+        return false;
+      }
+      const response = await req.post(
+        `/evenplic/evento/${eventoSlug}/submissao/${idSubmissao}/participacao`,
+        dados,
+        { headers }
+      );
+      return response.data.participacao;
+    } catch (error) {
+      console.error("Erro ao adicionar participação:", error);
+      throw error;
+    }
+  };
+
+  export const removerParticipacaoSubmissao = async (
+    eventoSlug,idParticipacao
+  ) => {
+    try {
+      const headers = getAuthHeadersClient();
+      if (!headers) {
+        return false;
+      }
+      const response = await req.delete(
+        `/evenplic/evento/${eventoSlug}/submissao/participacao/${idParticipacao}`,
+        { headers }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao remover participação:", error);
+      throw error;
+    }
+  };
+
   export const excluirAvaliacao = async (
     eventoSlug,idAvaliacao
   ) => {

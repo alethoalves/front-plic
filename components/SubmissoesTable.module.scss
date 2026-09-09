@@ -16,6 +16,15 @@
     @include eventoFilterBar;
 }
 
+// Abaixo de 620px (breakpoint "xs") a tabela dá lugar à lista de cards
+// (.cardList) — ver components/SubmissoesTable.jsx, que renderiza as duas
+// em paralelo e deixa o CSS decidir qual aparece.
+.tableWrapper {
+    @include responsive(xs) {
+        display: none;
+    }
+}
+
 .eventoTable {
     @include eventoTable;
 
@@ -36,6 +45,135 @@
     :global(.p-datatable-table) {
         width: auto;
         min-width: 100%;
+    }
+}
+
+// Lista de cards do mobile — mesma informação de cada linha da tabela, só
+// que empilhada verticalmente. Escondida por padrão (a tabela cobre esse
+// caso em telas maiores) e só aparece abaixo de 620px.
+.cardList {
+    display: none;
+
+    @include responsive(xs) {
+        display: flex;
+        flex-direction: column;
+        gap: $gap-2;
+    }
+}
+
+.cardItem {
+    @include eventoCard;
+    display: flex;
+    flex-direction: column;
+    gap: $gap-1;
+    padding: $gap-2;
+}
+
+.cardHead {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: $gap-1;
+
+    // Dentro do card o título não precisa de width fixo (era pensado pra
+    // caber na coluna "Título" da tabela) — só o clamp de 2 linhas importa.
+    .tituloCell {
+        width: auto;
+        flex: 1;
+    }
+}
+
+// Botão "Ver" do card — mesmo ícone/ação de .verAcao (tabela), com hit-box
+// de toque real (min. 44px) em vez de só o ícone inline.
+.cardVerBtn {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: $gap-1;
+    background: $white-darken;
+    color: $primary-normal;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+
+    &:hover {
+        background-color: $primary-lighten;
+        color: $primary-darken;
+    }
+}
+
+.cardRow {
+    display: flex;
+    align-items: center;
+    gap: $gap-1;
+}
+
+.cardRowLabel {
+    flex-shrink: 0;
+    color: $gray-500;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.cardInfoGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $gap-1;
+
+    p {
+        margin: 2px 0 0;
+        color: $gray-600;
+        font-size: 14px;
+    }
+}
+
+.cardExtra {
+    padding-top: $gap-1;
+    border-top: 1px solid $gray-50;
+}
+
+.cardPager {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $gap-1;
+    padding-top: $gap-1;
+
+    .contador {
+        margin: 0;
+        text-align: center;
+    }
+}
+
+.cardPagerBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-height: 44px;
+    padding: 0 $gap-2;
+    border: 1px solid $gray-50;
+    border-radius: $gap-1;
+    background: $white-light;
+    color: $primary-normal;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+
+    &:hover:not(:disabled) {
+        border-color: $primary-normal;
+        background-color: $white-darken;
+    }
+
+    &:disabled {
+        cursor: default;
+        opacity: 0.5;
     }
 }
 
@@ -73,6 +211,12 @@
             margin-top: calc($gap-1 / 2);
         }
     }
+
+    // Dentro do card (.cardItem) essa largura era pensada pra coluna da
+    // tabela — no mobile o bloco deve só ocupar a largura do card.
+    @include responsive(xs) {
+        width: auto;
+    }
 }
 
 .subsessaoCell {
@@ -91,6 +235,10 @@
     flex-direction: column;
     gap: 6px;
     width: 208px;
+
+    @include responsive(xs) {
+        width: auto;
+    }
 }
 
 .statusAtual {
@@ -123,6 +271,14 @@
     display: flex;
     flex-wrap: nowrap;
     gap: 4px;
+
+    // Mais espaço entre os quadrados no card do mobile — junto com o
+    // tamanho maior de .statusIconBtn abaixo, reduz toque acidental no
+    // ícone vizinho.
+    @include responsive(xs) {
+        flex-wrap: wrap;
+        gap: $gap-1;
+    }
 }
 
 // Estado padrão (não é o status atual da linha) — neutro, igual pra
@@ -150,6 +306,13 @@
     &:disabled {
         cursor: default;
         opacity: 0.6;
+    }
+
+    // Área de toque maior no card do mobile.
+    @include responsive(xs) {
+        width: 40px;
+        height: 40px;
+        border-radius: $gap-1;
     }
 }
 
@@ -213,6 +376,7 @@ $status-icon-cores: (
     width: 24px;
     height: 24px;
     border-radius: 4px;
+    border: 1px solid $gray-50;
     color: $gray-400;
     cursor: pointer;
     transition: color 0.15s ease, background-color 0.15s ease;
@@ -220,6 +384,12 @@ $status-icon-cores: (
     &:hover {
         color: $primary-normal;
         background-color: $white-darken;
+    }
+
+    @include responsive(xs) {
+        width: 40px;
+        height: 40px;
+        border-radius: $gap-1;
     }
 }
 
@@ -229,6 +399,10 @@ $status-icon-cores: (
     display: inline-flex;
     align-items: center;
     gap: 4px;
+
+    @include responsive(xs) {
+        gap: $gap-1;
+    }
 }
 
 .desvincularBtn {
@@ -247,6 +421,12 @@ $status-icon-cores: (
     &:hover {
         background-color: $error-lighten;
         color: $error-dark;
+    }
+
+    @include responsive(xs) {
+        width: 40px;
+        height: 40px;
+        border-radius: $gap-1;
     }
 }
 

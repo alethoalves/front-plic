@@ -89,6 +89,13 @@
     gap: 6px;
     min-width: 190px;
     padding: 2px 0;
+
+    // Dentro do card (mobile) essa largura mínima era pensada pra célula da
+    // tabela — o bloco deve só ocupar a largura do card.
+    @include responsive(xs) {
+        min-width: 0;
+        gap: $gap-1;
+    }
 }
 
 .linhaAvaliador {
@@ -121,6 +128,13 @@
         background-color: $error-lighten;
         color: $error-dark;
     }
+
+    // Área de toque maior no card do mobile.
+    @include responsive(xs) {
+        width: 40px;
+        height: 40px;
+        border-radius: $gap-1;
+    }
 }
 
 .btnAtribuirAvaliador {
@@ -139,5 +153,22 @@
 
     &:hover {
         color: $primary-darken;
+    }
+
+    // No card do mobile ganha uma área de toque de verdade (fundo sutil +
+    // padding pra altura mínima ~44px), em vez de só o texto flutuante.
+    @include responsive(xs) {
+        align-self: stretch;
+        justify-content: center;
+        min-height: 44px;
+        padding: 0 $gap-2;
+        border-radius: $gap-1;
+        background-color: $primary-lighten;
+        font-size: 14px;
+
+        &:hover {
+            background-color: $primary-light;
+            color: $white-light;
+        }
     }
 }
