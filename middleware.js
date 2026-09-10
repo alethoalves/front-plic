@@ -89,6 +89,25 @@ if (pathname === "/autenticacao" || pathname.startsWith("/autenticacao/")) {
 }
   
   try {
+    // Lazy + memoização: cada ping só dispara na 1ª vez que o branch que
+    // realmente precisa dele é alcançado; cache evita repetir a chamada HTTP
+    // se mais de um branch pedir o mesmo pong na mesma execução.
+    const makeLazyPing = (fn) => {
+      let cache; // undefined = ainda não computado (pong real é sempre boolean)
+      return async () => {
+        if (cache === undefined) cache = await fn();
+        return cache;
+      };
+    };
+
+    const getPongAvaliador       = makeLazyPing(() => pingAvaliador(token));
+    const getPongAvaliadorTenant = makeLazyPing(() => pingAvaliadorTenant(token, tenant));
+    const getPongRoot            = makeLazyPing(() => pingRoot(token));
+    const getPongGestor          = makeLazyPing(() => pingGestor(token, tenant));
+    const getPongOrientador      = makeLazyPing(() => pingOrientador(token, tenant));
+    const getPongAluno           = makeLazyPing(() => pingAluno(token, tenant));
+    const getPongUser            = makeLazyPing(() => pingUser(token, tenant));
+
     /******************
      * MIDDLEWARE PARA A RAIZ (/) OU ERROR/SERVER
      * ****************/
@@ -238,11 +257,6 @@ if (pathname === "/autenticacao" || pathname.startsWith("/autenticacao/")) {
     if (/^\/eventos(\/|$)/.test(pathname)) {
       return NextResponse.next();
     }
-    let pongAvaliador;
-    pongAvaliador = await pingAvaliador(token);
-    
-    let pongAvaliadorTenant;
-    pongAvaliadorTenant = await pingAvaliadorTenant(token,tenant);
      /******************
      * MIDDLEWARE PARA AVALIADOR (/avaliador)
      * ****************/
@@ -258,28 +272,26 @@ if (pathname === "/autenticacao" || pathname.startsWith("/autenticacao/")) {
     // Middleware apenas para as rotas avaliador `/avaliador/home`
     if (url.pathname.startsWith(`/avaliador/home`)) {
       // Não tem token válido OU não tem permissão de acesso -> redireciona
-      if (!pongAvaliador) return NextResponse.redirect(urlToRootAvaliador);
+      if (!(await getPongAvaliador())) return NextResponse.redirect(urlToRootAvaliador);
       return NextResponse.next()
     }
-    
-    let pongRoot;
-    pongRoot = await pingRoot(token);
+
      /******************
      * MIDDLEWARE PARA ROOT (/root)
      * ****************/
     // APENAS /root
     if (pathname === '/root') {
-      if (pongRoot) return NextResponse.redirect(urlToPlic);
+      if (await getPongRoot()) return NextResponse.redirect(urlToPlic);
       return NextResponse.next();
     }
 
     //Rotas especificas para root, colocar antes das abaixo
 
-    
+
     // Middleware apenas para as rotas root `/root/home`
     if (url.pathname.startsWith(`/root/home`)) {
       // Não tem token válido OU não tem permissão de acesso -> redireciona
-      if (!pongRoot) return NextResponse.redirect(urlToRootPlic);
+      if (!(await getPongRoot())) return NextResponse.redirect(urlToRootPlic);
       return NextResponse.next()
     }
    
@@ -307,15 +319,6 @@ if (pathname === "/autenticacao" || pathname.startsWith("/autenticacao/")) {
       "x-tenant-path-logo",
       tenantExists.pathLogo || ""
     );
-    let pongGestor = await pingGestor(token, tenant);
-    let pongOrientador;
-    pongOrientador = await pingOrientador(token, tenant);
-    let pongAluno;
-    pongAluno = await pingAluno(token, tenant);
-    let pongUser;
-    pongUser = await pingUser(token, tenant);
-
-    
     if (url.pathname.startsWith(`/${tenant}/public`)) {
       return NextResponseWithTenant;
     }
@@ -325,10 +328,10 @@ if (pathname === "/autenticacao" || pathname.startsWith("/autenticacao/")) {
      * ****************/
     if (/^\/[^\/]+$/.test(pathname)) {
       //Se houver gestor:
-      if (pongGestor) return NextResponse.redirect(urlToGestor);
+      if (await getPongGestor()) return NextResponse.redirect(urlToGestor);
       //if (pongOrientador) return NextResponse.redirect(urlToOrientador);
       //if (pongAluno) return NextResponse.redirect(urlToAluno);
-      if (pongUser) return NextResponse.redirect(urlToUser);
+      if (await getPongUser()) return NextResponse.redirect(urlToUser);
       if (perfilSelecionado && token) {
         if (perfilSelecionado  === "gestor") return NextResponse.redirect(urlToGestor)
         if (perfilSelecionado === "aluno") return NextResponse.redirect(urlToUser)
@@ -347,7 +350,7 @@ if (pathname === "/autenticacao" || pathname.startsWith("/autenticacao/")) {
     // Middleware apenas para as rotas avaliador `/:tenant/avaliador`
     if (url.pathname.startsWith(`/${tenant}/avaliador`)) {
       // Não tem token válido OU não tem permissão de acesso -> redireciona
-      if (!pongAvaliadorTenant) return NextResponse.redirect(urlToSignin);
+      if (!(await getPongAvaliadorTenant())) return NextResponse.redirect(urlToSignin);
       return NextResponseWithTenant
     }
     /******************
@@ -356,7 +359,7 @@ if (pathname === "/autenticacao" || pathname.startsWith("/autenticacao/")) {
     // Middleware apenas para as rotas gestor `/:tenant/gestor`
     if (url.pathname.startsWith(`/${tenant}/gestor`)) {
       // Não tem token válido OU não tem permissão de acesso -> redireciona
-      if (!pongGestor) return NextResponse.redirect(urlToSignin);
+      if (!(await getPongGestor())) return NextResponse.redirect(urlToSignin);
       const editais = await getEditais(tenant);
       if (!editais.length > 0) return NextResponse.redirect(urlToConfiguracoes);
       return NextResponseWithTenant
@@ -367,7 +370,7 @@ if (pathname === "/autenticacao" || pathname.startsWith("/autenticacao/")) {
     // Middleware apenas para as rotas orientador `/:tenant/orientador`
     if (url.pathname.startsWith(`/${tenant}/orientador`)) {
       // Não tem token válido OU não tem permissão de acesso -> redireciona
-      if (!pongOrientador) return NextResponse.redirect(urlToSignin);
+      if (!(await getPongOrientador())) return NextResponse.redirect(urlToSignin);
       return NextResponseWithTenant
     }
     /******************
@@ -376,7 +379,7 @@ if (pathname === "/autenticacao" || pathname.startsWith("/autenticacao/")) {
     // Middleware apenas para as rotas aluno `/:tenant/aluno`
     if (url.pathname.startsWith(`/${tenant}/aluno`)) {
       // Não tem token válido OU não tem permissão de acesso -> redireciona
-      if (!pongAluno) return NextResponse.redirect(urlToSignin);
+      if (!(await getPongAluno())) return NextResponse.redirect(urlToSignin);
       return NextResponseWithTenant
     }
     /******************
@@ -385,13 +388,13 @@ if (pathname === "/autenticacao" || pathname.startsWith("/autenticacao/")) {
     // Middleware apenas para as rotas user `/:tenant/user`
     if (url.pathname.startsWith(`/${tenant}/user`)) {
       // Não tem token válido OU não tem permissão de acesso -> redireciona
-      if (!pongUser) return NextResponse.redirect(urlToSignin);
+      if (!(await getPongUser())) return NextResponse.redirect(urlToSignin);
       return NextResponseWithTenant
     }
 
     if (url.pathname.startsWith(`/${tenant}/configuracoes/gestor`)) {
       // Não tem token válido OU não tem permissão de acesso -> redireciona
-      if (!pongUser) return NextResponse.redirect(urlToConfiguracoes);
+      if (!(await getPongUser())) return NextResponse.redirect(urlToConfiguracoes);
       return NextResponseWithTenant
     }
      
