@@ -1216,11 +1216,10 @@ const Resultado = ({}) => {
   };
 
   const onGlobalFilterChange = (e) => {
-    const value = e.target.value;
-    let _filters = { ...filters };
-    _filters["global"].value = value;
-    setFilters(_filters);
-    setGlobalFilterValue(value);
+    // A busca geral vai pro servidor via `search` (debounced em `searchTerm`,
+    // ver useEffect de debounce) — não mexe em `filters`, que é dependência
+    // do fetch e dispararia uma busca a cada tecla se fosse atualizado aqui.
+    setGlobalFilterValue(e.target.value);
   };
 
   // ==============================================
