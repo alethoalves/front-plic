@@ -1072,15 +1072,19 @@ const Resultado = ({}) => {
     );
   };
 
-  // Debounce da busca textual: só dispara a query no servidor 400ms após o
-  // usuário parar de digitar, e volta pra primeira página a cada nova busca.
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setSearchTerm(globalFilterValue);
-      setFirst(0);
-    }, 400);
-    return () => clearTimeout(timeout);
-  }, [globalFilterValue]);
+  // Busca textual só dispara a query no servidor quando o usuário confirma
+  // (Enter ou botão "Buscar"), não a cada tecla — ver onGlobalFilterKeyDown
+  // e o botão em renderHeader().
+  const triggerSearch = () => {
+    setSearchTerm(globalFilterValue);
+    setFirst(0);
+  };
+
+  const onGlobalFilterKeyDown = (e) => {
+    if (e.key === "Enter") {
+      triggerSearch();
+    }
+  };
 
   // Busca no servidor sempre que tenant/ano, página, tamanho de página,
   // busca, filtros de coluna ou ordenação mudarem. Ao trocar tenant/ano,
@@ -1278,11 +1282,15 @@ const Resultado = ({}) => {
         )}
 
         <IconField iconPosition="left" className="ml-2">
-          <InputText
-            value={globalFilterValue}
-            onChange={onGlobalFilterChange}
-            placeholder="Buscar..."
-          />
+          <div className="flex gap-2">
+            <InputText
+              value={globalFilterValue}
+              onChange={onGlobalFilterChange}
+              onKeyDown={onGlobalFilterKeyDown}
+              placeholder="Buscar..."
+            />
+            <Button icon="pi pi-search" onClick={triggerSearch} tooltip="Buscar" />
+          </div>
         </IconField>
       </div>
     );

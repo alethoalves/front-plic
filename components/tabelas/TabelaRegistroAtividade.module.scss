@@ -110,13 +110,16 @@
   }
 
   .searchContainer {
+    display: flex;
+    align-items: center;
+    gap: $gap-1;
     flex: 1;
     min-width: 220px;
   }
 
   .searchInput {
     display: block;
-    width: 100%;
+    flex: 1;
   }
 
   .exportActions {

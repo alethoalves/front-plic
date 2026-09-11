@@ -297,15 +297,18 @@ const TabelaRegistroAtividade = ({ params }) => {
     }
   };
 
-  // Debounce da busca textual: só dispara a query no servidor 400ms após o
-  // usuário parar de digitar, e volta pra primeira página a cada nova busca.
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setSearchTerm(globalFilter);
-      setFirst(0);
-    }, 400);
-    return () => clearTimeout(timeout);
-  }, [globalFilter]);
+  // Busca textual só dispara a query no servidor quando o usuário confirma
+  // (Enter ou botão "Buscar"), não a cada tecla.
+  const triggerSearch = () => {
+    setSearchTerm(globalFilter);
+    setFirst(0);
+  };
+
+  const onGlobalFilterKeyDown = (e) => {
+    if (e.key === "Enter") {
+      triggerSearch();
+    }
+  };
 
   // Busca no servidor sempre que tenant/ano, página, tamanho de página, busca
   // ou filtros de status mudarem — paginação, busca e filtros são todos
@@ -750,9 +753,11 @@ const TabelaRegistroAtividade = ({ params }) => {
                 <InputText
                   value={globalFilter}
                   onChange={(e) => setGlobalFilter(e.target.value)}
+                  onKeyDown={onGlobalFilterKeyDown}
                   placeholder="Buscar por nome, CPF..."
                   className={styles.searchInput}
                 />
+                <Button icon="pi pi-search" onClick={triggerSearch} tooltip="Buscar" />
               </div>
               <div className={styles.exportActions}>
                 <div
