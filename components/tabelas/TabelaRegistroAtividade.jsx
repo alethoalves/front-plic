@@ -44,11 +44,14 @@ const TabelaRegistroAtividade = ({ params }) => {
   const [loading, setLoading] = useState(true);
   const [atividades, setAtividades] = useState([]);
   const [planos, setPlanos] = useState([]);
-  const [filteredPlanos, setFilteredPlanos] = useState([]);
+  const [totalRecords, setTotalRecords] = useState(0);
   const toast = useRef(null);
   const [selectedItems, setSelectedItems] = useState([]);
   const [statusFilters, setStatusFilters] = useState({});
   const [globalFilter, setGlobalFilter] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [first, setFirst] = useState(0);
+  const [rows, setRows] = useState(10);
   const [progress, setProgress] = useState(0);
   const [isUpdating, setIsUpdating] = useState(false);
   const [apresentacaoObrigatoria, setApresentacaoObrigatoria] = useState(false);
@@ -196,10 +199,15 @@ const TabelaRegistroAtividade = ({ params }) => {
       setProgress(0);
     }
   };
-  const fetchRegistros = async () => {
+  const fetchRegistros = async (page, pageSize, search, filters) => {
     setLoading(true);
     try {
-      const data = await getRegistrosAtividadesByAno(params.tenant, params.ano);
+      const data = await getRegistrosAtividadesByAno(params.tenant, params.ano, {
+        page,
+        pageSize,
+        search,
+        statusFilters: filters,
+      });
 
       const arrAtividades = Array.isArray(data.atividades)
         ? data.atividades
@@ -208,6 +216,7 @@ const TabelaRegistroAtividade = ({ params }) => {
 
       setApresentacaoObrigatoria(!!data.apresentacaoObrigatoria);
       setEventoObrigatorio(data.eventoObrigatorio || null);
+      setTotalRecords(data.pagination?.totalItems || 0);
 
       // Agrupar atividades por formularioId
       const atividadesAgrupadas = arrAtividades.reduce((acc, atividade) => {
@@ -262,25 +271,10 @@ const TabelaRegistroAtividade = ({ params }) => {
         return {
           ...plano,
           atividades: atividadesComRegistro,
-          searchText: `${plano.titulo} ${plano.orientadores} ${
-            plano.alunos
-          } ${plano.inscricao?.participacoes
-            ?.map((p) => p.user.nome + p.user.cpf)
-            .join(" ")} ${plano.participacoes
-            ?.map((p) => p.user.nome + p.user.cpf)
-            .join(" ")}`.toLowerCase(),
         };
       });
 
       setPlanos(planosProcessados);
-      setFilteredPlanos(planosProcessados);
-
-      // Inicializa os filtros de status para cada grupo de atividade
-      const initialFilters = {};
-      atividadesAgrupadas.forEach((grupo) => {
-        initialFilters[grupo.formularioId] = [];
-      });
-      setStatusFilters(initialFilters);
     } catch (error) {
       console.error("Erro ao obter registros de atividades:", error);
       toast.current?.show({
@@ -294,50 +288,51 @@ const TabelaRegistroAtividade = ({ params }) => {
     }
   };
 
+  // Debounce da busca textual: só dispara a query no servidor 400ms após o
+  // usuário parar de digitar, e volta pra primeira página a cada nova busca.
   useEffect(() => {
-    if (params.tenant && params.ano) {
-      fetchRegistros();
-    }
-  }, [params.tenant, params.ano]);
+    const timeout = setTimeout(() => {
+      setSearchTerm(globalFilter);
+      setFirst(0);
+    }, 400);
+    return () => clearTimeout(timeout);
+  }, [globalFilter]);
 
-  // Efeito para aplicar filtros
+  // Busca no servidor sempre que tenant/ano, página, tamanho de página, busca
+  // ou filtros de status mudarem — paginação, busca e filtros são todos
+  // aplicados na API. Ao trocar tenant/ano, reseta filtros/paginação locais e
+  // busca já com os valores zerados (em vez de esperar o próximo render),
+  // pra não disparar uma busca intermediária com filtros da tela anterior.
+  const lastParamsKeyRef = useRef(`${params.tenant}|${params.ano}`);
   useEffect(() => {
-    applyFilters();
-  }, [statusFilters, globalFilter, planos]);
+    if (!params.tenant || !params.ano) return;
 
-  const applyFilters = () => {
-    let result = [...planos];
+    const paramsKey = `${params.tenant}|${params.ano}`;
+    const paramsChanged = lastParamsKeyRef.current !== paramsKey;
+    lastParamsKeyRef.current = paramsKey;
 
-    // Aplica filtro global
-    if (globalFilter) {
-      const searchText = globalFilter.toLowerCase();
-      result = result.filter((plano) => plano.searchText.includes(searchText));
+    if (paramsChanged) {
+      setFirst(0);
+      setGlobalFilter("");
+      setSearchTerm("");
+      setStatusFilters({});
+      setSelectedItems([]);
     }
 
-    // Aplica filtros de status
-    const activeActivityFilters = Object.entries(statusFilters).filter(
-      ([_, values]) => values.length > 0
-    );
+    const effectiveFirst = paramsChanged ? 0 : first;
+    const effectiveSearch = paramsChanged ? "" : searchTerm;
+    const effectiveFilters = paramsChanged ? {} : statusFilters;
+    const page = Math.floor(effectiveFirst / rows) + 1;
+    fetchRegistros(page, rows, effectiveSearch, effectiveFilters);
+  }, [params.tenant, params.ano, first, rows, searchTerm, statusFilters]);
 
-    if (activeActivityFilters.length > 0) {
-      result = result.filter((plano) => {
-        return activeActivityFilters.every(([formularioId, statusValues]) => {
-          const atividade = plano.atividades.find(
-            (a) => a.formularioId === parseInt(formularioId)
-          );
-
-          if (!atividade || !atividade.temRegistro) {
-            return statusValues.includes(null);
-          }
-          return statusValues.includes(atividade.registro.status);
-        });
-      });
-    }
-
-    setFilteredPlanos(result);
+  const onPageChange = (e) => {
+    setFirst(e.first);
+    setRows(e.rows);
   };
 
   const handleStatusFilterChange = (formularioId, values) => {
+    setFirst(0);
     setStatusFilters((prev) => ({
       ...prev,
       [formularioId]: values,
@@ -633,9 +628,13 @@ const TabelaRegistroAtividade = ({ params }) => {
                 )}
                 <DataTable
                   className={styles.table}
-                  value={filteredPlanos}
+                  value={planos}
+                  lazy
                   paginator
-                  rows={10}
+                  first={first}
+                  rows={rows}
+                  totalRecords={totalRecords}
+                  onPage={onPageChange}
                   rowsPerPageOptions={[10, 20, 50]}
                   selectionMode="checkbox"
                   selection={selectedItems}

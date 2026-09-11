@@ -42,7 +42,11 @@ export const createAtividade = async (tenantSlug, editalId, atividadeData) => {
       throw error;
     }
   };
-  export const getRegistrosAtividadesByAno = async (tenantSlug, ano) => {
+  export const getRegistrosAtividadesByAno = async (
+    tenantSlug,
+    ano,
+    { page = 1, pageSize = 10, search = "", statusFilters = {} } = {}
+  ) => {
     try {
       const headers = getAuthHeadersClient();
       if (!headers) {
@@ -52,6 +56,12 @@ export const createAtividade = async (tenantSlug, editalId, atividadeData) => {
         `/private/${tenantSlug}/${ano}/getRegistrosAtividadesByAno`,
         {
           headers,
+          params: {
+            page,
+            pageSize,
+            search,
+            statusFilters: JSON.stringify(statusFilters),
+          },
         }
       );
       return response.data;

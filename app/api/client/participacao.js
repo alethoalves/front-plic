@@ -178,6 +178,41 @@ export const getParticipacoesByTenant = async (tenantSlug, tipo, ano, solicitarB
   }
 };
 
+// Endpoint dedicado da tela /gestor/[ano]/selecao ("Resultado Final por
+// Aluno") — busca/filtros de coluna/ordenação/paginação já aplicados no
+// servidor. Não usar para outras telas (elas continuam em
+// getParticipacoesByTenant, acima) — ver MIGRACAO_APIS_DEDICADAS.md.
+export const getResultadoSelecaoByAno = async (
+  tenantSlug,
+  ano,
+  { page = 1, pageSize = 10, search = "", filters = {}, sortField = null, sortOrder = 1 } = {}
+) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.get(
+      `/private/${tenantSlug}/${ano}/gestor/resultadoSelecao`,
+      {
+        headers,
+        params: {
+          page,
+          pageSize,
+          search,
+          filters: JSON.stringify(filters),
+          sortField,
+          sortOrder,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao obter resultado da seleção:", error.message);
+    throw error;
+  }
+};
+
 export const createParticipacao = async (tenantSlug, participacaoData) => {
   try {
     const headers = getAuthHeadersClient();

@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import {
   ativarOuPendenteParticipacao,
   getParticipacoesByTenant,
+  getResultadoSelecaoByAno,
 } from "@/app/api/client/participacao";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
@@ -45,6 +46,111 @@ const formatarTitulacao = (t) => LABELS_TITULACAO[t] || t || "-";
 const TITULACAO_OPTIONS = Object.entries(LABELS_TITULACAO).map(
   ([value, label]) => ({ value, label })
 );
+
+// Calcula as colunas virtuais (resultadoFinal, notaTotal, orientadores,
+// statusVinculo, fontePagadora, dados do orientador proponente) a partir das
+// participações cruas do endpoint genérico getParticipacoesByTenant. Usada só
+// pelo export Excel (que precisa de campos sensíveis — CPF, dados bancários,
+// histórico — que o endpoint dedicado de paginação não traz). A mesma lógica
+// roda também no backend (getResultadoSelecaoByAno) para calcular essas
+// colunas na tabela paginada — mantidas em paridade manualmente.
+const calcularColunasVirtuais = (participacoesEnviadas) =>
+  participacoesEnviadas.map((p) => {
+    const plano = p.planoDeTrabalho;
+    const notaTotal = plano
+      ? (
+          (plano.notaAluno || 0) +
+          (plano.notaOrientador || 0) +
+          (plano.notaPlano || 0) +
+          (plano.notaProjeto || 0) +
+          (plano.notaExtraRecursoProjeto || 0) +
+          (plano.notaExtraRecursoPlano || 0)
+        ).toFixed(4)
+      : null;
+
+    const vinculo = p.VinculoSolicitacaoBolsa?.[0];
+
+    // Uma inscrição pode ter mais de uma participação de orientador (ex.:
+    // histórico de substituição) — por ora, considera só o orientador
+    // proponente (userId === inscricao.proponenteId) pra status/justificativa,
+    // já que não faz sentido mostrar status de um orientador substituído.
+    const orientadorProponente =
+      p.inscricao?.participacoes?.find(
+        (o) => o.userId === p.inscricao?.proponenteId
+      ) || p.inscricao?.participacoes?.[0];
+
+    // Resultado Final: pior caso vence — reprovado > pendente > aprovado.
+    const planoReprovado =
+      p.planoDeTrabalho?.statusClassificacao === "DESCLASSIFICADO";
+    const planoPendente =
+      !p.planoDeTrabalho ||
+      p.planoDeTrabalho.statusClassificacao === "EM_ANALISE";
+    const statusOrientador = orientadorProponente?.statusParticipacao;
+    const orientadorReprovado = statusOrientador === "RECUSADA";
+    const orientadorPendente =
+      !statusOrientador || statusOrientador === "EM_ANALISE";
+    const alunoReprovado = p.statusParticipacao === "RECUSADA";
+    const alunoPendente =
+      !p.statusParticipacao || p.statusParticipacao === "EM_ANALISE";
+
+    let resultadoFinal;
+    if (planoReprovado || orientadorReprovado || alunoReprovado) {
+      resultadoFinal = "DESCLASSIFICADO";
+    } else if (planoPendente || orientadorPendente || alunoPendente) {
+      resultadoFinal = "EM_ANALISE";
+    } else {
+      resultadoFinal = "CLASSIFICADO";
+    }
+
+    return {
+      ...p,
+      notaTotal: notaTotal ? parseFloat(notaTotal) : null,
+      orientadores:
+        p.inscricao.participacoes
+          ?.map((part) => part.user?.nome)
+          .filter(Boolean)
+          .join(", ") || "N/A",
+      statusVinculo: vinculo?.status || "Voluntária",
+      fontePagadora:
+        vinculo?.solicitacaoBolsa?.bolsa?.cota?.instituicaoPagadora ||
+        "Voluntária",
+      statusParticipacaoOrientador:
+        orientadorProponente?.statusParticipacao || null,
+      justificativaOrientador: orientadorProponente?.justificativa || null,
+      titulacaoOrientador: orientadorProponente?.user?.titulacao || null,
+      anoTitulacaoOrientador:
+        orientadorProponente?.user?.anoTitulacao || null,
+      resultadoFinal,
+    };
+  });
+
+// Traduz o objeto de filtros do PrimeReact ({value, matchMode} por coluna)
+// pro payload plano esperado por getResultadoSelecaoByAno — o matchMode é
+// fixo por coluna nos dois lados, então não precisa ser enviado de novo.
+const filtersToApiPayload = (filters) => {
+  const intervaloPreenchido = (valor) =>
+    Array.isArray(valor) && valor.some((v) => v !== null && v !== undefined);
+  return {
+    edital: filters["inscricao.edital.titulo"]?.value || undefined,
+    aluno: filters["user.nome"]?.value || undefined,
+    statusPlano: filters["planoDeTrabalho.statusClassificacao"]?.value || undefined,
+    orientador: filters["orientadores"]?.value || undefined,
+    titulacaoOrientador: filters["titulacaoOrientador"]?.value || undefined,
+    anoTitulacaoOrientador: intervaloPreenchido(
+      filters["anoTitulacaoOrientador"]?.value
+    )
+      ? filters["anoTitulacaoOrientador"].value
+      : undefined,
+    statusOrientador: filters["statusParticipacaoOrientador"]?.value || undefined,
+    statusAluno: filters["statusParticipacao"]?.value || undefined,
+    resultadoFinal: filters["resultadoFinal"]?.value || undefined,
+    notaTotal: intervaloPreenchido(filters["notaTotal"]?.value)
+      ? filters["notaTotal"].value
+      : undefined,
+    statusVinculo: filters["statusVinculo"]?.value || undefined,
+    fontePagadora: filters["fontePagadora"]?.value || undefined,
+  };
+};
 
 const getInitialFilters = () => ({
   global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -151,6 +257,13 @@ const Resultado = ({}) => {
   const [globalFilterValue, setGlobalFilterValue] = useState("");
   const [filters, setFilters] = useState(getInitialFilters());
   const [selectedParticipacoes, setSelectedParticipacoes] = useState([]);
+
+  // Estados de paginação/ordenação server-side (DataTable em modo lazy)
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [first, setFirst] = useState(0);
+  const [rows, setRows] = useState(10);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortMeta, setSortMeta] = useState({ sortField: null, sortOrder: 1 });
   const [loadingAtivacao, setLoadingAtivacao] = useState(false);
   // Estados para modal de justificativas
   const [showJustificativas, setShowJustificativas] = useState(false);
@@ -159,6 +272,19 @@ const Resultado = ({}) => {
   const exportToExcel = async () => {
     try {
       setExporting(true);
+
+      // O export usa campos sensíveis (CPF, dados bancários, histórico
+      // completo) que a grade paginada não traz — busca direto do endpoint
+      // genérico (igual antes da paginação), sempre a lista inteira do
+      // tenant/ano, sem aplicar os filtros ativos na tela (mesmo
+      // comportamento de sempre).
+      const response = await getParticipacoesByTenant(tenant, "aluno", ano);
+      const participacoesEnviadasExport = response.filter(
+        (p) => p.inscricao?.status === "enviada"
+      );
+      const participacoesParaExport = calcularColunasVirtuais(
+        participacoesEnviadasExport
+      );
 
       const ExcelJS = require("exceljs");
       const workbook = new ExcelJS.Workbook();
@@ -235,7 +361,9 @@ const Resultado = ({}) => {
       };
 
       // Processar a ordem de recebimento
-      const ordemRecebimentoMap = processarOrdemRecebimento(participacoes);
+      const ordemRecebimentoMap = processarOrdemRecebimento(
+        participacoesParaExport
+      );
 
       // Definindo as colunas (com as novas colunas adicionadas)
       worksheet.columns = [
@@ -422,7 +550,7 @@ const Resultado = ({}) => {
         };
       };
       // Adicionando os dados
-      const dataToExport = participacoes.map((part) => {
+      const dataToExport = participacoesParaExport.map((part) => {
         const isPlanoDesclassificado =
           part.planoDeTrabalho?.statusClassificacao !== "CLASSIFICADO";
         const isAlunoRecusado = part.statusParticipacao === "RECUSADA";
@@ -790,7 +918,7 @@ const Resultado = ({}) => {
       }
 
       // Atualiza os dados
-      await getParticipacoes();
+      await refetchCurrentPage();
       setSelectedParticipacoes([]);
     } catch (error) {
       console.error("Erro ao ativar participações:", error);
@@ -878,7 +1006,7 @@ const Resultado = ({}) => {
       }
 
       // Atualiza os dados
-      await getParticipacoes();
+      await refetchCurrentPage();
       setSelectedParticipacoes([]);
     } catch (error) {
       console.error("Erro ao ativar vínculos:", error);
@@ -893,161 +1021,114 @@ const Resultado = ({}) => {
   };
   const [fontesPagadorasOptions, setFontesPagadorasOptions] = useState([]);
 
-  const getParticipacoes = async () => {
-    const response = await getParticipacoesByTenant(tenant, "aluno", ano);
-    // Só inscrições já enviadas contam pro resultado final (exclui
-    // rascunhos) — mesmo filtro usado em participacoes/selecao/alunos e
-    // participacoes/selecao/orientadores, que também consomem
-    // getParticipacoesByTenant.
-    const participacoesEnviadas = response.filter(
-      (p) => p.inscricao?.status === "enviada"
-    );
-    // Processa os dados recebidos
-    const comColunasVirtuais = participacoesEnviadas.map((p) => {
-      const plano = p.planoDeTrabalho;
-      const notaTotal = plano
-        ? (
-            (plano.notaAluno || 0) +
-            (plano.notaOrientador || 0) +
-            (plano.notaPlano || 0) +
-            (plano.notaProjeto || 0) +
-            (plano.notaExtraRecursoProjeto || 0) +
-            (plano.notaExtraRecursoPlano || 0)
-          ).toFixed(4)
-        : null;
-
-      const vinculo = p.VinculoSolicitacaoBolsa?.[0];
-
-      // Uma inscrição pode ter mais de uma participação de orientador (ex.:
-      // histórico de substituição) — por ora, considera só o orientador
-      // proponente (userId === inscricao.proponenteId) pra status/justificativa,
-      // já que não faz sentido mostrar status de um orientador substituído.
-      const orientadorProponente =
-        p.inscricao?.participacoes?.find(
-          (o) => o.userId === p.inscricao?.proponenteId
-        ) || p.inscricao?.participacoes?.[0];
-
-      // Resultado Final: pior caso vence — reprovado > pendente > aprovado.
-      // Mesma regra usada no export Excel (exportToExcel).
-      const planoReprovado =
-        p.planoDeTrabalho?.statusClassificacao === "DESCLASSIFICADO";
-      const planoPendente =
-        !p.planoDeTrabalho ||
-        p.planoDeTrabalho.statusClassificacao === "EM_ANALISE";
-      const statusOrientador = orientadorProponente?.statusParticipacao;
-      const orientadorReprovado = statusOrientador === "RECUSADA";
-      const orientadorPendente =
-        !statusOrientador || statusOrientador === "EM_ANALISE";
-      const alunoReprovado = p.statusParticipacao === "RECUSADA";
-      const alunoPendente =
-        !p.statusParticipacao || p.statusParticipacao === "EM_ANALISE";
-
-      let resultadoFinal;
-      if (planoReprovado || orientadorReprovado || alunoReprovado) {
-        resultadoFinal = "DESCLASSIFICADO";
-      } else if (planoPendente || orientadorPendente || alunoPendente) {
-        resultadoFinal = "EM_ANALISE";
-      } else {
-        resultadoFinal = "CLASSIFICADO";
-      }
-
-      return {
-        ...p,
-        notaTotal: notaTotal ? parseFloat(notaTotal) : null,
-        orientadores:
-          p.inscricao.participacoes
-            ?.map((part) => part.user?.nome)
-            .filter(Boolean)
-            .join(", ") || "N/A",
-        // Colunas virtuais para filtros
-        statusVinculo: vinculo?.status || "Voluntária",
-        fontePagadora:
-          vinculo?.solicitacaoBolsa?.bolsa?.cota?.instituicaoPagadora ||
-          "Voluntária",
-        statusParticipacaoOrientador:
-          orientadorProponente?.statusParticipacao || null,
-        justificativaOrientador: orientadorProponente?.justificativa || null,
-        titulacaoOrientador: orientadorProponente?.user?.titulacao || null,
-        anoTitulacaoOrientador:
-          orientadorProponente?.user?.anoTitulacao || null,
-        resultadoFinal,
-      };
-    });
-
-    /**
-     * Prepara as opções para os filtros do DataTable
-     */
-    const prepareFilterOptions = (data) => {
-      // Edital
-      const editaisUnicos = [
-        ...new Set(data.map((p) => p.inscricao?.edital?.titulo)),
-      ].filter(Boolean);
-      setEditaisOptions(
-        editaisUnicos.map((edital) => ({ label: edital, value: edital }))
-      );
+  // Busca a página atual no endpoint dedicado (busca, filtros de coluna,
+  // ordenação e paginação já aplicados no servidor — ver
+  // resultadoSelecaoController.js). As opções de filtro (edital, status de
+  // vínculo, fonte pagadora) vêm prontas na resposta, calculadas a partir do
+  // dataset completo do tenant/ano, não só da página atual.
+  const fetchResultado = async (
+    page,
+    pageSize,
+    search,
+    filtersState,
+    sortField,
+    sortOrder
+  ) => {
+    try {
+      const data = await getResultadoSelecaoByAno(tenant, ano, {
+        page,
+        pageSize,
+        search,
+        filters: filtersToApiPayload(filtersState),
+        sortField,
+        sortOrder,
+      });
+      setParticipacoes(data.participacoes || []);
+      setTotalRecords(data.pagination?.totalItems || 0);
+      setEditaisOptions(data.filterOptions?.editais || []);
+      setVinculoStatusOptions(data.filterOptions?.statusVinculo || []);
+      setFontesPagadorasOptions(data.filterOptions?.fontesPagadoras || []);
       setClassificacaoStatusOptions(statusOptions.classificacao);
-
       setParticipacaoStatusOptions(statusOptions.participacao);
-
       setSolicitacaoStatusOptions(statusOptions.solicitacao);
-
-      // Opções para status de vínculo
-      const vinculoStatusUnicos = [
-        ...new Set(
-          data.flatMap((p) =>
-            p.VinculoSolicitacaoBolsa?.length > 0
-              ? [p.VinculoSolicitacaoBolsa[0]?.status]
-              : ["Voluntária"]
-          )
-        ),
-      ].filter(Boolean);
-
-      setVinculoStatusOptions(
-        vinculoStatusUnicos.map((status) => ({
-          label: status,
-          value: status,
-        }))
-      );
-
-      // Opções para fonte pagadora
-      const fontesPagadorasUnicas = [
-        ...new Set(
-          data.flatMap((p) =>
-            p.VinculoSolicitacaoBolsa?.length > 0
-              ? [
-                  p.VinculoSolicitacaoBolsa[0]?.solicitacaoBolsa?.bolsa?.cota
-                    ?.instituicaoPagadora,
-                ]
-              : ["Voluntária"]
-          )
-        ),
-      ].filter(Boolean);
-
-      setFontesPagadorasOptions(
-        fontesPagadorasUnicas.map((fonte) => ({
-          label: fonte,
-          value: fonte,
-        }))
-      );
-    };
-
-    setParticipacoes(comColunasVirtuais);
-    // Prepara opções para filtros
-    prepareFilterOptions(comColunasVirtuais);
+    } catch (error) {
+      console.error("Erro ao buscar resultado da seleção:", error);
+      showToast("error", "Erro", "Falha ao carregar dados das participações");
+    }
   };
+
+  // Refaz a busca na página/filtros/ordenação atuais — usado depois de ações
+  // que alteram dados (ativar participação/vínculo, fechar modal de detalhe)
+  // pra atualizar a grade sem perder o contexto de navegação do usuário.
+  const refetchCurrentPage = async () => {
+    const page = Math.floor(first / rows) + 1;
+    await fetchResultado(
+      page,
+      rows,
+      searchTerm,
+      filters,
+      sortMeta.sortField,
+      sortMeta.sortOrder
+    );
+  };
+
+  // Debounce da busca textual: só dispara a query no servidor 400ms após o
+  // usuário parar de digitar, e volta pra primeira página a cada nova busca.
   useEffect(() => {
-    const fetchParticipacoes = async () => {
+    const timeout = setTimeout(() => {
+      setSearchTerm(globalFilterValue);
+      setFirst(0);
+    }, 400);
+    return () => clearTimeout(timeout);
+  }, [globalFilterValue]);
+
+  // Busca no servidor sempre que tenant/ano, página, tamanho de página,
+  // busca, filtros de coluna ou ordenação mudarem. Ao trocar tenant/ano,
+  // reseta paginação/filtros/ordenação locais e busca já com os valores
+  // zerados, em vez de esperar o próximo render.
+  const lastParamsKeyRef = useRef(`${tenant}|${ano}`);
+  useEffect(() => {
+    if (!tenant || !ano) return;
+
+    const paramsKey = `${tenant}|${ano}`;
+    const paramsChanged = lastParamsKeyRef.current !== paramsKey;
+    lastParamsKeyRef.current = paramsKey;
+
+    if (paramsChanged) {
+      setFirst(0);
+      setGlobalFilterValue("");
+      setSearchTerm("");
+      setFilters(getInitialFilters());
+      setSortMeta({ sortField: null, sortOrder: 1 });
+    }
+
+    const effectiveFirst = paramsChanged ? 0 : first;
+    const effectiveSearch = paramsChanged ? "" : searchTerm;
+    const effectiveFilters = paramsChanged ? getInitialFilters() : filters;
+    const effectiveSort = paramsChanged
+      ? { sortField: null, sortOrder: 1 }
+      : sortMeta;
+    const page = Math.floor(effectiveFirst / rows) + 1;
+
+    const carregar = async () => {
       try {
         setLoading(true);
-        await getParticipacoes();
-      } catch (error) {
-        console.error("Erro ao buscar participações:", error);
-        showToast("error", "Erro", "Falha ao carregar dados das participações");
+        await fetchResultado(
+          page,
+          rows,
+          effectiveSearch,
+          effectiveFilters,
+          effectiveSort.sortField,
+          effectiveSort.sortOrder
+        );
       } finally {
         setLoading(false);
       }
     };
+    carregar();
+  }, [tenant, ano, first, rows, searchTerm, filters, sortMeta]);
 
+  useEffect(() => {
     const fetchDocumentoTemplates = async () => {
       try {
         const templates = await getDocumentoTemplates(tenant);
@@ -1062,7 +1143,6 @@ const Resultado = ({}) => {
       }
     };
 
-    fetchParticipacoes();
     fetchDocumentoTemplates();
   }, [tenant, ano]);
   // ==============================================
@@ -1131,6 +1211,8 @@ const Resultado = ({}) => {
   const clearFilters = () => {
     setFilters(getInitialFilters());
     setGlobalFilterValue("");
+    setSearchTerm("");
+    setFirst(0);
   };
 
   const onGlobalFilterChange = (e) => {
@@ -1323,11 +1405,28 @@ const Resultado = ({}) => {
             value={participacoes}
             scrollable
             stripedRows
+            lazy
             paginator
-            rows={10}
+            first={first}
+            rows={rows}
+            totalRecords={totalRecords}
+            onPage={(e) => {
+              setFirst(e.first);
+              setRows(e.rows);
+            }}
             rowsPerPageOptions={[5, 10, 25, 50]}
             emptyMessage="Nenhum dado disponível"
             filters={filters}
+            onFilter={(e) => {
+              setFilters(e.filters);
+              setFirst(0);
+            }}
+            sortField={sortMeta.sortField}
+            sortOrder={sortMeta.sortOrder}
+            onSort={(e) => {
+              setSortMeta({ sortField: e.sortField, sortOrder: e.sortOrder });
+              setFirst(0);
+            }}
             globalFilterFields={["user.nome", "inscricao.proponente.nome"]}
             header={header}
             filterDisplay="row"
@@ -1589,7 +1688,7 @@ const Resultado = ({}) => {
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
-          getParticipacoes();
+          refetchCurrentPage();
         }}
         itemName="Detalhes"
       >
@@ -1599,10 +1698,7 @@ const Resultado = ({}) => {
             ano={ano}
             participacaoId={selectedRowData?.id}
             onClose={() => setIsModalOpen(false)}
-            onSuccess={
-              () => {}
-              //getParticipacoes
-            }
+            onSuccess={refetchCurrentPage}
           />
         )}
       </Modal>
