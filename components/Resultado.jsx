@@ -22,7 +22,7 @@ import Modal from "./Modal";
 import ParticipacaoGestorController from "./participacao/ParticipacaoGestorController";
 import { statusOptions } from "@/lib/statusOptions";
 import {
-  notaRowFilterTemplate,
+  notaRowFilterEnterOnlyTemplate,
   statusClassificacaoFilterTemplate,
 } from "@/lib/tableTemplates";
 import { renderStatusTagWithJustificativa } from "@/lib/tagUtils";
@@ -132,9 +132,7 @@ const filtersToApiPayload = (filters) => {
     Array.isArray(valor) && valor.some((v) => v !== null && v !== undefined);
   return {
     edital: filters["inscricao.edital.titulo"]?.value || undefined,
-    aluno: filters["user.nome"]?.value || undefined,
     statusPlano: filters["planoDeTrabalho.statusClassificacao"]?.value || undefined,
-    orientador: filters["orientadores"]?.value || undefined,
     titulacaoOrientador: filters["titulacaoOrientador"]?.value || undefined,
     anoTitulacaoOrientador: intervaloPreenchido(
       filters["anoTitulacaoOrientador"]?.value
@@ -158,10 +156,6 @@ const getInitialFilters = () => ({
     value: null,
     matchMode: FilterMatchMode.IN,
   },
-  "user.nome": {
-    value: null,
-    matchMode: FilterMatchMode.CONTAINS,
-  },
   "planoDeTrabalho.statusClassificacao": {
     value: null,
     matchMode: FilterMatchMode.IN,
@@ -169,10 +163,6 @@ const getInitialFilters = () => ({
   statusParticipacao: {
     value: null,
     matchMode: FilterMatchMode.IN,
-  },
-  orientadores: {
-    value: null,
-    matchMode: FilterMatchMode.CONTAINS,
   },
   titulacaoOrientador: {
     value: null,
@@ -1287,7 +1277,7 @@ const Resultado = ({}) => {
               value={globalFilterValue}
               onChange={onGlobalFilterChange}
               onKeyDown={onGlobalFilterKeyDown}
-              placeholder="Buscar..."
+              placeholder="Buscar por aluno ou orientador..."
             />
             <Button icon="pi pi-search" onClick={triggerSearch} tooltip="Buscar" />
           </div>
@@ -1434,7 +1424,11 @@ const Resultado = ({}) => {
               setSortMeta({ sortField: e.sortField, sortOrder: e.sortOrder });
               setFirst(0);
             }}
-            globalFilterFields={["user.nome", "inscricao.proponente.nome"]}
+            globalFilterFields={[
+              "user.nome",
+              "inscricao.proponente.nome",
+              "orientadores",
+            ]}
             header={header}
             filterDisplay="row"
             onRowClick={(e) => {
@@ -1478,9 +1472,7 @@ const Resultado = ({}) => {
             <Column
               header="Orientador"
               field="orientadores"
-              filter
               sortable
-              filterPlaceholder="Buscar por nome"
               style={{ width: "280px", maxWidth: "280px" }}
               bodyStyle={{
                 overflow: "hidden",
@@ -1506,7 +1498,7 @@ const Resultado = ({}) => {
               header="Ano Titulação Orientador"
               sortable
               filter
-              filterElement={notaRowFilterTemplate}
+              filterElement={notaRowFilterEnterOnlyTemplate}
               filterMatchMode="intervalo"
               showFilterMenu={false}
               filterField="anoTitulacaoOrientador"
@@ -1541,8 +1533,6 @@ const Resultado = ({}) => {
             <Column
               field="user.nome"
               header="Aluno"
-              filter
-              filterPlaceholder="Buscar por nome"
               sortable
               style={{ width: "280px", maxWidth: "280px" }}
               bodyStyle={{
@@ -1668,7 +1658,7 @@ const Resultado = ({}) => {
               sortable
               filter
               filterField="notaTotal"
-              filterElement={notaRowFilterTemplate}
+              filterElement={notaRowFilterEnterOnlyTemplate}
               filterMatchMode="intervalo"
               dataType="numeric"
               body={(rowData) =>
