@@ -70,6 +70,24 @@ export const createAtividade = async (tenantSlug, editalId, atividadeData) => {
       throw error;
     }
   };
+  export const getRegistrosAtividadesExportByAno = async (tenantSlug, ano) => {
+    try {
+      const headers = getAuthHeadersClient();
+      if (!headers) {
+        return false;
+      }
+      const response = await req.get(
+        `/private/${tenantSlug}/${ano}/getRegistrosAtividadesExportByAno`,
+        {
+          headers,
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao obter dados para exportação de atividades:", error.message);
+      throw error;
+    }
+  };
   export const getRespostasAtividadeByFormulario = async (tenantSlug, ano, formularioId) => {
     try {
       const headers = getAuthHeadersClient();

@@ -17,9 +17,14 @@ import { MultiSelect } from "primereact/multiselect";
 import { InputText } from "primereact/inputtext";
 import { Dialog } from "primereact/dialog";
 import { Button } from "primereact/button";
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
 
 // SERVIÇOS
-import { getRegistrosAtividadesByAno } from "@/app/api/client/atividade";
+import {
+  getRegistrosAtividadesByAno,
+  getRegistrosAtividadesExportByAno,
+} from "@/app/api/client/atividade";
 import { validarJustificativaManualmente } from "@/app/api/client/eventos";
 import { abrirArquivoPrivado, urlDownloadJustificativa } from "@/app/api/client/arquivos";
 import {
@@ -35,9 +40,11 @@ import {
   RiQuillPenLine,
   RiFilePdfLine,
   RiSubtractLine,
+  RiFileExcelLine,
 } from "@remixicon/react";
 import NoData from "../NoData";
 import { updateRegistroAtividade } from "@/app/api/client/registroAtividade";
+import { formatStatusText } from "@/lib/tagUtils";
 
 const TabelaRegistroAtividade = ({ params }) => {
   const router = useRouter();
@@ -59,6 +66,8 @@ const TabelaRegistroAtividade = ({ params }) => {
   const [justificativaSelecionada, setJustificativaSelecionada] = useState(null);
   const [motivoValidacao, setMotivoValidacao] = useState("");
   const [validando, setValidando] = useState(false);
+  const [exportandoPendencias, setExportandoPendencias] = useState(false);
+  const [exportandoSituacao, setExportandoSituacao] = useState(false);
   const statusOptions = [
     { label: "Pendente", value: "naoEntregue" },
     { label: "Orientador", value: "aguardandoAprovacaoOrientador" },
@@ -525,6 +534,179 @@ const TabelaRegistroAtividade = ({ params }) => {
     }
   };
 
+  // Nomes de aba do Excel têm limite de 31 caracteres e não podem repetir nem
+  // conter : \ / ? * [ ] — sanitiza o título da atividade e desambigua
+  // colisões (ex.: dois formulários com título truncado igual).
+  const nomeAbaExcel = (titulo, usados) => {
+    const base =
+      (titulo || "Atividade").replace(/[:\\/?*[\]]/g, "").trim().slice(0, 28) ||
+      "Atividade";
+    let nome = base;
+    let contador = 2;
+    while (usados.has(nome.toLowerCase())) {
+      nome = `${base} (${contador})`.slice(0, 31);
+      contador++;
+    }
+    usados.add(nome.toLowerCase());
+    return nome;
+  };
+
+  // Mesmos rótulos exibidos nos botões de status da tela (atividadeBody) —
+  // usado pra coluna Status do Excel, incluindo o caso sem registro (planos
+  // criados depois da atividade), que a tela também renderiza como "–"/pendente.
+  const STATUS_LABELS = {
+    naoEntregue: "Pendente",
+    aguardandoAprovacaoOrientador: "Orientador",
+    concluido: "Concluída",
+    dispensada: "Dispensada",
+  };
+
+  // Um Excel com uma aba por atividade (grupo por formulário, mesmo critério
+  // da tela), uma linha por plano com o status da atividade — mesmos rótulos
+  // (Pendente/Orientador/Concluída/Dispensada) renderizados na tela.
+  const handleExportarPendencias = async () => {
+    setExportandoPendencias(true);
+    try {
+      const data = await getRegistrosAtividadesExportByAno(params.tenant, params.ano);
+      const atividadesExport = Array.isArray(data.atividades) ? data.atividades : [];
+      const planosExport = Array.isArray(data.planos) ? data.planos : [];
+
+      const grupos = atividadesExport.reduce((acc, atividade) => {
+        const grupo = acc.find((g) => g.formularioId === atividade.formularioId);
+        if (grupo) {
+          grupo.idsAtividades.push(atividade.id);
+        } else {
+          acc.push({
+            titulo: atividade.titulo,
+            formularioId: atividade.formularioId,
+            idsAtividades: [atividade.id],
+          });
+        }
+        return acc;
+      }, []);
+
+      if (grupos.length === 0) {
+        toast.current?.show({
+          severity: "info",
+          summary: "Nada para exportar",
+          detail: "Não há atividades cadastradas neste ano.",
+          life: 3000,
+        });
+        return;
+      }
+
+      const workbook = new ExcelJS.Workbook();
+      const nomesUsados = new Set();
+
+      grupos.forEach((grupo) => {
+        const worksheet = workbook.addWorksheet(nomeAbaExcel(grupo.titulo, nomesUsados));
+        worksheet.columns = [
+          { header: "Plano de Trabalho", key: "plano", width: 35 },
+          { header: "Status", key: "status", width: 16 },
+          { header: "Orientador(es)", key: "orientadores", width: 30 },
+          { header: "Email(s) Orientador", key: "emailOrientadores", width: 35 },
+          { header: "Aluno(s)", key: "alunos", width: 30 },
+          { header: "Email(s) Aluno", key: "emailAlunos", width: 35 },
+        ];
+
+        planosExport.forEach((plano) => {
+          let registro = null;
+          for (const id of grupo.idsAtividades) {
+            if (plano.registros?.[id]) {
+              registro = plano.registros[id];
+              break;
+            }
+          }
+          const status = registro ? STATUS_LABELS[registro.status] || registro.status : "Pendente";
+
+          worksheet.addRow({
+            plano: plano.titulo,
+            status,
+            orientadores: (plano.orientadoresDetalhes || []).map((o) => o.nome).join("; "),
+            emailOrientadores: (plano.orientadoresDetalhes || [])
+              .map((o) => o.email || "-")
+              .join("; "),
+            alunos: (plano.alunosDetalhes || []).map((a) => a.nome).join("; "),
+            emailAlunos: (plano.alunosDetalhes || []).map((a) => a.email || "-").join("; "),
+          });
+        });
+      });
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      saveAs(new Blob([buffer]), `pendencias-atividades-${params.ano}.xlsx`);
+    } catch (error) {
+      console.error("Erro ao exportar pendências de atividades:", error);
+      toast.current?.show({
+        severity: "error",
+        summary: "Erro",
+        detail: "Falha ao gerar a planilha de pendências.",
+        life: 3000,
+      });
+    } finally {
+      setExportandoPendencias(false);
+    }
+  };
+
+  // Um Excel, uma linha por plano, com orientador/aluno + email, fonte
+  // pagadora e status da participação do(s) aluno(s), e se o plano está
+  // vinculado a uma submissão em evento e/ou tem justificativa de ausência
+  // registrada.
+  const handleExportarSituacaoAlunos = async () => {
+    setExportandoSituacao(true);
+    try {
+      const data = await getRegistrosAtividadesExportByAno(params.tenant, params.ano);
+      const planosExport = Array.isArray(data.planos) ? data.planos : [];
+
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet("Situação dos Planos");
+      worksheet.columns = [
+        { header: "Plano de Trabalho", key: "plano", width: 35 },
+        { header: "Orientador(es)", key: "orientadores", width: 30 },
+        { header: "Email(s) Orientador", key: "emailOrientadores", width: 35 },
+        { header: "Aluno(s)", key: "alunos", width: 30 },
+        { header: "Email(s) Aluno", key: "emailAlunos", width: 35 },
+        { header: "Fonte Pagadora", key: "fontePagadora", width: 25 },
+        { header: "Status Participação (Aluno)", key: "statusParticipacao", width: 24 },
+        { header: "Vinculado a Submissão em Evento", key: "submissao", width: 30 },
+        { header: "Justificativa de Ausência", key: "justificativa", width: 28 },
+      ];
+
+      planosExport.forEach((plano) => {
+        const { submissao, justificativa } = plano.apresentacao || {};
+        const alunosDetalhes = plano.alunosDetalhes || [];
+
+        worksheet.addRow({
+          plano: plano.titulo,
+          orientadores: (plano.orientadoresDetalhes || []).map((o) => o.nome).join("; "),
+          emailOrientadores: (plano.orientadoresDetalhes || [])
+            .map((o) => o.email || "-")
+            .join("; "),
+          alunos: alunosDetalhes.map((a) => a.nome).join("; "),
+          emailAlunos: alunosDetalhes.map((a) => a.email || "-").join("; "),
+          fontePagadora: alunosDetalhes.map((a) => a.fontePagadora).join("; "),
+          statusParticipacao: alunosDetalhes
+            .map((a) => formatStatusText(a.statusParticipacao))
+            .join("; "),
+          submissao: submissao ? `Sim (${formatStatusText(submissao.status)})` : "Não",
+          justificativa: justificativa ? `Sim (${formatStatusText(justificativa.status)})` : "Não",
+        });
+      });
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      saveAs(new Blob([buffer]), `situacao-planos-${params.ano}.xlsx`);
+    } catch (error) {
+      console.error("Erro ao exportar situação dos planos:", error);
+      toast.current?.show({
+        severity: "error",
+        summary: "Erro",
+        detail: "Falha ao gerar a planilha de situação dos planos.",
+        life: 3000,
+      });
+    } finally {
+      setExportandoSituacao(false);
+    }
+  };
+
   // Cabeçalho da coluna com filtro
   const atividadeHeader = (atividade) => {
     return (
@@ -571,6 +753,24 @@ const TabelaRegistroAtividade = ({ params }) => {
                   placeholder="Buscar por nome, CPF..."
                   className={styles.searchInput}
                 />
+              </div>
+              <div className={styles.exportActions}>
+                <div
+                  className={styles.exportButton}
+                  onClick={exportandoPendencias ? undefined : handleExportarPendencias}
+                  title="Planilha (uma aba por atividade) com quem ainda não entregou"
+                >
+                  <RiFileExcelLine />
+                  <p>{exportandoPendencias ? "Gerando..." : "Pendências por atividade"}</p>
+                </div>
+                <div
+                  className={styles.exportButton}
+                  onClick={exportandoSituacao ? undefined : handleExportarSituacaoAlunos}
+                  title="Planilha com orientador, aluno, bolsa e apresentação em evento de cada plano"
+                >
+                  <RiFileExcelLine />
+                  <p>{exportandoSituacao ? "Gerando..." : "Situação dos planos"}</p>
+                </div>
               </div>
             </div>
 

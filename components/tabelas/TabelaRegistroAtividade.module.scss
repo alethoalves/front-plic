@@ -102,19 +102,55 @@
 }
 .tableHeader {
     display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: $gap-2;
     padding: $gap-2;
-    
-    
   }
-  
+
   .searchContainer {
-    width: 100%;
-    
+    flex: 1;
+    min-width: 220px;
   }
-  
+
   .searchInput {
     display: block;
     width: 100%;
+  }
+
+  .exportActions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: $gap-2;
+  }
+
+  .exportButton {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    color: $primary-normal;
+    white-space: nowrap;
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    p {
+      color: $primary-normal;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    &:hover {
+      color: $primary-dark;
+      p {
+        color: $primary-dark;
+      }
+    }
   }
   
   .columnHeader {
