@@ -12,7 +12,7 @@ export const createEditalDocumento = async (tenantSlug, editalId, formData) => {
     );
     return response.data.documento;
   } catch (error) {
-    console.error("Erro ao criar documento do edital:", error);
+    console.error("Erro ao criar documento do edital:", error.message);
     throw error;
   }
 };
@@ -28,7 +28,7 @@ export const getEditalDocumentos = async (tenantSlug, editalId, tipo = null) => 
     );
     return response.data.documentos;
   } catch (error) {
-    console.error("Erro ao buscar documentos do edital:", error);
+    console.error("Erro ao buscar documentos do edital:", error.message);
     throw error;
   }
 };
@@ -43,7 +43,7 @@ export const deleteEditalDocumento = async (tenantSlug, editalId, documentoId) =
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao excluir documento do edital:", error);
+    console.error("Erro ao excluir documento do edital:", error.message);
     throw error;
   }
 };
@@ -59,7 +59,7 @@ export const updateEditalDocumento = async (tenantSlug, editalId, documentoId, d
     );
     return response.data.documento;
   } catch (error) {
-    console.error("Erro ao atualizar documento do edital:", error);
+    console.error("Erro ao atualizar documento do edital:", error.message);
     throw error;
   }
 };

@@ -7,7 +7,7 @@ export const getOpcoesAluno = async (tenantSlug) => {
     const response = await req.get(`/private/${tenantSlug}/user-tenant/opcoes-aluno`, { headers });
     return response.data;
   } catch (error) {
-    console.error("Erro ao buscar opções do aluno:", error);
+    console.error("Erro ao buscar opções do aluno:", error.message);
     throw error;
   }
 };
@@ -18,7 +18,7 @@ export const getUserTenant = async (tenantSlug, userId, ano) => {
     const response = await req.get(`/private/${tenantSlug}/user-tenant/${userId}/${ano}`, { headers });
     return response.data.userTenant;
   } catch (error) {
-    console.error("Erro ao buscar UserTenant:", error);
+    console.error("Erro ao buscar UserTenant:", error.message);
     throw error;
   }
 };
@@ -36,7 +36,7 @@ export const processarHistoricoEscolar = async (tenantSlug, userId, ano, file, p
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao processar histórico:", error);
+    console.error("Erro ao processar histórico:", error.message);
     throw error;
   }
 };
@@ -51,7 +51,7 @@ export const upsertUserTenantAluno = async (tenantSlug, userId, ano, data) => {
     );
     return response.data.userTenant;
   } catch (error) {
-    console.error("Erro ao salvar dados do aluno:", error);
+    console.error("Erro ao salvar dados do aluno:", error.message);
     throw error;
   }
 };
@@ -66,7 +66,7 @@ export const atualizarCampoUserTenant = async (tenantSlug, userId, ano, campo, v
     );
     return response.data.userTenant;
   } catch (error) {
-    console.error("Erro ao atualizar campo do UserTenant:", error);
+    console.error("Erro ao atualizar campo do UserTenant:", error.message);
     throw error;
   }
 };
@@ -77,7 +77,7 @@ export const getOpcoesLotacao = async (tenantSlug) => {
     const response = await req.get(`/private/${tenantSlug}/user-tenant/opcoes-lotacao`, { headers });
     return response.data.lotacoes;
   } catch (error) {
-    console.error("Erro ao buscar opções de lotação:", error);
+    console.error("Erro ao buscar opções de lotação:", error.message);
     throw error;
   }
 };
@@ -92,7 +92,7 @@ export const upsertUserTenantLotacao = async (tenantSlug, userId, ano, lotacaoId
     );
     return response.data.userTenant;
   } catch (error) {
-    console.error("Erro ao salvar lotação:", error);
+    console.error("Erro ao salvar lotação:", error.message);
     throw error;
   }
 };
@@ -103,7 +103,7 @@ export const getUserTenantsByUser = async (tenantSlug, userId) => {
     const response = await req.get(`/private/${tenantSlug}/user-tenant/${userId}`, { headers });
     return response.data.userTenants;
   } catch (error) {
-    console.error("Erro ao buscar UserTenants do usuário:", error);
+    console.error("Erro ao buscar UserTenants do usuário:", error.message);
     throw error;
   }
 };
@@ -118,7 +118,7 @@ export const upsertUserTenantCargo = async (tenantSlug, userId, ano, cargoId) =>
     );
     return response.data.userTenant;
   } catch (error) {
-    console.error("Erro ao salvar cargo:", error);
+    console.error("Erro ao salvar cargo:", error.message);
     throw error;
   }
 };
@@ -133,7 +133,7 @@ export const upsertUserTenantCurso = async (tenantSlug, userId, ano, cursoId) =>
     );
     return response.data.userTenant;
   } catch (error) {
-    console.error("Erro ao salvar curso:", error);
+    console.error("Erro ao salvar curso:", error.message);
     throw error;
   }
 };
@@ -144,7 +144,7 @@ export const getUserAreas = async (tenantSlug, userId) => {
     const response = await req.get(`/private/${tenantSlug}/user-tenant/${userId}/areas`, { headers });
     return response.data.areaIds;
   } catch (error) {
-    console.error("Erro ao buscar áreas do usuário:", error);
+    console.error("Erro ao buscar áreas do usuário:", error.message);
     throw error;
   }
 };
@@ -159,7 +159,7 @@ export const upsertUserAreas = async (tenantSlug, userId, areaIds) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao salvar áreas do usuário:", error);
+    console.error("Erro ao salvar áreas do usuário:", error.message);
     throw error;
   }
 };

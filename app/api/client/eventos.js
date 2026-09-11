@@ -12,7 +12,7 @@ export const cpfVerificationForInscricao = async (cpf) => {
     );
     return response.data.user;
   } catch (error) {
-    console.error("Erro ao chamar a API:", error);
+    console.error("Erro ao chamar a API:", error.message);
     throw error;
   }
 };
@@ -24,7 +24,7 @@ export const getUltimaAvaliacaoDepurada = async (eventoSlug,submissaoId) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao chamar a API:", error);
+    console.error("Erro ao chamar a API:", error.message);
     throw error;
   }
 };
@@ -36,7 +36,7 @@ export const getSubmissoesByCPFAndEvento = async (cpf,eventoSlug) => {
     );
     return response.data.submissoes;
   } catch (error) {
-    console.error("Erro ao chamar a API:", error);
+    console.error("Erro ao chamar a API:", error.message);
     throw error;
   }
 };
@@ -49,7 +49,7 @@ export const getFiltros = async (eventoSlug) => {
     );
     return response.data.filtros;
   } catch (error) {
-    console.error("Erro ao chamar a API:", error);
+    console.error("Erro ao chamar a API:", error.message);
     throw error;
   }
 };
@@ -61,7 +61,7 @@ export const getPublicacoes = async (eventoSlug) => {
     );
     return response.data.publicacoes;
   } catch (error) {
-    console.error("Erro ao chamar a API:", error);
+    console.error("Erro ao chamar a API:", error.message);
     throw error;
   }
 };
@@ -73,7 +73,7 @@ export const getPublicacao = async (idSubmissao) => {
     );
     return response.data.publicacao;
   } catch (error) {
-    console.error("Erro ao chamar a API:", error);
+    console.error("Erro ao chamar a API:", error.message);
     throw error;
   }
 };
@@ -84,7 +84,7 @@ export const deleteSubmissaoByUser = async (submissaoId, cpf) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao excluir submissão:", error);
+    console.error("Erro ao excluir submissão:", error.message);
     throw error;
   }
 };
@@ -101,7 +101,7 @@ export const criarInscricaoEvento = async (body) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao criar formulário:", error);
+    console.error("Erro ao criar formulário:", error.message);
     throw error;
   }
 };
@@ -114,7 +114,7 @@ export const getTenantsByEventoSlug = async (slug) => {
     );
     return response.data.tenants;
   } catch (error) {
-    console.error("Erro ao chamar a API:", error);
+    console.error("Erro ao chamar a API:", error.message);
     throw error;
   }
 };
@@ -130,7 +130,7 @@ export const getPlanosOuProjetos = async (cpf,slugEvento, slugTenant) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao chamar a API:", error);
+    console.error("Erro ao chamar a API:", error.message);
     throw error;
   }
 };
@@ -146,7 +146,7 @@ export const getPendenciasApresentacao = async (tenantSlug) => {
     );
     return response.data.pendencias;
   } catch (error) {
-    console.error("Erro ao buscar pendências de apresentação:", error);
+    console.error("Erro ao buscar pendências de apresentação:", error.message);
     throw error;
   }
 };
@@ -162,7 +162,7 @@ export const getEventosParaJustificarAusencia = async (tenantSlug) => {
     );
     return response.data.eventos;
   } catch (error) {
-    console.error("Erro ao buscar eventos para justificar ausência:", error);
+    console.error("Erro ao buscar eventos para justificar ausência:", error.message);
     throw error;
   }
 };
@@ -178,7 +178,7 @@ export const getPlanosParaJustificarAusencia = async (tenantSlug, idEvento) => {
     );
     return response.data; // { evento, planos }
   } catch (error) {
-    console.error("Erro ao buscar planos para justificar ausência:", error);
+    console.error("Erro ao buscar planos para justificar ausência:", error.message);
     throw error;
   }
 };
@@ -201,7 +201,7 @@ export const justificarApresentacaoPosEvento = async (tenantSlug, idEvento, idPl
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao justificar apresentação:", error);
+    console.error("Erro ao justificar apresentação:", error.message);
     throw error;
   }
 };
@@ -218,7 +218,7 @@ export const validarJustificativaManualmente = async (eventoSlug, justificativaI
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao validar justificativa manualmente:", error);
+    console.error("Erro ao validar justificativa manualmente:", error.message);
     throw error;
   }
 };
@@ -230,7 +230,7 @@ export const getRegistrosAtividadePorPlano = async (planoId, eventoSlug) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao chamar a API:", error);
+    console.error("Erro ao chamar a API:", error.message);
     throw error;
   }
 };
@@ -242,7 +242,7 @@ export const getEventoBySlugForInscricao = async (eventoSlug) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao chamar a API:", error);
+    console.error("Erro ao chamar a API:", error.message);
     throw error;
   }
 };
@@ -258,7 +258,7 @@ export const getEventoProgramacao = async (eventoId) => {
     
     return response.data.programacao;
   } catch (error) {
-    console.error("Erro ao chamar a API:", error);
+    console.error("Erro ao chamar a API:", error.message);
     throw error;
   }
 };
@@ -271,7 +271,7 @@ export const getEventoRootBySlug = async (slug) => {
     );
     return response.data.eventoRoot;
   } catch (error) {
-    console.error("Erro ao chamar a API:", error);
+    console.error("Erro ao chamar a API:", error.message);
     throw error;
   }
 };
@@ -288,7 +288,7 @@ export const getEventosByTenant = async (tenantSlug) => {
       );
       return response.data.eventos;
     } catch (error) {
-      console.error("Erro ao chamar a API:", error);
+      console.error("Erro ao chamar a API:", error.message);
       throw error;
     }
   };
@@ -300,7 +300,7 @@ export const getEventoBySlug = async (slug) => {
     );
     return response.data.evento;
   } catch (error) {
-    console.error("Erro ao chamar a API:", error);
+    console.error("Erro ao chamar a API:", error.message);
     throw error;
   }
 };
@@ -313,7 +313,7 @@ export const getAllEvents = async () => {
     );
     return response.data.eventos;
   } catch (error) {
-    console.error("Erro ao chamar a API:", error);
+    console.error("Erro ao chamar a API:", error.message);
     throw error;
   }
 };
@@ -331,7 +331,7 @@ export const startSubmissaoEvento = async (tenantSlug,idEvento,idPlanoDeTrabalho
     );
     return response.data.submissao;
   } catch (error) {
-    console.error("Erro ao chamar a API:", error);
+    console.error("Erro ao chamar a API:", error.message);
     throw error;
   }
 };
@@ -350,7 +350,7 @@ export const getSubmissoesEvento = async (tenantSlug) => {
     );
     return response.data.submissoes;
   } catch (error) {
-    console.error("Erro ao chamar a API:", error);
+    console.error("Erro ao chamar a API:", error.message);
     throw error;
   }
 };
@@ -362,7 +362,7 @@ export const deleteSubmissao = async (tenantSlug, idSubmissao) => {
     const response = await req.delete(`/evenplic/${tenantSlug}/submissao/${idSubmissao}`, {headers});
     return response.data;
   } catch (error) {
-    console.error('Erro ao deletar edital:', error);
+    console.error('Erro ao deletar edital:', error.message);
     throw error;
   }
 };
@@ -380,7 +380,7 @@ export const createEdicaoEvento = async (tenantSlug, data) => {
 
     return response.data.evento;
   } catch (error) {
-    console.error("Erro ao criar edição de evento:", error);
+    console.error("Erro ao criar edição de evento:", error.message);
     throw error;
   }
 };
@@ -401,7 +401,7 @@ export const getEventosDashboard = async (tenantSlug) => {
     // Retorna os dados de inscrições da resposta da API
     return response.data.eventos;
   } catch (error) {
-    console.error("Erro ao buscar dashboard de inscrições:", error);
+    console.error("Erro ao buscar dashboard de inscrições:", error.message);
     throw error;
   }
 };
@@ -420,7 +420,7 @@ export const getEventoDashboard = async (eventoSlug) => {
     // Retorna os dados de inscrições da resposta da API
     return response.data.evento;
   } catch (error) {
-    console.error("Erro ao buscar dashboard de inscrições:", error);
+    console.error("Erro ao buscar dashboard de inscrições:", error.message);
     throw error;
   }
 };
@@ -438,7 +438,7 @@ export const getEventoConfiguracoes = async (eventoSlug) => {
 
     return response.data.evento;
   } catch (error) {
-    console.error("Erro ao buscar configurações do evento:", error);
+    console.error("Erro ao buscar configurações do evento:", error.message);
     throw error;
   }
 };
@@ -456,7 +456,7 @@ export const updateEventoConfiguracoes = async (eventoSlug, data) => {
 
     return response.data.evento;
   } catch (error) {
-    console.error("Erro ao atualizar configurações do evento:", error);
+    console.error("Erro ao atualizar configurações do evento:", error.message);
     throw error;
   }
 };
@@ -473,7 +473,7 @@ export const getConfiguracoesEdicaoAnterior = async (eventoSlug) => {
 
     return response.data.edicaoAnterior;
   } catch (error) {
-    console.error("Erro ao buscar configurações da edição anterior:", error);
+    console.error("Erro ao buscar configurações da edição anterior:", error.message);
     throw error;
   }
 };
@@ -491,7 +491,7 @@ export const criarInstituicaoParceira = async (eventoSlug, data) => {
 
     return response.data;
   } catch (error) {
-    console.error("Erro ao criar instituição parceira:", error);
+    console.error("Erro ao criar instituição parceira:", error.message);
     throw error;
   }
 };
@@ -509,7 +509,7 @@ export const atualizarApresentacaoObrigatoria = async (eventoSlug, tenantId, apr
 
     return response.data;
   } catch (error) {
-    console.error("Erro ao atualizar apresentação obrigatória:", error);
+    console.error("Erro ao atualizar apresentação obrigatória:", error.message);
     throw error;
   }
 };
@@ -527,7 +527,7 @@ export const atualizarInstituicaoParceira = async (eventoSlug, id, data) => {
 
     return response.data;
   } catch (error) {
-    console.error("Erro ao atualizar instituição parceira:", error);
+    console.error("Erro ao atualizar instituição parceira:", error.message);
     throw error;
   }
 };
@@ -544,7 +544,7 @@ export const excluirInstituicaoParceira = async (eventoSlug, id) => {
 
     return response.data;
   } catch (error) {
-    console.error("Erro ao excluir instituição parceira:", error);
+    console.error("Erro ao excluir instituição parceira:", error.message);
     throw error;
   }
 };
@@ -561,7 +561,7 @@ export const getInstituicoesParceirasEdicaoAnterior = async (eventoSlug) => {
 
     return response.data.edicaoAnterior;
   } catch (error) {
-    console.error("Erro ao buscar instituições parceiras da edição anterior:", error);
+    console.error("Erro ao buscar instituições parceiras da edição anterior:", error.message);
     throw error;
   }
 };
@@ -579,7 +579,7 @@ export const importarInstituicoesParceirasDaEdicaoAnterior = async (eventoSlug) 
 
     return response.data;
   } catch (error) {
-    console.error("Erro ao importar instituições parceiras da edição anterior:", error);
+    console.error("Erro ao importar instituições parceiras da edição anterior:", error.message);
     throw error;
   }
 };
@@ -597,7 +597,7 @@ export const uploadImagemEvento = async (eventoSlug, formData) => {
 
     return response.data;
   } catch (error) {
-    console.error("Erro ao fazer upload da imagem do evento:", error);
+    console.error("Erro ao fazer upload da imagem do evento:", error.message);
     throw error;
   }
 };
@@ -610,7 +610,7 @@ export const getEventosAnoCorrente = async (slug) => {
     );
     return response.data.eventos;
   } catch (error) {
-    console.error("Erro ao chamar a API:", error);
+    console.error("Erro ao chamar a API:", error.message);
     throw error;
   }
 };

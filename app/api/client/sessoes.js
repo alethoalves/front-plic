@@ -14,7 +14,7 @@ export const getSessoesBySlug = async (eventoSlug) => {
     );
     return response.data.sessoes;
   } catch (error) {
-    console.error("Erro:", error);
+    console.error("Erro:", error.message);
     throw error;
   }
 };
@@ -27,7 +27,7 @@ export const getSessaoById = async (eventoSlug,sessaoId) => {
     );
     return response.data.sessao;
   } catch (error) {
-    console.error("Erro:", error);
+    console.error("Erro:", error.message);
     throw error;
   }
 };
@@ -49,7 +49,7 @@ export const criarSessao = async (eventoSlug, data) => {
 
     return response.data;
   } catch (error) {
-    console.error("Erro ao criar sessão:", error);
+    console.error("Erro ao criar sessão:", error.message);
     throw error;
   }
 };
@@ -67,7 +67,7 @@ export const atualizarSessao = async (eventoSlug, sessaoId, data) => {
 
     return response.data;
   } catch (error) {
-    console.error("Erro ao atualizar sessão:", error);
+    console.error("Erro ao atualizar sessão:", error.message);
     throw error;
   }
 };
@@ -84,7 +84,7 @@ export const excluirSessao = async (eventoSlug, sessaoId) => {
 
     return response.data;
   } catch (error) {
-    console.error("Erro ao excluir sessão:", error);
+    console.error("Erro ao excluir sessão:", error.message);
     throw error;
   }
 };
@@ -106,7 +106,7 @@ export const criarSubsessao = async (eventoSlug, sessaoId, data) => {
 
     return response.data;
   } catch (error) {
-    console.error("Erro ao criar subsessão:", error);
+    console.error("Erro ao criar subsessão:", error.message);
     throw error;
   }
 };
@@ -124,7 +124,7 @@ export const atualizarSubsessao = async (eventoSlug, subsessaoId, data) => {
 
     return response.data;
   } catch (error) {
-    console.error("Erro ao atualizar subsessão:", error);
+    console.error("Erro ao atualizar subsessão:", error.message);
     throw error;
   }
 };
@@ -141,7 +141,7 @@ export const excluirSubsessao = async (eventoSlug, subsessaoId) => {
 
     return response.data;
   } catch (error) {
-    console.error("Erro ao excluir subsessão:", error);
+    console.error("Erro ao excluir subsessão:", error.message);
     throw error;
   }
 };

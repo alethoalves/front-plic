@@ -9,7 +9,7 @@ export const updateDataHistorico = async (tenantSlug, dd,mm,yyyy,hh,min, tabelaH
     const response = await req.put(`/private/${tenantSlug}/atualizar-historico`, {dd,mm,yyyy,hh,min, tabelaHistorico, id}, {headers});
     return response.data.registro;
   } catch (error) {
-    console.error('Erro ao atualizar edital:', error);
+    console.error('Erro ao atualizar edital:', error.message);
     throw error;
   }
 };
@@ -27,7 +27,7 @@ export const getHistoricoParticipacaoByCPF = async (
 
     return data;                
   } catch (error) {
-    console.error('Erro ao aceitar convite:', error);
+    console.error('Erro ao aceitar convite:', error.message);
     throw error;
   }
 };

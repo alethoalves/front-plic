@@ -14,7 +14,7 @@ export const createFormulario = async (tenantSlug, formularioData) => {
         );
       return response.data.formulario;
     } catch (error) {
-      console.error("Erro ao criar formulário:", error);
+      console.error("Erro ao criar formulário:", error.message);
       throw error;
     }
 };
@@ -34,7 +34,7 @@ try {
     );
     return response.data.formulario;
 } catch (error) {
-    console.error("Erro ao atualizar formulário:", error);
+    console.error("Erro ao atualizar formulário:", error.message);
     throw error;
 }
 };
@@ -49,7 +49,7 @@ try {
     );
     return response.data;
 } catch (error) {
-    console.error("Erro ao deletar formulário:", error);
+    console.error("Erro ao deletar formulário:", error.message);
     throw error;
 }
 };
@@ -61,7 +61,7 @@ try {
     const response = await req.get(`/private/${tenantSlug}/formularios`,  {headers});
     return response.data.formularios;
 } catch (error) {
-    console.error("Erro ao obter formulários:", error);
+    console.error("Erro ao obter formulários:", error.message);
     throw error;
 }
 };
@@ -77,10 +77,10 @@ try {
     return response.data.formulario;
 } catch (error) {
     if (error.response && error.response.status === 404) {
-    console.error("Participações não encontradas:", error);
+    console.error("Participações não encontradas:", error.message);
     return null;
     }
-    console.error("Erro ao obter as participações:", error);
+    console.error("Erro ao obter as participações:", error.message);
     throw error;
 }
 };
@@ -96,10 +96,10 @@ export const getFormularioProjeto = async (tenantSlug) => {
         return response.data.formulario;
     } catch (error) {
         if (error.response && error.response.status === 404) {
-        console.error("Formulário não encontrado:", error);
+        console.error("Formulário não encontrado:", error.message);
         return null;
         }
-        console.error("Erro ao obter as participações:", error);
+        console.error("Erro ao obter as participações:", error.message);
         throw error;
     }
     };

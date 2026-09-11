@@ -63,7 +63,7 @@ export const createPlanoDeTrabalho = async (
     );
     return response.data.planoDeTrabalho;
   } catch (error) {
-    console.error("Erro ao criar Plano de Trabalho:", error);
+    console.error("Erro ao criar Plano de Trabalho:", error.message);
     throw error;
   }
 };
@@ -93,7 +93,7 @@ export const createPlanoDeTrabalho = async (
       );
       return response.data.planoDeTrabalho;
     } catch (error) {
-      console.error("Erro ao atualizar Plano de Trabalho:", error);
+      console.error("Erro ao atualizar Plano de Trabalho:", error.message);
       throw error;
     }
   };
@@ -104,7 +104,7 @@ export const createPlanoDeTrabalho = async (
       const response = await req.put(`/private/${tenantSlug}/user/atualizar-area-planosDeTrabalho/${idPlano}`, {areaId:idArea}, {headers});
       return response.data.planoDeTrabalho;
     } catch (error) {
-      console.error('Erro ao atualizar edital:', error);
+      console.error('Erro ao atualizar edital:', error.message);
       throw error;
     }
   };
@@ -118,7 +118,7 @@ export const createPlanoDeTrabalho = async (
       }, {headers});
       return response.data;
     } catch (error) {
-      console.error('Erro ao atualizar título do plano de trabalho:', error);
+      console.error('Erro ao atualizar título do plano de trabalho:', error.message);
       throw error;
     }
   };
@@ -135,7 +135,7 @@ export const createPlanoDeTrabalho = async (
       );
       return response.data.planosDeTrabalho;
     } catch (error) {
-      console.error("Erro ao obter Planos de Trabalho:", error);
+      console.error("Erro ao obter Planos de Trabalho:", error.message);
       throw error;
     }
   };
@@ -154,7 +154,7 @@ export const createPlanoDeTrabalho = async (
       );
       return response.data.planosDeTrabalho;
     } catch (error) {
-      console.error("Erro ao obter Planos de Trabalho:", error);
+      console.error("Erro ao obter Planos de Trabalho:", error.message);
       throw error;
     }
   };
@@ -180,7 +180,7 @@ export const createPlanoDeTrabalho = async (
       );
       return response.data.planosDeTrabalho;
     } catch (error) {
-      console.error("Erro ao obter Planos de Trabalho:", error);
+      console.error("Erro ao obter Planos de Trabalho:", error.message);
       throw error;
     }
 };
@@ -196,7 +196,7 @@ export const createPlanoDeTrabalho = async (
       );
       return response.data.planoDeTrabalho;
     } catch (error) {
-      console.error("Erro ao obter Plano de Trabalho:", error);
+      console.error("Erro ao obter Plano de Trabalho:", error.message);
       throw error;
     }
   };
@@ -229,7 +229,7 @@ export const aplicarNotaCorte = async (tenantSlug, notaCorte, classificados, des
 
     return response.data;
   } catch (error) {
-    console.error("Erro ao aplicar nota de corte:", error);
+    console.error("Erro ao aplicar nota de corte:", error.message);
     throw error;
   }
 };
@@ -258,7 +258,7 @@ export const importarNotasParticipacoes = async (tenantSlug, planoIds) => {
 
     return response.data;
   } catch (error) {
-    console.error("Erro ao importar notas das participações:", error);
+    console.error("Erro ao importar notas das participações:", error.message);
     throw error;
   }
 };
@@ -281,7 +281,7 @@ export const importarNotasParticipacoes = async (tenantSlug, planoIds) => {
       );
       return response.data.planoDeTrabalho;
     } catch (error) {
-      console.error("Erro ao atualizar Plano de Trabalho:", error);
+      console.error("Erro ao atualizar Plano de Trabalho:", error.message);
       throw error;
     }
   };
@@ -297,7 +297,7 @@ export const importarNotasParticipacoes = async (tenantSlug, planoIds) => {
       );
       return response.data.atividades;
     } catch (error) {
-      console.error("Erro ao parsear cronograma com IA:", error);
+      console.error("Erro ao parsear cronograma com IA:", error.message);
       throw error;
     }
   };
@@ -314,7 +314,7 @@ export const importarNotasParticipacoes = async (tenantSlug, planoIds) => {
       );
       return response.data;
     } catch (error) {
-      console.error("Erro ao deletar Plano de Trabalho:", error);
+      console.error("Erro ao deletar Plano de Trabalho:", error.message);
       throw error;
     }
   };

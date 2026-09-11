@@ -20,7 +20,7 @@ export const createResposta = async (tenantSlug, campoId, respostaData) => {
       );
       return response.data.resposta;
     } catch (error) {
-      console.error("Erro ao criar campo:", error);
+      console.error("Erro ao criar campo:", error.message);
       throw error;
     }
   };
@@ -43,7 +43,7 @@ export const createResposta = async (tenantSlug, campoId, respostaData) => {
       );
       return response.data.resposta;
     } catch (error) {
-      console.error("Erro ao atualizar campo:", error);
+      console.error("Erro ao atualizar campo:", error.message);
       throw error;
     }
   };
@@ -61,7 +61,7 @@ export const createResposta = async (tenantSlug, campoId, respostaData) => {
       );
       return response.data.resposta;
     } catch (error) {
-      console.error("Erro ao criar campo:", error);
+      console.error("Erro ao criar campo:", error.message);
       throw error;
     }
   };
@@ -84,7 +84,7 @@ export const createResposta = async (tenantSlug, campoId, respostaData) => {
       );
       return response.data.resposta;
     } catch (error) {
-      console.error("Erro ao atualizar campo:", error);
+      console.error("Erro ao atualizar campo:", error.message);
       throw error;
     }
   };

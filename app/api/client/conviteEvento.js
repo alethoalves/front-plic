@@ -19,7 +19,7 @@ export const startSubmission = async (registroAtividadeId, body) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao criar campo:", error);
+    console.error("Erro ao criar campo:", error.message);
     throw error;
   }
 };
@@ -31,7 +31,7 @@ export const consultarConviteByToken = async (token) => {
       );
       return response.data;
     } catch (error) {
-      console.error("Erro ao criar campo:", error);
+      console.error("Erro ao criar campo:", error.message);
       throw error;
     }
   };
@@ -43,7 +43,7 @@ export const getEventoByTokenConvite = async (token) => {
     );
     return response.data.evento;
   } catch (error) {
-    console.error("Erro ao criar campo:", error);
+    console.error("Erro ao criar campo:", error.message);
     throw error;
   }
 };
@@ -56,7 +56,7 @@ export const getEventoByTokenConvite = async (token) => {
       );
       return response.data;
     } catch (error) {
-      console.error("Erro ao criar campo:", error);
+      console.error("Erro ao criar campo:", error.message);
       throw error;
     }
   };
@@ -70,7 +70,7 @@ export const getEventoByTokenConvite = async (token) => {
       );
       return response.data;
     } catch (error) {
-      console.error("Erro ao criar campo:", error);
+      console.error("Erro ao criar campo:", error.message);
       throw error;
     }
   };
@@ -88,7 +88,7 @@ export const getEventoByTokenConvite = async (token) => {
 
       return response.data;
     } catch (error) {
-      console.error("Erro ao criar campo:", error);
+      console.error("Erro ao criar campo:", error.message);
       throw error;
     }
   };

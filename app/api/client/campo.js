@@ -15,7 +15,7 @@ export const createCampo = async (tenantSlug, formularioId, campoData) => {
     );
     return response.data.campo;
   } catch (error) {
-    console.error("Erro ao criar campo:", error);
+    console.error("Erro ao criar campo:", error.message);
     throw error;
   }
 };
@@ -36,7 +36,7 @@ export const updateCampo = async (
     );
     return response.data.campo;
   } catch (error) {
-    console.error("Erro ao atualizar campo:", error);
+    console.error("Erro ao atualizar campo:", error.message);
     throw error;
   }
 };
@@ -51,7 +51,7 @@ export const deleteCampo = async (tenantSlug, formularioId, campoId) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao deletar campo:", error);
+    console.error("Erro ao deletar campo:", error.message);
     throw error;
   }
 };
@@ -66,7 +66,7 @@ export const getCampos = async (tenantSlug, formularioId) => {
     );
     return response.data.campos;
   } catch (error) {
-    console.error("Erro ao obter campos:", error);
+    console.error("Erro ao obter campos:", error.message);
     throw error;
   }
 };
@@ -81,7 +81,7 @@ export const createRegra = async (tenantSlug, formularioId, campoId, regraData) 
     );
     return response.data.regra;
   } catch (error) {
-    console.error('Erro ao criar regra:', error);
+    console.error('Erro ao criar regra:', error.message);
     throw error;
   }
 };
@@ -94,7 +94,7 @@ export const deleteRegra = async (tenantSlug, formularioId, campoId, regraId) =>
       { headers }
     );
   } catch (error) {
-    console.error('Erro ao deletar regra:', error);
+    console.error('Erro ao deletar regra:', error.message);
     throw error;
   }
 };
@@ -110,10 +110,10 @@ export const getCampo = async (tenantSlug, formularioId, campoId) => {
     return response.data.campo;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Participações não encontradas:", error);
+      console.error("Participações não encontradas:", error.message);
       return null;
     }
-    console.error("Erro ao obter as participações:", error);
+    console.error("Erro ao obter as participações:", error.message);
     throw error;
   }
 };

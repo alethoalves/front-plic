@@ -11,7 +11,7 @@ export const getResultadosByUser = async (tenantSlug) => {
     );
     return response.data.resultados;
   } catch (error) {
-    console.error("Erro ao obter resultados do usuário:", error);
+    console.error("Erro ao obter resultados do usuário:", error.message);
     throw error;
   }
 };
@@ -27,7 +27,7 @@ export const atualizarHabilitarNotaFinal = async (tenantSlug, editalId, habilita
     );
     return response.data.edital;
   } catch (error) {
-    console.error("Erro ao atualizar habilitação de nota final:", error);
+    console.error("Erro ao atualizar habilitação de nota final:", error.message);
     throw error;
   }
 };

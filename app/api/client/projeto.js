@@ -66,7 +66,7 @@ export const createProjeto = async (
     );
     return response.data.projeto;
   } catch (error) {
-    console.error("Erro ao criar projeto:", error);
+    console.error("Erro ao criar projeto:", error.message);
     throw error;
   }
 };
@@ -87,7 +87,7 @@ export const createProjetoInscricao = async (
       );
       return response.data.projeto;
     } catch (error) {
-      console.error("Erro ao criar projeto:", error);
+      console.error("Erro ao criar projeto:", error.message);
       throw error;
     }
   };
@@ -112,7 +112,7 @@ export const getProjetosDoUsuario = async (tenantSlug, proponenteId = null, ano 
 
     return response.data.projetos;
   } catch (error) {
-    console.error("Erro ao obter projetos do usuário:", error);
+    console.error("Erro ao obter projetos do usuário:", error.message);
     throw error;
   }
 };
@@ -129,7 +129,7 @@ export const getProjetoById = async (tenantSlug, projetoId) => {
     );
     return response.data.projeto;
   } catch (error) {
-    console.error("Erro ao obter os detalhes do projeto:", error);
+    console.error("Erro ao obter os detalhes do projeto:", error.message);
     throw error;
   }
 };
@@ -155,7 +155,7 @@ export const updateProjetoById = async (tenantSlug, projetoId, projetoData) => {
     );
     return response.data.projeto; // Retorna o projeto atualizado
   } catch (error) {
-    console.error("Erro ao atualizar os detalhes do projeto:", error);
+    console.error("Erro ao atualizar os detalhes do projeto:", error.message);
     throw error;
   }
 };
@@ -172,7 +172,7 @@ export const linkProjetoToInscricao = async (tenantSlug, idInscricao, idProjeto)
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao vincular projeto à inscrição:", error);
+    console.error("Erro ao vincular projeto à inscrição:", error.message);
     throw error;
   }
 };
@@ -188,7 +188,7 @@ export const deleteProjetoById = async (tenantSlug, projetoId) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao excluir projeto:", error);
+    console.error("Erro ao excluir projeto:", error.message);
     throw error;
   }
 };
@@ -206,7 +206,7 @@ export const isProjetoLinkedToInscricao = async (tenantSlug, projetoId) => {
     );
     return { linked: response.data.linked, fichaAvaliacaoId: response.data.fichaAvaliacaoId };
   } catch (error) {
-    console.error("Erro ao verificar vínculo do projeto com inscrição:", error);
+    console.error("Erro ao verificar vínculo do projeto com inscrição:", error.message);
     throw error;
   }
 };
@@ -226,7 +226,7 @@ export const unlinkProjetoFromInscricao = async (tenantSlug, idInscricao, idProj
 
     return response.data; // Retorna a resposta de sucesso da API
   } catch (error) {
-    console.error("Erro ao desvincular projeto da inscrição:", error);
+    console.error("Erro ao desvincular projeto da inscrição:", error.message);
     throw error;
   }
 };
@@ -254,7 +254,7 @@ export const getInscricaoProjetoByTenant = async (tenantSlug, status, ano) => {
 
       return response.data.inscricoesProjeto;
   } catch (error) {
-      console.error("Erro ao buscar inscrições de projetos por tenant:", error);
+      console.error("Erro ao buscar inscrições de projetos por tenant:", error.message);
       throw error;
   }
 };
@@ -278,7 +278,7 @@ export const getInscricaoProjetoById = async (tenantSlug, idInscricao, idProjeto
         participacoesOrientador: response.data.participacoesOrientador || [],
       };
   } catch (error) {
-      console.error("Erro ao buscar inscrições de projetos por tenant:", error);
+      console.error("Erro ao buscar inscrições de projetos por tenant:", error.message);
       throw error;
   }
 };
@@ -300,7 +300,7 @@ export const updateInscricaoProjeto = async (
     );
     return response.data.inscricaoProjeto;
   } catch (error) {
-    console.error("Erro ao atualizar Registro de Atividade:", error);
+    console.error("Erro ao atualizar Registro de Atividade:", error.message);
     throw error;
   }
 };
@@ -323,7 +323,7 @@ export const atribuirNotaManual = async (
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao atribuir nota manual:", error);
+    console.error("Erro ao atribuir nota manual:", error.message);
     throw error;
   }
 };
@@ -345,7 +345,7 @@ export const alterarStatusAvaliacao = async (
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao alterar status de avaliação:", error);
+    console.error("Erro ao alterar status de avaliação:", error.message);
     throw error;
   }
 };
@@ -367,7 +367,7 @@ export const bloquearAvaliacaoProjeto = async (
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao bloquear avaliação do projeto:", error);
+    console.error("Erro ao bloquear avaliação do projeto:", error.message);
     throw error;
   }
 };
@@ -388,7 +388,7 @@ export const desbloquearAvaliacaoProjeto = async (
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao desbloquear avaliação do projeto:", error);
+    console.error("Erro ao desbloquear avaliação do projeto:", error.message);
     throw error;
   }
 };

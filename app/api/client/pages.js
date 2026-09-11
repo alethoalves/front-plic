@@ -17,7 +17,7 @@ export const createPageForSubmissao = async (
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao atualizar campo:", error);
+    console.error("Erro ao atualizar campo:", error.message);
     throw error;
   }
 };
@@ -34,7 +34,7 @@ export const getAllPages = async () => {
     );
     return response.data.pages;
   } catch (error) {
-    console.error("Erro ao obter Planos de Trabalho:", error);
+    console.error("Erro ao obter Planos de Trabalho:", error.message);
     throw error;
   }
 };

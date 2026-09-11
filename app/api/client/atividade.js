@@ -19,7 +19,7 @@ export const createAtividade = async (tenantSlug, editalId, atividadeData) => {
       );
       return response.data.atividade;
     } catch (error) {
-      console.error("Erro ao criar Atividade:", error);
+      console.error("Erro ao criar Atividade:", error.message);
       throw error;
     }
   };
@@ -38,7 +38,7 @@ export const createAtividade = async (tenantSlug, editalId, atividadeData) => {
       );
       return response.data.atividades;
     } catch (error) {
-      console.error("Erro ao obter Atividades:", error);
+      console.error("Erro ao obter Atividades:", error.message);
       throw error;
     }
   };
@@ -56,7 +56,7 @@ export const createAtividade = async (tenantSlug, editalId, atividadeData) => {
       );
       return response.data;
     } catch (error) {
-      console.error("Erro ao obter Atividades:", error);
+      console.error("Erro ao obter Atividades:", error.message);
       throw error;
     }
   };
@@ -74,7 +74,7 @@ export const createAtividade = async (tenantSlug, editalId, atividadeData) => {
       );
       return response.data;
     } catch (error) {
-      console.error("Erro ao obter respostas da atividade:", error);
+      console.error("Erro ao obter respostas da atividade:", error.message);
       throw error;
     }
   };
@@ -92,7 +92,7 @@ export const createAtividade = async (tenantSlug, editalId, atividadeData) => {
       );
       return response.data;
     } catch (error) {
-      console.error("Erro ao obter Atividades:", error);
+      console.error("Erro ao obter Atividades:", error.message);
       throw error;
     }
   };
@@ -109,7 +109,7 @@ export const createAtividade = async (tenantSlug, editalId, atividadeData) => {
       );
       return response.data.atividade;
     } catch (error) {
-      console.error("Erro ao obter Atividade:", error);
+      console.error("Erro ao obter Atividade:", error.message);
       throw error;
     }
   };
@@ -132,7 +132,7 @@ export const createAtividade = async (tenantSlug, editalId, atividadeData) => {
       );
       return response.data.atividade;
     } catch (error) {
-      console.error("Erro ao atualizar Atividade:", error);
+      console.error("Erro ao atualizar Atividade:", error.message);
       throw error;
     }
   };
@@ -149,7 +149,7 @@ export const createAtividade = async (tenantSlug, editalId, atividadeData) => {
       );
       return response.data;
     } catch (error) {
-      console.error("Erro ao deletar Atividade:", error);
+      console.error("Erro ao deletar Atividade:", error.message);
       throw error;
     }
   };

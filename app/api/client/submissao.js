@@ -15,7 +15,7 @@ export const getListaSubmissao = async (
     );
     return response.data.submissoes;
   } catch (error) {
-    console.error("Erro ao atualizar campo:", error);
+    console.error("Erro ao atualizar campo:", error.message);
     throw error;
   }
 };
@@ -35,7 +35,7 @@ export const getSubmissoesComAvaliacoes = async (
     );
     return response.data.submissoes;
   } catch (error) {
-    console.error("Erro ao atualizar campo:", error);
+    console.error("Erro ao atualizar campo:", error.message);
     throw error;
   }
 };
@@ -55,7 +55,7 @@ export const gestorDesassociarAvaliadorSubmissao = async (
     );
     return response.data.data;
   } catch (error) {
-    console.error("Erro ao atualizar campo:", error);
+    console.error("Erro ao atualizar campo:", error.message);
     throw error;
   }
 };
@@ -77,7 +77,7 @@ export const gestorAssociarAvaliadorSubmissao = async (
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao atribuir avaliador à submissão:", error);
+    console.error("Erro ao atribuir avaliador à submissão:", error.message);
     throw error;
   }
 };
@@ -97,7 +97,7 @@ export const getListaSubmissoesAvaliacoes = async (
     );
     return response.data.submissoes;
   } catch (error) {
-    console.error("Erro ao atualizar campo:", error);
+    console.error("Erro ao atualizar campo:", error.message);
     throw error;
   }
 };
@@ -117,7 +117,7 @@ export const getAvaliadoresComSubmissoesPendentes = async (
     );
     return response.data.data;
   } catch (error) {
-    console.error("Erro ao atualizar campo:", error);
+    console.error("Erro ao atualizar campo:", error.message);
     throw error;
   }
 };
@@ -136,7 +136,7 @@ export const getAvaliadoresComSubmissoesPendentes = async (
       );
       return response.data.submissao;
     } catch (error) {
-      console.error("Erro ao atualizar campo:", error);
+      console.error("Erro ao atualizar campo:", error.message);
       throw error;
     }
   };
@@ -156,7 +156,7 @@ export const getAvaliadoresComSubmissoesPendentes = async (
       );
       return response.data.submissao;
     } catch (error) {
-      console.error("Erro ao atualizar campo:", error);
+      console.error("Erro ao atualizar campo:", error.message);
       throw error;
     }
   };
@@ -176,7 +176,7 @@ export const getAvaliadoresComSubmissoesPendentes = async (
       );
       return response.data.submissao;
     } catch (error) {
-      console.error("Erro ao atualizar premiação:", error);
+      console.error("Erro ao atualizar premiação:", error.message);
       throw error;
     }
   };
@@ -196,7 +196,7 @@ export const getAvaliadoresComSubmissoesPendentes = async (
       );
       return response.data.submissao;
     } catch (error) {
-      console.error("Erro ao atualizar dados da submissão:", error);
+      console.error("Erro ao atualizar dados da submissão:", error.message);
       throw error;
     }
   };
@@ -216,7 +216,7 @@ export const getAvaliadoresComSubmissoesPendentes = async (
       );
       return response.data.participacao;
     } catch (error) {
-      console.error("Erro ao adicionar participação:", error);
+      console.error("Erro ao adicionar participação:", error.message);
       throw error;
     }
   };
@@ -235,7 +235,7 @@ export const getAvaliadoresComSubmissoesPendentes = async (
       );
       return response.data;
     } catch (error) {
-      console.error("Erro ao remover participação:", error);
+      console.error("Erro ao remover participação:", error.message);
       throw error;
     }
   };
@@ -254,7 +254,7 @@ export const getAvaliadoresComSubmissoesPendentes = async (
       );
       return response.data;
     } catch (error) {
-      console.error("Erro ao excluir avaliação:", error);
+      console.error("Erro ao excluir avaliação:", error.message);
       throw error;
     }
   };
@@ -272,7 +272,7 @@ export const getAvaliadoresComSubmissoesPendentes = async (
       );
       return response.data.submissoes;
     } catch (error) {
-      console.error("Erro ao atualizar campo:", error);
+      console.error("Erro ao atualizar campo:", error.message);
       throw error;
     }
   };
@@ -290,7 +290,7 @@ export const getSubmissoesFiltered = async (idEvento, searchValue) => {
     );
     return response.data.submissoes;
   } catch (error) {
-    console.error("Erro ao atualizar campo:", error);
+    console.error("Erro ao atualizar campo:", error.message);
     throw error;
   }
 };
@@ -314,7 +314,7 @@ export const getSubmissoesFiltered = async (idEvento, searchValue) => {
         const response = await req.get(url, { headers });
         return response.data.submissoes;
     } catch (error) {
-        console.error("Erro ao atualizar campo:", error);
+        console.error("Erro ao atualizar campo:", error.message);
         throw error;
     }
 };
@@ -333,7 +333,7 @@ export const getSubmissoesEmAvaliacao = async (eventoId, areasIds = []) => {
     return response.data.submissoes;
       
   } catch (error) {
-      console.error("Erro ao atualizar campo:", error);
+      console.error("Erro ao atualizar campo:", error.message);
       throw error;
   }
 };
@@ -351,7 +351,7 @@ export const associarAvaliadorSubmissao = async (eventoId, idSubmissao) => {
     );
     return response.data.submissao;
   } catch (error) {
-      console.error("Erro ao atualizar campo:", error);
+      console.error("Erro ao atualizar campo:", error.message);
       throw error;
   }
 };
@@ -368,7 +368,7 @@ export const getResumo = async (eventoId, submissaoId, tenantId) => {
     );
     return response.data.submissao;
   } catch (error) {
-      console.error("Erro ao atualizar campo:", error);
+      console.error("Erro ao atualizar campo:", error.message);
       throw error;
   }
 };
@@ -385,7 +385,7 @@ export const desvincularAvaliadorSubmissao = async (eventoId, idSubmissao) => {
     );
     return response.data.submissao;
   } catch (error) {
-      console.error("Erro ao atualizar campo:", error);
+      console.error("Erro ao atualizar campo:", error.message);
       throw error;
   }
 };
@@ -405,7 +405,7 @@ export const gerarFeedback = async (
     );
     return response.data.feedback;
   } catch (error) {
-    console.error("Erro ao atualizar campo:", error);
+    console.error("Erro ao atualizar campo:", error.message);
     throw error;
   }
 };
@@ -425,7 +425,7 @@ export const processarAvaliacao = async (
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao atualizar campo:", error);
+    console.error("Erro ao atualizar campo:", error.message);
     throw error;
   }
 };

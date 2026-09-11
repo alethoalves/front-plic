@@ -13,7 +13,7 @@ export const importarLattesGestor = async (tenantSlug, participacaoId, html) => 
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao importar CV Lattes via HTML:", error);
+    console.error("Erro ao importar CV Lattes via HTML:", error.message);
     throw error;
   }
 };
@@ -29,7 +29,7 @@ export const salvarFichaAvaliacaoManual = async (tenantSlug, idParticipacao, fic
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao salvar ficha de avaliação manual:", error);
+    console.error("Erro ao salvar ficha de avaliação manual:", error.message);
     throw error;
   }
 };
@@ -43,7 +43,7 @@ export const gerarFichaAvaliacaoParticipacao = async (tenantSlug, idParticipacao
 
 
     } catch (error) {
-      console.error("Erro ao criar CV Lattes:", error);
+      console.error("Erro ao criar CV Lattes:", error.message);
       throw error;
     }
   };
@@ -55,7 +55,7 @@ export const simularFichaAvaliacaoParticipacao = async (tenantSlug, idParticipac
       const response = await req.get(`/private/${tenantSlug}/simular-ficha-avaliacao-participacao/${idParticipacao}`, { headers });
       return response.data;
     } catch (error) {
-      console.error("Erro ao simular ficha de avaliação:", error);
+      console.error("Erro ao simular ficha de avaliação:", error.message);
       throw error;
     }
   };
@@ -67,7 +67,7 @@ export const getItensAprovadosRejeitadosParticipacao = async (tenantSlug, idPart
       const response = await req.get(`/private/${tenantSlug}/itens-aprovados-rejeitados-participacao/${idParticipacao}`, { headers });
       return response.data;
     } catch (error) {
-      console.error("Erro ao obter itens aprovados/rejeitados da participação:", error);
+      console.error("Erro ao obter itens aprovados/rejeitados da participação:", error.message);
       throw error;
     }
   };
@@ -88,7 +88,7 @@ export const createCvLattes = async (tenantSlug, cvLattesData) => {
       );
       return response.data.cvLattes;
     } catch (error) {
-      console.error("Erro ao criar CV Lattes:", error);
+      console.error("Erro ao criar CV Lattes:", error.message);
       throw error;
     }
   };
@@ -117,7 +117,7 @@ export const createCvLattes = async (tenantSlug, cvLattesData) => {
   
       return response.data.cvLattes;
     } catch (error) {
-      console.error("Erro ao criar CV Lattes:", error);
+      console.error("Erro ao criar CV Lattes:", error.message);
       throw error;
     }
   };
@@ -134,7 +134,7 @@ export const createCvLattes = async (tenantSlug, cvLattesData) => {
       });
       return response.data.cvLattes;
     } catch (error) {
-      console.error("Erro ao obter CV Lattes:", error);
+      console.error("Erro ao obter CV Lattes:", error.message);
       throw error;
     }
   };
@@ -150,7 +150,7 @@ export const createCvLattes = async (tenantSlug, cvLattesData) => {
       });
       return response.data.cvLattes;
     } catch (error) {
-      console.error("Erro ao obter CV Lattes:", error);
+      console.error("Erro ao obter CV Lattes:", error.message);
       throw error;
     }
   };
@@ -168,7 +168,7 @@ export const createCvLattes = async (tenantSlug, cvLattesData) => {
       );
       return response.data.cvLattes;
     } catch (error) {
-      console.error("Erro ao atualizar CV Lattes:", error);
+      console.error("Erro ao atualizar CV Lattes:", error.message);
       throw error;
     }
   };
@@ -184,7 +184,7 @@ export const createCvLattes = async (tenantSlug, cvLattesData) => {
       });
       return response.data;
     } catch (error) {
-      console.error("Erro ao deletar CV Lattes:", error);
+      console.error("Erro ao deletar CV Lattes:", error.message);
       throw error;
     }
   };

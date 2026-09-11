@@ -16,7 +16,7 @@ export const gerarSquareParaSubsessao = async (eventoSlug, idSubsessao) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao gerar squares:", error);
+    console.error("Erro ao gerar squares:", error.message);
     throw error;
   }
 };
@@ -36,7 +36,7 @@ export const gerarSquareParaSubsessao = async (eventoSlug, idSubsessao) => {
       );
       return response.data.square;
     } catch (error) {
-      console.error("Erro ao atualizar campo:", error);
+      console.error("Erro ao atualizar campo:", error.message);
       throw error;
     }
   };
@@ -56,7 +56,7 @@ export const gerarSquareParaSubsessao = async (eventoSlug, idSubsessao) => {
       );
       return response.data.square;
     } catch (error) {
-      console.error("Erro ao atualizar campo:", error);
+      console.error("Erro ao atualizar campo:", error.message);
       throw error;
     }
   };
@@ -76,7 +76,7 @@ export const gerarSquareParaSubsessao = async (eventoSlug, idSubsessao) => {
       );
       return response.data.square;
     } catch (error) {
-      console.error("Erro ao atualizar campo:", error);
+      console.error("Erro ao atualizar campo:", error.message);
       throw error;
     }
   };

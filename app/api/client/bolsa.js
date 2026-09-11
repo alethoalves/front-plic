@@ -19,10 +19,10 @@ export const getSolicitacoesBolsa = async (tenantSlug, ano) => {
     return response.data.solicitacoes;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Participações não encontradas:", error);
+      console.error("Participações não encontradas:", error.message);
       return null;
     }
-    console.error("Erro ao obter as participações:", error);
+    console.error("Erro ao obter as participações:", error.message);
     throw error;
   }
 };
@@ -41,10 +41,10 @@ export const getVinculosByTenant = async (tenantSlug, ano) => {
     return response.data.vinculos;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Vínculos não encontrados:", error);
+      console.error("Vínculos não encontrados:", error.message);
       return null;
     }
-    console.error("Erro ao obter os vínculos:", error);
+    console.error("Erro ao obter os vínculos:", error.message);
     throw error;
   }
 };
@@ -73,7 +73,7 @@ export const aplicarNotaCorteBolsa = async (tenantSlug, notaCorte, classificados
 
     return response.data;
   } catch (error) {
-    console.error("Erro ao aplicar nota de corte:", error);
+    console.error("Erro ao aplicar nota de corte:", error.message);
     throw error;
   }
 };
@@ -94,10 +94,10 @@ export const aprovarSolicitacoesBolsa = async (tenantSlug, solicitacoesIds) => {
     return response.data.solicitacoes;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Solicitações não encontradas:", error);
+      console.error("Solicitações não encontradas:", error.message);
       return null;
     }
-    console.error("Erro ao aprovar solicitações:", error);
+    console.error("Erro ao aprovar solicitações:", error.message);
     throw error;
   }
 };
@@ -118,10 +118,10 @@ export const negarSolicitacoesBolsa = async (tenantSlug, solicitacoesIds, justif
     return response.data.solicitacoes;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Solicitações não encontradas:", error);
+      console.error("Solicitações não encontradas:", error.message);
       return null;
     }
-    console.error("Erro ao reprovar solicitações:", error);
+    console.error("Erro ao reprovar solicitações:", error.message);
     throw error;
   }
 };
@@ -142,19 +142,19 @@ export const toggleStatusSolicitacaoBolsa = async (tenantSlug, solicitacaoBolsaI
   } catch (error) {
     if (error.response) {
       if (error.response.status === 404) {
-        console.error("Solicitação não encontrada:", error);
+        console.error("Solicitação não encontrada:", error.message);
         throw new Error("Solicitação de bolsa não encontrada");
       }
       if (error.response.status === 400) {
-        console.error("Não há cota vinculada:", error);
+        console.error("Não há cota vinculada:", error.message);
         throw new Error("Não é possível alterar o status sem cota vinculada");
       }
       if (error.response.status === 403) {
-        console.error("Permissão negada:", error);
+        console.error("Permissão negada:", error.message);
         throw new Error("Você não tem permissão para esta ação");
       }
     }
-    console.error("Erro ao alternar status da solicitação:", error);
+    console.error("Erro ao alternar status da solicitação:", error.message);
     throw error;
   }
 };
@@ -174,10 +174,10 @@ export const aprovarVinculo = async (tenantSlug, vinculoId) => {
     return response.data;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Erro na vinculação:", error);
+      console.error("Erro na vinculação:", error.message);
       return null;
     }
-    console.error("Erro ao vincular:", error);
+    console.error("Erro ao vincular:", error.message);
     throw error;
   }
 };
@@ -197,10 +197,10 @@ export const recusarVinculo = async (tenantSlug, vinculoId, motivoRecusa) => {
     return response.data;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Erro na vinculação:", error);
+      console.error("Erro na vinculação:", error.message);
       return null;
     }
-    console.error("Erro ao vincular:", error);
+    console.error("Erro ao vincular:", error.message);
     throw error;
   }
 };
@@ -220,10 +220,10 @@ export const ativarVinculo = async (tenantSlug, vinculoId) => {
     return response.data;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Erro na ativacão:", error);
+      console.error("Erro na ativacão:", error.message);
       return null;
     }
-    console.error("Erro ao ativar:", error);
+    console.error("Erro ao ativar:", error.message);
     throw error;
   }
 };
@@ -252,10 +252,10 @@ export const tornarPendenteVinculo = async (tenantSlug, vinculoId, observacao, d
     return response.data;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Erro na ativação:", error);
+      console.error("Erro na ativação:", error.message);
       return null;
     }
-    console.error("Erro ao ativar:", error);
+    console.error("Erro ao ativar:", error.message);
     throw error;
   }
 };
@@ -275,10 +275,10 @@ export const cancelarVinculo = async (tenantSlug, vinculoId, observacao) => {
     return response.data;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Erro na ativacão:", error);
+      console.error("Erro na ativacão:", error.message);
       return null;
     }
-    console.error("Erro ao ativar:", error);
+    console.error("Erro ao ativar:", error.message);
     throw error;
   }
 };
@@ -300,10 +300,10 @@ export const devolverBolsa = async (tenantSlug, solicitacaoBolsaId, observacao, 
     return response.data;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Erro na ativacão:", error);
+      console.error("Erro na ativacão:", error.message);
       return null;
     }
-    console.error("Erro ao ativar:", error);
+    console.error("Erro ao ativar:", error.message);
     throw error;
   }
 };
@@ -323,10 +323,10 @@ export const transferirBolsa = async (tenantSlug, vinculoOrigemId, participacaoD
     return response.data;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Erro na ativacão:", error);
+      console.error("Erro na ativacão:", error.message);
       return null;
     }
-    console.error("Erro ao ativar:", error);
+    console.error("Erro ao ativar:", error.message);
     throw error;
   }
 };
@@ -348,7 +348,7 @@ export const alocarBolsa = async (tenantSlug, data) => {
 
     return response.data;
   } catch (error) {
-    console.error("Erro ao alocar bolsa:", error);
+    console.error("Erro ao alocar bolsa:", error.message);
     throw error;
   }
 };
@@ -368,7 +368,7 @@ export const desalocarBolsa = async (tenantSlug, data) => {
 
     return response.data;
   } catch (error) {
-    console.error("Erro ao desalocar bolsa:", error);
+    console.error("Erro ao desalocar bolsa:", error.message);
     throw error;
   }
 };
@@ -387,7 +387,7 @@ export const createCota = async (tenantSlug, cotaData) => {
     
     return response.data;
   } catch (error) {
-    console.error("Erro ao criar cota:", error);
+    console.error("Erro ao criar cota:", error.message);
     throw error;
   }
 };
@@ -407,10 +407,10 @@ export const getCotas = async (tenantSlug, ano) => {
     return response.data;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Cotas não encontradas:", error);
+      console.error("Cotas não encontradas:", error.message);
       return null;
     }
-    console.error("Erro ao obter cotas:", error);
+    console.error("Erro ao obter cotas:", error.message);
     throw error;
   }
 };
@@ -430,10 +430,10 @@ export const getCota = async (tenantSlug, id) => {
     return response.data;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Cota não encontrada:", error);
+      console.error("Cota não encontrada:", error.message);
       return null;
     }
-    console.error("Erro ao obter cota:", error);
+    console.error("Erro ao obter cota:", error.message);
     throw error;
   }
 };
@@ -453,7 +453,7 @@ export const updateCota = async (tenantSlug, id, cotaData) => {
     
     return response.data;
   } catch (error) {
-    console.error("Erro ao atualizar cota:", error);
+    console.error("Erro ao atualizar cota:", error.message);
     throw error;
   }
 };
@@ -472,7 +472,7 @@ export const deleteCota = async (tenantSlug, id) => {
     
     return response.data;
   } catch (error) {
-    console.error("Erro ao excluir cota:", error);
+    console.error("Erro ao excluir cota:", error.message);
     throw error;
   }
 };
@@ -496,19 +496,19 @@ export const processarSolicitacoesBolsa = async (tenantSlug, solicitacoesIds) =>
   } catch (error) {
     if (error.response) {
       if (error.response.status === 400) {
-        console.error("IDs inválidos ou limite excedido:", error);
+        console.error("IDs inválidos ou limite excedido:", error.message);
         throw new Error(error.response.data.message || "IDs inválidos ou limite excedido");
       }
       if (error.response.status === 403) {
-        console.error("Permissão negada ou IDs não pertencem ao tenant:", error);
+        console.error("Permissão negada ou IDs não pertencem ao tenant:", error.message);
         throw new Error(error.response.data.message || "Permissão negada ou IDs inválidos");
       }
       if (error.response.status === 404) {
-        console.error("Endpoint não encontrado:", error);
+        console.error("Endpoint não encontrado:", error.message);
         throw new Error("Endpoint de processamento não encontrado");
       }
     }
-    console.error("Erro ao processar solicitações:", error);
+    console.error("Erro ao processar solicitações:", error.message);
     throw error;
   }
 };

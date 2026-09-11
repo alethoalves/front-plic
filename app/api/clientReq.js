@@ -41,11 +41,11 @@ export const getDataFromCPF = async (tenantSlug, cpf) => {
     return response.data.data;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("CPF não encontrado:", error);
+      console.error("CPF não encontrado:", error.message);
       return null; // Retorna null ou algum valor padrão para indicar que o CPF não foi encontrado
     }
     // Para outros erros, relança o erro para que o chamador possa tratá-lo
-    console.error("Erro ao obter dados pelo CPF:", error);
+    console.error("Erro ao obter dados pelo CPF:", error.message);
     throw error;
   }
 };
@@ -73,7 +73,7 @@ export const xmlLattes = async (file, tenantSlug, idUser) => {
 
     return response.data;
   } catch (error) {
-    console.error("Erro:", error);
+    console.error("Erro:", error.message);
     throw error;
   }
 };
@@ -101,7 +101,7 @@ export const uploadFile = async (file, tenantSlug) => {
 
     return response.data;
   } catch (error) {
-    console.error("Erro:", error);
+    console.error("Erro:", error.message);
     throw error;
   }
 };
@@ -125,7 +125,7 @@ export const deleteFile = async (tenantSlug, fileUrl) => {
 
     return response.data;
   } catch (error) {
-    console.error("Erro:", error);
+    console.error("Erro:", error.message);
     throw error;
   }
 };
@@ -156,7 +156,7 @@ export const uploadFileProjeto = async (file, tenantSlug, projetoId, tipo = null
 
     return response.data;
   } catch (error) {
-    console.error("Erro ao fazer upload do arquivo para o projeto:", error);
+    console.error("Erro ao fazer upload do arquivo para o projeto:", error.message);
     throw error;
   }
 };
@@ -186,7 +186,7 @@ export const deleteFileProjeto = async (tenantSlug, fileUrl, projetoId) => {
 
     return response.data;
   } catch (error) {
-    console.error("Erro ao deletar o arquivo do projeto:", error);
+    console.error("Erro ao deletar o arquivo do projeto:", error.message);
     throw error;
   }
 };

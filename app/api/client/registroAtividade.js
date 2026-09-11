@@ -20,7 +20,7 @@ export const aprovarAtividade = async (
     );
     return response.data.registroAtividade;
   } catch (error) {
-    console.error("Erro ao atualizar Registro de Atividade:", error);
+    console.error("Erro ao atualizar Registro de Atividade:", error.message);
     throw error;
   }
 };
@@ -51,7 +51,7 @@ export const submissaoAtividade = async (
 
     return response.data.registroAtividade;
   } catch (error) {
-    console.error("Erro ao criar Registro de Atividade:", error);
+    console.error("Erro ao criar Registro de Atividade:", error.message);
     
     // Melhora o tratamento de erro para fornecer mais informações
     const errorMessage = error.response?.data?.message || 
@@ -78,7 +78,7 @@ export const createRegistroAtividade = async (
       );
       return response.data.registroAtividade;
     } catch (error) {
-      console.error("Erro ao criar Registro de Atividade:", error);
+      console.error("Erro ao criar Registro de Atividade:", error.message);
       throw error;
     }
   };
@@ -98,7 +98,7 @@ export const createRegistroAtividade = async (
       );
       return response.data.registrosAtividade;
     } catch (error) {
-      console.error("Erro ao obter Registros de Atividade:", error);
+      console.error("Erro ao obter Registros de Atividade:", error.message);
       throw error;
     }
   };
@@ -118,7 +118,7 @@ export const createRegistroAtividade = async (
       );
       return response.data.inscricoes;
     } catch (error) {
-      console.error("Erro ao obter Registros de Atividade:", error);
+      console.error("Erro ao obter Registros de Atividade:", error.message);
       throw error;
     }
   };
@@ -138,7 +138,7 @@ export const createRegistroAtividade = async (
       );
       return response.data.registrosAtividade;
     } catch (error) {
-      console.error("Erro ao obter Registros de Atividade:", error);
+      console.error("Erro ao obter Registros de Atividade:", error.message);
       throw error;
     }
   };
@@ -157,7 +157,7 @@ export const createRegistroAtividade = async (
       );
       return response.data.registrosAtividade;
     } catch (error) {
-      console.error("Erro ao obter Registros de Atividade:", error);
+      console.error("Erro ao obter Registros de Atividade:", error.message);
       throw error;
     }
   };
@@ -173,7 +173,7 @@ export const createRegistroAtividade = async (
       );
       return response.data.registroAtividade;
     } catch (error) {
-      console.error("Erro ao obter Registro de Atividade:", error);
+      console.error("Erro ao obter Registro de Atividade:", error.message);
       throw error;
     }
   };
@@ -196,7 +196,7 @@ export const createRegistroAtividade = async (
       );
       return response.data.registroAtividade;
     } catch (error) {
-      console.error("Erro ao atualizar Registro de Atividade:", error);
+      console.error("Erro ao atualizar Registro de Atividade:", error.message);
       throw error;
     }
   };
@@ -213,7 +213,7 @@ export const createRegistroAtividade = async (
       );
       return response.data;
     } catch (error) {
-      console.error("Erro ao deletar Registro de Atividade:", error);
+      console.error("Erro ao deletar Registro de Atividade:", error.message);
       throw error;
     }
   };
@@ -240,7 +240,7 @@ export const createRegistroAtividade = async (
       // Retorna os dados de inscrições da resposta da API
       return response.data.atividades;
     } catch (error) {
-      console.error("Erro ao buscar dashboard de inscrições:", error);
+      console.error("Erro ao buscar dashboard de inscrições:", error.message);
       throw error;
     }
   };

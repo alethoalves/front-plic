@@ -31,7 +31,7 @@ export const signin = async (data) => {
 
     return response.data;
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error:", error.message);
     throw error; // Relança o erro para que o chamador possa tratá-lo
   }
 };
@@ -52,7 +52,7 @@ export const signinAvaliadorEvento = async (data) => {
  
     return response.data; // Isso já inclui todas as propriedades da resposta
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error:", error.message);
     throw error;
   }
 };
@@ -76,7 +76,7 @@ export const signup = async (data, reqParams) => {
 
     return response.data;
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error:", error.message);
     throw error; 
   }
 };

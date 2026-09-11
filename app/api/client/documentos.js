@@ -54,7 +54,7 @@ export const criarRegistrosDocumento = async (tenantSlug, documentoTemplateId, p
     
     return response.data;
   } catch (error) {
-    console.error("Erro ao criar registros de documento:", error);
+    console.error("Erro ao criar registros de documento:", error.message);
     throw error;
   }
 };
@@ -68,7 +68,7 @@ export const getAllDocumentos = async (tenantSlug, ano) => {
     );
     return response.data.documentos;
   } catch (error) {
-    console.error("Erro ao buscar documentos do tenant:", error);
+    console.error("Erro ao buscar documentos do tenant:", error.message);
     throw error;
   }
 };
@@ -84,7 +84,7 @@ export const recusarDocumento = async (tenantSlug, documentoRegistroId, observac
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao recusar documento:", error);
+    console.error("Erro ao recusar documento:", error.message);
     throw error;
   }
 };
@@ -96,7 +96,7 @@ export const deleteDocumentoNaoAssinado = async (tenantSlug, documentoId) => {
     const response = await req.delete(`/private/${tenantSlug}/deleteDocumentoNaoAssinado/${documentoId}`, {headers});
     return response.data;
   } catch (error) {
-    console.error('Erro ao deletar edital:', error);
+    console.error('Erro ao deletar edital:', error.message);
     throw error;
   }
 };
@@ -116,7 +116,7 @@ export const getDocumentoTemplates = async (tenantSlug) => {
     
     return response.data;
   } catch (error) {
-    console.error("Erro ao buscar templates de documento:", error);
+    console.error("Erro ao buscar templates de documento:", error.message);
     throw error;
   }
 };
@@ -136,7 +136,7 @@ export const getMyDocuments = async (tenantSlug) => {
     
     return response.data.documentos;
   } catch (error) {
-    console.error("Erro ao buscar templates de documento:", error);
+    console.error("Erro ao buscar templates de documento:", error.message);
     throw error;
   }
 };
@@ -155,7 +155,7 @@ export const getMyDocumentById = async (tenantSlug,documentId) => {
     
     return response.data.documento;
   } catch (error) {
-    console.error("Erro ao buscar templates de documento:", error);
+    console.error("Erro ao buscar templates de documento:", error.message);
     throw error;
   }
 };
@@ -174,7 +174,7 @@ export const getDocumentById = async (tenantSlug,documentId) => {
     
     return response.data.documento;
   } catch (error) {
-    console.error("Erro ao buscar templates de documento:", error);
+    console.error("Erro ao buscar templates de documento:", error.message);
     throw error;
   }
 };
@@ -196,7 +196,7 @@ export const assinarDocumento = async (tenantSlug, payload) => {
     
     return response.data.data;
   } catch (error) {
-    console.error("Erro ao criar registros de documento:", error);
+    console.error("Erro ao criar registros de documento:", error.message);
     throw error;
   }
 };
@@ -218,7 +218,7 @@ export const salvarFormulario = async (tenantSlug, formData) => {
     
     return response.data;
   } catch (error) {
-    console.error("Erro ao salvar formulário:", error);
+    console.error("Erro ao salvar formulário:", error.message);
     throw error;
   }
 };
@@ -240,7 +240,7 @@ export const validarDocumento = async (tenantSlug, payload) => {
     
     return response.data;
   } catch (error) {
-    console.error("Erro ao validar documento:", error);
+    console.error("Erro ao validar documento:", error.message);
     throw error;
   }
 };

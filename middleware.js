@@ -360,8 +360,7 @@ if (pathname === "/autenticacao" || pathname.startsWith("/autenticacao/")) {
     if (url.pathname.startsWith(`/${tenant}/gestor`)) {
       // Não tem token válido OU não tem permissão de acesso -> redireciona
       if (!(await getPongGestor())) return NextResponse.redirect(urlToSignin);
-      const editais = await getEditais(tenant);
-      if (!editais.length > 0) return NextResponse.redirect(urlToConfiguracoes);
+      if (!editaisData?.length > 0) return NextResponse.redirect(urlToConfiguracoes);
       return NextResponseWithTenant
     }
     /******************

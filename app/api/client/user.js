@@ -13,7 +13,7 @@ export const createUser = async (tenantSlug, userData) => {
     );
     return response.data.user;
   } catch (error) {
-    console.error("Erro ao criar usuário:", error);
+    console.error("Erro ao criar usuário:", error.message);
     throw error;
   }
 };
@@ -25,7 +25,7 @@ export const getUsers = async (tenantSlug) => {
     const response = await req.get(`/private/${tenantSlug}/users`, {headers});
     return response.data.users;
   } catch (error) {
-    console.error("Erro ao obter os usuários:", error);
+    console.error("Erro ao obter os usuários:", error.message);
     throw error;
   }
 };
@@ -37,7 +37,7 @@ export const getUserByCpf = async (tenantSlug, cpf) => {
     const response = await req.get(`/private/${tenantSlug}/users/${cpf}`, {headers});
     return response.data.user;
   } catch (error) {
-    console.error("Erro ao obter o usuário:", error);
+    console.error("Erro ao obter o usuário:", error.message);
     return false;
   }
 };
@@ -49,7 +49,7 @@ export const cpfVerification = async (tenantSlug, data) => {
     const response = await req.post(`/private/${tenantSlug}/cpfVerification`,data, {headers});
     return response.data.user || response.data.step;
   } catch (error) {
-    console.error("Erro ao obter o usuário:", error);
+    console.error("Erro ao obter o usuário:", error.message);
     return false;
   }
 };
@@ -65,7 +65,7 @@ export const updateUser = async (tenantSlug, cpf, userData) => {
     );
     return response.data.user;
   } catch (error) {
-    console.error("Erro ao atualizar usuário:", error);
+    console.error("Erro ao atualizar usuário:", error.message);
     throw error;
   }
 };
@@ -77,7 +77,7 @@ export const getMe = async (tenantSlug) => {
     const response = await req.get(`/private/${tenantSlug}/me`, {headers});
     return response.data.user;
   } catch (error) {
-    console.error("Erro ao obter os dados do usuário:", error);
+    console.error("Erro ao obter os dados do usuário:", error.message);
     throw error;
   }
 };
@@ -93,7 +93,7 @@ export const updateMe = async (tenantSlug, userData) => {
     );
     return response.data.user;
   } catch (error) {
-    console.error("Erro ao atualizar dados do usuário:", error);
+    console.error("Erro ao atualizar dados do usuário:", error.message);
     throw error;
   }
 };
@@ -105,7 +105,7 @@ export const deleteUser = async (tenantSlug, cpf) => {
     const response = await req.delete(`/private/${tenantSlug}/users/${cpf}`, {headers});
     return response.data;
   } catch (error) {
-    console.error("Erro ao deletar usuário:", error);
+    console.error("Erro ao deletar usuário:", error.message);
     throw error;
   }
 };

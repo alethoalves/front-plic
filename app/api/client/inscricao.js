@@ -17,7 +17,7 @@ export const createInscricao = async (tenantSlug, inscricaoData) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao criar inscrição:", error);
+    console.error("Erro ao criar inscrição:", error.message);
     throw error;
   }
 };
@@ -31,7 +31,7 @@ export const submissaoInscricao = async (tenantSlug, inscricaoId) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao submeter inscrição:", error);
+    console.error("Erro ao submeter inscrição:", error.message);
     throw error;
   }
 };
@@ -49,7 +49,7 @@ export const reabrirInscricao = async (tenantSlug, inscricaoId) => {
 
     return response.data; // { status, message, inscricao }
   } catch (error) {
-    console.error("Erro ao reabrir inscrição:", error);
+    console.error("Erro ao reabrir inscrição:", error.message);
     throw error;
   }
 };
@@ -64,7 +64,7 @@ export const createInscricaoByUser = async (tenantSlug, inscricaoData) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao criar inscrição:", error);
+    console.error("Erro ao criar inscrição:", error.message);
     throw error;
   }
 };
@@ -79,7 +79,7 @@ export const createInscricaoByGestor = async (tenantSlug, inscricaoData) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao criar inscrição:", error);
+    console.error("Erro ao criar inscrição:", error.message);
     throw error;
   }
 };
@@ -93,7 +93,7 @@ export const getInscricoes = async (tenantSlug, page = 1, limit = 10, search="")
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao obter as inscrições:", error);
+    console.error("Erro ao obter as inscrições:", error.message);
     throw error;
   }
 };
@@ -107,7 +107,7 @@ export const getAllInscricoes = async (tenantSlug) => {
     );
     return response.data.inscricoes;
   } catch (error) {
-    console.error("Erro ao obter as inscrições:", error);
+    console.error("Erro ao obter as inscrições:", error.message);
     throw error;
   }
 };
@@ -121,7 +121,7 @@ export const getMinhasInscricoes = async (tenantSlug) => {
     );
     return response.data.inscricoes;
   } catch (error) {
-    console.error("Erro ao obter as inscrições:", error);
+    console.error("Erro ao obter as inscrições:", error.message);
     throw error;
   }
 };
@@ -135,7 +135,7 @@ export const getInscricaoUserById = async (tenantSlug,inscricaoId) => {
     );
     return response.data.inscricao;
   } catch (error) {
-    console.error("Erro ao obter as inscrições:", error);
+    console.error("Erro ao obter as inscrições:", error.message);
     throw error;
   }
 };
@@ -149,7 +149,7 @@ export const getInscricoesByTenantAndYear = async (tenantSlug,ano) => {
     );
     return response.data.inscricoes;
   } catch (error) {
-    console.error("Erro ao obter as inscrições:", error);
+    console.error("Erro ao obter as inscrições:", error.message);
     throw error;
   }
 };
@@ -165,7 +165,7 @@ export const getInscricao = async (tenantSlug, idInscricao) => {
     );
     return response.data.inscricao;
   } catch (error) {
-    console.error("Erro ao obter a inscrição:", error);
+    console.error("Erro ao obter a inscrição:", error.message);
     throw error;
   }
 };
@@ -185,7 +185,7 @@ export const updateInscricao = async (
     );
     return response.data.inscricao;
   } catch (error) {
-    console.error("Erro ao atualizar a inscrição:", error);
+    console.error("Erro ao atualizar a inscrição:", error.message);
     throw error;
   }
 };
@@ -200,7 +200,7 @@ export const deleteInscricao = async (tenantSlug, idInscricao) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao deletar a inscrição:", error);
+    console.error("Erro ao deletar a inscrição:", error.message);
     throw error;
   }
 };
@@ -215,7 +215,7 @@ export const searchInscricoes = async (tenantSlug, query) => {
     );
     return response.data.inscricoes;
   } catch (error) {
-    console.error("Erro ao buscar inscrições:", error);
+    console.error("Erro ao buscar inscrições:", error.message);
     throw error;
   }
 };
@@ -240,7 +240,7 @@ export const inscricoesDashboard = async (tenantSlug, { statusInscricao, editalA
     // Retorna os dados de inscrições da resposta da API
     return response.data.inscricoes;
   } catch (error) {
-    console.error("Erro ao buscar dashboard de inscrições:", error);
+    console.error("Erro ao buscar dashboard de inscrições:", error.message);
     throw error;
   }
 };

@@ -17,7 +17,7 @@ export const getSubsessaoById = async (eventoSlug, subsessaoId, filters = {}) =>
     const response = await req.get(url);
     return response.data.subsessao;
   } catch (error) {
-    console.error("Erro:", error);
+    console.error("Erro:", error.message);
     throw error;
   }
 };

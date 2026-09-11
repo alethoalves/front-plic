@@ -44,7 +44,7 @@ export const getMinhasParticipacoes = async (tenantSlug) => {
     );
     return response.data.participacoes;
   } catch (error) {
-    console.error("Erro ao obter minhas participações:", error);
+    console.error("Erro ao obter minhas participações:", error.message);
     throw error;
   }
 };
@@ -77,10 +77,10 @@ export const getParticipacoes = async (tenantSlug, idInscricao, tipos, cpf, nome
     return response.data.participacoes;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Participações não encontradas:", error);
+      console.error("Participações não encontradas:", error.message);
       return null;
     }
-    console.error("Erro ao obter as participações:", error);
+    console.error("Erro ao obter as participações:", error.message);
     throw error;
   }
 };
@@ -100,10 +100,10 @@ export const getParticipacao = async (tenantSlug, idParticipacao, ano) => {
     return response.data.participacao;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Participações não encontradas:", error);
+      console.error("Participações não encontradas:", error.message);
       return null;
     }
-    console.error("Erro ao obter as participações:", error);
+    console.error("Erro ao obter as participações:", error.message);
     throw error;
   }
 };
@@ -136,10 +136,10 @@ export const getParticipacoesDashboard = async (tenantSlug, idInscricao, tipos, 
     return response.data.participacoes;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Participações não encontradas:", error);
+      console.error("Participações não encontradas:", error.message);
       return null;
     }
-    console.error("Erro ao obter as participações:", error);
+    console.error("Erro ao obter as participações:", error.message);
     throw error;
   }
 };
@@ -170,10 +170,10 @@ export const getParticipacoesByTenant = async (tenantSlug, tipo, ano, solicitarB
     return response.data.participacoes;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Participações não encontradas:", error);
+      console.error("Participações não encontradas:", error.message);
       return null;
     }
-    console.error("Erro ao obter as participações:", error);
+    console.error("Erro ao obter as participações:", error.message);
     throw error;
   }
 };
@@ -192,10 +192,10 @@ export const createParticipacao = async (tenantSlug, participacaoData) => {
     return response.data.participacao;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Participação não criada:", error);
+      console.error("Participação não criada:", error.message);
       return null;
     }
-    console.error("Erro ao criar participação:", error);
+    console.error("Erro ao criar participação:", error.message);
     throw error;
   }
 };
@@ -218,10 +218,10 @@ export const aprovarParticipacoes = async (tenantSlug, participacaoIds) => {
     return response.data;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Participações não encontradas:", error);
+      console.error("Participações não encontradas:", error.message);
       return null;
     }
-    console.error("Erro ao aprovar participações:", error);
+    console.error("Erro ao aprovar participações:", error.message);
     throw error;
   }
 };
@@ -242,10 +242,10 @@ export const reprovarParticipacoes = async (tenantSlug, participacaoIds, justifi
     return response.data;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Participações não encontradas:", error);
+      console.error("Participações não encontradas:", error.message);
       return null;
     }
-    console.error("Erro ao reprovar participações:", error);
+    console.error("Erro ao reprovar participações:", error.message);
     throw error;
   }
 };
@@ -260,7 +260,7 @@ export const updateSolicitarBolsa = async (tenantSlug, idParticipacao, solicitar
     );
     return response.data.participacao;
   } catch (error) {
-    console.error("Erro ao atualizar solicitarBolsa:", error);
+    console.error("Erro ao atualizar solicitarBolsa:", error.message);
     throw error;
   }
 };
@@ -283,10 +283,10 @@ export const updateParticipacao = async (
     return response.data.participacao;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Participação não atualizada:", error);
+      console.error("Participação não atualizada:", error.message);
       return null;
     }
-    console.error("Erro ao atualizar participação:", error);
+    console.error("Erro ao atualizar participação:", error.message);
     throw error;
   }
 };
@@ -304,10 +304,10 @@ export const ativarParticipacao = async (tenantSlug, idParticipacao) => {
     return response.data.participacao;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Participação não encontrada:", error);
+      console.error("Participação não encontrada:", error.message);
       throw error;
     }
-    console.error("Erro ao ativar participação:", error);
+    console.error("Erro ao ativar participação:", error.message);
     throw error;
   }
 };
@@ -347,7 +347,7 @@ export const inativarParticipacao = async (
     }
 
     // Tratamento para outros erros
-    console.error("Erro ao inativar participação:", error);
+    console.error("Erro ao inativar participação:", error.message);
     throw new Error(error.response?.data?.message || 'Erro ao inativar participação');
   }
 };
@@ -364,10 +364,10 @@ export const deleteParticipacao = async (tenantSlug, idParticipacao) => {
     return response.data;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Participação não deletada:", error);
+      console.error("Participação não deletada:", error.message);
       return null;
     }
-    console.error("Erro ao deletar participação:", error);
+    console.error("Erro ao deletar participação:", error.message);
     throw error;
   }
 };
@@ -388,11 +388,11 @@ export const validarParticipacao = async (tenantSlug, idParticipacao) => {
     return response.data.participacao;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Participação não encontrada ou não pertence ao tenant:", error);
+      console.error("Participação não encontrada ou não pertence ao tenant:", error.message);
       return null;
     }
 
-    console.error("Erro ao validar participação:", error);
+    console.error("Erro ao validar participação:", error.message);
     throw error;
   }
 };
@@ -438,7 +438,7 @@ export const substituirAlunoParticipacao = async (
     }
 
     // Tratamento para outros erros
-    console.error("Erro ao substituir participação de aluno:", error);
+    console.error("Erro ao substituir participação de aluno:", error.message);
     throw new Error(error.response?.data?.message || 'Erro ao substituir participação de aluno');
   }
 };
@@ -483,7 +483,7 @@ export const ativarOuPendenteParticipacao = async (
     }
 
     // Tratamento para outros erros
-    console.error("Erro ao alterar status da participação:", error);
+    console.error("Erro ao alterar status da participação:", error.message);
     throw new Error(error.response?.data?.message || 'Erro ao alterar status da participação');
   }
 };
@@ -581,7 +581,7 @@ export const upsertRespostasParticipacao = async (
     );
     return response.data;
   } catch (error) {
-    console.error("Erro:", error);
+    console.error("Erro:", error.message);
     throw error;
   }
 };

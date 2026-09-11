@@ -166,10 +166,10 @@ export const getLayoutCertificados = async (eventoSlug) => {
     return response.data.certificados;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Cargos não encontrados:", error);
+      console.error("Cargos não encontrados:", error.message);
       return null;
     }
-    console.error("Erro ao obter os cargos:", error);
+    console.error("Erro ao obter os cargos:", error.message);
     throw error;
   }
 }; 
@@ -222,7 +222,7 @@ export const generateAndDownloadAvaliadorCertificatePDF = async (eventoSlug) => 
     // Inicia o download do PDF
     pdf.save(`certificado_${eventoSlug}.pdf`);
   } catch (error) {
-    console.error("Erro ao gerar ou baixar o certificado PDF:", error);
+    console.error("Erro ao gerar ou baixar o certificado PDF:", error.message);
     throw new Error(error.response.data.message||"Erro ao gerar ou baixar o certificado. Tente novamente.");
   }
 };
@@ -237,10 +237,10 @@ export const getUserSubmissions = async (eventoId) => {
     return response.data.submissoes;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Cargos não encontrados:", error);
+      console.error("Cargos não encontrados:", error.message);
       return null;
     }
-    console.error("Erro ao obter os cargos:", error);
+    console.error("Erro ao obter os cargos:", error.message);
     throw error;
   }
 }; 
@@ -258,10 +258,10 @@ export const getCertificados = async (eventoId, tipoBusca, valor) => {
     return response.data;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Certificados não encontrados:", error);
+      console.error("Certificados não encontrados:", error.message);
       return { status: "error", message: "Nenhum certificado encontrado" };
     }
-    console.error("Erro ao obter certificados:", error);
+    console.error("Erro ao obter certificados:", error.message);
     throw error;
   }
 };
@@ -310,7 +310,7 @@ export const generateAndDownloadCertificatePDF = async (eventoId, tipo, submissa
     pdf.save(`certificado_${eventoId}.pdf`);
     
   } catch (error) {
-    console.error("Erro ao gerar ou baixar o certificado PDF:", error);
+    console.error("Erro ao gerar ou baixar o certificado PDF:", error.message);
     throw new Error("Erro ao gerar ou baixar o certificado. Tente novamente.");
   }
 };
@@ -329,7 +329,7 @@ export const validarCertificado = async (codigo) => {
         message: error.response?.data?.message || "Não encontrado"
       };
     }
-    console.error("Erro na validação:", error);
+    console.error("Erro na validação:", error.message);
     throw error;
   }
 };

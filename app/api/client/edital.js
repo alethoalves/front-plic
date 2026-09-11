@@ -12,10 +12,10 @@ export const createEdital = async (tenantSlug, editalData) => {
     return response.data.edital;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error('Edital não cadastrado:', error);
+      console.error('Edital não cadastrado:', error.message);
       return null;
     }
-    console.error('Erro ao cadastrar edital:', error);
+    console.error('Erro ao cadastrar edital:', error.message);
     throw error;
   }
 };
@@ -27,7 +27,7 @@ export const updateEdital = async (tenantSlug, editalId, editalData) => {
     const response = await req.put(`/private/${tenantSlug}/edital/${editalId}`, editalData, {headers});
     return response.data.edital;
   } catch (error) {
-    console.error('Erro ao atualizar edital:', error);
+    console.error('Erro ao atualizar edital:', error.message);
     throw error;
   }
 };
@@ -39,7 +39,7 @@ export const deleteEdital = async (tenantSlug, editalId) => {
     const response = await req.delete(`/private/${tenantSlug}/edital/${editalId}`, {headers});
     return response.data;
   } catch (error) {
-    console.error('Erro ao deletar edital:', error);
+    console.error('Erro ao deletar edital:', error.message);
     throw error;
   }
 };
@@ -62,10 +62,10 @@ export const getEditais = async (tenantSlug, ano = null) => {
     return response.data.editais;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error('Editais não encontrados:', error);
+      console.error('Editais não encontrados:', error.message);
       return null;
     }
-    console.error('Erro ao obter os editais:', error);
+    console.error('Erro ao obter os editais:', error.message);
     throw error;
   }
 };
@@ -80,10 +80,10 @@ export const getEdital = async (tenantSlug, editalId) => {
     return response.data.edital;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error('Edital não encontrado:', error);
+      console.error('Edital não encontrado:', error.message);
       return null;
     }
-    console.error('Erro ao obter o edital:', error);
+    console.error('Erro ao obter o edital:', error.message);
     throw error;
   }
 };

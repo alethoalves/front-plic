@@ -13,7 +13,7 @@ export const getCriteriosAvaliacao = async (eventoSlug) => {
     );
     return response.data.criterios;
   } catch (error) {
-    console.error("Erro ao buscar critérios de avaliação:", error);
+    console.error("Erro ao buscar critérios de avaliação:", error.message);
     throw error;
   }
 };
@@ -31,7 +31,7 @@ export const criarCriterioAvaliacao = async (eventoSlug, payload) => {
     );
     return response.data.criterio;
   } catch (error) {
-    console.error("Erro ao criar critério de avaliação:", error);
+    console.error("Erro ao criar critério de avaliação:", error.message);
     throw error;
   }
 };
@@ -49,7 +49,7 @@ export const atualizarCriterioAvaliacao = async (eventoSlug, id, payload) => {
     );
     return response.data.criterio;
   } catch (error) {
-    console.error("Erro ao atualizar critério de avaliação:", error);
+    console.error("Erro ao atualizar critério de avaliação:", error.message);
     throw error;
   }
 };
@@ -66,7 +66,7 @@ export const excluirCriterioAvaliacao = async (eventoSlug, id) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao excluir critério de avaliação:", error);
+    console.error("Erro ao excluir critério de avaliação:", error.message);
     throw error;
   }
 };

@@ -13,7 +13,7 @@ export const getConfiguracaoTabela = async (tenantSlug, chave) => {
     );
     return response.data.configuracao?.valor ?? null;
   } catch (error) {
-    console.error("Erro ao buscar configuração de tabela:", error);
+    console.error("Erro ao buscar configuração de tabela:", error.message);
     throw error;
   }
 };
@@ -31,7 +31,7 @@ export const upsertConfiguracaoTabela = async (tenantSlug, chave, valor) => {
     );
     return response.data.configuracao;
   } catch (error) {
-    console.error("Erro ao salvar configuração de tabela:", error);
+    console.error("Erro ao salvar configuração de tabela:", error.message);
     throw error;
   }
 };

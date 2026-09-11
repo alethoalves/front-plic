@@ -14,10 +14,10 @@ export const getAreas = async (tenantSlug) => {
     return response.data.areas;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error('Áreas não encontradas:', error);
+      console.error('Áreas não encontradas:', error.message);
       return null;
     }
-    console.error('Erro ao obter as áreas:', error);
+    console.error('Erro ao obter as áreas:', error.message);
     throw error;
   }
 };

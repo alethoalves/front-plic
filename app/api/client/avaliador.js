@@ -15,7 +15,7 @@ export const enviarConvitesAvaliadores = async (tenantSlug, payload) => {
     );
     return data;                           // { status, resumo }
   } catch (error) {
-    console.error("Erro ao enviar convites:", error);
+    console.error("Erro ao enviar convites:", error.message);
     throw error;
   }
 };
@@ -32,7 +32,7 @@ export const enviarNotificacaoAvaliador = async (tenantSlug, payload) => {
     );
     return data;                           // { status, resumo }
   } catch (error) {
-    console.error("Erro ao enviar convites:", error);
+    console.error("Erro ao enviar convites:", error.message);
     throw error;
   }
 };
@@ -43,7 +43,7 @@ export const consultarConviteByToken = async (token) => {
     const response = await req.get(`/public/convite/${token}`);
     return response.data.data;              // { status: 'success', data: { …convite } }
   } catch (error) {
-    console.error("Erro ao consultar convite:", error);
+    console.error("Erro ao consultar convite:", error.message);
     throw error;
   }
 };
@@ -54,7 +54,7 @@ export const consultarAvaliadorByToken = async (token) => {
     const response = await req.get(`/public/convite/avaliador/${token}`);
     return response.data.data;              // { status: 'success', data: { …avaliador } }
   } catch (error) {
-    console.error("Erro ao consultar avaliador:", error);
+    console.error("Erro ao consultar avaliador:", error.message);
     throw error;
   }
 };
@@ -64,7 +64,7 @@ export const recusarConvitePorToken = async (token) => {
     const response = await req.get(`/public/recusar-convite/avaliador/${token}`);
     return response.data.data;              // { status: 'success', data: { …avaliador } }
   } catch (error) {
-    console.error("Erro ao recusar convite:", error);
+    console.error("Erro ao recusar convite:", error.message);
     throw error;
   }
 };
@@ -83,7 +83,7 @@ export const toggleStatusAvaliadorAno = async (payload) => {
       throw new Error(data.message || 'Erro ao alterar status');
     }
   } catch (error) {
-    console.error("Erro ao alterar status:", error);
+    console.error("Erro ao alterar status:", error.message);
     throw error;
   }
 };
@@ -97,7 +97,7 @@ export const verificarElegibilidadeAvaliador = async (tenantSlug, ano, { cpf, dt
     );
     return data;                           // { status, elegibilidade, motivoRecusa? }
   } catch (error) {
-    console.error("Erro ao verificar elegibilidade de avaliador:", error);
+    console.error("Erro ao verificar elegibilidade de avaliador:", error.message);
     throw error;
   }
 };
@@ -111,7 +111,7 @@ export const solicitarAnaliseLattes = async (tenantSlug, ano, payload) => {
     );
     return data;
   } catch (error) {
-    console.error("Erro ao solicitar análise de Lattes:", error);
+    console.error("Erro ao solicitar análise de Lattes:", error.message);
     throw error;
   }
 };
@@ -129,7 +129,7 @@ export const vincularAvaliadorDireto = async (tenantSlug, ano) => {
     );
     return data;                           // { status, message, ano }
   } catch (error) {
-    console.error("Erro ao vincular avaliador direto:", error);
+    console.error("Erro ao vincular avaliador direto:", error.message);
     throw error;
   }
 };
@@ -146,7 +146,7 @@ export const getSolicitacoesLattes = async (tenantSlug, ano) => {
     );
     return data.solicitacoes;
   } catch (error) {
-    console.error("Erro ao listar solicitações de Lattes:", error);
+    console.error("Erro ao listar solicitações de Lattes:", error.message);
     throw error;
   }
 };
@@ -164,7 +164,7 @@ export const decidirSolicitacaoLattes = async (tenantSlug, id, { aprovado, motiv
     );
     return data;                           // { status, mensagem }
   } catch (error) {
-    console.error("Erro ao decidir solicitação de Lattes:", error);
+    console.error("Erro ao decidir solicitação de Lattes:", error.message);
     throw error;
   }
 };
@@ -182,7 +182,7 @@ export const reenviarMensagemSolicitacaoLattes = async (tenantSlug, id) => {
     );
     return data;                           // { status, mensagem, celular }
   } catch (error) {
-    console.error("Erro ao reenviar mensagem de solicitação de Lattes:", error);
+    console.error("Erro ao reenviar mensagem de solicitação de Lattes:", error.message);
     throw error;
   }
 };
@@ -200,7 +200,7 @@ export const vincularConviteAvaliador = async (tenantSlug, token) => {
     );
     return data;                           // { status, message, ano, userId }
   } catch (error) {
-    console.error('Erro ao vincular avaliador ao convite:', error);
+    console.error('Erro ao vincular avaliador ao convite:', error.message);
     throw error;
   }
 };
@@ -219,7 +219,7 @@ export const getAvaliadoresComProjetosPendentes = async (tenant, ano) => {
 
     return response.data;
   } catch (error) {
-    console.error("Erro ao buscar avaliadores com projetos pendentes:", error);
+    console.error("Erro ao buscar avaliadores com projetos pendentes:", error.message);
     throw error;
   }
 };
@@ -240,7 +240,7 @@ export const cadastrarAvaliador = async (
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao criar cadastro:", error);
+    console.error("Erro ao criar cadastro:", error.message);
     throw error;
   }
 };
@@ -258,7 +258,7 @@ export const getAvaliacoesPendentes = async (
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao buscar avaliações pendentes:", error);
+    console.error("Erro ao buscar avaliações pendentes:", error.message);
     throw error;
   }
 };
@@ -284,7 +284,7 @@ export const getProjetosAguardandoAvaliacao = async (tenantSlug, areasIds = [], 
       const response = await req.get(url, { headers });
       return response.data.submissoes;
   } catch (error) {
-      console.error("Erro ao atualizar campo:", error);
+      console.error("Erro ao atualizar campo:", error.message);
       throw error;
   }
 };
@@ -300,7 +300,7 @@ export const getProjetoParaAvaliar = async (tenantSlug,inscricaoProjetoId ) => {
       const response = await req.get(url, { headers });
       return response.data.inscricaoProjeto;
   } catch (error) {
-      console.error("Erro ao atualizar campo:", error);
+      console.error("Erro ao atualizar campo:", error.message);
       throw error;
   }
 };
@@ -316,7 +316,7 @@ export const getProjetosEmAvaliacao = async (tenantSlug, ano = null) => {
     return response.data.submissoes;
 
   } catch (error) {
-      console.error("Erro ao atualizar campo:", error);
+      console.error("Erro ao atualizar campo:", error.message);
       throw error;
   }
 };
@@ -331,7 +331,7 @@ export const getEstatisticasAvaliador = async (tenantSlug, ano = null) => {
     const response = await req.get(url, { headers });
     return response.data.estatisticas;
   } catch (error) {
-      console.error("Erro ao buscar estatísticas do avaliador:", error);
+      console.error("Erro ao buscar estatísticas do avaliador:", error.message);
       throw error;
   }
 };
@@ -350,7 +350,7 @@ export const getFichaAvaliacao = async (tenantSlug,objetoAvaliativo,editalId ) =
     return response.data.fichaAvaliacao;
       
   } catch (error) {
-      console.error("Erro ao atualizar campo:", error);
+      console.error("Erro ao atualizar campo:", error.message);
       throw error;
   }
 };
@@ -369,7 +369,7 @@ export const getFichasAvaliacaoProjeto = async (tenantSlug ) => {
     return response.data.fichas;
       
   } catch (error) {
-      console.error("Erro ao buscar fichas:", error);
+      console.error("Erro ao buscar fichas:", error.message);
       throw error;
   }
 };
@@ -385,7 +385,7 @@ export const getFichaAvaliacaoDetalheGestor = async (tenantSlug, idFicha) => {
     );
     return response.data.ficha;
   } catch (error) {
-    console.error("Erro ao buscar detalhe da ficha:", error);
+    console.error("Erro ao buscar detalhe da ficha:", error.message);
     throw error;
   }
 };
@@ -403,7 +403,7 @@ export const deleteFichaAvaliacao = async (tenantSlug,fichaId ) => {
     return response.data;
 
   } catch (error) {
-      console.error("Erro ao buscar fichas:", error);
+      console.error("Erro ao buscar fichas:", error.message);
       throw error;
   }
 };
@@ -422,7 +422,7 @@ export const arquivarFichaAvaliacao = async (tenantSlug, fichaId, arquivada) => 
     return response.data;
 
   } catch (error) {
-      console.error("Erro ao arquivar ficha:", error);
+      console.error("Erro ao arquivar ficha:", error.message);
       throw error;
   }
 };
@@ -440,7 +440,7 @@ export const avaliadorRefazerAvaliacao = async (tenantSlug, fichaId) => {
     return response.data;
 
   } catch (error) {
-      console.error("Erro ao editar avaliação:", error);
+      console.error("Erro ao editar avaliação:", error.message);
       throw error;
   }
 };
@@ -456,7 +456,7 @@ export const associarAvaliadorInscricaoProjeto = async (tenant, idInscricaoProje
     );
     return response.data.submissao;
   } catch (error) {
-      console.error("Erro ao atualizar campo:", error);
+      console.error("Erro ao atualizar campo:", error.message);
       throw error;
   }
 };
@@ -473,7 +473,7 @@ export const desassociarAvaliadorInscricaoProjeto = async (tenant, idInscricaoPr
     );
     return response.data.submissao;
   } catch (error) {
-      console.error("Erro ao atualizar campo:", error);
+      console.error("Erro ao atualizar campo:", error.message);
       throw error;
   }
 };
@@ -490,7 +490,7 @@ export const GestorDesassociarAvaliadorInscricaoProjeto = async (tenant, idInscr
     );
     return response.data.submissao;
   } catch (error) {
-      console.error("Erro ao atualizar campo:", error);
+      console.error("Erro ao atualizar campo:", error.message);
       throw error;
   }
 };
@@ -508,7 +508,7 @@ export const processarFichaAvaliacao = async (tenant, body) => {
     );
     return response.data;
   } catch (error) {
-      console.error("Erro ao atualizar campo:", error);
+      console.error("Erro ao atualizar campo:", error.message);
       throw error;
   }
 };
@@ -526,7 +526,7 @@ export const atribuicaoDeProjetosPeloGestor = async (tenant, body) => {
     );
     return response.data;
   } catch (error) {
-      console.error("Erro ao atualizar campo:", error);
+      console.error("Erro ao atualizar campo:", error.message);
       throw error;
   }
 };
@@ -543,7 +543,7 @@ export const listarFamiliasRecursoAvaliador = async (tenant, ano = null) => {
     const response = await req.get(url, { headers });
     return response.data;
   } catch (error) {
-    console.error("Erro ao listar famílias de recurso:", error);
+    console.error("Erro ao listar famílias de recurso:", error.message);
     throw error;
   }
 };
@@ -560,7 +560,7 @@ export const getAnaliseRecursoAvaliador = async (tenant, planoId) => {
     );
     return response.data.analise;
   } catch (error) {
-    console.error("Erro ao buscar análise de recurso:", error);
+    console.error("Erro ao buscar análise de recurso:", error.message);
     throw error;
   }
 };
@@ -578,7 +578,7 @@ export const pegarFamiliaRecursoAvaliador = async (tenant, planoId) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao reivindicar recurso:", error);
+    console.error("Erro ao reivindicar recurso:", error.message);
     throw error;
   }
 };
@@ -596,7 +596,7 @@ export const devolverFamiliaRecursoAvaliador = async (tenant, planoId) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao devolver recurso:", error);
+    console.error("Erro ao devolver recurso:", error.message);
     throw error;
   }
 };
@@ -614,7 +614,7 @@ export const analisarRecursosEmLoteAvaliador = async (tenant, body) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao analisar recursos em lote:", error);
+    console.error("Erro ao analisar recursos em lote:", error.message);
     throw error;
   }
 };

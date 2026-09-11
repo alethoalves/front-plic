@@ -17,7 +17,7 @@ import { getCookie } from 'cookies-next';
       );
       return response.data;
     } catch (error) {
-      console.error("Erro ao atualizar campo:", error);
+      console.error("Erro ao atualizar campo:", error.message);
       throw error;
     }
   };
@@ -36,7 +36,7 @@ import { getCookie } from 'cookies-next';
       );
       return response.data.avaliadores;
     } catch (error) {
-      console.error("Erro ao atualizar campo:", error);
+      console.error("Erro ao atualizar campo:", error.message);
       throw error;
     }
   };
@@ -56,7 +56,7 @@ import { getCookie } from 'cookies-next';
       );
       return response.data;
     } catch (error) {
-      console.error("Erro ao atualizar:", error);
+      console.error("Erro ao atualizar:", error.message);
       throw error;
     }
   };
@@ -75,7 +75,7 @@ import { getCookie } from 'cookies-next';
       );
       return response.data;
     } catch (error) {
-      console.error("Erro ao atualizar token de avaliador:", error);
+      console.error("Erro ao atualizar token de avaliador:", error.message);
       throw error;
     }
   };
@@ -94,7 +94,7 @@ import { getCookie } from 'cookies-next';
       );
       return response.data;
     } catch (error) {
-      console.error("Erro ao cadastrar avaliador:", error);
+      console.error("Erro ao cadastrar avaliador:", error.message);
       throw error;
     }
   };
@@ -112,7 +112,7 @@ import { getCookie } from 'cookies-next';
       );
       return response.data;
     } catch (error) {
-      console.error("Erro ao excluir avaliador:", error);
+      console.error("Erro ao excluir avaliador:", error.message);
       throw error;
     }
   };

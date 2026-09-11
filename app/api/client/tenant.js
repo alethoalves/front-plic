@@ -19,10 +19,10 @@ export const getTenantById = async (tenantSlug, ano) => {
     return response.data;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Tenant não encontrado:", error);
+      console.error("Tenant não encontrado:", error.message);
       return null;
     }
-    console.error("Erro ao obter tenant:", error);
+    console.error("Erro ao obter tenant:", error.message);
     throw error;
   }
 };
@@ -42,7 +42,7 @@ export const getTenantBySlug = async (tenant) => {
     return response.data.tenant;
   } catch (error) {
       // Para outros erros, relança o erro para que o chamador possa tratá-lo
-      console.error('Erro ao obter o tenant:', error);
+      console.error('Erro ao obter o tenant:', error.message);
       throw error;
   }
 };
@@ -65,7 +65,7 @@ export const getCpfAutorizados = async (tenantSlug) => {
     );
     return data;                           // { registros: [...] }
   } catch (error) {
-    console.error("Erro ao buscar CPFs autorizados:", error);
+    console.error("Erro ao buscar CPFs autorizados:", error.message);
     throw error;
   }
 };
@@ -89,7 +89,7 @@ export const createCpfAutorizado = async (tenantSlug, body) => {
     if (error.response?.status === 400) {
       return { error: error.response.data.error?.message };
     }
-    console.error("Erro ao criar CPF autorizado:", error);
+    console.error("Erro ao criar CPF autorizado:", error.message);
     throw error;
   }
 };
@@ -111,7 +111,7 @@ export const deleteCpfAutorizado = async (tenantSlug, id) => {
     if (error.response?.status === 404) {
       return { error: "Registro não encontrado" };
     }
-    console.error("Erro ao excluir CPF autorizado:", error);
+    console.error("Erro ao excluir CPF autorizado:", error.message);
     throw error;
   }
 };

@@ -12,10 +12,10 @@ export const createCargo = async (tenantSlug, data) => {
     return response.data.cargo;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error('Edital não cadastrado:', error);
+      console.error('Edital não cadastrado:', error.message);
       return null;
     }
-    console.error('Erro ao cadastrar edital:', error);
+    console.error('Erro ao cadastrar edital:', error.message);
     throw error;
   }
 };
@@ -27,10 +27,10 @@ export const updateCargo = async (tenantSlug, data) => {
     return response.data.cargo;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error('Edital não cadastrado:', error);
+      console.error('Edital não cadastrado:', error.message);
       return null;
     }
-    console.error('Erro ao cadastrar edital:', error);
+    console.error('Erro ao cadastrar edital:', error.message);
     throw error;
   }
 };
@@ -64,10 +64,10 @@ export const getCargos = async (tenantSlug, filters = {}) => {
     return response.data.cargos;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error("Cargos não encontrados:", error);
+      console.error("Cargos não encontrados:", error.message);
       return null;
     }
-    console.error("Erro ao obter os cargos:", error);
+    console.error("Erro ao obter os cargos:", error.message);
     throw error;
   }
 };
@@ -79,7 +79,7 @@ export const deleteCargo = async (tenantSlug, cargoId) => {
     const response = await req.delete(`/private/${tenantSlug}/cargo/${cargoId}`, {headers});
     return response.data;
   } catch (error) {
-    console.error('Erro ao deletar edital:', error);
+    console.error('Erro ao deletar edital:', error.message);
     throw error;
   }
 };

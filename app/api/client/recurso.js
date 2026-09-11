@@ -11,7 +11,7 @@ export const getRecursoDetalhe = async (tenantSlug, planoId, tipoNota) => {
     );
     return response.data.recurso;
   } catch (error) {
-    console.error("Erro ao obter detalhe do recurso:", error);
+    console.error("Erro ao obter detalhe do recurso:", error.message);
     throw error;
   }
 };
@@ -27,7 +27,7 @@ export const criarRecurso = async (tenantSlug, planoId, body) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao criar recurso:", error);
+    console.error("Erro ao criar recurso:", error.message);
     throw error;
   }
 };
@@ -42,7 +42,7 @@ export const excluirRecurso = async (tenantSlug, planoId, recursoId) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao excluir recurso:", error);
+    console.error("Erro ao excluir recurso:", error.message);
     throw error;
   }
 };
@@ -58,7 +58,7 @@ export const atualizarHabilitarRecurso = async (tenantSlug, editalId, habilitarR
     );
     return response.data.edital;
   } catch (error) {
-    console.error("Erro ao atualizar habilitação de recurso:", error);
+    console.error("Erro ao atualizar habilitação de recurso:", error.message);
     throw error;
   }
 };
@@ -73,7 +73,7 @@ export const listarPlanosComRecursoGestor = async (tenantSlug, ano) => {
     });
     return response.data.planos;
   } catch (error) {
-    console.error("Erro ao listar planos com recurso:", error);
+    console.error("Erro ao listar planos com recurso:", error.message);
     throw error;
   }
 };
@@ -88,7 +88,7 @@ export const getAnaliseRecursoGestor = async (tenantSlug, planoId) => {
     );
     return response.data.analise;
   } catch (error) {
-    console.error("Erro ao obter análise de recurso:", error);
+    console.error("Erro ao obter análise de recurso:", error.message);
     throw error;
   }
 };
@@ -104,7 +104,7 @@ export const analisarRecursosEmLote = async (tenantSlug, itens) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao analisar recursos em lote:", error);
+    console.error("Erro ao analisar recursos em lote:", error.message);
     throw error;
   }
 };
@@ -120,7 +120,7 @@ export const reverterAnaliseRecursoGestor = async (tenantSlug, planoId) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao reverter análise de recurso:", error);
+    console.error("Erro ao reverter análise de recurso:", error.message);
     throw error;
   }
 };
@@ -135,7 +135,7 @@ export const listarAvaliadoresElegiveisParaFamiliaRecurso = async (tenantSlug, p
     );
     return response.data.avaliadores;
   } catch (error) {
-    console.error("Erro ao listar avaliadores elegíveis:", error);
+    console.error("Erro ao listar avaliadores elegíveis:", error.message);
     throw error;
   }
 };
@@ -151,7 +151,7 @@ export const atribuicaoDeRecursosPeloGestor = async (tenantSlug, body) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao distribuir recursos:", error);
+    console.error("Erro ao distribuir recursos:", error.message);
     throw error;
   }
 };

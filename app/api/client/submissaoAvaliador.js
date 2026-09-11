@@ -22,7 +22,7 @@ import { getCookie } from 'cookies-next';
         const response = await req.get(url, { headers });
         return response.data.submissoes;
     } catch (error) {
-        console.error("Erro ao atualizar campo:", error);
+        console.error("Erro ao atualizar campo:", error.message);
         throw error;
     }
 };
@@ -41,7 +41,7 @@ export const getSubmissoesEmAvaliacao = async (eventoId, areasIds = []) => {
     return response.data.submissoes;
       
   } catch (error) {
-      console.error("Erro ao atualizar campo:", error);
+      console.error("Erro ao atualizar campo:", error.message);
       throw error;
   }
 };
@@ -59,7 +59,7 @@ export const associarAvaliadorSubmissao = async (eventoId, idSubmissao) => {
     );
     return response.data.submissao;
   } catch (error) {
-      console.error("Erro ao atualizar campo:", error);
+      console.error("Erro ao atualizar campo:", error.message);
       throw error;
   }
 };
@@ -76,7 +76,7 @@ export const getResumo = async (eventoId, submissaoId, tenantId) => {
     );
     return response.data.submissao;
   } catch (error) {
-      console.error("Erro ao atualizar campo:", error);
+      console.error("Erro ao atualizar campo:", error.message);
       throw error;
   }
 };
@@ -93,7 +93,7 @@ export const desvincularAvaliadorSubmissao = async (eventoId, idSubmissao) => {
     );
     return response.data.submissao;
   } catch (error) {
-      console.error("Erro ao atualizar campo:", error);
+      console.error("Erro ao atualizar campo:", error.message);
       throw error;
   }
 };
@@ -110,7 +110,7 @@ export const desvincularAvaliadorSubmissaoPeloGestor = async (eventoId, idSubmis
     );
     return response.data.submissao;
   } catch (error) {
-      console.error("Erro ao atualizar campo:", error);
+      console.error("Erro ao atualizar campo:", error.message);
       throw error;
   }
 };
@@ -130,7 +130,7 @@ export const gerarFeedback = async (
     );
     return response.data.feedback;
   } catch (error) {
-    console.error("Erro ao atualizar campo:", error);
+    console.error("Erro ao atualizar campo:", error.message);
     throw error;
   }
 };
@@ -150,7 +150,7 @@ export const processarAvaliacao = async (
     );
     return response.data;
   } catch (error) {
-    console.error("Erro ao atualizar campo:", error);
+    console.error("Erro ao atualizar campo:", error.message);
     throw error;
   }
 };
@@ -167,7 +167,7 @@ export const getFichasAvaliacoesEvento = async (edicaoEventoSlug) => {
     );
     return response.data.avaliacoes;
   } catch (error) {
-      console.error("Erro ao atualizar campo:", error);
+      console.error("Erro ao atualizar campo:", error.message);
       throw error;
   }
 };

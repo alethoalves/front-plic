@@ -18,7 +18,7 @@ export const createFormularioAvaliacao = async (tenantSlug, formularioData) => {
   
       return response.data.formularioAvaliacao; // <- veio assim no controller
     } catch (error) {
-      console.error("Erro ao criar formulário de avaliação:", error);
+      console.error("Erro ao criar formulário de avaliação:", error.message);
       throw error;
     }
   };
@@ -41,7 +41,7 @@ export const createFormularioAvaliacao = async (tenantSlug, formularioData) => {
   
       return response.data.formularioAvaliacao;
     } catch (error) {
-      console.error("Erro ao atualizar formulário de avaliação:", error);
+      console.error("Erro ao atualizar formulário de avaliação:", error.message);
       throw error;
     }
   };
@@ -59,7 +59,7 @@ export const createFormularioAvaliacao = async (tenantSlug, formularioData) => {
   
       return response.data; // geralmente só status / message
     } catch (error) {
-      console.error("Erro ao deletar formulário de avaliação:", error);
+      console.error("Erro ao deletar formulário de avaliação:", error.message);
       throw error;
     }
   };
@@ -77,7 +77,7 @@ export const createFormularioAvaliacao = async (tenantSlug, formularioData) => {
   
       return response.data.formulariosAvaliacao;
     } catch (error) {
-      console.error("Erro ao obter formulários de avaliação:", error);
+      console.error("Erro ao obter formulários de avaliação:", error.message);
       throw error;
     }
   };
@@ -96,10 +96,10 @@ export const createFormularioAvaliacao = async (tenantSlug, formularioData) => {
       return response.data.formularioAvaliacao;
     } catch (error) {
       if (error.response?.status === 404) {
-        console.error("Formulário de avaliação não encontrado:", error);
+        console.error("Formulário de avaliação não encontrado:", error.message);
         return null;
       }
-      console.error("Erro ao obter formulário de avaliação:", error);
+      console.error("Erro ao obter formulário de avaliação:", error.message);
       throw error;
     }
   };

@@ -25,7 +25,7 @@ export const baixarPdfCompilado = async (latexContent) => {
     const blob = new Blob([response.data], { type: 'application/pdf' });
     saveAs(blob, 'submissoes_compilado.pdf');
   } catch (error) {
-    console.error("Erro ao compilar o LaTeX:", error);
+    console.error("Erro ao compilar o LaTeX:", error.message);
     throw error;
   }
 };
@@ -40,7 +40,7 @@ export const relatorioInscricoes = async (tenantSlug) => {
     );
     return response.data.participacoes;
   } catch (error) {
-    console.error("Erro ao obter as inscrições:", error);
+    console.error("Erro ao obter as inscrições:", error.message);
     throw error;
   }
 };
@@ -143,7 +143,7 @@ export const getSubmissaoByEvento = async (eventoSlug, idEvento, tenantSlug, ins
     );
     return response.data.submissoes;
   } catch (error) {
-    console.error("Erro ao atualizar campo:", error);
+    console.error("Erro ao atualizar campo:", error.message);
     throw error;
   }
 };

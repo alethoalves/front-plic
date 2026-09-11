@@ -17,7 +17,7 @@ export const getInscricao = async (tenantSlug, idInscricao) => {
     });
     return response.data.inscricao;
   } catch (error) {
-    console.error('Erro ao obter a inscrição:', error);
+    console.error('Erro ao obter a inscrição:', error.message);
     throw error;
   }
 };
@@ -36,10 +36,10 @@ export const getEdital = async (tenantSlug, editalId) => {
     return response.data.edital;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error('Edital não encontrado:', error);
+      console.error('Edital não encontrado:', error.message);
       return null;
     }
-    console.error('Erro ao obter o edital:', error);
+    console.error('Erro ao obter o edital:', error.message);
     throw error;
   }
 };
@@ -58,10 +58,10 @@ export const getEditais = async (tenantSlug) => {
     return response.data.editais;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      console.error('Edital não encontrado:', error);
+      console.error('Editais não encontrados:', error.message);
       return null;
     }
-    console.error('Erro ao obter o edital:', error);
+    console.error('Erro ao obter o edital:', error.message);
     throw error;
   }
 };
@@ -73,7 +73,7 @@ export const getStatusAvaliacoesAvaliador = async (tenantSlug, ano) => {
     const response = await req.get(`/public/${tenantSlug}/avaliador/${ano}/status-avaliacoes`);
     return response.data.avaliacoesEncerradas;
   } catch (error) {
-    console.error('Erro ao consultar status das avaliações:', error);
+    console.error('Erro ao consultar status das avaliações:', error.message);
     return false;
   }
 };
@@ -85,7 +85,7 @@ export const getEventoBySlug = async (slug) => {
     
     return response.data.evento;
   } catch (error) {
-    console.error("Erro ao chamar a API:", error);
+    console.error("Erro ao chamar a API:", error.message);
     throw error;
   }
 };
@@ -96,7 +96,7 @@ export const getEventoProgramacao = async (eventoId) => {
     
     return response.data.programacao;
   } catch (error) {
-    console.error("Erro ao chamar a API:", error);
+    console.error("Erro ao chamar a API:", error.message);
     throw error;
   }
 };
@@ -107,7 +107,7 @@ export const getEventoRootBySlug = async (slug) => {
     
     return response.data.eventoRoot;
   } catch (error) {
-    console.error("Erro ao chamar a API:", error);
+    console.error("Erro ao chamar a API:", error.message);
     throw error;
   }
 };
@@ -122,7 +122,7 @@ export const getSubmissoes = async (id) => {
     
     return response.data.submissoes;
   } catch (error) {
-    console.error("Erro ao chamar a API:", error);
+    console.error("Erro ao chamar a API:", error.message);
     throw error;
   }
 };
@@ -135,7 +135,7 @@ export const getSessoesBySlug = async (eventoSlug) => {
     );
     return response.data.sessoes;
   } catch (error) {
-    console.error("Erro:", error);
+    console.error("Erro:", error.message);
     throw error;
   }
 };
