@@ -243,10 +243,27 @@ const Page = ({ params }) => {
 
   const avaliadoresBodyTemplate = (rowData) => {
     const atuais = avaliacoesAtuaisPorSubmissaoId.get(rowData.id) || [];
+    const finalizadas = rowData.Avaliacao || [];
     const podeAtribuir = STATUS_ATRIBUIVEIS.includes(rowData.status);
 
     return (
       <div className={styles.celulaAvaliadores}>
+        {finalizadas.map((avaliacao) => (
+          <div
+            key={avaliacao.id}
+            className={`${styles.linhaAvaliacaoFinalizada} ${
+              avaliacao.arquivada ? styles.linhaAvaliacaoFinalizadaArquivada : ""
+            }`}
+          >
+            <p className={styles.nomeAvaliador}>{avaliacao.avaliador?.nome}</p>
+            <p className={styles.infoAvaliador}>
+              Nota: {avaliacao.notaTotal}
+              {avaliacao.arquivada && (
+                <span className={styles.badgeArquivada}>Arquivada</span>
+              )}
+            </p>
+          </div>
+        ))}
         {atuais.map((atual) => {
           const tempo = calcularTempoDesdeAtribuicao(atual.createdAt);
           return (
@@ -279,7 +296,7 @@ const Page = ({ params }) => {
             <RiUserAddLine size={14} /> Atribuir avaliador
           </button>
         )}
-        {atuais.length === 0 && !podeAtribuir && "—"}
+        {atuais.length === 0 && finalizadas.length === 0 && !podeAtribuir && "—"}
       </div>
     );
   };

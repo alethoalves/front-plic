@@ -403,7 +403,7 @@
                     }
                 }
                 .avaliador{
-                    
+
                     &:not(:last-child){
                         margin-bottom: $gap-2;
                     }
@@ -417,7 +417,10 @@
                             text-align: right;
                         }
                     }
-                    
+                    &.avaliadorArquivado{
+                        opacity: 0.6;
+                    }
+
                 }
                 .description{
                     display: flex;

@@ -110,6 +110,31 @@
     }
 }
 
+// Avaliação já finalizada (Avaliacao), diferente das linhas de atribuição
+// em andamento acima (SubmissaoAvaliador) — mostra nome + nota, e some com
+// opacidade quando a avaliação foi arquivada (deixou de contar na nota).
+.linhaAvaliacaoFinalizada {
+    &:not(:last-child) {
+        padding-bottom: 6px;
+        border-bottom: 1px solid $gray-50;
+    }
+
+    &.linhaAvaliacaoFinalizadaArquivada {
+        opacity: 0.6;
+    }
+}
+
+.badgeArquivada {
+    display: inline-block;
+    margin-left: 4px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background-color: $warning-light;
+    color: $error-dark;
+    font-size: 10px;
+    font-weight: 700;
+}
+
 .btnRetirarAvaliador {
     display: inline-flex;
     align-items: center;

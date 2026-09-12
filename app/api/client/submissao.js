@@ -240,21 +240,22 @@ export const getAvaliadoresComSubmissoesPendentes = async (
     }
   };
 
-  export const excluirAvaliacao = async (
-    eventoSlug,idAvaliacao
+  export const arquivarAvaliacao = async (
+    eventoSlug, idAvaliacao, arquivada
   ) => {
     try {
       const headers = getAuthHeadersClient();
       if (!headers) {
         return false;
       }
-      const response = await req.delete(
-        `/evenplic/evento/${eventoSlug}/avaliacao/${idAvaliacao}`,
+      const response = await req.put(
+        `/evenplic/evento/${eventoSlug}/avaliacao/${idAvaliacao}/arquivar`,
+        { arquivada },
         { headers }
       );
       return response.data;
     } catch (error) {
-      console.error("Erro ao excluir avaliação:", error.message);
+      console.error("Erro ao arquivar avaliação:", error.message);
       throw error;
     }
   };

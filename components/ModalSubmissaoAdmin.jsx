@@ -5,7 +5,7 @@ import {
   updateSubmissaoDados,
   adicionarParticipacaoSubmissao,
   removerParticipacaoSubmissao,
-  excluirAvaliacao,
+  arquivarAvaliacao,
 } from "@/app/api/client/submissao";
 import { validarJustificativaManualmente, cpfVerificationForInscricao } from "@/app/api/client/eventos";
 import { vincularAutomaticamenteSubmissao } from "@/app/api/client/square"; // Importa a função de vinculação automática
@@ -17,7 +17,9 @@ import Button from "@/components/Button";
 import Input from "@/components/Input";
 import SearchableSelect from "@/components/SearchableSelect";
 import { useForm } from "react-hook-form";
+import { Tag } from "primereact/tag";
 import {
+  RiArchiveLine,
   RiArticleLine,
   RiBrainLine,
   RiCalendarLine,
@@ -25,6 +27,7 @@ import {
   RiDeleteBinLine,
   RiFlaskFill,
   RiFlaskLine,
+  RiInboxUnarchiveLine,
   RiTimeLine,
   RiUserUnfollowLine,
   RiLoginCircleLine,
@@ -54,7 +57,7 @@ const Modal = ({ isOpen, onClose, eventoSlug, idSubmissao, onDataUpdated }) => {
   const [atualizandoPremiacao, setAtualizandoPremiacao] = useState(false);
   const [motivoValidacaoManual, setMotivoValidacaoManual] = useState("");
   const [validandoManualmente, setValidandoManualmente] = useState(false);
-  const [excluindoAvaliacao, setExcluindoAvaliacao] = useState(null);
+  const [arquivandoAvaliacaoId, setArquivandoAvaliacaoId] = useState(null);
 
   const [activeTab, setActiveTab] = useState("detalhes");
   const [areas, setAreas] = useState([]);
@@ -157,21 +160,25 @@ const Modal = ({ isOpen, onClose, eventoSlug, idSubmissao, onDataUpdated }) => {
     }
   };
 
-  const handleDeleteAvaliacao = async (idAvaliacao) => {
-    if (!window.confirm("Excluir esta avaliação? Essa ação não pode ser desfeita.")) {
+  const handleToggleArquivarAvaliacao = async (item) => {
+    const alvo = !item.arquivada;
+    const mensagem = alvo
+      ? "Arquivar esta avaliação? A nota deste avaliador deixará de contar na nota da submissão."
+      : "Desarquivar esta avaliação? A nota deste avaliador volta a valer pra submissão.";
+    if (!window.confirm(mensagem)) {
       return;
     }
-    setExcluindoAvaliacao(idAvaliacao);
+    setArquivandoAvaliacaoId(item.id);
     try {
-      await excluirAvaliacao(eventoSlug, idAvaliacao);
+      await arquivarAvaliacao(eventoSlug, item.id, alvo);
       fetchData(eventoSlug, idSubmissao);
       if (onDataUpdated) {
         onDataUpdated();
       }
     } catch (error) {
-      console.error("Erro ao excluir avaliação:", error);
+      console.error("Erro ao arquivar/desarquivar avaliação:", error);
     } finally {
-      setExcluindoAvaliacao(null);
+      setArquivandoAvaliacaoId(null);
     }
   };
 
@@ -553,27 +560,40 @@ const Modal = ({ isOpen, onClose, eventoSlug, idSubmissao, onDataUpdated }) => {
                   <div className={styles.squareHeaderInfo}>
                     {submissao?.Avaliacao?.sort((a, b) => a.id - b.id).map(
                       (item) => (
-                        <div key={item.id} className={styles.avaliador}>
+                        <div
+                          key={item.id}
+                          className={`${styles.avaliador} ${
+                            item.arquivada ? styles.avaliadorArquivado : ""
+                          }`}
+                        >
                           <div className={styles.squareHeaderNumero}>
                             <div>
                               <p>
                                 ID da avaliação: <strong>{item.id}</strong>
                               </p>
+                              {item.arquivada && (
+                                <Tag severity="warning" value="Arquivada" className="mt-1" />
+                              )}
                             </div>
                             <div
                               className={styles.deleteSquare}
-                              onClick={() => handleDeleteAvaliacao(item.id)}
-                              title="Excluir avaliação"
+                              onClick={() => handleToggleArquivarAvaliacao(item)}
+                              title={item.arquivada ? "Desarquivar avaliação" : "Arquivar avaliação"}
                             >
-                              <RiDeleteBinLine />
-                              {excluindoAvaliacao === item.id && <p>Excluindo...</p>}
+                              {item.arquivada ? <RiInboxUnarchiveLine /> : <RiArchiveLine />}
+                              {arquivandoAvaliacaoId === item.id && <p>Salvando...</p>}
                             </div>
                           </div>
                           <p>
                             Avaliador: <strong>{item.avaliador?.nome}</strong>
                           </p>
                           <p>
-                            Nota: <strong>{item.notaTotal}</strong>
+                            Nota:{" "}
+                            <strong
+                              style={item.arquivada ? { textDecoration: "line-through" } : undefined}
+                            >
+                              {item.notaTotal}
+                            </strong>
                           </p>
                           <p>
                             Prêmios:
