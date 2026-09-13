@@ -26,6 +26,36 @@ const formatDateFromISO = (isoString) => {
   return `${day}/${month}/${year}`;
 };
 
+const TIPO_PARTICIPANTE_ORDEM = ["AUTORIDADE", "PALESTRANTE", "MEDIADOR"];
+const TIPO_PARTICIPANTE_LABEL_PLURAL = {
+  AUTORIDADE: "Autoridades",
+  PALESTRANTE: "Palestrantes",
+  MEDIADOR: "Mediação",
+};
+
+// Agrupa os participantes da atividade por tipo (autoridade/palestrante/
+// mediador), na ordem fixa acima, em vez de repetir o rótulo do tipo antes
+// de cada nome — cada grupo vira uma mini-seção com um rótulo só.
+const agruparParticipantesPorTipo = (participantes) => {
+  const porTipo = new Map();
+  (participantes || []).forEach((participante) => {
+    if (!porTipo.has(participante.tipo)) porTipo.set(participante.tipo, []);
+    porTipo.get(participante.tipo).push(participante);
+  });
+
+  const tiposConhecidos = TIPO_PARTICIPANTE_ORDEM.filter((tipo) =>
+    porTipo.has(tipo),
+  );
+  const tiposDesconhecidos = Array.from(porTipo.keys()).filter(
+    (tipo) => !TIPO_PARTICIPANTE_ORDEM.includes(tipo),
+  );
+
+  return [...tiposConhecidos, ...tiposDesconhecidos].map((tipo) => ({
+    tipo,
+    participantes: porTipo.get(tipo),
+  }));
+};
+
 const DIAS_SEMANA = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 const MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
 const formatDiaLabel = (dateString) => {
@@ -107,11 +137,59 @@ const Page = async ({ params }) => {
                     </div>
                     <div className={styles.eventoAgendaBody}>
                       <h4>{atividade.titulo}</h4>
-                      <p>{atividade.descricao}</p>
+                      {atividade.subtitulo && (
+                        <p className={styles.eventoAgendaSubtitulo}>
+                          {atividade.subtitulo}
+                        </p>
+                      )}
+                      {atividade.descricao && <p>{atividade.descricao}</p>}
                       {atividade.local && (
                         <div className={styles.eventoAgendaLoc}>
                           <RiMapPinLine />
                           {atividade.local}
+                        </div>
+                      )}
+                      {atividade.participantes?.length > 0 && (
+                        <div className={styles.eventoAgendaParticipantes}>
+                          {agruparParticipantesPorTipo(
+                            atividade.participantes,
+                          ).map((grupo) => (
+                            <div
+                              key={grupo.tipo}
+                              className={styles.eventoAgendaParticipanteGrupo}
+                            >
+                              <span
+                                className={
+                                  styles.eventoAgendaParticipanteGrupoLabel
+                                }
+                              >
+                                {TIPO_PARTICIPANTE_LABEL_PLURAL[grupo.tipo] ??
+                                  grupo.tipo}
+                              </span>
+                              <ul>
+                                {grupo.participantes.map((participante, idx) => (
+                                  <li key={idx}>
+                                    <span
+                                      className={
+                                        styles.eventoAgendaParticipanteNome
+                                      }
+                                    >
+                                      {participante.nome}
+                                    </span>
+                                    {participante.descricao && (
+                                      <span
+                                        className={
+                                          styles.eventoAgendaParticipanteDescricao
+                                        }
+                                      >
+                                        {participante.descricao}
+                                      </span>
+                                    )}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          ))}
                         </div>
                       )}
                     </div>

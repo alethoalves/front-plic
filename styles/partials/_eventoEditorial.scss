@@ -288,6 +288,13 @@
     font-size: 0.88rem;
     line-height: 1.55;
   }
+
+  .eventoAgendaSubtitulo {
+    color: $gray-500;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-top: -2px;
+  }
 }
 
 .eventoAgendaLoc {
@@ -302,6 +309,52 @@
     width: 13px;
     height: 13px;
   }
+}
+
+// Participantes da atividade (autoridade/palestrante/mediador), agrupados
+// por tipo em vez de repetir o rótulo do tipo antes de cada nome.
+.eventoAgendaParticipantes {
+  margin-top: $gap-2;
+  display: flex;
+  flex-direction: column;
+  gap: $gap-1;
+}
+
+.eventoAgendaParticipanteGrupo {
+  ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 2px 0 0;
+  }
+
+  li {
+    font-size: 0.82rem;
+    line-height: 1.5;
+
+    &:not(:last-child) {
+      margin-bottom: 4px;
+    }
+  }
+}
+
+.eventoAgendaParticipanteGrupoLabel {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $primary-normal;
+}
+
+.eventoAgendaParticipanteNome {
+  display: block;
+  font-weight: 600;
+  color: $black-light;
+}
+
+.eventoAgendaParticipanteDescricao {
+  display: block;
+  color: $gray-500;
+  font-size: 0.78rem;
 }
 
 // ─── Grade "índice + conteúdo" ───────────────────────────────────────────────

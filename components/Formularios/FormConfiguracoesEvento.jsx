@@ -22,6 +22,7 @@ import FormMoldeResumo from "@/components/Formularios/FormMoldeResumo";
 import FormCategorias from "@/components/Formularios/FormCategorias";
 import FormCriteriosAvaliacao from "@/components/Formularios/FormCriteriosAvaliacao";
 import FormSessoes from "@/components/Formularios/FormSessoes";
+import FormAtividades from "@/components/Formularios/FormAtividades";
 import FormCertificados from "@/components/Formularios/FormCertificados";
 
 //COMPONENTES
@@ -35,6 +36,7 @@ import {
   uploadImagemEvento,
 } from "@/app/api/client/eventos";
 import { getSessoesBySlug } from "@/app/api/client/sessoes";
+import { getAtividadesBySlug } from "@/app/api/client/atividadesEvento";
 import { getLayoutCertificados } from "@/app/api/client/certificado";
 import { resolveEventoImageSrc } from "@/lib/resolveEventoImage";
 import FormInstituicoesParceiras from "@/components/Formularios/FormInstituicoesParceiras";
@@ -181,6 +183,7 @@ const ABAS = [
   { id: "avaliacao", label: "Avaliação" },
   { id: "instituicoes", label: "Instituições" },
   { id: "sessoes", label: "Sessões" },
+  { id: "atividades", label: "Atividades" },
   { id: "certificados", label: "Certificados" },
 ];
 
@@ -213,6 +216,26 @@ const FormConfiguracoesEvento = ({ eventoSlug, initialData }) => {
     };
     fetchSessoes();
   }, [abaAtiva, eventoSlug, sessoes]);
+
+  // Atividades (aba "Atividades") — mesmo padrão de busca sob demanda da
+  // aba "Sessões".
+  const [atividades, setAtividades] = useState(null);
+  const [carregandoAtividades, setCarregandoAtividades] = useState(false);
+
+  useEffect(() => {
+    if (abaAtiva !== "atividades" || atividades) return;
+    const fetchAtividades = async () => {
+      setCarregandoAtividades(true);
+      try {
+        setAtividades(await getAtividadesBySlug(eventoSlug));
+      } catch (error) {
+        console.error("Erro ao buscar atividades:", error);
+      } finally {
+        setCarregandoAtividades(false);
+      }
+    };
+    fetchAtividades();
+  }, [abaAtiva, eventoSlug, atividades]);
 
   // Layouts de certificado (aba "Certificados") — mesmo padrão de busca sob
   // demanda da aba "Sessões".
@@ -508,6 +531,20 @@ const FormConfiguracoesEvento = ({ eventoSlug, initialData }) => {
               eventoSlug={eventoSlug}
               initialSessoes={sessoes}
               basePath={`/evento/${eventoSlug}/admin/sessoes`}
+            />
+          )}
+        </>
+      )}
+
+      {abaAtiva === "atividades" && (
+        <>
+          {carregandoAtividades && (
+            <p className={styles.dica}>Carregando atividades...</p>
+          )}
+          {!carregandoAtividades && atividades && (
+            <FormAtividades
+              eventoSlug={eventoSlug}
+              initialAtividades={atividades}
             />
           )}
         </>

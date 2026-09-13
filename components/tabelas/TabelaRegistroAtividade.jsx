@@ -604,6 +604,7 @@ const TabelaRegistroAtividade = ({ params }) => {
       grupos.forEach((grupo) => {
         const worksheet = workbook.addWorksheet(nomeAbaExcel(grupo.titulo, nomesUsados));
         worksheet.columns = [
+          { header: "Edital", key: "edital", width: 30 },
           { header: "Plano de Trabalho", key: "plano", width: 35 },
           { header: "Status", key: "status", width: 16 },
           { header: "Orientador(es)", key: "orientadores", width: 30 },
@@ -623,6 +624,7 @@ const TabelaRegistroAtividade = ({ params }) => {
           const status = registro ? STATUS_LABELS[registro.status] || registro.status : "Pendente";
 
           worksheet.addRow({
+            edital: plano.edital,
             plano: plano.titulo,
             status,
             orientadores: (plano.orientadoresDetalhes || []).map((o) => o.nome).join("; "),
