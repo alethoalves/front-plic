@@ -17,9 +17,16 @@
   margin-bottom: $gap-3;
 }
 
+.searchRow {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+  margin-bottom: $gap-3;
+}
+
 .searchContainer {
   position: relative;
-  margin-bottom: $gap-3;
+  flex: 1;
   max-width: 420px;
 }
 
@@ -62,6 +69,15 @@
   margin-bottom: $gap-2;
   color: $gray-500;
   font-style: italic;
+  font-size: 0.9rem;
+}
+
+.pagination {
+  margin-top: $gap-3;
+}
+
+.pageInfo {
+  color: $gray-500;
   font-size: 0.9rem;
 }
 

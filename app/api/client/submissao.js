@@ -8,14 +8,27 @@ export const getListaSubmissao = async (
   eventoSlug
 ) => {
   try {
-    
+
     const response = await req.get(
       `/evenplic/submissoes/evento/${eventoSlug}/lista-submissoes`,
-      
+
     );
     return response.data.submissoes;
   } catch (error) {
     console.error("Erro ao atualizar campo:", error.message);
+    throw error;
+  }
+};
+
+export const getApresentacoesPublicas = async (eventoSlug, { q = "", page = 1, pageSize = 20 } = {}) => {
+  try {
+    const response = await req.get(
+      `/evenplic/submissoes/evento/${eventoSlug}/apresentacoes-publicas`,
+      { params: { q: q || undefined, page, pageSize } }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao buscar apresentações públicas:", error.message);
     throw error;
   }
 };
