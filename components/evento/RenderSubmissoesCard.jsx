@@ -3,6 +3,7 @@ import {
   getSubmissoesByCPFAndEvento,
 } from "@/app/api/client/eventos";
 import { EditarSubmissaoModal } from "./EditarSubmissaoModal";
+import styles from "./RenderSubmissoesCard.module.scss";
 import formatDateTime from "@/lib/formatData";
 import { formatDateForDisplay } from "@/lib/formatDateForDisplay";
 import { formatarHora } from "@/lib/formatarDatas";
@@ -168,7 +169,9 @@ export const RenderSubmissoesCard = ({
                       </Card>
                     </div>
                   </div>
-                  <div className="flex justify-content-end gap-2 mt-3">
+                  <div
+                    className={`flex justify-content-end gap-2 mt-3 ${styles.actions}`}
+                  >
                     {podeEditar(submissao) && (
                       <Button
                         label="Editar"

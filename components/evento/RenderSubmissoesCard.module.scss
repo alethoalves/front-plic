@@ -1,0 +1,7 @@
+@import "/styles/partials/layout";
+
+.actions {
+  @include responsive(xs) {
+    flex-direction: column;
+  }
+}
