@@ -88,6 +88,19 @@ export const deleteSubmissaoByUser = async (submissaoId, cpf) => {
     throw error;
   }
 };
+export const atualizarSubmissaoByUser = async (submissaoId, cpf, body) => {
+  try {
+    const response = await req.put(
+      `/evenplic/atualizarSubmissaoByUser/${submissaoId}/${cpf}`,
+      body
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao atualizar submissão:", error.message);
+    throw error;
+  }
+};
+
 export const criarInscricaoEvento = async (body) => {
   try {
     // O backend identifica o proponente só pelo CPF enviado no corpo, sem

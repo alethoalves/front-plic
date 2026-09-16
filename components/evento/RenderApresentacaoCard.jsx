@@ -34,6 +34,13 @@ export const RenderApresentacaoCard = ({
   );
   const { control, handleSubmit } = useForm();
 
+  // Controla se a pré-seleção vinda de `initialData` já foi aplicada — só
+  // deve rodar uma vez, na primeira vez que as opções computadas contiverem o
+  // valor salvo (usado pela edição de inscrição). Depois disso, trocar a
+  // sessão/área manualmente volta a resetar em cascata normalmente.
+  const initializedAreaRef = useRef(false);
+  const initializedSubsessaoRef = useRef(false);
+
   // Inicializa as opções de categoria
   useEffect(() => {
     if (eventoData?.categorias?.options) {
@@ -57,6 +64,14 @@ export const RenderApresentacaoCard = ({
           sessaoId: sessao.id,
         }));
         setAreasOptions(areas);
+
+        if (!initializedAreaRef.current && initialData?.areaId) {
+          initializedAreaRef.current = true;
+          setSelectedArea(
+            areas.find((a) => a.value === initialData.areaId) || null
+          );
+          return;
+        }
       }
     } else {
       setAreasOptions([]);
@@ -70,17 +85,25 @@ export const RenderApresentacaoCard = ({
     if (selectedSessao && eventoData?.sessao) {
       const sessao = eventoData.sessao.find((s) => s.id === selectedSessao.id);
       if (sessao) {
-        setSubsessoesOptions(
-          sessao.subsessaoApresentacao.map((sub) => ({
-            label: `${formatDateForDisplay(sub.inicio)} - início ${formatarHora(
-              sub.inicio
-            )}`,
-            value: sub.id,
-            inicio: sub.inicio,
-            fim: sub.fim,
-            local: sub.local,
-          }))
-        );
+        const subsessoes = sessao.subsessaoApresentacao.map((sub) => ({
+          label: `${formatDateForDisplay(sub.inicio)} - início ${formatarHora(
+            sub.inicio
+          )}`,
+          value: sub.id,
+          inicio: sub.inicio,
+          fim: sub.fim,
+          local: sub.local,
+        }));
+        setSubsessoesOptions(subsessoes);
+
+        if (!initializedSubsessaoRef.current && initialData?.subsessaoId) {
+          initializedSubsessaoRef.current = true;
+          setSelectedSubsessao(
+            subsessoes.find((s) => s.value === initialData.subsessaoId) ||
+              null
+          );
+          return;
+        }
       }
     } else {
       setSubsessoesOptions([]);

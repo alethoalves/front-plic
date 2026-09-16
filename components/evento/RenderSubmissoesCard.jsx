@@ -2,6 +2,7 @@ import {
   deleteSubmissaoByUser,
   getSubmissoesByCPFAndEvento,
 } from "@/app/api/client/eventos";
+import { EditarSubmissaoModal } from "./EditarSubmissaoModal";
 import formatDateTime from "@/lib/formatData";
 import { formatDateForDisplay } from "@/lib/formatDateForDisplay";
 import { formatarHora } from "@/lib/formatarDatas";
@@ -26,6 +27,14 @@ export const RenderSubmissoesCard = ({
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [activeIndex, setActiveIndex] = useState(null);
+  const [editingSubmissao, setEditingSubmissao] = useState(null);
+
+  // Mesmo critério usado em todo o front pra exibir o label "Aguardando
+  // Check-in" (ex. app/[tenant]/aluno/meuseventos/page.jsx) — não depende de
+  // `checkinAt`, que não é confiável (o gestor pode avançar o status
+  // manualmente sem tocar nesse campo).
+  const podeEditar = (submissao) =>
+    ["SELECIONADA", "DISTRIBUIDA"].includes(submissao.status);
 
   const showError = (message) => {
     toast.current.show({
@@ -160,6 +169,14 @@ export const RenderSubmissoesCard = ({
                     </div>
                   </div>
                   <div className="flex justify-content-end gap-2 mt-3">
+                    {podeEditar(submissao) && (
+                      <Button
+                        label="Editar"
+                        severity="secondary"
+                        onClick={() => setEditingSubmissao(submissao)}
+                        className="p-button-sm w-100"
+                      />
+                    )}
                     <Button
                       label="Excluir"
                       severity="danger"
@@ -181,6 +198,18 @@ export const RenderSubmissoesCard = ({
             ))}
         </Accordion>
       )}
+
+      <EditarSubmissaoModal
+        isOpen={!!editingSubmissao}
+        submissao={editingSubmissao}
+        cpf={cpf}
+        eventoSlug={eventoSlug}
+        onClose={() => setEditingSubmissao(null)}
+        onUpdateSuccess={() => {
+          setEditingSubmissao(null);
+          fetchSubmissoes();
+        }}
+      />
     </>
   );
 };
