@@ -14,7 +14,10 @@ import {
   alocarBolsa,
   desalocarBolsa,
   updateCota,
+  addDocumentoTemplateToCota,
+  removeDocumentoTemplateFromCota,
 } from "@/app/api/client/bolsa";
+import { getDocumentoTemplates } from "@/app/api/client/documentos";
 
 import { Card } from "primereact/card";
 import { DataTable } from "primereact/datatable";
@@ -43,6 +46,8 @@ import {
   RiAddCircleLine,
   RiPencilLine,
   RiDeleteBinLine,
+  RiGraduationCapLine,
+  RiFileTextLine,
 } from "@remixicon/react";
 
 import styles from "./SolicitacoesBolsa.module.scss";
@@ -169,6 +174,9 @@ export default function SolicitacoesBolsa() {
     quantidadeBolsas: 0,
     instituicaoPagadora: "",
   });
+  const [documentoTemplates, setDocumentoTemplates] = useState([]);
+  const [cotaAnexandoDocumento, setCotaAnexandoDocumento] = useState(null);
+  const [documentoParaAnexar, setDocumentoParaAnexar] = useState("");
 
   /* ==================================================================== */
   /*                  FUNÇÃO DE PRÉ‑PROCESSAMENTO DOS DADOS               */
@@ -288,6 +296,10 @@ export default function SolicitacoesBolsa() {
         const cotasResp = await getCotas(tenant, ano);
         setCotas(cotasResp.cotas || []);
 
+        /* -- modelos de documento (para anexar às cotas) -- */
+        const templates = await getDocumentoTemplates(tenant);
+        setDocumentoTemplates(templates || []);
+
         /* opções de instituições */
         const insts = [
           ...new Set((cotasResp.cotas || []).map((c) => c.instituicaoPagadora)),
@@ -353,6 +365,56 @@ export default function SolicitacoesBolsa() {
       showToast("error", "Erro", "Falha ao excluir cota");
     } finally {
       setShowDeleteDialog(false);
+    }
+  };
+
+  /* --------------------- Documentos exigidos por cota -------------------- */
+  const handleAddDocumentoTemplate = async (cotaId) => {
+    if (!documentoParaAnexar) return;
+    try {
+      const { vinculo } = await addDocumentoTemplateToCota(
+        tenant,
+        cotaId,
+        documentoParaAnexar
+      );
+      setCotas((prev) =>
+        prev.map((c) =>
+          c.id === cotaId
+            ? {
+                ...c,
+                documentosExigidos: [...(c.documentosExigidos || []), vinculo],
+              }
+            : c
+        )
+      );
+      showToast("success", "Sucesso", "Documento anexado à cota!");
+      setCotaAnexandoDocumento(null);
+      setDocumentoParaAnexar("");
+    } catch (err) {
+      const msg =
+        err?.response?.data?.message || "Falha ao anexar documento à cota";
+      showToast("error", "Erro", msg);
+    }
+  };
+
+  const handleRemoveDocumentoTemplate = async (cotaId, documentoTemplateId) => {
+    try {
+      await removeDocumentoTemplateFromCota(tenant, cotaId, documentoTemplateId);
+      setCotas((prev) =>
+        prev.map((c) =>
+          c.id === cotaId
+            ? {
+                ...c,
+                documentosExigidos: (c.documentosExigidos || []).filter(
+                  (v) => v.documentoTemplateId !== documentoTemplateId
+                ),
+              }
+            : c
+        )
+      );
+      showToast("info", "Documento removido da cota");
+    } catch (e) {
+      showToast("error", "Erro", "Falha ao remover documento da cota");
     }
   };
 
@@ -831,10 +893,54 @@ export default function SolicitacoesBolsa() {
               cota.Bolsa?.filter((b) => b?.SolicitacaoBolsa).length || 0;
             const naoAlocadas = Math.max(0, criadas - alocadas);
 
+            const documentosExigidos = cota.documentosExigidos || [];
+            const templatesDisponiveis = documentoTemplates.filter(
+              (dt) =>
+                !documentosExigidos.some(
+                  (de) => de.documentoTemplateId === dt.id
+                )
+            );
+
             return (
               <div key={cota.id} className={styles.cotaEbtn}>
                 <div className={styles.cota}>
-                  <h6>{cota.instituicaoPagadora}</h6>
+                  <div className={styles.cotaHeader}>
+                    <div className={styles.cotaHeaderTitle}>
+                      <RiGraduationCapLine size={20} className={styles.icon} />
+                      <h6>{cota.instituicaoPagadora}</h6>
+                    </div>
+                    <div className={styles.cotaActions}>
+                      <RiPencilLine
+                        size={18}
+                        className="cursor-pointer"
+                        onClick={() => {
+                          setCurrentCota(cota);
+                          setCotaForm({ ...cota });
+                          setShowCotaModal(true);
+                        }}
+                      />
+                      <RiDeleteBinLine
+                        size={18}
+                        className="cursor-pointer text-red-500"
+                        onClick={() => {
+                          setCurrentCota(cota);
+                          setShowDeleteDialog(true);
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className={styles.cotaStatus}>
+                    <span
+                      className={`${styles.statusDot} ${
+                        cota.status === "INATIVA"
+                          ? styles.statusInativa
+                          : styles.statusAtiva
+                      }`}
+                    />
+                    {cota.status === "INATIVA" ? "Inativa" : "Ativa"}
+                  </div>
+
                   <div className={styles.cotaInfo}>
                     <p>
                       <strong>Disponibilizadas:</strong> {disponibilizadas}
@@ -851,25 +957,6 @@ export default function SolicitacoesBolsa() {
                     <p>
                       <strong>Não alocadas:</strong> {naoAlocadas}
                     </p>
-                  </div>
-                  <div className={styles.cotaActions}>
-                    <RiPencilLine
-                      size={18}
-                      className="cursor-pointer"
-                      onClick={() => {
-                        setCurrentCota(cota);
-                        setCotaForm({ ...cota });
-                        setShowCotaModal(true);
-                      }}
-                    />
-                    <RiDeleteBinLine
-                      size={18}
-                      className="cursor-pointer text-red-500"
-                      onClick={() => {
-                        setCurrentCota(cota);
-                        setShowDeleteDialog(true);
-                      }}
-                    />
                   </div>
                 </div>
 
@@ -889,6 +976,72 @@ export default function SolicitacoesBolsa() {
                       onClick={() => distribuirBolsasParaSelecionados(cota.id)}
                     />
                   )}
+
+                <div className={styles.cotaDocumentos}>
+                  <div className={styles.cotaDocumentosHeader}>
+                    <p className={styles.cotaDocumentosTitle}>
+                      Documentos exigidos
+                    </p>
+                    <RiAddCircleLine
+                      size={18}
+                      className="cursor-pointer"
+                      onClick={() => {
+                        setDocumentoParaAnexar("");
+                        setCotaAnexandoDocumento((prev) =>
+                          prev === cota.id ? null : cota.id
+                        );
+                      }}
+                    />
+                  </div>
+
+                  {cotaAnexandoDocumento === cota.id && (
+                    <div className={styles.cotaDocumentosPicker}>
+                      <Dropdown
+                        value={documentoParaAnexar}
+                        options={templatesDisponiveis.map((dt) => ({
+                          label: dt.titulo,
+                          value: dt.id,
+                        }))}
+                        onChange={(e) => setDocumentoParaAnexar(e.value)}
+                        placeholder="Selecione um modelo de documento"
+                        className="w-100"
+                        emptyMessage="Nenhum modelo disponível"
+                      />
+                      <Button
+                        label="Anexar"
+                        className="p-button-success w-100"
+                        disabled={!documentoParaAnexar}
+                        onClick={() => handleAddDocumentoTemplate(cota.id)}
+                      />
+                    </div>
+                  )}
+
+                  {documentosExigidos.length === 0 &&
+                    cotaAnexandoDocumento !== cota.id && (
+                      <p className={styles.cotaDocumentosEmpty}>
+                        Nenhum documento exigido
+                      </p>
+                    )}
+
+                  {documentosExigidos.map((vinculo) => (
+                    <div key={vinculo.id} className={styles.documentoItem}>
+                      <div className={styles.documentoItemLabel}>
+                        <RiFileTextLine size={16} />
+                        <p>{vinculo.documentoTemplate?.titulo}</p>
+                      </div>
+                      <RiDeleteBinLine
+                        size={16}
+                        className="cursor-pointer text-red-500"
+                        onClick={() =>
+                          handleRemoveDocumentoTemplate(
+                            cota.id,
+                            vinculo.documentoTemplateId
+                          )
+                        }
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
             );
           })}

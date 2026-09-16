@@ -476,6 +476,45 @@ export const deleteCota = async (tenantSlug, id) => {
     throw error;
   }
 };
+
+export const addDocumentoTemplateToCota = async (tenantSlug, cotaId, documentoTemplateId) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+
+    const response = await req.post(
+      `/private/${tenantSlug}/cotas/${cotaId}/documentos`,
+      { documentoTemplateId },
+      { headers }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao anexar modelo de documento à cota:", error.message);
+    throw error;
+  }
+};
+
+export const removeDocumentoTemplateFromCota = async (tenantSlug, cotaId, documentoTemplateId) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) {
+      return false;
+    }
+
+    const response = await req.delete(
+      `/private/${tenantSlug}/cotas/${cotaId}/documentos/${documentoTemplateId}`,
+      { headers }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao remover modelo de documento da cota:", error.message);
+    throw error;
+  }
+};
 /**************************
  * PROCESSAMENTO DE SOLICITAÇÕES
  **************************/

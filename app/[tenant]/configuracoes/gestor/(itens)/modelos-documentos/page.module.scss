@@ -1,0 +1,36 @@
+@import "./styles/partials/colors";
+@import "./styles/partials/layout";
+@import "./styles/partials/spacing";
+
+.content {
+  margin-top: $gap-3;
+  display: flex;
+  flex-direction: column;
+  max-width: 420px;
+}
+
+.label {
+  font-weight: 700;
+  color: $gray-600;
+  font-size: 0.9rem;
+  margin-bottom: $gap-1;
+}
+
+.dropdown {
+  width: 100%;
+
+  // a regra global `svg, img { width: 100% }` (styles/partials/_layout.scss)
+  // também pega o ícone de limpar do PrimeReact, esticando-o pra largura
+  // toda do dropdown — restringe só esse ícone de volta ao tamanho normal.
+  //
+  // o tema do PrimeReact reserva 1.75rem (28px) de padding no texto pro
+  // ícone, mas posiciona o ícone (14px) grudado no divisor (right: 3rem),
+  // sobrando 0px de um lado e 14px do outro — reposiciona pra sobrar 7px
+  // dos dois lados, centralizando o ícone nesse espaço.
+  :global(.p-dropdown-clear-icon) {
+    width: 14px;
+    height: 14px;
+    right: calc(3rem + 7px) !important;
+    top: 10px;
+  }
+}

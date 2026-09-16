@@ -58,32 +58,157 @@
     }
 }
 .cotaEbtn{
-    background-color: $white-dark;
+    background-color: $white-light;
+    border: 1px solid $gray-100;
     border-radius: $gap-1;
+    box-shadow: 0 1px 3px rgba($black-normal, 0.06);
+    display: flex;
+    flex-direction: column;
+    min-width: 260px;
+    flex: 1 1 280px;
+
+    > button{
+        margin: 0 $gap-2 $gap-2 $gap-2;
+        width: calc(100% - #{$gap-2 * 2});
+    }
 }
 .cotas{
     display: flex;
     flex-wrap: wrap;
+    align-items: flex-start;
     gap: $gap-2;
     padding: 0 $gap-2 $gap-2 $gap-2;
     .cota{
-        
         padding: $gap-2;
-        
         display: flex;
-        gap: $gap-2;
-        p{
-            display: flex;
-            &:not(:last-child){
-                margin-bottom: $gap-1;
-            }
-            justify-content: space-between;
-            strong{
-                margin-left: $gap-1;
-                margin-right: $gap-2;
-                text-align: right;
-            }
+        flex-direction: column;
+        gap: $gap-1;
+    }
+}
+.cotaHeader{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $gap-1;
+
+    h6{
+        margin: 0;
+    }
+}
+.cotaHeaderTitle{
+    display: flex;
+    align-items: center;
+    gap: $gap-1;
+}
+.cotaStatus{
+    display: flex;
+    align-items: center;
+    gap: $gap-1;
+    color: $gray-500;
+    font-size: 0.85rem;
+}
+.statusDot{
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+.statusAtiva{
+    background-color: $success-normal;
+}
+.statusInativa{
+    background-color: $gray-300;
+}
+.cotaInfo{
+    display: flex;
+    flex-direction: column;
+    gap: $gap-1;
+    margin-top: $gap-1;
+
+    p{
+        display: flex;
+        justify-content: space-between;
+        margin: 0;
+
+        strong{
+            margin-left: $gap-1;
+            margin-right: $gap-2;
+            text-align: right;
         }
+    }
+}
+.cotaActions{
+    display: flex;
+    align-items: center;
+    gap: $gap-1;
+    flex-shrink: 0;
+
+    svg{
+        transition: ease .3s;
+        &:hover{
+            transform: scale(1.1);
+        }
+    }
+}
+.cotaDocumentos{
+    border-top: 1px solid $gray-100;
+    padding: $gap-2;
+    display: flex;
+    flex-direction: column;
+    gap: $gap-1;
+}
+.cotaDocumentosHeader{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    svg{
+        width: 20px;
+        transition: ease .3s;
+        &:hover{
+            transform: scale(1.1);
+            color: $primary-darken;
+        }
+    }
+}
+.cotaDocumentosTitle{
+    margin: 0;
+    font-weight: 700;
+    color: $gray-600;
+    font-size: 0.85rem;
+    
+    
+}
+.cotaDocumentosEmpty{
+    margin: 0;
+    color: $gray-400;
+    font-size: 0.85rem;
+    
+}
+.cotaDocumentosPicker{
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: $gap-1;
+}
+.documentoItem{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $gap-1;
+    svg{
+        width: 20px;
+    }
+}
+.documentoItemLabel{
+    display: flex;
+    align-items: center;
+    gap: $gap-1;
+    color: $gray-700;
+
+    p{
+        margin: 0;
+        font-size: 0.9rem;
     }
 }
 .content{
