@@ -247,12 +247,23 @@ const EtapaFichaAvaliacao = ({
       </div>
 
       <h6 className="mb-1">
-        Feedback ao(à) aluno(a){" "}
-        {feedbackObrigatorio ? "(obrigatório)" : "(opcional)"}
+        {feedbackObrigatorio
+          ? "Justifique a premiação (obrigatório)"
+          : "Feedback ao(à) aluno(a) (opcional)"}
       </h6>
+      {feedbackObrigatorio && (
+        <p className="mb-1">
+          Explique por que o trabalho merece o prêmio ou a menção honrosa, de
+          forma detalhada, para instruir a comissão julgadora.
+        </p>
+      )}
       <textarea
         className={styles.feedbackTextarea}
-        placeholder="Escreva aqui seu feedback para o autor..."
+        placeholder={
+          feedbackObrigatorio
+            ? "Justifique aqui por que o trabalho merece a premiação..."
+            : "Escreva aqui seu feedback para o autor..."
+        }
         value={comentarioFeedback}
         onChange={(e) => setComentarioFeedback(e.target.value)}
       />

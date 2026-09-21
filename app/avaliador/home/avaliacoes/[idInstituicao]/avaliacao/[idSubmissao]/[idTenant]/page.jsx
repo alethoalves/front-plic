@@ -528,12 +528,17 @@ const Page = ({ params }) => {
                   <div className={`${styles.item} mt-2`}>
                     <div className={styles.label}>
                       <h6>
-                        Feedback/Comentário ao aluno{" "}
-                        {evento?.mencaoHonrosaSelecionada ||
-                        evento?.premioSelecionado
-                          ? "(OBRIGATÓRIO)"
-                          : "(OPCIONAL)"}
+                        {evento?.mencaoHonrosaSelecionada || evento?.premioSelecionado
+                          ? "Justifique a premiação (OBRIGATÓRIO)"
+                          : "Feedback/Comentário ao aluno (OPCIONAL)"}
                       </h6>
+                      {(evento?.mencaoHonrosaSelecionada || evento?.premioSelecionado) && (
+                        <p className="mt-1">
+                          Explique por que o trabalho merece o prêmio ou a menção
+                          honrosa, de forma detalhada, para instruir a comissão
+                          julgadora.
+                        </p>
+                      )}
                     </div>
                     {false && (
                       <Button
@@ -549,7 +554,11 @@ const Page = ({ params }) => {
                     )}
                     <textarea
                       type="text"
-                      placeholder="Escreva aqui"
+                      placeholder={
+                        evento?.mencaoHonrosaSelecionada || evento?.premioSelecionado
+                          ? "Justifique aqui por que o trabalho merece a premiação..."
+                          : "Escreva aqui"
+                      }
                       value={evento?.comentarioFeedback || ""}
                       onChange={handleComentarioChange}
                     ></textarea>
