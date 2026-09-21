@@ -1,13 +1,15 @@
 "use client";
 import styles from "./page.module.scss";
 import { RiIdCardLine, RiArrowLeftCircleLine, RiKeyLine, RiLoginBoxLine } from "@remixicon/react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signinSchema } from "@/lib/zodSchemas/authSchema";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import { getEventoBySlug, getEventoRootBySlug } from "@/app/api/client/eventos";
+import { getAreasPendentesWizard } from "@/app/api/client/submissaoAvaliador";
+import { getAuthTokenAvaliador } from "@/lib/headers";
 import { Toast } from "primereact/toast";
 import { signinAvaliadorEvento } from "@/app/api/client/auth";
 import { useRouter } from "next/navigation";
@@ -15,6 +17,7 @@ import { EventoBanner } from "@/components/evento/EventoBanner";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
+  const [verificandoSessao, setVerificandoSessao] = useState(true);
   const [showCodAvaliador, setShowCodAvaliador] = useState(false);
   const [submittedCpf, setSubmittedCpf] = useState("");
   const toast = useRef(null);
@@ -29,6 +32,35 @@ const Page = ({ params }) => {
 
   const cpfValue = watch("cpf");
   const router = useRouter();
+
+  // Se o avaliador já tem o cookie authTokenAvaliador (válido por 24h,
+  // global a todos os eventos) e ele já é avaliador deste evento
+  // especificamente, pula o formulário de CPF e manda direto pro painel —
+  // evita pedir CPF de novo toda vez que ele reabre o app com a sessão
+  // ainda válida. Se não houver cookie, ou o cookie não valer pra este
+  // evento (avaliador expirado/de outro evento), cai no formulário normal.
+  useEffect(() => {
+    const verificarSessaoExistente = async () => {
+      if (!getAuthTokenAvaliador()) {
+        setVerificandoSessao(false);
+        return;
+      }
+      try {
+        const eventoData = await getEventoBySlug(params.edicao);
+        await getAreasPendentesWizard(eventoData.id);
+        router.replace(
+          `/evento/${params.eventoSlug}/edicao/${params.edicao}/avaliador`
+        );
+        return;
+      } catch (error) {
+        // Sessão inválida/expirada ou não é avaliador deste evento —
+        // segue pro formulário de CPF normalmente.
+      }
+      setVerificandoSessao(false);
+    };
+    verificarSessaoExistente();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const handleCpfChange = (e) => {
     if (submittedCpf !== "" && e.target.value !== submittedCpf) {
       setShowCodAvaliador(false);
@@ -80,6 +112,14 @@ const Page = ({ params }) => {
       setLoading(false);
     }
   };
+
+  if (verificandoSessao) {
+    return (
+      <div className={styles.mainDiv}>
+        <p>Carregando...</p>
+      </div>
+    );
+  }
 
   let eventoRoot;
   let evento;

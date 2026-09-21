@@ -564,9 +564,9 @@ export const CertificadoConteudo = ({ params, eventoId }) => {
                 <div class="criterio-item">
                     <div class="criterio-header">
                         <div class="criterio-titulo">${registro.titulo}</div>
-                        <div class="criterio-nota">${registro.nota.toFixed(
-                          1
-                        )}</div>
+                        <div class="criterio-nota">${
+                          registro.rotulo ?? registro.nota.toFixed(1)
+                        }</div>
                     </div>
                     <div class="criterio-descricao">${registro.descricao}</div>
                 </div>

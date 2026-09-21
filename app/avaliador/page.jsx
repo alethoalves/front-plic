@@ -2,14 +2,17 @@
 import styles from "./page.module.scss";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   RiCalendarLine,
   RiErrorWarningLine,
   RiLoader4Line,
 } from "@remixicon/react";
 import { getEventosAnoCorrente } from "../api/client/eventos";
+import { getTrabalhoEmAndamentoAvaliador } from "../api/client/submissaoAvaliador";
 
 const Page = ({ params }) => {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [eventos, setEventos] = useState([]);
   const [error, setError] = useState(null);
@@ -30,7 +33,23 @@ const Page = ({ params }) => {
   };
 
   useEffect(() => {
-    fetchEventos();
+    // Se o avaliador já está logado (cookie authTokenAvaliador, válido por
+    // 24h e global a todos os eventos) e já tem uma submissão em avaliação
+    // em algum evento, pula direto pro wizard daquele evento — evita ter
+    // que escolher o evento e digitar CPF de novo só porque o celular
+    // bloqueou/fechou o app enquanto ele avaliava o pôster.
+    const verificarTrabalhoEmAndamento = async () => {
+      const emAndamento = await getTrabalhoEmAndamentoAvaliador();
+      if (emAndamento) {
+        router.replace(
+          `/evento/${emAndamento.eventoSlug}/edicao/${emAndamento.edicao}/avaliar`
+        );
+        return;
+      }
+      fetchEventos();
+    };
+    verificarTrabalhoEmAndamento();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (loading) {

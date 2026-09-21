@@ -17,7 +17,10 @@ import {
   RiArrowRightCircleLine,
   RiExternalLinkLine,
 } from "@remixicon/react";
-import { getStatusCheckin, iniciarCheckinOutraSubmissao } from "@/app/api/client/checkin";
+import {
+  getStatusCheckin,
+  iniciarCheckinOutraSubmissao,
+} from "@/app/api/client/checkin";
 import { generateAndDownloadCertificatePDF } from "@/app/api/client/certificado";
 import { formatarData, formatarHora } from "@/lib/formatarDatas";
 import Button from "@/components/Button";
@@ -48,10 +51,26 @@ const STATUS_ICON = {
 // submissão de fato se qualificar pra ele (flags gravadas pelo gestor no
 // fluxo de avaliação/premiação).
 const TIPOS_CERTIFICADO = [
-  { tipo: "EXPOSITOR", label: "Certificado de participação", elegivel: () => true },
-  { tipo: "PREMIADO", label: "Certificado de premiação", elegivel: (r) => r.premio },
-  { tipo: "INDICADO", label: "Certificado de indicação ao prêmio", elegivel: (r) => r.indicacaoPremio },
-  { tipo: "MENCAO", label: "Certificado de menção honrosa", elegivel: (r) => r.mencaoHonrosa },
+  {
+    tipo: "EXPOSITOR",
+    label: "Certificado de participação",
+    elegivel: () => true,
+  },
+  {
+    tipo: "PREMIADO",
+    label: "Certificado de premiação",
+    elegivel: (r) => r.premio,
+  },
+  {
+    tipo: "INDICADO",
+    label: "Certificado de indicação ao prêmio",
+    elegivel: (r) => r.indicacaoPremio,
+  },
+  {
+    tipo: "MENCAO",
+    label: "Certificado de menção honrosa",
+    elegivel: (r) => r.mencaoHonrosa,
+  },
 ];
 
 const formatarListaAvaliadores = (nomes) => {
@@ -98,11 +117,16 @@ const CheckinStatusCard = ({ eventoSlug, checkinToken, resultadoInicial }) => {
     setBaixando((prev) => ({ ...prev, [tipo]: true }));
     setErroCertificado((prev) => ({ ...prev, [tipo]: "" }));
     try {
-      await generateAndDownloadCertificatePDF(resultado.eventoId, tipo, resultado.submissaoId);
+      await generateAndDownloadCertificatePDF(
+        resultado.eventoId,
+        tipo,
+        resultado.submissaoId,
+      );
     } catch (error) {
       setErroCertificado((prev) => ({
         ...prev,
-        [tipo]: error.message ?? "Erro ao gerar o certificado. Tente novamente.",
+        [tipo]:
+          error.message ?? "Erro ao gerar o certificado. Tente novamente.",
       }));
     } finally {
       setBaixando((prev) => ({ ...prev, [tipo]: false }));
@@ -122,13 +146,17 @@ const CheckinStatusCard = ({ eventoSlug, checkinToken, resultadoInicial }) => {
       });
       sessionStorage.setItem(
         `checkin:continuar:${eventoSlug}`,
-        JSON.stringify({ token: resposta.token, submissaoId: resposta.submissaoId }),
+        JSON.stringify({
+          token: resposta.token,
+          submissaoId: resposta.submissaoId,
+        }),
       );
       router.push(`/evento/${params.eventoSlug}/edicao/${eventoSlug}/checkin`);
     } catch (error) {
       setErroOutra((prev) => ({
         ...prev,
-        [submissaoIdDestino]: error.response?.data?.message ?? "Erro ao iniciar o check-in.",
+        [submissaoIdDestino]:
+          error.response?.data?.message ?? "Erro ao iniciar o check-in.",
       }));
       setIniciandoOutra((prev) => ({ ...prev, [submissaoIdDestino]: false }));
     }
@@ -237,17 +265,22 @@ const CheckinStatusCard = ({ eventoSlug, checkinToken, resultadoInicial }) => {
           <p className={cardStyles.statusExplicacao}>
             Quando sua ficha de avaliação for atribuída a algum avaliador, o
             status mudará para &quot;Em avaliação&quot;. Por enquanto, aguarde
-            no seu pôster e apresente seu trabalho ao público.
+            no seu pôster e apresente seu trabalho ao público, se necessário.
           </p>
         )}
 
         {resultado.status === "EM_AVALIACAO" && (
           <p className={cardStyles.statusExplicacao}>
-            Sua ficha de avaliação foi atribuída {formatarListaAvaliadores(resultado.avaliadores)}.
-            Aguarde em seu pôster a chegada do avaliador(a). Após a
-            avaliação, seu certificado ficará disponível{" "}
+            Sua ficha de avaliação foi atribuída{" "}
+            {formatarListaAvaliadores(resultado.avaliadores)}. Aguarde em seu
+            pôster a chegada do avaliador(a). Após a avaliação, seu certificado
+            ficará disponível{" "}
             {resultado.certificadoUrl ? (
-              <a href={resultado.certificadoUrl} target="_blank" rel="noopener noreferrer">
+              <a
+                href={resultado.certificadoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 neste link
               </a>
             ) : (
@@ -260,25 +293,29 @@ const CheckinStatusCard = ({ eventoSlug, checkinToken, resultadoInicial }) => {
         {resultado.status === "AVALIADA" && (
           <>
             <p className={cardStyles.statusExplicacao}>
-              Sua avaliação foi concluída. Seu(s) certificado(s) já
-              pode(m) ser baixado(s) direto por aqui.
+              Sua avaliação foi concluída. Seu(s) certificado(s) já pode(m) ser
+              baixado(s) direto por aqui.
             </p>
             <div className={cardStyles.certificadosBotoes}>
-              {TIPOS_CERTIFICADO.filter((item) => item.elegivel(resultado)).map((item) => (
-                <div key={item.tipo}>
-                  <Button
-                    icon={RiDownloadLine}
-                    className="btn-primary w-100"
-                    onClick={() => handleBaixarCertificado(item.tipo)}
-                    loading={baixando[item.tipo]}
-                  >
-                    {item.label}
-                  </Button>
-                  {erroCertificado[item.tipo] && (
-                    <p className={styles.erro}>{erroCertificado[item.tipo]}</p>
-                  )}
-                </div>
-              ))}
+              {TIPOS_CERTIFICADO.filter((item) => item.elegivel(resultado)).map(
+                (item) => (
+                  <div key={item.tipo}>
+                    <Button
+                      icon={RiDownloadLine}
+                      className="btn-primary w-100"
+                      onClick={() => handleBaixarCertificado(item.tipo)}
+                      loading={baixando[item.tipo]}
+                    >
+                      {item.label}
+                    </Button>
+                    {erroCertificado[item.tipo] && (
+                      <p className={styles.erro}>
+                        {erroCertificado[item.tipo]}
+                      </p>
+                    )}
+                  </div>
+                ),
+              )}
             </div>
           </>
         )}
@@ -309,10 +346,12 @@ const CheckinStatusCard = ({ eventoSlug, checkinToken, resultadoInicial }) => {
             Suas outras submissões neste evento
           </p>
           {resultado.outrasSubmissoes.map((outra) => {
-            const podeIniciar = outra.elegivel && resultado.status === "AVALIADA";
+            const podeIniciar =
+              outra.elegivel && resultado.status === "AVALIADA";
             // Já passou pelo próprio check-in (em andamento ou já avaliada)
             // — tem link de acompanhamento próprio, não é "bloqueada".
-            const temAcompanhamento = !podeIniciar && Boolean(outra.checkinToken);
+            const temAcompanhamento =
+              !podeIniciar && Boolean(outra.checkinToken);
             const destacar = podeIniciar || temAcompanhamento;
 
             const conteudo = (
@@ -321,28 +360,37 @@ const CheckinStatusCard = ({ eventoSlug, checkinToken, resultadoInicial }) => {
                 {temAcompanhamento && <RiExternalLinkLine />}
                 {!destacar && <RiLockLine />}
                 <div>
-                  <p className={cardStyles.outraSubmissaoTitulo}>{outra.titulo}</p>
+                  <p className={cardStyles.outraSubmissaoTitulo}>
+                    {outra.titulo}
+                  </p>
                   {podeIniciar && (
                     <>
                       <Button
                         icon={RiArrowRightCircleLine}
                         className="btn-primary mt-1"
-                        onClick={() => handleIniciarOutraSubmissao(outra.submissaoId)}
+                        onClick={() =>
+                          handleIniciarOutraSubmissao(outra.submissaoId)
+                        }
                         loading={iniciandoOutra[outra.submissaoId]}
                       >
                         Fazer check-in agora
                       </Button>
                       {erroOutra[outra.submissaoId] && (
-                        <p className={styles.erro}>{erroOutra[outra.submissaoId]}</p>
+                        <p className={styles.erro}>
+                          {erroOutra[outra.submissaoId]}
+                        </p>
                       )}
                     </>
                   )}
                   {temAcompanhamento && (
-                    <p className={cardStyles.outraSubmissaoAviso}>Toque para ver o acompanhamento</p>
+                    <p className={cardStyles.outraSubmissaoAviso}>
+                      Toque para ver o acompanhamento
+                    </p>
                   )}
                   {!destacar && (
                     <p className={cardStyles.outraSubmissaoAviso}>
-                      Aguardando a avaliação do trabalho acima para liberar o check-in desta submissão.
+                      Aguardando a avaliação do trabalho acima para liberar o
+                      check-in desta submissão.
                     </p>
                   )}
                 </div>

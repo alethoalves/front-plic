@@ -29,6 +29,7 @@ import {
 import Modal from "@/components/Modal";
 import Button from "@/components/Button";
 import NoData from "@/components/NoData";
+import { calcularNotaTotalPonderada, opcoesInput } from "@/lib/criterioAvaliacaoScoring";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
@@ -46,15 +47,6 @@ const Page = ({ params }) => {
   const [loadingFeedback, setLoadingFeedback] = useState(false); // Estado para controlar o carregamento do feedback
 
   const router = useRouter();
-
-  // Função para calcular a média das notas
-  const calcularNotaTotal = (criterios, notasSelecionadas) => {
-    const totalNotas = criterios.reduce((acc, criterio) => {
-      const notaSelecionada = notasSelecionadas[criterio.id];
-      return acc + (notaSelecionada || 0);
-    }, 0);
-    return totalNotas / criterios.length;
-  };
 
   // Função de busca dos dados ao renderizar o componente
   const fetchData = async () => {
@@ -95,7 +87,7 @@ const Page = ({ params }) => {
     };
     setSelectedNotas(novasNotas);
 
-    const novaNotaTotal = calcularNotaTotal(
+    const novaNotaTotal = calcularNotaTotalPonderada(
       evento.CriterioAvaliacao,
       novasNotas
     );
@@ -257,6 +249,17 @@ const Page = ({ params }) => {
   };
   // Função para finalizar a avaliação
   const handleTerminarAvaliacao = async () => {
+    if (
+      (evento?.mencaoHonrosaSelecionada || evento?.premioSelecionado) &&
+      !evento?.comentarioFeedback?.trim()
+    ) {
+      setError({
+        geral:
+          "O feedback/comentário ao aluno é obrigatório para indicações a menção honrosa ou prêmio.",
+      });
+      return;
+    }
+
     setLoading(true); // Inicia o estado de carregamento
     setError({}); // Limpa erros anteriores
 
@@ -387,12 +390,32 @@ const Page = ({ params }) => {
               {!loading && (
                 <>
                   <div className={styles.quesitos}>
+                    {evento?.CriterioAvaliacao?.length > 0 && (
+                      <div className={styles.notaFlutuante}>
+                        <span>Nota parcial</span>
+                        <strong>
+                          {notaTotal.toFixed(1)}
+                          <small>/10</small>
+                        </strong>
+                        <span className={styles.notaFlutuanteProgresso}>
+                          {
+                            evento.CriterioAvaliacao.filter(
+                              (criterio) => selectedNotas[criterio.id] !== undefined
+                            ).length
+                          }
+                          /{evento.CriterioAvaliacao.length} respondidos
+                        </span>
+                      </div>
+                    )}
                     {evento?.CriterioAvaliacao?.sort((a, b) => a.id - b.id).map(
                       (item, index) => {
-                        const valores = Array.from(
-                          { length: item.notaMaxima - item.notaMinima + 1 },
-                          (_, i) => item.notaMinima + i
-                        );
+                        const opcoes = opcoesInput(item);
+                        const qualitativo = item.tipoEntrada === "QUALITATIVA";
+                        const classeSeveridade = {
+                          error: styles.valueError,
+                          warning: styles.valueWarning,
+                          success: styles.valueSuccess,
+                        };
                         return (
                           <div className={styles.item} key={item.id}>
                             <div className={styles.label}>
@@ -406,21 +429,38 @@ const Page = ({ params }) => {
                                 {item.descricao}
                               </p>
                             </div>
-                            <div className={styles.values}>
-                              {valores.map((valor) => (
+                            <div
+                              className={`${styles.values} ${
+                                qualitativo ? styles.valuesQualitativas : ""
+                              }`}
+                            >
+                              {opcoes.map((opcao) => (
                                 <div
-                                  key={valor}
-                                  value={valor}
+                                  key={opcao.valor}
+                                  value={opcao.valor}
                                   className={`${styles.value} ${
-                                    selectedNotas[item.id] === valor
+                                    qualitativo ? styles.valueQualitativo : ""
+                                  } ${qualitativo ? classeSeveridade[opcao.severidade] : ""} ${
+                                    selectedNotas[item.id] === opcao.valor
                                       ? styles.selected
                                       : ""
                                   }`}
                                   onClick={() =>
-                                    handleNotaSelecionada(item.id, valor)
+                                    handleNotaSelecionada(item.id, opcao.valor)
                                   }
                                 >
-                                  <p>{valor}</p>
+                                  {qualitativo ? (
+                                    <>
+                                      <p className={styles.valueLabel}>{opcao.label}</p>
+                                      {opcao.descricao && (
+                                        <p className={styles.valueDescricao}>
+                                          {opcao.descricao}
+                                        </p>
+                                      )}
+                                    </>
+                                  ) : (
+                                    <p>{opcao.label}</p>
+                                  )}
                                 </div>
                               ))}
                             </div>
@@ -487,7 +527,13 @@ const Page = ({ params }) => {
 
                   <div className={`${styles.item} mt-2`}>
                     <div className={styles.label}>
-                      <h6>Feedback/Comentário ao aluno (OPCIONAL)</h6>
+                      <h6>
+                        Feedback/Comentário ao aluno{" "}
+                        {evento?.mencaoHonrosaSelecionada ||
+                        evento?.premioSelecionado
+                          ? "(OBRIGATÓRIO)"
+                          : "(OPCIONAL)"}
+                      </h6>
                     </div>
                     {false && (
                       <Button

@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   RiAwardFill,
   RiFolderHistoryLine,
+  RiGuideLine,
   RiQuillPenLine,
 } from "@remixicon/react";
 
@@ -13,17 +14,31 @@ const Page = ({ params }) => {
     <main className={styles.main}>
       <div className={styles.instituicoes}>
         <Link
-          href={`/evento/${params.eventoSlug}/edicao/${params.edicao}/avaliador/avaliacoes`}
+          href={`/evento/${params.eventoSlug}/edicao/${params.edicao}/avaliar`}
         >
           <div className={styles.menu}>
             <div className={styles.logo}>
-              <RiQuillPenLine />
+              <RiGuideLine />
             </div>
             <div className={styles.descricao}>
-              <h6>Começar a avaliar</h6>
+              <h6>Avaliar agora</h6>
             </div>
           </div>
         </Link>
+        {false && (
+          <Link
+            href={`/evento/${params.eventoSlug}/edicao/${params.edicao}/avaliador/avaliacoes`}
+          >
+            <div className={styles.menu}>
+              <div className={styles.logo}>
+                <RiQuillPenLine />
+              </div>
+              <div className={styles.descricao}>
+                <h6>Começar a avaliar</h6>
+              </div>
+            </div>
+          </Link>
+        )}
         <Link
           href={`/evento/${params.eventoSlug}/edicao/${params.edicao}/avaliador/minhasAvaliacoes`}
         >

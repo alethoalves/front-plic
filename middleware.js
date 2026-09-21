@@ -152,7 +152,12 @@ if (pathname === "/autenticacao" || pathname.startsWith("/autenticacao/")) {
      * ****************/
    
     // Middleware apenas para as rotas avaliador `/evento/slugEvento/edicao/slugEdicao/avaliador`
-    if (url.pathname.startsWith(`/evento/${slugEvento}/edicao/${slugEdicao}/avaliador`)) {
+    // (inclui `/avaliar`, o wizard mobile — rota irmã de `/avaliador`, fora
+    // do seu layout de dashboard, mas com a mesma exigência de autenticação)
+    if (
+      url.pathname.startsWith(`/evento/${slugEvento}/edicao/${slugEdicao}/avaliador`) ||
+      url.pathname.startsWith(`/evento/${slugEvento}/edicao/${slugEdicao}/avaliar`)
+    ) {
       const pongAvaliador = await pingAvaliador(tokenAvaliador);
       // Não tem token válido OU não tem permissão de acesso -> redireciona
       if (!pongAvaliador) return NextResponse.redirect(urlToRootAvaliadorEvento);

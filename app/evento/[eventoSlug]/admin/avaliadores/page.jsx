@@ -548,6 +548,24 @@ const Page = ({ params }) => {
     setGlobalFilterValue(value);
   };
 
+  // Lista as subsessões que o avaliador escolheu (mesma origem de dados
+  // usada no filtro de Subsessão), formatadas para exibição/exportação.
+  const getSubsessoesEscolhidas = (avaliador) => {
+    const porId = new Map();
+    (avaliador.user?.ConviteAvaliadorEvento || []).forEach((convite) => {
+      (convite.conviteSubsessao || []).forEach(({ subsessaoApresentacao: sub }) => {
+        if (!sub || porId.has(sub.id)) return;
+        porId.set(
+          sub.id,
+          `${sub.sessaoApresentacao?.titulo} — ${formatarData(
+            sub.inicio,
+          )} ${formatarHora(sub.inicio)}`,
+        );
+      });
+    });
+    return [...porId.values()].sort((a, b) => a.localeCompare(b));
+  };
+
   const emailBodyTemplate = (rowData) => {
     return (
       rowData.user.email ||
@@ -569,20 +587,20 @@ const Page = ({ params }) => {
       const worksheet = workbook.addWorksheet("Avaliadores");
       worksheet.columns = [
         { header: "Nome", key: "nome", width: 30 },
-        { header: "CPF", key: "cpf", width: 18 },
         { header: "E-mail", key: "email", width: 30 },
         { header: "Vinculação", key: "vinculacao", width: 30 },
         { header: "Avaliador Root", key: "avaliadorRoot", width: 15 },
         { header: "Avaliações Realizadas", key: "qntAvaliacoes", width: 20 },
+        { header: "Subsessões Escolhidas", key: "subsessoes", width: 50 },
       ];
       dadosParaExportar.forEach((avaliador) => {
         worksheet.addRow({
           nome: avaliador.user.nome,
-          cpf: avaliador.user.cpf,
           email: emailBodyTemplate(avaliador),
           vinculacao: getVinculacao(avaliador),
           avaliadorRoot: avaliador.avaliadorRoot ? "Sim" : "Não",
           qntAvaliacoes: avaliador.qntAvaliacoes ?? 0,
+          subsessoes: getSubsessoesEscolhidas(avaliador).join("; ") || "Nenhuma",
         });
       });
       const buffer = await workbook.xlsx.writeBuffer();

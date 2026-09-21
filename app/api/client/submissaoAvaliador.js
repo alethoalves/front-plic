@@ -155,6 +155,71 @@ export const processarAvaliacao = async (
   }
 };
 
+// WIZARD MOBILE DO AVALIADOR (tela /avaliar) — endpoints novos e
+// enxutos, não usados pela tela antiga (avaliacoes/page.jsx).
+
+export const getAreasPendentesWizard = async (eventoId) => {
+  try {
+    const headers = getAuthHeadersClientAvaliador();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.get(
+      `/evenplic/evento/${eventoId}/avaliador/wizard/areas`,
+      { headers }
+    );
+    return response.data.areas;
+  } catch (error) {
+      console.error("Erro ao buscar áreas pendentes:", error.message);
+      throw error;
+  }
+};
+
+export const atribuirTrabalhoWizard = async (eventoId, areasIds = [], excluirSubmissaoId = null) => {
+  try {
+    const headers = getAuthHeadersClientAvaliador();
+    if (!headers) {
+      return false;
+    }
+    const query = [];
+    if (areasIds.length > 0) {
+      query.push(`areas=${areasIds.join(',')}`);
+    }
+    if (excluirSubmissaoId) {
+      // Usado pelo "Atribuir outro trabalho": exclui a submissão que acabou
+      // de ser devolvida, senão ela costuma voltar a ser a próxima candidata.
+      query.push(`excluir=${excluirSubmissaoId}`);
+    }
+    const url = `/evenplic/evento/${eventoId}/avaliador/wizard/atribuir${query.length ? `?${query.join('&')}` : ''}`;
+    const response = await req.get(url, { headers });
+    return response.data.submissao;
+  } catch (error) {
+      console.error("Erro ao atribuir trabalho automaticamente:", error.message);
+      throw error;
+  }
+};
+
+// Sem eventoId: consultado a partir da tela /avaliador (antes de saber em
+// qual evento o avaliador está) pra descobrir se ele já tem uma submissão
+// em avaliação em algum evento e pular direto pro wizard, sem repetir
+// CPF+"avaliar agora".
+export const getTrabalhoEmAndamentoAvaliador = async () => {
+  try {
+    const headers = getAuthHeadersClientAvaliador();
+    if (!headers) {
+      return null;
+    }
+    const response = await req.get(
+      `/evenplic/avaliador/wizard/em-andamento`,
+      { headers }
+    );
+    return response.data.emAndamento;
+  } catch (error) {
+    console.error("Erro ao buscar trabalho em andamento:", error.message);
+    return null;
+  }
+};
+
 export const getFichasAvaliacoesEvento = async (edicaoEventoSlug) => {
   try {
     const headers = getAuthHeadersClientAvaliador();

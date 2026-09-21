@@ -133,7 +133,7 @@ const Page = ({ params }) => {
                           <div className={styles.quesitoHeader}>
                             <h6>{registro.titulo}</h6>
                             <span className={styles.notaQuesito}>
-                              Nota: {registro.nota}
+                              Nota: {registro.rotulo ?? registro.nota}
                             </span>
                           </div>
                           {registro.descricao && (

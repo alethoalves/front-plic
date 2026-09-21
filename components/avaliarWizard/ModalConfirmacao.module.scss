@@ -1,0 +1,16 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+// Mesmo padrão de ícone pequeno + título + texto usado nos modais de
+// confirmação do resto do sistema (ex.: components/EditalAtividades.jsx),
+// só que local a este módulo — cada tela copia essa mesma classe em vez de
+// importar um componente de confirmação compartilhado.
+.icon {
+    width: 24px;
+    color: $primary-normal;
+}
+
+.btnSubmit {
+    margin-top: $gap-2;
+}

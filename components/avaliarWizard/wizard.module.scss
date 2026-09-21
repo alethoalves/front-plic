@@ -1,0 +1,645 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+// Fork de components/checkin/checkin.module.scss — o wizard do avaliador
+// segue o mesmo tratamento visual de "uma tela por etapa", card único e
+// centralizado, sem o dashboard padrão (SideNav/NavBar).
+
+.card {
+    width: 100%;
+    max-width: 460px;
+    border: 1px solid $gray-50;
+    background: $white-light;
+    border-radius: $gap-1;
+    box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+    padding: $gap-3;
+
+    // Breakpoint antigo ($container-xs = 340px) quase nunca disparava em
+    // celular real — troca pro mixin `responsive(xs)` (≤620px) já usado
+    // pelo resto do projeto pra telas pequenas.
+    @include responsive(xs) {
+        padding: $gap-2;
+    }
+}
+
+.erro {
+    color: $error-normal;
+    font-size: 0.85rem;
+    margin-top: $gap-1;
+}
+
+.aviso {
+    background: $warning-lighten;
+    border: 1px solid $warning-light;
+    border-radius: $gap-1;
+    padding: $gap-2;
+    color: $black-light;
+    font-size: 0.9rem;
+    margin-bottom: $gap-2;
+}
+
+.avisoContador {
+    margin-top: $gap-1;
+    text-align: center;
+    font-size: 0.8rem;
+    color: $gray-500;
+}
+
+// Card de alerta do tempo com a ficha (passo 2) — a cor sobe de tom
+// conforme o avaliador se aproxima dos 50min informais depois dos quais o
+// admin pode retirar o trabalho da carga dele (não há devolução automática
+// no sistema, é só um aviso). Três variantes de cor, mesmo layout.
+.cardTempo {
+    display: flex;
+    align-items: flex-start;
+    gap: $gap-1;
+    border-radius: $gap-1;
+    padding: $gap-2;
+    margin-bottom: $gap-2;
+    text-align: left;
+
+    svg {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+
+    p {
+        margin: 0;
+        font-size: 0.85rem;
+        line-height: 1.4;
+    }
+}
+
+.cardTempoOk {
+    background: $success-lighten;
+    border: 1px solid $success-light;
+    color: $success-dark;
+
+    svg {
+        color: $success-normal;
+    }
+}
+
+.cardTempoAlerta {
+    background: $warning-lighten;
+    border: 1px solid $warning-light;
+    color: $warning-darken;
+
+    svg {
+        color: $warning-dark;
+    }
+}
+
+.cardTempoUrgente {
+    background: $error-lighten;
+    border: 1px solid $error-light;
+    color: $error-dark;
+
+    svg {
+        color: $error-normal;
+    }
+}
+
+.iconeCentral {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: $gray-25;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto $gap-2;
+
+    svg {
+        width: 30px;
+        height: 30px;
+        color: $primary-normal;
+    }
+}
+
+// Cabeçalho leve fixo no topo do wizard — só "voltar ao painel" + "sair",
+// sem replicar o menu lateral do dashboard.
+.cabecalho {
+    width: 100%;
+    max-width: 460px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $gap-1;
+}
+
+.linkCabecalho {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: $gray-500;
+    background: none;
+    border: none;
+    padding: $gap-1;
+    cursor: pointer;
+    font-size: 0.85rem;
+
+    svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    &:hover {
+        color: $primary-dark;
+    }
+}
+
+// Número do pôster — o elemento visual dominante das telas de "trabalho
+// atribuído" e "vá até o pôster", porque é a informação física que a pessoa
+// precisa pra andar até a mesa certa.
+.posterDestaque {
+    text-align: center;
+    margin-bottom: $gap-3;
+}
+
+.posterLabel {
+    color: $gray-500;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.posterNumero {
+    display: block;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 3.5rem;
+    line-height: 1;
+    color: $primary-darken;
+
+    @media screen and (max-width: $container-xs) {
+        font-size: 2.75rem;
+    }
+}
+
+// Card de destaque com os dados do trabalho (área/instituição/categoria +
+// título) e o botão "Ler resumo" dentro — separa essa informação do resto
+// da tela, mesmo tratamento visual do .notaTotalCard (fundo levemente
+// diferente, cantos arredondados).
+.cardTrabalho {
+    background: $white-dark;
+    border: 1px solid $primary-lighten;
+    border-radius: $gap-1;
+    padding: $gap-2;
+    margin-bottom: $gap-2;
+}
+
+.infoTrabalho {
+    text-align: center;
+    margin-bottom: $gap-2;
+
+    h6 {
+        font-size: 16px;
+        margin-top: 4px;
+    }
+}
+
+.metaTrabalho {
+    color: $gray-500;
+    font-size: 0.85rem;
+}
+
+// Card neutro (não vermelho/erro, de propósito — essas são opções normais
+// do fluxo, não falhas) que agrupa as saídas alternativas do trabalho
+// atribuído: pedir outro, escolher específico ou devolver.
+.cardOpcoes {
+    background: $gray-25;
+    border-radius: $gap-1;
+    padding: $gap-2;
+    margin-top: $gap-2;
+}
+
+// Lista vertical alinhada à esquerda, um item por linha, separados por um
+// traço fino — em vez de botões soltos e centralizados, lê mais como um
+// menu de opções.
+.acoesSecundarias {
+    display: flex;
+    flex-direction: column;
+    margin-top: $gap-1;
+
+    button {
+        width: 100%;
+        height: auto;
+        border: none;
+        border-radius: 0;
+        justify-content: flex-start;
+        padding: $gap-2 0;
+
+        p {
+            text-decoration: none;
+        }
+
+        // O spinner do PrimeReact vem com "margin: 0 auto" por padrão, o que
+        // rouba o espaço livre do flex e empurra o resto do conteúdo pro
+        // centro durante o loading — anula aqui pra manter o alinhamento à
+        // esquerda mesmo enquanto carrega.
+        :global(.p-progress-spinner) {
+            margin: 0;
+            width: 20px !important;
+            height: 20px !important;
+        }
+
+        &:not(:last-child) {
+            border-bottom: 1px solid $gray-50;
+        }
+    }
+}
+
+// Chips tocáveis da etapa de escolha de área — multi-seleção, alvo de toque
+// grande (~48px de altura), sem MultiSelect denso de desktop.
+.chips {
+    display: flex;
+    flex-direction: column;
+    gap: $gap-1;
+    margin-bottom: $gap-1;
+}
+
+.chip {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    min-height: 52px;
+    padding: $gap-2;
+    border: 1px solid $gray-50;
+    border-radius: $gap-1;
+    background: $white-light;
+    cursor: pointer;
+    transition: ease 0.2s;
+    text-align: left;
+    font-size: 1rem;
+    color: $gray-600;
+
+    &:hover {
+        border-color: $primary-light;
+    }
+}
+
+.chipSelecionado {
+    border-color: $primary-normal;
+    background: $primary-lighten;
+    color: $primary-darken;
+    font-weight: 700;
+}
+
+.chipContador {
+    background: $white-darken;
+    color: $gray-600;
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.chipSelecionado .chipContador {
+    background: $primary-normal;
+    color: $white-light;
+}
+
+// Ficha de avaliação — mesma lógica de pills de nota da tela antiga, com
+// alvos de toque maiores.
+.listaCriterios {
+    position: relative;
+}
+
+// Card flutuante com a nota parcial, visível enquanto o avaliador rola pela
+// lista de critérios — some sozinho quando o card real da nota (depois do
+// último critério) entra na tela, porque sticky só flutua dentro dos limites
+// do pai (.listaCriterios). Mesmo padrão de `position: sticky` já usado pro
+// banner de erro nas telas antigas da ficha de avaliação.
+.notaFlutuante {
+    position: sticky;
+    top: 12px;
+    z-index: 5;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: $gap-1;
+    background: $white-light;
+    border: 1px solid $gray-50;
+    border-radius: $gap-1;
+    padding: $gap-1 $gap-2;
+    margin-bottom: $gap-2;
+    box-shadow: 0 2px 8px rgba(#000, 0.08);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    strong {
+        font-size: 1.1rem;
+        color: $primary-dark;
+
+        small {
+            font-weight: 400;
+            color: $gray-500;
+            margin-left: 2px;
+        }
+    }
+}
+
+.notaFlutuanteProgresso {
+    font-size: 0.8rem;
+    color: $gray-500;
+}
+
+.quesito {
+    border-bottom: 1px solid $gray-25;
+    padding-bottom: $gap-2;
+    margin-bottom: $gap-2;
+
+    &:last-child {
+        border-bottom: none;
+    }
+}
+
+.quesitoTitulo {
+    margin-bottom: 4px;
+
+    span {
+        color: $primary-normal;
+    }
+}
+
+.quesitoDescricao {
+    color: $gray-500;
+    font-size: 0.85rem;
+    white-space: pre-line;
+    margin-bottom: $gap-1;
+}
+
+.valores {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $gap-1;
+}
+
+.valor {
+    min-width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid $gray-50;
+    border-radius: $gap-1;
+    cursor: pointer;
+    font-weight: 700;
+    color: $gray-600;
+    transition: ease 0.2s;
+
+    &:hover {
+        border-color: $primary-light;
+    }
+}
+
+.valorSelecionado {
+    background: $primary-dark;
+    border-color: $primary-dark;
+    color: $white-light;
+}
+
+// Variante pro critério qualitativo (rótulo curto + descrição opcional).
+// Cartão empilhado, texto alinhado à esquerda — sem preenchimento sólido
+// pesado, que fica ruim com frase longa (só realça com borda/tom leve).
+.valoresQualitativas {
+    flex-direction: column;
+    flex-wrap: nowrap;
+}
+
+.valorQualitativo {
+    min-width: auto;
+    width: 100%;
+    height: auto;
+    padding: $gap-2;
+    white-space: normal;
+    text-align: left;
+    font-weight: 400;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-left-width: 4px;
+
+    &.valorSelecionado {
+        color: $gray-600;
+    }
+}
+
+.valorLabel {
+    font-weight: 700;
+    color: inherit;
+}
+
+.valorDescricao {
+    font-weight: 400;
+    font-size: 0.85rem;
+    color: $gray-500;
+}
+
+// Escala de cor pela posição do valor dentro da própria escala do critério
+// (vermelho -> amarelo -> verde), pra escanear as opções de relance.
+.valorError {
+    border-left-color: $error-normal;
+    &.valorSelecionado {
+        background: rgba($error-normal, 0.1);
+        border-color: $error-normal;
+    }
+    &.valorSelecionado .valorLabel {
+        color: $error-dark;
+    }
+}
+
+.valorWarning {
+    border-left-color: $warning-normal;
+    &.valorSelecionado {
+        background: rgba($warning-normal, 0.15);
+        border-color: $warning-dark;
+    }
+    &.valorSelecionado .valorLabel {
+        color: $warning-dark;
+    }
+}
+
+.valorSuccess {
+    border-left-color: $success-normal;
+    &.valorSelecionado {
+        background: rgba($success-normal, 0.1);
+        border-color: $success-normal;
+    }
+    &.valorSelecionado .valorLabel {
+        color: $success-dark;
+    }
+}
+
+.notaTotalCard {
+    background: $white-dark;
+    border-radius: $gap-1;
+    padding: $gap-2;
+    margin-bottom: $gap-2;
+}
+
+.notaHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: $gap-1;
+
+    span {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: $primary-darken;
+    }
+
+    small {
+        color: $gray-500;
+    }
+}
+
+.notaProgress {
+    width: 100%;
+    height: 8px;
+    background: $gray-50;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: $gap-1;
+}
+
+.notaProgressBar {
+    height: 100%;
+    background: $primary-normal;
+    transition: width 0.3s ease;
+}
+
+.notaMinimas {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    p {
+        font-size: 0.8rem;
+        color: $gray-500;
+    }
+}
+
+.premiacao {
+    display: flex;
+    flex-direction: column;
+    gap: $gap-1;
+    margin-bottom: $gap-2;
+}
+
+.premioOpcao {
+    display: flex;
+    align-items: center;
+    gap: $gap-1;
+    min-height: 48px;
+    padding: $gap-1 $gap-2;
+    border: 1px solid $gray-50;
+    border-radius: $gap-1;
+    cursor: pointer;
+    transition: ease 0.2s;
+    color: $gray-600;
+
+    svg {
+        width: 20px;
+        flex-shrink: 0;
+    }
+
+    p {
+        flex: 1;
+        margin: 0;
+    }
+}
+
+.premioDisponivel {
+    border-color: $primary-light;
+}
+
+.premioSelecionado {
+    background: $primary-dark;
+    border-color: $primary-dark;
+    color: $white-light;
+
+    p {
+        color: $white-light;
+    }
+}
+
+.premioIndisponivel {
+    opacity: 0.6;
+    cursor: default;
+
+    svg:last-child {
+        color: $warning-dark;
+    }
+}
+
+.feedbackTextarea {
+    width: 100%;
+    min-height: 100px;
+    border: 1px solid $gray-50;
+    border-radius: $gap-1;
+    padding: $gap-1;
+    font-family: inherit;
+    resize: vertical;
+    margin-bottom: $gap-2;
+}
+
+// Auto-alocação manual (avaliar/auto-alocacao) — grid de cards tocáveis,
+// mesma lógica de clique-para-reivindicar da tela antiga.
+.listaTrabalhos {
+    width: 100%;
+    max-width: 460px;
+    display: flex;
+    flex-direction: column;
+    gap: $gap-1;
+}
+
+.itemTrabalho {
+    border: 1px solid $gray-50;
+    border-radius: $gap-1;
+    padding: $gap-2;
+    background: $white-light;
+    cursor: pointer;
+    transition: ease 0.2s;
+    display: flex;
+    align-items: center;
+    gap: $gap-2;
+
+    &:hover {
+        border-color: $primary-light;
+        box-shadow: 0px 0px 10px rgba(5, 17, 34, 0.06);
+    }
+}
+
+.itemPoster {
+    flex-shrink: 0;
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
+    background: $white-darken;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: $primary-darken;
+    font-size: 1.1rem;
+}
+
+.itemInfo {
+    flex: 1;
+    min-width: 0;
+
+    h6 {
+        font-size: 14px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}

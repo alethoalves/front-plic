@@ -1033,6 +1033,13 @@ flex-direction: column;
   margin-bottom: 4px;
 }
 
+.opcaoEscala {
+  border: 1px solid $gray-50;
+  border-radius: $gap-1;
+  padding: $gap-1;
+  margin-bottom: $gap-1;
+}
+
 .editActions {
   display: flex;
   gap: $gap-1;

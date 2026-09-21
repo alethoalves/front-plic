@@ -191,8 +191,114 @@
                     color: $warning-lighten;
                 }
             }
+            // Variante pro critério qualitativo (rótulo curto + descrição
+            // opcional) — cartão empilhado à esquerda, sem a caixa quadrada
+            // fixa nem o preenchimento sólido (fica pesado com frase longa).
+            &.valueQualitativo {
+                width: 100%;
+                height: auto;
+                margin-left: 0;
+                justify-content: flex-start;
+                flex-direction: column;
+                align-items: flex-start;
+                padding: $gap-2;
+                border-left-width: 4px;
+                @include responsive(xs){
+                    width: 100%;
+                    height: auto;
+                }
+                p {
+                    white-space: normal;
+                    text-align: left;
+                }
+                &.selected {
+                    p {
+                        color: $gray-600;
+                    }
+                }
+            }
+        }
+        &.valuesQualitativas {
+            flex-direction: column;
+            flex-wrap: nowrap;
         }
     }
+}
+
+.valueLabel {
+    font-weight: 700 !important;
+}
+
+.valueDescricao {
+    font-weight: 400 !important;
+    font-size: 0.85rem;
+    color: $gray-500 !important;
+}
+
+// Escala de cor pela posição do valor dentro da própria escala do critério
+// (vermelho -> amarelo -> verde), pra escanear as opções de relance.
+.valueError {
+    border-left-color: $error-normal !important;
+    &.selected {
+        background-color: rgba($error-normal, 0.1) !important;
+        border-color: $error-normal !important;
+        .valueLabel { color: $error-dark !important; }
+    }
+}
+
+.valueWarning {
+    border-left-color: $warning-normal !important;
+    &.selected {
+        background-color: rgba($warning-normal, 0.15) !important;
+        border-color: $warning-dark !important;
+        .valueLabel { color: $warning-dark !important; }
+    }
+}
+
+.valueSuccess {
+    border-left-color: $success-normal !important;
+    &.selected {
+        background-color: rgba($success-normal, 0.1) !important;
+        border-color: $success-normal !important;
+        .valueLabel { color: $success-dark !important; }
+    }
+}
+
+// Card flutuante com a nota parcial, visível enquanto o avaliador rola pela
+// lista de critérios — some sozinho ao sair do bloco .quesitos, porque
+// sticky só flutua dentro dos limites do pai.
+.notaFlutuante {
+    position: sticky;
+    top: 12px;
+    z-index: 5;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: $gap-1;
+    background-color: $white-light;
+    border: 1px solid $warning-normal;
+    border-radius: $gap-1;
+    padding: $gap-1 $gap-2;
+    margin-bottom: $gap-2;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    strong {
+        font-size: 1.1rem;
+        color: $warning-dark;
+
+        small {
+            font-weight: 400;
+            color: $gray-500;
+            margin-left: 2px;
+        }
+    }
+}
+
+.notaFlutuanteProgresso {
+    font-size: 0.8rem;
+    color: $gray-500;
 }
 .squares{
     .square{

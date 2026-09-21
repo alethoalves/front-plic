@@ -195,10 +195,16 @@
 
     .square {
         @include eventoCard;
-        display: flex;
+        // Grid em vez de flex: header (nº do pôster) ocupa a 1ª coluna,
+        // esticado pelas duas linhas; conteúdo e prêmios ficam na 2ª coluna,
+        // um embaixo do outro — antes os prêmios eram um 3º item flex e
+        // viravam uma coluna à parte, espremida ao lado do card.
+        display: grid;
+        grid-template-columns: auto 1fr;
         padding: 3px;
 
         @include responsive(s) {
+            display: flex;
             flex-direction: column;
         }
 
@@ -210,20 +216,30 @@
             border-radius: 6px;
         }
 
+        .squareContent,
+        .squareContentEmpty {
+            grid-column: 2;
+            grid-row: 1;
+        }
+
         .premios {
+            grid-column: 2;
+            grid-row: 2;
             display: flex;
             flex-wrap: wrap;
             align-items: flex-start;
             gap: $gap-1;
             margin-left: $gap-1;
+            margin-top: $gap-1;
 
             @include responsive(s) {
                 margin-left: 0;
-                margin-top: $gap-1;
             }
         }
 
         .squareHeader {
+            grid-column: 1;
+            grid-row: 1 / span 2;
             display: flex;
             flex-direction: column;
             align-items: center;

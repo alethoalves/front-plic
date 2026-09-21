@@ -1,0 +1,9 @@
+@import "/styles/partials/colors";
+
+// Layout mínimo do wizard — sem SideNav/NavBar do dashboard (decisão
+// confirmada com o usuário), só um fundo full-bleed pra tela ficar limpa em
+// mobile, igual ao espírito do fluxo de check-in.
+.wrapper {
+    min-height: 100vh;
+    background: $white-dark;
+}
