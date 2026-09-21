@@ -6,6 +6,7 @@ import { InputText } from "primereact/inputtext";
 import { Dialog } from "primereact/dialog";
 import { Button } from "primereact/button";
 import { InputNumber } from "primereact/inputnumber";
+import { Checkbox } from "primereact/checkbox";
 import { FilterService } from "primereact/api";
 import styles from "./page.module.scss";
 import { Card } from "primereact/card";
@@ -86,6 +87,7 @@ const Page = ({ params }) => {
   const [cotaForm, setCotaForm] = useState({
     ano: parseInt(ano),
     quantidadeBolsas: 0,
+    origemCNPq: false,
   });
 
   // Filtros e opções
@@ -200,6 +202,7 @@ const Page = ({ params }) => {
       ano: cota.ano,
       quantidadeBolsas: cota.quantidadeBolsas,
       instituicaoPagadora: cota.instituicaoPagadora,
+      origemCNPq: cota.origemCNPq || false,
     });
     setShowCotaModal(true);
   };
@@ -210,6 +213,7 @@ const Page = ({ params }) => {
       ano: parseInt(ano),
       quantidadeBolsas: 0,
       instituicaoPagadora: "",
+      origemCNPq: false,
     });
     setShowCotaModal(true);
   };
@@ -219,6 +223,7 @@ const Page = ({ params }) => {
       ano: parseInt(ano),
       quantidadeBolsas: 0,
       instituicaoPagadora: "",
+      origemCNPq: false,
     });
   };
 
@@ -521,6 +526,17 @@ const Page = ({ params }) => {
               placeholder="Ex: FAP-DF, CNPq, CAPES"
               className="w-full p-1"
             />
+          </div>
+
+          <div className="p-field mb-2 flex align-items-center gap-2">
+            <Checkbox
+              inputId="origemCNPq"
+              checked={cotaForm.origemCNPq || false}
+              onChange={(e) =>
+                setCotaForm({ ...cotaForm, origemCNPq: e.checked })
+              }
+            />
+            <label htmlFor="origemCNPq">Bolsa financiada pelo CNPq</label>
           </div>
 
           <div className="p-field">

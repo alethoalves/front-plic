@@ -30,6 +30,7 @@ import { InputTextarea } from "primereact/inputtextarea";
 import { ProgressBar } from "primereact/progressbar";
 import { FilterMatchMode } from "primereact/api";
 import { InputText } from "primereact/inputtext";
+import { Checkbox } from "primereact/checkbox";
 import { FilterService } from "primereact/api";
 
 import {
@@ -173,6 +174,7 @@ export default function SolicitacoesBolsa() {
     ano: parseInt(ano),
     quantidadeBolsas: 0,
     instituicaoPagadora: "",
+    origemCNPq: false,
   });
   const [documentoTemplates, setDocumentoTemplates] = useState([]);
   const [cotaAnexandoDocumento, setCotaAnexandoDocumento] = useState(null);
@@ -325,6 +327,7 @@ export default function SolicitacoesBolsa() {
       ano: parseInt(ano),
       quantidadeBolsas: 0,
       instituicaoPagadora: "",
+      origemCNPq: false,
     });
 
   const handleCreateCota = async () => {
@@ -908,6 +911,9 @@ export default function SolicitacoesBolsa() {
                     <div className={styles.cotaHeaderTitle}>
                       <RiGraduationCapLine size={20} className={styles.icon} />
                       <h6>{cota.instituicaoPagadora}</h6>
+                      {cota.origemCNPq && (
+                        <Tag severity="success" value="CNPq" className="ml-1" />
+                      )}
                     </div>
                     <div className={styles.cotaActions}>
                       <RiPencilLine
@@ -1359,6 +1365,16 @@ export default function SolicitacoesBolsa() {
               }
               placeholder="Ex: FAP‑DF, CNPq"
             />
+          </div>
+          <div className="p-field mb-2 flex align-items-center gap-2">
+            <Checkbox
+              inputId="origemCNPq"
+              checked={cotaForm.origemCNPq || false}
+              onChange={(e) =>
+                setCotaForm({ ...cotaForm, origemCNPq: e.checked })
+              }
+            />
+            <label htmlFor="origemCNPq">Bolsa financiada pelo CNPq</label>
           </div>
           <div className="p-field">
             <label>Quantidade de Bolsas</label>

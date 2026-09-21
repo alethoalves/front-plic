@@ -321,33 +321,60 @@
     top: 12px;
     z-index: 5;
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
     gap: $gap-1;
     background: $white-light;
-    border: 1px solid $gray-50;
+    border: 2px solid $primary-light;
     border-radius: $gap-1;
-    padding: $gap-1 $gap-2;
+    padding: $gap-2 $gap-3;
     margin-bottom: $gap-2;
-    box-shadow: 0 2px 8px rgba(#000, 0.08);
+    box-shadow: 0 4px 14px rgba(#000, 0.12);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    transition: background 0.2s, border-color 0.2s;
+
+    span:first-child {
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.04em;
+        color: $gray-500;
+    }
 
     strong {
-        font-size: 1.1rem;
+        font-size: 1.75rem;
+        font-weight: 700;
         color: $primary-dark;
 
         small {
             font-weight: 400;
+            font-size: 1rem;
             color: $gray-500;
             margin-left: 2px;
+        }
+    }
+
+    // Ainda faltam critérios — chama atenção com o vermelho de erro até
+    // x/y bater (a mesma paleta usada pros avisos de campo obrigatório).
+    &.notaFlutuanteIncompleta {
+        background: rgba($error-normal, 0.08);
+        border-color: $error-normal;
+
+        strong {
+            color: $error-dark;
         }
     }
 }
 
 .notaFlutuanteProgresso {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
+    font-weight: 700;
     color: $gray-500;
+}
+
+.notaFlutuanteIncompleta .notaFlutuanteProgresso {
+    color: $error-dark;
 }
 
 .quesito {

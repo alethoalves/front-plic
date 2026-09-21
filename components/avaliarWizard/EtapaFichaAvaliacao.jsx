@@ -121,7 +121,11 @@ const EtapaFichaAvaliacao = ({
       <p className="mb-3">Pôster nº {numeroPoster}</p>
 
       <div className={styles.listaCriterios}>
-        <div className={styles.notaFlutuante}>
+        <div
+          className={`${styles.notaFlutuante} ${
+            respondidos !== criterios.length ? styles.notaFlutuanteIncompleta : ""
+          }`}
+        >
           <span>Nota parcial</span>
           <strong>
             {notaTotal.toFixed(1)}

@@ -428,23 +428,29 @@ const Page = ({ params }) => {
               {!loading && (
                 <>
                   <div className={styles.quesitos}>
-                    {evento?.CriterioAvaliacao?.length > 0 && (
-                      <div className={styles.notaFlutuante}>
-                        <span>Nota parcial</span>
-                        <strong>
-                          {notaTotal.toFixed(1)}
-                          <small>/10</small>
-                        </strong>
-                        <span className={styles.notaFlutuanteProgresso}>
-                          {
-                            evento.CriterioAvaliacao.filter(
-                              (criterio) => selectedNotas[criterio.id] !== undefined
-                            ).length
-                          }
-                          /{evento.CriterioAvaliacao.length} respondidos
-                        </span>
-                      </div>
-                    )}
+                    {evento?.CriterioAvaliacao?.length > 0 &&
+                      (() => {
+                        const respondidos = evento.CriterioAvaliacao.filter(
+                          (criterio) => selectedNotas[criterio.id] !== undefined
+                        ).length;
+                        const total = evento.CriterioAvaliacao.length;
+                        return (
+                          <div
+                            className={`${styles.notaFlutuante} ${
+                              respondidos !== total ? styles.notaFlutuanteIncompleta : ""
+                            }`}
+                          >
+                            <span>Nota parcial</span>
+                            <strong>
+                              {notaTotal.toFixed(1)}
+                              <small>/10</small>
+                            </strong>
+                            <span className={styles.notaFlutuanteProgresso}>
+                              {respondidos}/{total} respondidos
+                            </span>
+                          </div>
+                        );
+                      })()}
                     {evento?.CriterioAvaliacao?.sort((a, b) => a.id - b.id).map(
                       (item, index) => {
                         const opcoes = opcoesInput(item);
