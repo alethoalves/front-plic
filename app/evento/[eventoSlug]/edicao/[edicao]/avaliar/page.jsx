@@ -44,6 +44,17 @@ const MENSAGEM_PERMISSAO_NEGADA =
 const tenantIdDaSubmissao = (submissao) =>
   submissao?.tenant?.id ?? submissao?.instituicaoParceira?.id;
 
+// O admin pode atribuir manualmente várias submissões ao mesmo avaliador
+// (sem a trava de "uma por vez" que existe na auto-atribuição), então elas
+// ficam "EM_AVALIACAO" e somem do pool que `atribuirTrabalhoWizard` enxerga
+// (que só olha AGUARDANDO_AVALIACAO). Sem checar isso antes, "Avaliar outro
+// trabalho" pulava direto pra sortear um novo em vez de mostrar o que já
+// estava atribuído — só reaparecia recarregando a página do zero.
+const buscarProximoAtribuidoPeloAdmin = async (eventoId) => {
+  const emAndamento = await getSubmissoesEmAvaliacao(eventoId);
+  return emAndamento && emAndamento.length > 0 ? emAndamento[0] : null;
+};
+
 const Page = ({ params }) => {
   const router = useRouter();
   const toast = useRef(null);
@@ -200,6 +211,15 @@ const Page = ({ params }) => {
     try {
       const idAnterior = submissaoAtual.id;
       await desvincularAvaliadorSubmissao(evento.id, idAnterior);
+
+      const jaAtribuidoPeloAdmin = await buscarProximoAtribuidoPeloAdmin(evento.id);
+      if (jaAtribuidoPeloAdmin) {
+        setSubmissaoAtual(jaAtribuidoPeloAdmin);
+        setJaEstavaEmAndamento(true);
+        carregarDetalhes(evento.id, jaAtribuidoPeloAdmin);
+        return;
+      }
+
       const proxima = await atribuirTrabalhoWizard(
         evento.id,
         areasSelecionadas,
@@ -318,13 +338,24 @@ const Page = ({ params }) => {
     });
   };
 
-  // Botão "Continuar avaliação" da tela de próximo passo: tenta um novo
-  // trabalho dentro das áreas já escolhidas primeiro (friction-free); só
-  // manda pra tela de escolha de área se não houver nada nelas.
+  // Botão "Continuar avaliação" da tela de próximo passo: primeiro checa se
+  // sobrou algum trabalho atribuído manualmente pelo admin (não aparece no
+  // pool de auto-atribuição), depois tenta um novo dentro das áreas já
+  // escolhidas (friction-free); só manda pra tela de escolha de área se não
+  // houver nada em nenhum dos dois.
   const handleContinuarAvaliacao = async () => {
     setLoadingContinuar(true);
     setErro("");
     try {
+      const jaAtribuidoPeloAdmin = await buscarProximoAtribuidoPeloAdmin(evento.id);
+      if (jaAtribuidoPeloAdmin) {
+        setSubmissaoAtual(jaAtribuidoPeloAdmin);
+        setJaEstavaEmAndamento(true);
+        setEtapa("trabalhoAtribuido");
+        carregarDetalhes(evento.id, jaAtribuidoPeloAdmin);
+        return;
+      }
+
       const proxima = await atribuirTrabalhoWizard(
         evento.id,
         areasSelecionadas,
