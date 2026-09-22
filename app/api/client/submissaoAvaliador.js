@@ -243,6 +243,27 @@ export const atribuirTrabalhoWizard = async (eventoId, areasIds = [], excluirSub
   }
 };
 
+// Total de avaliações já enviadas pelo avaliador logado neste evento (conta
+// direto no banco) — alimenta o badge "Você já avaliou X trabalhos" do
+// wizard, que antes era só um contador de localStorage e não refletia
+// avaliações feitas por outro dispositivo/navegador ou pelas telas antigas.
+export const getQuantidadeAvaliacoesWizard = async (eventoId) => {
+  try {
+    const headers = getAuthHeadersClientAvaliador();
+    if (!headers) {
+      return 0;
+    }
+    const response = await req.get(
+      `/evenplic/evento/${eventoId}/avaliador/wizard/quantidade-avaliacoes`,
+      { headers }
+    );
+    return response.data.quantidade;
+  } catch (error) {
+      console.error("Erro ao buscar quantidade de avaliações:", error.message);
+      return 0;
+  }
+};
+
 // Sem eventoId: consultado a partir da tela /avaliador (antes de saber em
 // qual evento o avaliador está) pra descobrir se ele já tem uma submissão
 // em avaliação em algum evento e pular direto pro wizard, sem repetir

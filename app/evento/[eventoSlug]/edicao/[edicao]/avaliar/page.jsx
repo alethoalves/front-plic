@@ -18,6 +18,7 @@ import {
   getAreasPendentesWizard,
   atribuirTrabalhoWizard,
   liberarSubmissaoAtualWizard,
+  getQuantidadeAvaliacoesWizard,
 } from "@/app/api/client/submissaoAvaliador";
 
 import Button from "@/components/Button";
@@ -32,8 +33,6 @@ import EtapaFichaAvaliacao from "@/components/avaliarWizard/EtapaFichaAvaliacao"
 import {
   getUltimasAreas,
   salvarUltimasAreas,
-  getContadorSessao,
-  incrementarContadorSessao,
 } from "@/components/avaliarWizard/sessaoAvaliador";
 
 import wizardStyles from "@/components/avaliarWizard/wizard.module.scss";
@@ -143,7 +142,7 @@ const Page = ({ params }) => {
       try {
         const eventoData = await getEventoBySlug(params.edicao);
         setEvento(eventoData);
-        setContador(getContadorSessao(eventoData.id));
+        getQuantidadeAvaliacoesWizard(eventoData.id).then(setContador);
 
         const emAndamento = await getSubmissoesEmAvaliacao(eventoData.id);
         if (emAndamento && emAndamento.length > 0) {
@@ -277,8 +276,7 @@ const Page = ({ params }) => {
     try {
       const resposta = await processarAvaliacao(evento.id, body);
       if (resposta.status === "success") {
-        const novoContador = incrementarContadorSessao(evento.id);
-        setContador(novoContador);
+        getQuantidadeAvaliacoesWizard(evento.id).then(setContador);
         setSubmissaoAtual(null);
         setSubmissaoDetalhada(null);
         setMotivoProximoPasso("avaliado");

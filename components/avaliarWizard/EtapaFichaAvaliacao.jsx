@@ -11,7 +11,10 @@ import {
   RiErrorWarningLine,
 } from "@remixicon/react";
 import styles from "./wizard.module.scss";
-import { calcularNotaTotalPonderada, opcoesInput } from "@/lib/criterioAvaliacaoScoring";
+import {
+  calcularNotaTotalPonderada,
+  opcoesInput,
+} from "@/lib/criterioAvaliacaoScoring";
 
 // Passo 4 (último do ciclo): formulário único redesenhado pra mobile — mesma
 // lógica de critérios/notas/premiação da tela antiga
@@ -97,7 +100,7 @@ const EtapaFichaAvaliacao = ({
     }
     if (feedbackObrigatorio && !comentarioFeedback.trim()) {
       setErroValidacao(
-        "O feedback ao aluno é obrigatório quando o trabalho é indicado a prêmio ou menção honrosa.",
+        "A justificativa é obrigatório quando o trabalho é indicado a prêmio ou menção honrosa.",
       );
       return;
     }
@@ -133,7 +136,9 @@ const EtapaFichaAvaliacao = ({
       <div className={styles.listaCriterios}>
         <div
           className={`${styles.notaFlutuante} ${
-            respondidos !== criterios.length ? styles.notaFlutuanteIncompleta : ""
+            respondidos !== criterios.length
+              ? styles.notaFlutuanteIncompleta
+              : ""
           }`}
         >
           <span>Nota parcial</span>
@@ -164,7 +169,9 @@ const EtapaFichaAvaliacao = ({
                   {criterio.titulo}
                 </h6>
                 {criterio.descricao && (
-                  <p className={styles.quesitoDescricao}>{criterio.descricao}</p>
+                  <p className={styles.quesitoDescricao}>
+                    {criterio.descricao}
+                  </p>
                 )}
                 <div
                   className={`${styles.valores} ${
@@ -187,7 +194,9 @@ const EtapaFichaAvaliacao = ({
                         <>
                           <p className={styles.valorLabel}>{opcao.label}</p>
                           {opcao.descricao && (
-                            <p className={styles.valorDescricao}>{opcao.descricao}</p>
+                            <p className={styles.valorDescricao}>
+                              {opcao.descricao}
+                            </p>
                           )}
                         </>
                       ) : (
