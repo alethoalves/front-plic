@@ -218,14 +218,20 @@ export const liberarSubmissaoAtualWizard = async (eventoId) => {
 
 // Se o avaliador ainda tiver uma submissão em mãos, o backend libera ela
 // sozinho antes de atribuir a nova (consultando o vínculo real no banco) —
-// não precisa informar qual é.
-export const atribuirTrabalhoWizard = async (eventoId, areasIds = []) => {
+// não precisa informar qual é. `excluirSubmissaoId` é opcional: passe o id
+// da submissão recém-devolvida (retorno de `liberarSubmissaoAtualWizard`)
+// pra ela não ser sorteada de volta pro mesmo avaliador quando for a única
+// candidata da área.
+export const atribuirTrabalhoWizard = async (eventoId, areasIds = [], excluirSubmissaoId = null) => {
   try {
     const headers = getAuthHeadersClientAvaliador();
     if (!headers) {
       return false;
     }
-    const query = areasIds.length > 0 ? `?areas=${areasIds.join(',')}` : '';
+    const partesQuery = [];
+    if (areasIds.length > 0) partesQuery.push(`areas=${areasIds.join(',')}`);
+    if (excluirSubmissaoId) partesQuery.push(`excluirSubmissaoId=${excluirSubmissaoId}`);
+    const query = partesQuery.length > 0 ? `?${partesQuery.join('&')}` : '';
     const response = await req.get(
       `/evenplic/evento/${eventoId}/avaliador/wizard/atribuir${query}`,
       { headers }

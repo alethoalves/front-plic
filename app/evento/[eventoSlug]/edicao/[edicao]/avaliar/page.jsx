@@ -151,6 +151,11 @@ const Page = ({ params }) => {
           setJaEstavaEmAndamento(true);
           setEtapa("trabalhoAtribuido");
           carregarDetalhes(eventoData.id, emAndamento[0]);
+          // Esse ramo pula a etapa "escolhaAreas", que é a única que
+          // hidrata areasSelecionadas a partir do localStorage. Sem isso,
+          // "Escolher trabalho específico" manda ?areas= vazio e a lista
+          // volta sem filtro de área nenhum.
+          carregarAreas(eventoData.id);
         } else {
           setEtapa("escolhaAreas");
           carregarAreas(eventoData.id);
@@ -215,7 +220,7 @@ const Page = ({ params }) => {
       // largando. Não depende de um id lido daqui (o backend consulta o
       // vínculo real no banco), então repetir essa chamada após uma falha
       // de rede sempre funciona, mesmo que a liberação já tenha ocorrido.
-      await liberarSubmissaoAtualWizard(evento.id);
+      const liberacao = await liberarSubmissaoAtualWizard(evento.id);
 
       const jaAtribuidoPeloAdmin = await buscarProximoAtribuidoPeloAdmin(evento.id);
       if (jaAtribuidoPeloAdmin) {
@@ -225,9 +230,13 @@ const Page = ({ params }) => {
         return;
       }
 
+      // Exclui do sorteio a submissão que acabou de ser liberada acima —
+      // senão, quando ela é a única candidata da área, o sorteio a devolve
+      // pro mesmo avaliador e a tela parece não ter feito nada.
       const proxima = await atribuirTrabalhoWizard(
         evento.id,
         areasSelecionadas,
+        liberacao?.submissaoLiberadaId,
       );
       if (!proxima) {
         setSubmissaoAtual(null);

@@ -2,13 +2,16 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { RiArrowLeftSLine } from "@remixicon/react";
+import { RiArrowLeftSLine, RiAddLine, RiCloseLine } from "@remixicon/react";
 import { getEventoBySlug } from "@/app/api/client/eventos";
 import {
   getSubmissoesSemAvaliacao,
+  getAreasPendentesWizard,
   trocarSubmissaoAvaliador,
 } from "@/app/api/client/submissaoAvaliador";
+import { salvarUltimasAreas } from "@/components/avaliarWizard/sessaoAvaliador";
 import { getInstituicaoSigla } from "@/lib/instituicaoDisplay";
+import Button from "@/components/Button";
 import CabecalhoWizard from "@/components/avaliarWizard/CabecalhoWizard";
 import wizardStyles from "@/components/avaliarWizard/wizard.module.scss";
 import styles from "../page.module.scss";
@@ -29,6 +32,16 @@ const AutoAlocacaoConteudo = ({ params }) => {
   const [eventoId, setEventoId] = useState(null);
   const [submissoes, setSubmissoes] = useState([]);
 
+  const [areasDisponiveis, setAreasDisponiveis] = useState([]);
+  const [areasSelecionadas, setAreasSelecionadas] = useState([]);
+  const [painelAdicionarAberto, setPainelAdicionarAberto] = useState(false);
+  const [selecaoPainel, setSelecaoPainel] = useState([]);
+
+  const buscarSubmissoes = async (eventoIdAtual, areasIds) => {
+    const dados = await getSubmissoesSemAvaliacao(eventoIdAtual, areasIds);
+    setSubmissoes(dados?.submissoesData || []);
+  };
+
   useEffect(() => {
     const areasIds = (searchParams.get("areas") || "")
       .split(",")
@@ -41,8 +54,12 @@ const AutoAlocacaoConteudo = ({ params }) => {
       try {
         const evento = await getEventoBySlug(params.edicao);
         setEventoId(evento.id);
-        const dados = await getSubmissoesSemAvaliacao(evento.id, areasIds);
-        setSubmissoes(dados?.submissoesData || []);
+        setAreasSelecionadas(areasIds);
+        const [areas] = await Promise.all([
+          getAreasPendentesWizard(evento.id),
+          buscarSubmissoes(evento.id, areasIds),
+        ]);
+        setAreasDisponiveis(areas || []);
       } catch (error) {
         setErro("Não foi possível carregar os trabalhos disponíveis agora.");
       } finally {
@@ -52,6 +69,55 @@ const AutoAlocacaoConteudo = ({ params }) => {
     carregar();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Centraliza qualquer mudança na seleção de área (remover uma flag ou
+  // aplicar novas do painel "+"): refiltra a lista, persiste em
+  // localStorage (mesmo mecanismo que o wizard principal lê ao reabrir) e
+  // sincroniza a URL, sem sair da tela.
+  const aplicarAreas = async (novasIds) => {
+    setCarregando(true);
+    setErro("");
+    try {
+      setAreasSelecionadas(novasIds);
+      salvarUltimasAreas(eventoId, novasIds);
+      router.replace(
+        `/evento/${params.eventoSlug}/edicao/${params.edicao}/avaliar/auto-alocacao?areas=${novasIds.join(",")}`,
+        { scroll: false },
+      );
+      await buscarSubmissoes(eventoId, novasIds);
+    } catch (error) {
+      setErro("Não foi possível atualizar os trabalhos disponíveis agora.");
+    } finally {
+      setCarregando(false);
+    }
+  };
+
+  const handleRemoverArea = (areaId) => {
+    if (areasSelecionadas.length <= 1) return;
+    aplicarAreas(areasSelecionadas.filter((id) => id !== areaId));
+  };
+
+  const handleAbrirPainelAdicionar = () => {
+    setSelecaoPainel([]);
+    setPainelAdicionarAberto(true);
+  };
+
+  const handleAlternarSelecaoPainel = (areaId) => {
+    setSelecaoPainel((prev) =>
+      prev.includes(areaId)
+        ? prev.filter((id) => id !== areaId)
+        : [...prev, areaId],
+    );
+  };
+
+  const handleAplicarPainel = () => {
+    setPainelAdicionarAberto(false);
+    aplicarAreas([...areasSelecionadas, ...selecaoPainel]);
+  };
+
+  const areasNaoSelecionadas = areasDisponiveis.filter(
+    (area) => !areasSelecionadas.includes(area.id),
+  );
 
   const handleEscolher = async (submissao) => {
     setErroItem((prev) => ({ ...prev, [submissao.id]: "" }));
@@ -94,6 +160,78 @@ const AutoAlocacaoConteudo = ({ params }) => {
         <p className="mb-2">
           Trabalhos aguardando avaliação nas áreas que você escolheu.
         </p>
+
+        {areasDisponiveis.length > 0 && (
+          <div className={wizardStyles.areasSelecionadas}>
+            {areasSelecionadas.map((areaId) => {
+              const area = areasDisponiveis.find((a) => a.id === areaId);
+              if (!area) return null;
+              return (
+                <span key={area.id} className={wizardStyles.flagArea}>
+                  {area.nome}
+                  {areasSelecionadas.length > 1 && (
+                    <button
+                      type="button"
+                      className={wizardStyles.flagAreaRemover}
+                      onClick={() => handleRemoverArea(area.id)}
+                      aria-label={`Remover área ${area.nome}`}
+                    >
+                      <RiCloseLine />
+                    </button>
+                  )}
+                </span>
+              );
+            })}
+            {areasNaoSelecionadas.length > 0 && !painelAdicionarAberto && (
+              <button
+                type="button"
+                className={wizardStyles.botaoAdicionarArea}
+                onClick={handleAbrirPainelAdicionar}
+                aria-label="Incluir outras áreas"
+              >
+                <RiAddLine />
+              </button>
+            )}
+          </div>
+        )}
+
+        {painelAdicionarAberto && (
+          <div className={wizardStyles.painelAdicionarArea}>
+            <div className={wizardStyles.chips}>
+              {areasNaoSelecionadas.map((area) => {
+                const selecionada = selecaoPainel.includes(area.id);
+                return (
+                  <button
+                    key={area.id}
+                    type="button"
+                    className={`${wizardStyles.chip} ${selecionada ? wizardStyles.chipSelecionado : ""}`}
+                    onClick={() => handleAlternarSelecaoPainel(area.id)}
+                  >
+                    <span>{area.nome}</span>
+                    <span className={wizardStyles.chipContador}>
+                      {area.quantidade}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            <div className={wizardStyles.painelAdicionarAcoes}>
+              <Button
+                className="btn-secondary"
+                onClick={() => setPainelAdicionarAberto(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                className="btn-primary"
+                onClick={handleAplicarPainel}
+                disabled={selecaoPainel.length === 0}
+              >
+                Aplicar
+              </Button>
+            </div>
+          </div>
+        )}
 
         {carregando && <p className="text-center">Carregando...</p>}
         {!carregando && erro && <p className={wizardStyles.erro}>{erro}</p>}

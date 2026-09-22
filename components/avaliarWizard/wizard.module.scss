@@ -696,8 +696,99 @@
 
     h6 {
         font-size: 14px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+    }
+}
+
+// Fileira de flags com as áreas atualmente selecionadas na tela de
+// auto-alocação manual, seguida do botão "+" pra abrir o painel de
+// incluir outras áreas sem sair da tela.
+.areasSelecionadas {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: $gap-1;
+    margin-bottom: $gap-2;
+}
+
+.flagArea {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 4px 6px 4px 12px;
+    background: $primary-lighten;
+    border: 1px solid $primary-light;
+    border-radius: 50px;
+    color: $primary-darken;
+}
+
+.flagAreaRemover {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: 50%;
+    background: none;
+    color: $primary-darken;
+    cursor: pointer;
+    padding: 0;
+
+    svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    &:hover {
+        background: rgba($primary-darken, 0.12);
+    }
+}
+
+.botaoAdicionarArea {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    border: 1px dashed $gray-50;
+    border-radius: 50%;
+    background: $white-light;
+    color: $gray-500;
+    cursor: pointer;
+
+    svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    &:hover {
+        border-color: $primary-normal;
+        color: $primary-normal;
+    }
+}
+
+// Painel inline (não é modal) que abre abaixo das flags ao clicar em "+" —
+// reaproveita literalmente os mesmos chips da etapa 1 do wizard
+// (EtapaEscolhaAreas), só que listando apenas as áreas ainda não
+// selecionadas.
+.painelAdicionarArea {
+    border: 1px solid $gray-50;
+    border-radius: $gap-1;
+    padding: $gap-2;
+    margin-bottom: $gap-2;
+    background: $gray-25;
+}
+
+.painelAdicionarAcoes {
+    display: flex;
+    gap: $gap-1;
+    margin-top: $gap-1;
+
+    :global(.button) {
+        flex: 1;
     }
 }
