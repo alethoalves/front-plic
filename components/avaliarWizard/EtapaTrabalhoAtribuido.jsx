@@ -140,7 +140,7 @@ const EtapaTrabalhoAtribuido = ({
             icon={RiShuffleLine}
             loading={loadingAtribuirOutro}
           >
-            Solicitar outro trabalho aleatoriamente
+            Solicitar outro trabalho
           </Button>
           <Button
             className="btn-link"
