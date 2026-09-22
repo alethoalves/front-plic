@@ -305,6 +305,37 @@
     color: $white-light;
 }
 
+// Rodapé fixo do botão "Continuar" da etapa de escolha de área — a lista de
+// chips pode passar da altura da tela (evento com muitas áreas), e o CTA
+// principal não pode depender de o avaliador rolar até o fim pra achá-lo.
+// `position: fixed` (não `sticky`, como o `.notaFlutuante` acima) porque o
+// scroll aqui é o da página inteira, não de um contêiner interno do card.
+.rodapeFixo {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    background: $white-light;
+    border-top: 1px solid $gray-50;
+    padding: $gap-2 $gap-1;
+    box-shadow: 0px -2px 10px rgba(5, 17, 34, 0.06);
+    z-index: 10;
+
+    // Mesma largura/centralização do `.card`, pro botão alinhar com o
+    // conteúdo acima em vez de esticar a largura toda em telas grandes.
+    :global(.button) {
+        max-width: 460px;
+    }
+}
+
+// Espaçador dentro do card, do tamanho aproximado do rodapé fixo (botão de
+// 48px + padding), pra o último chip não ficar escondido atrás dele.
+.espacoRodapeFixo {
+    height: 80px;
+}
+
 // Ficha de avaliação — mesma lógica de pills de nota da tela antiga, com
 // alvos de toque maiores.
 .listaCriterios {

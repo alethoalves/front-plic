@@ -10,6 +10,10 @@ import styles from "./wizard.module.scss";
 const EtapaInstrucaoPoster = ({ submissao, onChegar, onVoltar }) => {
   const numeroPoster =
     submissao?.square?.length > 0 ? submissao.square[0].numero : "-";
+  const nomesAutores = submissao?.Resumo?.participacoes
+    ?.map((participacao) => participacao.user?.nome)
+    .filter(Boolean)
+    .join(", ");
 
   return (
     <div className={styles.card}>
@@ -26,6 +30,12 @@ const EtapaInstrucaoPoster = ({ submissao, onChegar, onVoltar }) => {
       <div className={styles.posterDestaque}>
         <p className={styles.posterLabel}>Pôster nº</p>
         <span className={styles.posterNumero}>{numeroPoster}</span>
+      </div>
+
+      {/* Título/autor pra conferir no pôster físico, além do número. */}
+      <div className={styles.infoTrabalho}>
+        {nomesAutores && <p className={styles.metaTrabalho}>{nomesAutores}</p>}
+        <h6>{submissao?.Resumo?.titulo}</h6>
       </div>
 
       <Button className="btn-primary w-100 mt-3" onClick={onChegar}>

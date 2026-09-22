@@ -35,6 +35,11 @@ const EtapaFichaAvaliacao = ({
 
   const feedbackObrigatorio = mencaoHonrosaSelecionada || premioSelecionado;
 
+  const nomesAutores = submissaoDetalhada?.Resumo?.participacoes
+    ?.map((participacao) => participacao.user?.nome)
+    .filter(Boolean)
+    .join(", ");
+
   const criterios = submissaoDetalhada?.evento?.CriterioAvaliacao || [];
   const notaMinimaMencaoHonrosa =
     submissaoDetalhada?.evento?.notaMinimaMencaoHonrosa || 0;
@@ -118,7 +123,12 @@ const EtapaFichaAvaliacao = ({
     <div className={styles.card}>
       <ProgressoEtapas atual={4} total={4} />
       <h1 className="h-editorial-sm mb-1">Ficha de avaliação</h1>
-      <p className="mb-3">Pôster nº {numeroPoster}</p>
+      <p className={nomesAutores ? "mb-1" : "mb-3"}>
+        Pôster nº {numeroPoster} — {submissaoDetalhada?.Resumo?.titulo}
+      </p>
+      {nomesAutores && (
+        <p className={`${styles.metaTrabalho} mb-3`}>{nomesAutores}</p>
+      )}
 
       <div className={styles.listaCriterios}>
         <div

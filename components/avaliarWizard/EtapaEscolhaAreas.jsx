@@ -23,6 +23,9 @@ const EtapaEscolhaAreas = ({
 }) => {
   const temSelecao = selecionadas.length > 0;
   const semAreasDisponiveis = !carregandoAreas && areas.length === 0;
+  const areasOrdenadas = [...areas].sort((a, b) =>
+    a.nome.localeCompare(b.nome, "pt-BR"),
+  );
 
   const [segundosRestantes, setSegundosRestantes] = useState(
     INTERVALO_VERIFICACAO_SEGUNDOS,
@@ -58,69 +61,77 @@ const EtapaEscolhaAreas = ({
   }, [semAreasDisponiveis]);
 
   return (
-    <div className={styles.card}>
-      <ProgressoEtapas atual={1} total={4} />
-      <h1 className="h-editorial-sm mb-2">Escolha suas áreas de interesse</h1>
-      <p className="mb-3">
-        Selecione uma ou mais áreas. Assim que confirmar, alocaremos um (1)
-        trabalho para você.<br></br> <br></br>O número que aparece do lado
-        direito de cada área indica quantos trabalho desta respectiva área
-        aguardam avaliação.
-      </p>
+    <>
+      <div className={styles.card}>
+        <ProgressoEtapas atual={1} total={4} />
+        <h1 className="h-editorial-sm mb-2">Escolha suas áreas de interesse</h1>
+        <p className="mb-3">
+          Selecione uma ou mais áreas. Assim que confirmar, alocaremos um (1)
+          trabalho para você.<br></br> <br></br>O número que aparece do lado
+          direito de cada área indica quantos trabalho desta respectiva área
+          aguardam avaliação.
+        </p>
 
-      {carregandoAreas && (
-        <p className="text-center mb-2">Carregando áreas...</p>
-      )}
+        {carregandoAreas && (
+          <p className="text-center mb-2">Carregando áreas...</p>
+        )}
 
-      {semAreasDisponiveis && (
-        <div className={styles.aviso}>
-          <p className="mb-2">
-            Não há trabalhos aguardando avaliação no momento. Volte a checar em
-            instantes.
-          </p>
-          <Button
-            className="btn-secondary w-100"
-            onClick={onVerificarNovamente}
-            icon={RiRefreshLine}
-          >
-            Verificar novamente
-          </Button>
-          <p className={styles.avisoContador}>
-            Verificando automaticamente em {segundosRestantes}s
-          </p>
-        </div>
-      )}
+        {semAreasDisponiveis && (
+          <div className={styles.aviso}>
+            <p className="mb-2">
+              Não há trabalhos aguardando avaliação no momento. Volte a checar
+              em instantes.
+            </p>
+            <Button
+              className="btn-secondary w-100"
+              onClick={onVerificarNovamente}
+              icon={RiRefreshLine}
+            >
+              Verificar novamente
+            </Button>
+            <p className={styles.avisoContador}>
+              Verificando automaticamente em {segundosRestantes}s
+            </p>
+          </div>
+        )}
 
-      {!carregandoAreas && (
-        <div className={styles.chips}>
-          {areas.map((area) => {
-            const selecionada = selecionadas.includes(area.id);
-            return (
-              <button
-                key={area.id}
-                type="button"
-                className={`${styles.chip} ${selecionada ? styles.chipSelecionado : ""}`}
-                onClick={() => onAlternarArea(area.id)}
-              >
-                <span>{area.nome}</span>
-                <span className={styles.chipContador}>{area.quantidade}</span>
-              </button>
-            );
-          })}
-        </div>
-      )}
+        {!carregandoAreas && (
+          <div className={styles.chips}>
+            {areasOrdenadas.map((area) => {
+              const selecionada = selecionadas.includes(area.id);
+              return (
+                <button
+                  key={area.id}
+                  type="button"
+                  className={`${styles.chip} ${selecionada ? styles.chipSelecionado : ""}`}
+                  onClick={() => onAlternarArea(area.id)}
+                >
+                  <span>{area.nome}</span>
+                  <span className={styles.chipContador}>{area.quantidade}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
 
-      {erro && <p className={styles.erro}>{erro}</p>}
+        {erro && <p className={styles.erro}>{erro}</p>}
 
-      <Button
-        className="btn-primary w-100 mt-3"
-        onClick={onContinuar}
-        disabled={!temSelecao || carregandoAreas}
-        loading={enviando}
-      >
-        Continuar
-      </Button>
-    </div>
+        {/* Reserva o espaço que o botão fixo ocupa por cima do conteúdo, pra
+        o último chip da lista não ficar escondido atrás dele. */}
+        <div className={styles.espacoRodapeFixo} />
+      </div>
+
+      <div className={styles.rodapeFixo}>
+        <Button
+          className="btn-primary w-100"
+          onClick={onContinuar}
+          disabled={!temSelecao || carregandoAreas}
+          loading={enviando}
+        >
+          Continuar
+        </Button>
+      </div>
+    </>
   );
 };
 
