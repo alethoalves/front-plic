@@ -17,6 +17,7 @@ import {
   processarAvaliacao,
   getAreasPendentesWizard,
   atribuirTrabalhoWizard,
+  liberarSubmissaoAtualWizard,
 } from "@/app/api/client/submissaoAvaliador";
 
 import Button from "@/components/Button";
@@ -209,8 +210,12 @@ const Page = ({ params }) => {
     setLoadingAtribuirOutro(true);
     setErro("");
     try {
-      const idAnterior = submissaoAtual.id;
-      await desvincularAvaliadorSubmissao(evento.id, idAnterior);
+      // Libera a submissão atual primeiro — precisa vir antes da checagem
+      // de admin, senão ela encontraria a própria submissão que estamos
+      // largando. Não depende de um id lido daqui (o backend consulta o
+      // vínculo real no banco), então repetir essa chamada após uma falha
+      // de rede sempre funciona, mesmo que a liberação já tenha ocorrido.
+      await liberarSubmissaoAtualWizard(evento.id);
 
       const jaAtribuidoPeloAdmin = await buscarProximoAtribuidoPeloAdmin(evento.id);
       if (jaAtribuidoPeloAdmin) {
@@ -223,7 +228,6 @@ const Page = ({ params }) => {
       const proxima = await atribuirTrabalhoWizard(
         evento.id,
         areasSelecionadas,
-        idAnterior,
       );
       if (!proxima) {
         setSubmissaoAtual(null);
@@ -245,11 +249,12 @@ const Page = ({ params }) => {
   // entrar na lista manual, não escolher nada e voltar, o trabalho que ele já
   // tinha continua com ele (o boot da tela detecta e cai direto na etapa 2).
   // A devolução só acontece se/quando ele efetivamente escolher outro na
-  // tela de auto-alocação (que troca pelo id passado em `substituir`).
+  // tela de auto-alocação, que troca pelo trabalho real do avaliador no
+  // banco (trocarSubmissaoAvaliador) — não precisa passar o id aqui.
   const handleVerEspecificos = () => {
     setErro("");
     router.push(
-      `/evento/${params.eventoSlug}/edicao/${params.edicao}/avaliar/auto-alocacao?areas=${areasSelecionadas.join(",")}&substituir=${submissaoAtual.id}`,
+      `/evento/${params.eventoSlug}/edicao/${params.edicao}/avaliar/auto-alocacao?areas=${areasSelecionadas.join(",")}`,
     );
   };
 

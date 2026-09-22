@@ -98,6 +98,27 @@ export const desvincularAvaliadorSubmissao = async (eventoId, idSubmissao) => {
   }
 };
 
+// "Escolher trabalho específico" quando o avaliador já tem outra submissão
+// em avaliação: libera a atual e assume a nova numa única transação atômica
+// no backend, em vez de duas chamadas separadas (desvincular + associar)
+// que podiam deixar o avaliador travado se a primeira falhasse.
+export const trocarSubmissaoAvaliador = async (eventoId, idSubmissao) => {
+  try {
+    const headers = getAuthHeadersClientAvaliador();
+    if (!headers) {
+      return false;
+    }
+    const response = await req.get(
+      `/evenplic/evento/${eventoId}/trocarSubmissaoAvaliador/${idSubmissao}`,
+      { headers }
+    );
+    return response.data.submissao;
+  } catch (error) {
+      console.error("Erro ao atualizar campo:", error.message);
+      throw error;
+  }
+};
+
 export const desvincularAvaliadorSubmissaoPeloGestor = async (eventoId, idSubmissao) => {
   try {
     const headers = getAuthHeadersClientAvaliador();
@@ -175,23 +196,40 @@ export const getAreasPendentesWizard = async (eventoId) => {
   }
 };
 
-export const atribuirTrabalhoWizard = async (eventoId, areasIds = [], excluirSubmissaoId = null) => {
+// "Pedir outro trabalho": libera a submissão que o avaliador tem em mãos
+// agora (estado real no banco, não um id lido daqui) sem atribuir nenhuma
+// nova ainda. Chamar antes de checar admin/sortear.
+export const liberarSubmissaoAtualWizard = async (eventoId) => {
   try {
     const headers = getAuthHeadersClientAvaliador();
     if (!headers) {
       return false;
     }
-    const query = [];
-    if (areasIds.length > 0) {
-      query.push(`areas=${areasIds.join(',')}`);
+    const response = await req.get(
+      `/evenplic/evento/${eventoId}/avaliador/wizard/liberar-atual`,
+      { headers }
+    );
+    return response.data;
+  } catch (error) {
+      console.error("Erro ao liberar submissão atual:", error.message);
+      throw error;
+  }
+};
+
+// Se o avaliador ainda tiver uma submissão em mãos, o backend libera ela
+// sozinho antes de atribuir a nova (consultando o vínculo real no banco) —
+// não precisa informar qual é.
+export const atribuirTrabalhoWizard = async (eventoId, areasIds = []) => {
+  try {
+    const headers = getAuthHeadersClientAvaliador();
+    if (!headers) {
+      return false;
     }
-    if (excluirSubmissaoId) {
-      // Usado pelo "Atribuir outro trabalho": exclui a submissão que acabou
-      // de ser devolvida, senão ela costuma voltar a ser a próxima candidata.
-      query.push(`excluir=${excluirSubmissaoId}`);
-    }
-    const url = `/evenplic/evento/${eventoId}/avaliador/wizard/atribuir${query.length ? `?${query.join('&')}` : ''}`;
-    const response = await req.get(url, { headers });
+    const query = areasIds.length > 0 ? `?areas=${areasIds.join(',')}` : '';
+    const response = await req.get(
+      `/evenplic/evento/${eventoId}/avaliador/wizard/atribuir${query}`,
+      { headers }
+    );
     return response.data.submissao;
   } catch (error) {
       console.error("Erro ao atribuir trabalho automaticamente:", error.message);

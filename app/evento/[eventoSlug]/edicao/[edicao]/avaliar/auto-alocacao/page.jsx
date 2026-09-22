@@ -6,8 +6,7 @@ import { RiArrowLeftSLine } from "@remixicon/react";
 import { getEventoBySlug } from "@/app/api/client/eventos";
 import {
   getSubmissoesSemAvaliacao,
-  associarAvaliadorSubmissao,
-  desvincularAvaliadorSubmissao,
+  trocarSubmissaoAvaliador,
 } from "@/app/api/client/submissaoAvaliador";
 import { getInstituicaoSigla } from "@/lib/instituicaoDisplay";
 import CabecalhoWizard from "@/components/avaliarWizard/CabecalhoWizard";
@@ -54,20 +53,16 @@ const AutoAlocacaoConteudo = ({ params }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Se o avaliador chegou aqui vindo de "Escolher trabalho específico", ele
-  // ainda está com o trabalho anterior (não foi devolvido na navegação — só
-  // ao escolher de fato um novo, aqui, é que a troca acontece). Isso permite
-  // "voltar" sem escolher nada e continuar com o trabalho original intacto.
-  const substituirId = searchParams.get("substituir");
-
   const handleEscolher = async (submissao) => {
     setErroItem((prev) => ({ ...prev, [submissao.id]: "" }));
     setLoadingItem((prev) => ({ ...prev, [submissao.id]: true }));
     try {
-      if (substituirId) {
-        await desvincularAvaliadorSubmissao(eventoId, substituirId);
-      }
-      await associarAvaliadorSubmissao(eventoId, submissao.id);
+      // Libera o trabalho anterior (se houver) e assume este numa
+      // transação só no backend — não depende de saber aqui no front qual
+      // é o trabalho anterior, então não escolher nada e voltar mantém o
+      // trabalho original intacto, e não há risco de um id desatualizado
+      // travar a troca.
+      await trocarSubmissaoAvaliador(eventoId, submissao.id);
       router.push(
         `/evento/${params.eventoSlug}/edicao/${params.edicao}/avaliar`
       );
