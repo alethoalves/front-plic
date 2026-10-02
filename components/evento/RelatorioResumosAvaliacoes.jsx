@@ -2,7 +2,7 @@
 import { useDeferredValue, useMemo, useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
-import { RiPrinterLine, RiSearchLine } from "@remixicon/react";
+import { RiPrinterLine } from "@remixicon/react";
 import Button from "@/components/Button";
 import { getInstituicaoSigla } from "@/lib/instituicaoDisplay";
 import { descreverFiltros } from "@/lib/compartilhamentoResumos";
@@ -271,16 +271,13 @@ const RelatorioResumosAvaliacoes = ({
 
       <div className={`${styles.barraFiltros} ${styles.naoImprimir}`}>
         <div className={styles.filtros}>
-          <span className={`p-input-icon-left ${styles.busca}`}>
-            <RiSearchLine size={16} className={styles.buscaIcone} />
-            <InputText
-              className={styles.buscaInput}
-              value={busca}
-              onChange={(e) => setBusca(e.target.value)}
-              placeholder="Buscar por título, aluno ou orientador"
-              aria-label="Buscar por título, aluno ou orientador"
-            />
-          </span>
+          <InputText
+            className={styles.busca}
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            placeholder="Buscar por título, aluno ou orientador"
+            aria-label="Buscar por título, aluno ou orientador"
+          />
           {permitirFeedback && (
             <Dropdown
               className={styles.filtroEstrelas}
