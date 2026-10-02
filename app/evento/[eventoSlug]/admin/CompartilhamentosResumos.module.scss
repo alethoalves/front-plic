@@ -1,0 +1,133 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+@import "/styles/partials/eventoTable";
+@import "/styles/partials/eventoAdmin";
+
+.eventoTable {
+  @include eventoTable;
+}
+
+.gerar {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding-top: $gap-2;
+  border-top: 1px solid $gray-50;
+  text-align: left;
+}
+
+.label {
+  @include eventoLabel;
+}
+
+.input {
+  @include eventoInput;
+  width: 100%;
+}
+
+.urlBox {
+  padding: $gap-1;
+  border: 1px solid $gray-100;
+  border-radius: 6px;
+  background: $gray-25;
+}
+
+.url {
+  font-family: monospace;
+  font-size: 12px;
+  color: $gray-700;
+  word-break: break-all;
+}
+
+.ajuda {
+  font-size: 12px;
+  color: $gray-500;
+}
+
+.erro {
+  font-size: 13px;
+  color: $error-dark;
+}
+
+.acoes {
+  display: flex;
+  gap: $gap-1;
+}
+
+.status {
+  display: inline-block;
+  padding: 2px $gap-1;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.statusATIVO {
+  background: $success-lighten;
+  color: $success-dark;
+}
+
+.statusEXPIRADO {
+  background: $gray-50;
+  color: $gray-600;
+}
+
+.statusREVOGADO {
+  background: $error-lighten;
+  color: $error-dark;
+}
+
+.titulo {
+  margin-bottom: $gap-1;
+  font-weight: 700;
+  color: $gray-800;
+}
+
+.checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $gap-1 $gap-2;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: $gap-1;
+  font-size: 14px;
+  color: $gray-700;
+  cursor: pointer;
+}
+
+.faixa {
+  display: flex;
+  align-items: center;
+  gap: $gap-1;
+
+  > span {
+    font-size: 13px;
+    color: $gray-500;
+  }
+
+  :global(.p-inputnumber) {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.previa {
+  font-size: 13px;
+  font-weight: 700;
+  color: $primary-dark;
+}
+
+.celulaLink {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.criadoPor {
+  font-size: 12px;
+  color: $gray-500;
+}

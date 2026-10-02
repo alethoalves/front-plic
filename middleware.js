@@ -87,6 +87,10 @@ export const middleware = async (request) => {
 if (pathname === "/autenticacao" || pathname.startsWith("/autenticacao/")) {
   return NextResponse.next();
 }
+// Links públicos compartilhados via token (ex.: resumos + avaliações) — sem login
+if (pathname.startsWith("/compartilhado/")) {
+  return NextResponse.next();
+}
   
   try {
     // Lazy + memoização: cada ping só dispara na 1ª vez que o branch que

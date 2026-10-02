@@ -33,26 +33,6 @@ export const getApresentacoesPublicas = async (eventoSlug, { q = "", page = 1, p
   }
 };
 
-export const getSubmissoesComAvaliacoes = async (
-  eventoSlug
-) => {
-  try {
-     const headers = getAuthHeadersClient();
-    if (!headers) {
-      return false;
-    }
-    const response = await req.get(
-      `/evenplic/evento/${eventoSlug}/submissoes-com-avaliacoes`,
-      { headers }
-      
-    );
-    return response.data.submissoes;
-  } catch (error) {
-    console.error("Erro ao atualizar campo:", error.message);
-    throw error;
-  }
-};
-
 export const gestorDesassociarAvaliadorSubmissao = async (
   eventoSlug,
   submissaoAvaliadorId
