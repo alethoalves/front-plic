@@ -12,6 +12,13 @@ export const criarCompartilhamentoResumos = async (eventoSlug, config = {}) => {
   return response.data.compartilhamento;
 };
 
+// Áreas e grandes áreas com trabalhos no evento: { grandeAreas: [{id, nome}], areas: [{id, nome, grandeAreaId}] }
+export const getOpcoesCompartilhamentoResumos = async (eventoSlug) => {
+  const headers = getAuthHeadersClient();
+  const response = await req.get(`/evenplic/evento/${eventoSlug}/compartilhamentos-resumos/opcoes`, { headers });
+  return response.data;
+};
+
 // Quantos trabalhos o link mostraria com esse recorte/filtros
 export const previaCompartilhamentoResumos = async (eventoSlug, { tenantSlug, instituicaoParceiraId, filtros }) => {
   const headers = getAuthHeadersClient();

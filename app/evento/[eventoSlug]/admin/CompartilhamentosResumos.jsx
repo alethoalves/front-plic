@@ -5,6 +5,7 @@ import { Column } from "primereact/column";
 import { InputText } from "primereact/inputtext";
 import { InputNumber } from "primereact/inputnumber";
 import { Dropdown } from "primereact/dropdown";
+import { MultiSelect } from "primereact/multiselect";
 import { Checkbox } from "primereact/checkbox";
 import {
   RiCheckLine,
@@ -20,6 +21,7 @@ import Button from "@/components/Button";
 import Modal from "@/components/Modal";
 import {
   criarCompartilhamentoResumos,
+  getOpcoesCompartilhamentoResumos,
   listarCompartilhamentosResumos,
   listarFeedbacksCompartilhamento,
   previaCompartilhamentoResumos,
@@ -62,6 +64,9 @@ const GerarLinkCompartilhamento = ({ eventoSlug, instituicoes = [], onGerado }) 
   const [instituicao, setInstituicao] = useState("");
   const [rotulo, setRotulo] = useState("");
   const [premiacao, setPremiacao] = useState([]);
+  const [opcoesAreas, setOpcoesAreas] = useState({ grandeAreas: [], areas: [] });
+  const [grandeAreas, setGrandeAreas] = useState([]);
+  const [areas, setAreas] = useState([]);
   const [comentario, setComentario] = useState(null);
   const [notaMin, setNotaMin] = useState(null);
   const [notaMax, setNotaMax] = useState(null);
@@ -74,7 +79,7 @@ const GerarLinkCompartilhamento = ({ eventoSlug, instituicoes = [], onGerado }) 
   const [link, setLink] = useState(null);
   const [copiado, setCopiado] = useState(false);
 
-  const filtros = { premiacao, comentario, notaMin, notaMax };
+  const filtros = { premiacao, grandeAreas, areas, comentario, notaMin, notaMax };
   const recorte = {
     tenantSlug: instituicao.startsWith("t:") ? instituicao.slice(2) : undefined,
     instituicaoParceiraId: instituicao.startsWith("p:") ? Number(instituicao.slice(2)) : undefined,
@@ -97,7 +102,39 @@ const GerarLinkCompartilhamento = ({ eventoSlug, instituicoes = [], onGerado }) 
       clearTimeout(timer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [eventoSlug, recorte.tenantSlug, recorte.instituicaoParceiraId, premiacao, comentario, notaMin, notaMax]);
+  }, [
+    eventoSlug,
+    recorte.tenantSlug,
+    recorte.instituicaoParceiraId,
+    premiacao,
+    grandeAreas,
+    areas,
+    comentario,
+    notaMin,
+    notaMax,
+  ]);
+
+  // Opções de área/grande área: só as que têm trabalhos no evento
+  useEffect(() => {
+    getOpcoesCompartilhamentoResumos(eventoSlug)
+      .then((dados) => setOpcoesAreas({ grandeAreas: dados.grandeAreas || [], areas: dados.areas || [] }))
+      .catch((error) => console.error("Erro ao carregar áreas:", error));
+  }, [eventoSlug]);
+
+  // Com grandes áreas escolhidas, a lista de áreas se restringe a elas
+  const areasDisponiveis = grandeAreas.length
+    ? opcoesAreas.areas.filter((a) => grandeAreas.includes(a.grandeAreaId))
+    : opcoesAreas.areas;
+
+  const handleGrandeAreas = (selecionadas) => {
+    setGrandeAreas(selecionadas);
+    if (selecionadas.length) {
+      const permitidas = new Set(
+        opcoesAreas.areas.filter((a) => selecionadas.includes(a.grandeAreaId)).map((a) => a.id)
+      );
+      setAreas((atual) => atual.filter((id) => permitidas.has(id)));
+    }
+  };
 
   const togglePremiacao = (valor, marcado) =>
     setPremiacao((atual) => (marcado ? [...atual, valor] : atual.filter((p) => p !== valor)));
@@ -191,6 +228,38 @@ const GerarLinkCompartilhamento = ({ eventoSlug, instituicoes = [], onGerado }) 
           </label>
         ))}
       </div>
+
+      <label className={`${styles.label} mt-2`} htmlFor="filtroGrandeAreas">
+        Grande área
+      </label>
+      <MultiSelect
+        inputId="filtroGrandeAreas"
+        className={styles.input}
+        value={grandeAreas}
+        options={opcoesAreas.grandeAreas}
+        optionLabel="nome"
+        optionValue="id"
+        onChange={(e) => handleGrandeAreas(e.value || [])}
+        placeholder="Todas as grandes áreas"
+        display="chip"
+        filter
+      />
+
+      <label className={`${styles.label} mt-2`} htmlFor="filtroAreas">
+        Área
+      </label>
+      <MultiSelect
+        inputId="filtroAreas"
+        className={styles.input}
+        value={areas}
+        options={areasDisponiveis}
+        optionLabel="nome"
+        optionValue="id"
+        onChange={(e) => setAreas(e.value || [])}
+        placeholder={grandeAreas.length ? "Todas as áreas das grandes áreas escolhidas" : "Todas as áreas"}
+        display="chip"
+        filter
+      />
 
       <label className={`${styles.label} mt-2`} htmlFor="filtroComentario">
         Comentário dos avaliadores
