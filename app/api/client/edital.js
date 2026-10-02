@@ -87,3 +87,13 @@ export const getEdital = async (tenantSlug, editalId) => {
     throw error;
   }
 };
+// Libera/bloqueia a emissão do certificado de conclusão dos planos do edital
+export const atualizarLiberarCertificado = async (tenantSlug, editalId, liberarCertificado) => {
+  const headers = getAuthHeadersClient();
+  const response = await req.put(
+    `/private/${tenantSlug}/edital/${editalId}/liberar-certificado`,
+    { liberarCertificado },
+    { headers }
+  );
+  return response.data.edital;
+};

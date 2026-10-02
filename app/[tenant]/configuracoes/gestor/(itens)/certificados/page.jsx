@@ -24,6 +24,8 @@ import Skeleton from "@/components/Skeleton";
 import { deleteFormulario, getFormularios } from "@/app/api/client/formulario";
 
 import NoData from "@/components/NoData";
+import EditorTextoCertificado from "./EditorTextoCertificado";
+import LiberacaoCertificados from "./LiberacaoCertificados";
 import Image from "next/image";
 import {
   getLayoutCertificados,
@@ -215,7 +217,7 @@ const Page = ({ params }) => {
 
   //RENDERIZAÇÃO DO MODAL DE EDIÇÃO
   const renderModalContent = () => (
-    <Modal isOpen={isModalOpen} onClose={closeModalAndResetData}>
+    <Modal isOpen={isModalOpen} onClose={closeModalAndResetData} size="large">
       <div className={`${styles.icon} mb-2`}>
         <RiMedalLine />
       </div>
@@ -269,6 +271,20 @@ const Page = ({ params }) => {
           <li>Recomendado: imagem com resolução mínima de 1200x800 pixels</li>
         </ul>
       </div>
+
+      {selectedCertificado?.tipo === "CONCLUSAO" && (
+        <EditorTextoCertificado
+          key={selectedCertificado.id}
+          tenant={params.tenant}
+          layout={selectedCertificado}
+          onSalvo={(atualizado) => {
+            setSelectedCertificado((prev) => ({ ...prev, ...atualizado }));
+            setCertificados((prev) =>
+              prev.map((c) => (c.id === atualizado.id ? { ...c, ...atualizado } : c))
+            );
+          }}
+        />
+      )}
     </Modal>
   );
 
@@ -421,6 +437,8 @@ const Page = ({ params }) => {
 
           {/* Lista de Certificados */}
           {renderCertificados()}
+
+          <LiberacaoCertificados tenant={params.tenant} />
 
           {/* Mensagem de erro geral */}
           {error && !isModalOpen && !isCreateModalOpen && (

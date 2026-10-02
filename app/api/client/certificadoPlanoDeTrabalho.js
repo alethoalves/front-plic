@@ -33,6 +33,13 @@ export const uploadAndSaveCertificateImagePlano = async (tenantSlug, idCertifica
   }
 };
 
+// Texto e posição do texto do layout: { texto, posicaoTextoX, posicaoTextoY }
+export const updateLayoutCertificado = async (tenantSlug, idCertificado, dados) => {
+  const headers = getAuthHeadersClient();
+  const response = await req.put(`/private/${tenantSlug}/layouts/${idCertificado}`, dados, { headers });
+  return response.data.certificado;
+};
+
 export const getLayoutCertificados = async (tenantSlug) => {
   try {
     const headers = getAuthHeadersClient();

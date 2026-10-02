@@ -1,0 +1,108 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+.editor {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  text-align: left;
+}
+
+.label {
+  display: block;
+  margin-bottom: $gap-1;
+  font-size: 13px;
+  font-weight: 700;
+  color: $gray-700;
+}
+
+.textarea {
+  width: 100%;
+  line-height: 1.5;
+}
+
+.ajuda {
+  margin-bottom: $gap-1;
+  font-size: 12px;
+  color: $gray-500;
+}
+
+.marcadores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $gap-1;
+}
+
+.marcador {
+  padding: 4px $gap-2;
+  border: 1px solid $primary-light;
+  border-radius: 999px;
+  background: $primary-lighten;
+  color: $primary-darken;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: $white-light;
+  }
+}
+
+.posicoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $gap-2;
+}
+
+// Mesmo canvas do certificado emitido (1123 x 794), reduzido. As medidas do
+// texto usam cqw (largura do container) para escalar junto com a prévia.
+.previa {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1123 / 794;
+  container-type: inline-size;
+  overflow: hidden;
+  border: 1px solid $gray-100;
+  border-radius: 8px;
+  background-color: $white-light;
+  background-size: 100% 100%;
+  font-family: Arial, sans-serif;
+  color: $black-dark;
+}
+
+.previaTexto {
+  position: absolute;
+  text-align: left;
+}
+
+.previaCorpo {
+  margin-bottom: calc(20 / 1123 * 100cqw);
+  font-size: calc(18 / 1123 * 100cqw);
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+.previaAutenticidade {
+  font-size: calc(12 / 1123 * 100cqw);
+  line-height: 1.2;
+  color: $gray-600;
+}
+
+.acoes {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: $gap-2;
+}
+
+.sucesso {
+  font-size: 13px;
+  color: $success-dark;
+}
+
+.erro {
+  font-size: 13px;
+  color: $error-dark;
+}
