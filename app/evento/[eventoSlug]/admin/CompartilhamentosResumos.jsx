@@ -161,7 +161,9 @@ const GerarLinkCompartilhamento = ({ eventoSlug, instituicoes = [], onGerado }) 
         className={styles.input}
         value={instituicao}
         options={opcoesInstituicao}
-        onChange={(e) => setInstituicao(e.value)}
+        optionLabel="label"
+        optionValue="value"
+        onChange={(e) => setInstituicao(e.value ?? "")}
         filter={opcoesInstituicao.length > 8}
       />
 
@@ -198,7 +200,9 @@ const GerarLinkCompartilhamento = ({ eventoSlug, instituicoes = [], onGerado }) 
         className={styles.input}
         value={comentario}
         options={COMENTARIO_OPCOES}
-        onChange={(e) => setComentario(e.value)}
+        optionLabel="label"
+        optionValue="value"
+        onChange={(e) => setComentario(e.value ?? null)}
       />
 
       <span className={`${styles.label} mt-2`}>Faixa de nota final</span>
@@ -234,7 +238,9 @@ const GerarLinkCompartilhamento = ({ eventoSlug, instituicoes = [], onGerado }) 
         className={styles.input}
         value={exibicaoComentarios}
         options={EXIBICAO_OPCOES}
-        onChange={(e) => setExibicaoComentarios(e.value)}
+        optionLabel="label"
+        optionValue="value"
+        onChange={(e) => setExibicaoComentarios(e.value ?? "AMBOS")}
       />
 
       <label className={`${styles.check} mt-2`}>
