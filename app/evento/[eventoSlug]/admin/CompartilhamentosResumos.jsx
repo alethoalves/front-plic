@@ -515,6 +515,9 @@ export const PainelCompartilhamentos = ({ eventoSlug, atualizarEm }) => {
       value={links}
       loading={loading}
       dataKey="id"
+      // As ações dependem de estado deste componente (confirmação de revogação,
+      // "copiado", exportando); com o memo padrão das células elas não redesenham
+      cellMemo={false}
       paginator={links.length > 10}
       rows={10}
       emptyMessage='Nenhum link compartilhado ainda. Use "Novo link" para gerar.'
