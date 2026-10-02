@@ -30,7 +30,7 @@ import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import { getSubmissaoByEvento } from "@/app/api/client/relatorios";
 import { getInstituicaoSigla, getInstituicaoNome } from "@/lib/instituicaoDisplay";
-import { GerarLinkCompartilhamento, PainelCompartilhamentos } from "./CompartilhamentosResumos";
+import { NovoLinkCompartilhamento, PainelCompartilhamentos } from "./CompartilhamentosResumos";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
@@ -38,7 +38,7 @@ const Page = ({ params }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isDownloadingSubmissoes, setIsDownloadingSubmissoes] = useState(false);
-  // Muda a cada link gerado no modal, para o painel "Links compartilhados" recarregar
+  // Muda a cada link gerado no modal "Novo link", para o painel "Links compartilhados" recarregar
   const [linksAtualizadosEm, setLinksAtualizadosEm] = useState(0);
 
   const [selectedTenant, setSelectedTenant] = useState(null);
@@ -630,14 +630,6 @@ const Page = ({ params }) => {
       >
         {isDownloadingSubmissoes ? "Exportando..." : "Submissões (.xlsx)"}
       </Button>
-      {isModalOpen && (
-        <GerarLinkCompartilhamento
-          key={selectedTenant?.instituicaoParceiraId ?? selectedTenant?.tenant ?? "evento"}
-          eventoSlug={params.eventoSlug}
-          filtro={filtroInstituicaoAtual()}
-          onGerado={() => setLinksAtualizadosEm(Date.now())}
-        />
-      )}
     </Modal>
   );
 
@@ -758,6 +750,20 @@ const Page = ({ params }) => {
               Links públicos de Resumos + Avaliações. Expiram em 60 dias e
               podem ser revogados a qualquer momento.
             </p>
+            <NovoLinkCompartilhamento
+              eventoSlug={params.eventoSlug}
+              instituicoes={[
+                ...evento.info.tenantsTotais.map((t) => ({
+                  label: t.tenant.toUpperCase(),
+                  tenantSlug: t.tenant,
+                })),
+                ...(evento.info.parceirasTotais || []).map((p) => ({
+                  label: `${p.instituicao} (parceira)`,
+                  instituicaoParceiraId: p.id,
+                })),
+              ]}
+              onGerado={() => setLinksAtualizadosEm(Date.now())}
+            />
           </div>
           <PainelCompartilhamentos
             eventoSlug={params.eventoSlug}

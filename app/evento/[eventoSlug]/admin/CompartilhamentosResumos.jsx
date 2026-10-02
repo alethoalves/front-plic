@@ -12,10 +12,12 @@ import {
   RiFileCopyLine,
   RiFileExcelLine,
   RiLinkM,
+  RiShareLine,
 } from "@remixicon/react";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import Button from "@/components/Button";
+import Modal from "@/components/Modal";
 import {
   criarCompartilhamentoResumos,
   listarCompartilhamentosResumos,
@@ -46,9 +48,18 @@ const copiar = async (texto) => {
 
 const formatarData = (d) => (d ? new Date(d).toLocaleDateString("pt-BR") : "—");
 
-// ─── Dentro do modal de exportação: configura e gera um link ─────────────────
+// ─── Modal "Novo link": configura e gera um link ─────────────────────────────
 
-export const GerarLinkCompartilhamento = ({ eventoSlug, filtro, onGerado }) => {
+// instituicoes: [{ label, tenantSlug? , instituicaoParceiraId? }] — recortes possíveis
+const GerarLinkCompartilhamento = ({ eventoSlug, instituicoes = [], onGerado }) => {
+  const opcoesInstituicao = [
+    { label: "Evento inteiro (todas as instituições)", value: "" },
+    ...instituicoes.map((i) => ({
+      label: i.label,
+      value: i.instituicaoParceiraId ? `p:${i.instituicaoParceiraId}` : `t:${i.tenantSlug}`,
+    })),
+  ];
+  const [instituicao, setInstituicao] = useState("");
   const [rotulo, setRotulo] = useState("");
   const [premiacao, setPremiacao] = useState([]);
   const [comentario, setComentario] = useState(null);
@@ -64,7 +75,10 @@ export const GerarLinkCompartilhamento = ({ eventoSlug, filtro, onGerado }) => {
   const [copiado, setCopiado] = useState(false);
 
   const filtros = { premiacao, comentario, notaMin, notaMax };
-  const recorte = { tenantSlug: filtro?.tenantSlug, instituicaoParceiraId: filtro?.instituicaoParceiraId };
+  const recorte = {
+    tenantSlug: instituicao.startsWith("t:") ? instituicao.slice(2) : undefined,
+    instituicaoParceiraId: instituicao.startsWith("p:") ? Number(instituicao.slice(2)) : undefined,
+  };
 
   // Prévia: quantos trabalhos o link mostraria (debounce para não disparar a cada tecla)
   useEffect(() => {
@@ -117,7 +131,7 @@ export const GerarLinkCompartilhamento = ({ eventoSlug, filtro, onGerado }) => {
 
   if (link) {
     return (
-      <div className={`${styles.gerar} mt-2`}>
+      <div className={styles.gerar}>
         <p className={styles.label}>Link gerado (válido até {formatarData(link.validade)})</p>
         <div className={styles.urlBox}>
           <span className={styles.url}>{urlCompartilhamentoResumos(link.token)}</span>
@@ -138,10 +152,20 @@ export const GerarLinkCompartilhamento = ({ eventoSlug, filtro, onGerado }) => {
   }
 
   return (
-    <div className={`${styles.gerar} mt-2`}>
-      <p className={styles.titulo}>Compartilhar Resumos + Avaliações</p>
+    <div className={styles.gerar}>
+      <label className={styles.label} htmlFor="instituicaoCompartilhamento">
+        Instituição
+      </label>
+      <Dropdown
+        inputId="instituicaoCompartilhamento"
+        className={styles.input}
+        value={instituicao}
+        options={opcoesInstituicao}
+        onChange={(e) => setInstituicao(e.value)}
+        filter={opcoesInstituicao.length > 8}
+      />
 
-      <label className={styles.label} htmlFor="rotuloCompartilhamento">
+      <label className={`${styles.label} mt-2`} htmlFor="rotuloCompartilhamento">
         Rótulo (opcional)
       </label>
       <InputText
@@ -236,6 +260,25 @@ export const GerarLinkCompartilhamento = ({ eventoSlug, filtro, onGerado }) => {
         Gerar link (válido por 60 dias)
       </Button>
       {erro && <p className={`${styles.erro} mt-1`}>{erro}</p>}
+    </div>
+  );
+};
+
+// Botão do cabeçalho da seção "Links compartilhados" + modal de geração
+export const NovoLinkCompartilhamento = ({ eventoSlug, instituicoes, onGerado }) => {
+  const [aberto, setAberto] = useState(false);
+  return (
+    <div className={styles.novoLink}>
+      <Button onClick={() => setAberto(true)} icon={RiShareLine} className="btn-secondary" type="button">
+        Novo link
+      </Button>
+      <Modal isOpen={aberto} onClose={() => setAberto(false)}>
+        <h4>Compartilhar Resumos + Avaliações</h4>
+        <p className="mb-2">Escolha o que o link vai mostrar. Ele expira em 60 dias.</p>
+        {aberto && (
+          <GerarLinkCompartilhamento eventoSlug={eventoSlug} instituicoes={instituicoes} onGerado={onGerado} />
+        )}
+      </Modal>
     </div>
   );
 };
@@ -399,7 +442,7 @@ export const PainelCompartilhamentos = ({ eventoSlug, atualizarEm }) => {
       dataKey="id"
       paginator={links.length > 10}
       rows={10}
-      emptyMessage="Nenhum link compartilhado ainda. Clique em uma instituição acima para gerar."
+      emptyMessage='Nenhum link compartilhado ainda. Use "Novo link" para gerar.'
     >
       <Column header="Link" body={linkBody} />
       <Column header="Conteúdo" body={configuracaoBody} />
