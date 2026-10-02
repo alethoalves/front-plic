@@ -64,7 +64,8 @@ const GerarLinkCompartilhamento = ({ eventoSlug, instituicoes = [], onGerado }) 
   const [instituicao, setInstituicao] = useState("");
   const [rotulo, setRotulo] = useState("");
   const [premiacao, setPremiacao] = useState([]);
-  const [opcoesAreas, setOpcoesAreas] = useState({ grandeAreas: [], areas: [] });
+  const [opcoesAreas, setOpcoesAreas] = useState({ categorias: [], grandeAreas: [], areas: [] });
+  const [categorias, setCategorias] = useState([]);
   const [grandeAreas, setGrandeAreas] = useState([]);
   const [areas, setAreas] = useState([]);
   const [comentario, setComentario] = useState(null);
@@ -79,7 +80,7 @@ const GerarLinkCompartilhamento = ({ eventoSlug, instituicoes = [], onGerado }) 
   const [link, setLink] = useState(null);
   const [copiado, setCopiado] = useState(false);
 
-  const filtros = { premiacao, grandeAreas, areas, comentario, notaMin, notaMax };
+  const filtros = { premiacao, categorias, grandeAreas, areas, comentario, notaMin, notaMax };
   const recorte = {
     tenantSlug: instituicao.startsWith("t:") ? instituicao.slice(2) : undefined,
     instituicaoParceiraId: instituicao.startsWith("p:") ? Number(instituicao.slice(2)) : undefined,
@@ -107,6 +108,7 @@ const GerarLinkCompartilhamento = ({ eventoSlug, instituicoes = [], onGerado }) 
     recorte.tenantSlug,
     recorte.instituicaoParceiraId,
     premiacao,
+    categorias,
     grandeAreas,
     areas,
     comentario,
@@ -114,10 +116,16 @@ const GerarLinkCompartilhamento = ({ eventoSlug, instituicoes = [], onGerado }) 
     notaMax,
   ]);
 
-  // Opções de área/grande área: só as que têm trabalhos no evento
+  // Opções de modalidade/área/grande área: só as que têm trabalhos no evento
   useEffect(() => {
     getOpcoesCompartilhamentoResumos(eventoSlug)
-      .then((dados) => setOpcoesAreas({ grandeAreas: dados.grandeAreas || [], areas: dados.areas || [] }))
+      .then((dados) =>
+        setOpcoesAreas({
+          categorias: (dados.categorias || []).map((c) => ({ label: c, value: c })),
+          grandeAreas: dados.grandeAreas || [],
+          areas: dados.areas || [],
+        })
+      )
       .catch((error) => console.error("Erro ao carregar áreas:", error));
   }, [eventoSlug]);
 
@@ -228,6 +236,21 @@ const GerarLinkCompartilhamento = ({ eventoSlug, instituicoes = [], onGerado }) 
           </label>
         ))}
       </div>
+
+      <label className={`${styles.label} mt-2`} htmlFor="filtroCategorias">
+        Modalidade
+      </label>
+      <MultiSelect
+        inputId="filtroCategorias"
+        className={styles.input}
+        value={categorias}
+        options={opcoesAreas.categorias}
+        optionLabel="label"
+        optionValue="value"
+        onChange={(e) => setCategorias(e.value || [])}
+        placeholder="Todas as modalidades"
+        display="chip"
+      />
 
       <label className={`${styles.label} mt-2`} htmlFor="filtroGrandeAreas">
         Grande área

@@ -204,15 +204,59 @@
   font-weight: 700;
 }
 
-// Alternância comentário original/depurado — padrão local de abas (ver front-plic/CLAUDE.md)
-.abas {
+// Barra fixa no topo ao rolar: busca, filtro de estrelas e abas de comentário
+.barraFiltros {
   position: sticky;
   top: 0;
   z-index: 2;
   display: flex;
+  flex-direction: column;
+  gap: $gap-1;
+  padding-top: $gap-1;
+  background: $white-light;
+}
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $gap-1;
+}
+
+.busca {
+  position: relative;
+  flex: 1 1 280px;
+  min-width: 0;
+}
+
+.buscaIcone {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  color: $gray-400;
+  pointer-events: none;
+}
+
+.buscaInput {
+  width: 100%;
+  padding-left: 36px !important;
+}
+
+.filtroEstrelas {
+  flex: 0 1 260px;
+  min-width: 0;
+}
+
+.contagem {
+  font-size: 0.8rem;
+  color: $gray-500;
+}
+
+// Alternância comentário original/depurado — padrão local de abas (ver front-plic/CLAUDE.md)
+.abas {
+  display: flex;
   flex-wrap: wrap;
   gap: 0;
-  background: $white-light;
   border-bottom: 2px solid rgba($black-dark, 0.1);
 }
 

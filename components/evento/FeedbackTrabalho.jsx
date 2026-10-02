@@ -38,8 +38,9 @@ const Estrelas = ({ valor, onChange, tamanho = 18 }) => (
 
 const formatarData = (d) => new Date(d).toLocaleDateString("pt-BR");
 
-const FeedbackTrabalho = ({ token, submissaoId, feedbacksIniciais = [] }) => {
-  const [feedbacks, setFeedbacks] = useState(feedbacksIniciais);
+// Controlado pelo relatório (feedbacks + onChange), que usa as estrelas no filtro
+const FeedbackTrabalho = ({ token, submissaoId, feedbacks = [], onChange }) => {
+  const setFeedbacks = (lista) => onChange?.(submissaoId, lista);
   const proprio = feedbacks.find((f) => f.proprio);
   const outros = feedbacks.filter((f) => !f.proprio);
 

@@ -1,6 +1,8 @@
 "use client";
-import { useState } from "react";
-import { RiPrinterLine } from "@remixicon/react";
+import { useDeferredValue, useMemo, useState } from "react";
+import { InputText } from "primereact/inputtext";
+import { Dropdown } from "primereact/dropdown";
+import { RiPrinterLine, RiSearchLine } from "@remixicon/react";
 import Button from "@/components/Button";
 import { getInstituicaoSigla } from "@/lib/instituicaoDisplay";
 import { descreverFiltros } from "@/lib/compartilhamentoResumos";
@@ -22,6 +24,43 @@ const VERSOES_COMENTARIO = [
   { id: "DEPURADO", label: "Comentário depurado (IA)" },
   { id: "ORIGINAL", label: "Comentário original" },
 ];
+
+// Filtro pelas estrelas dadas por quem acessa o link (média por trabalho)
+const FILTROS_ESTRELAS = [
+  { value: "TODOS", label: "Todas as avaliações" },
+  { value: "SEM", label: "Sem avaliações" },
+  { value: "COM", label: "Com avaliações" },
+  { value: "5", label: "Média 5 estrelas" },
+  { value: "4", label: "Média de 4 estrelas ou mais" },
+  { value: "3", label: "Média de 3 estrelas ou mais" },
+  { value: "2", label: "Média de 2 estrelas ou mais" },
+  { value: "BAIXA", label: "Média abaixo de 3 estrelas" },
+];
+
+const mediaEstrelas = (feedbacks = []) =>
+  feedbacks.length ? feedbacks.reduce((s, f) => s + f.estrelas, 0) / feedbacks.length : null;
+
+const passaFiltroEstrelas = (feedbacks, filtro) => {
+  const media = mediaEstrelas(feedbacks);
+  if (filtro === "TODOS") return true;
+  if (filtro === "SEM") return media == null;
+  if (filtro === "COM") return media != null;
+  if (filtro === "BAIXA") return media != null && media < 3;
+  return media != null && media >= Number(filtro);
+};
+
+// Busca sem diferenciar maiúsculas nem acentos
+const normalizar = (texto) =>
+  (texto || "")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase();
+
+// Texto pesquisável de um trabalho: título + nomes de todos os participantes
+const textoBusca = (submissao) =>
+  normalizar(
+    [submissao.Resumo?.titulo, ...(submissao.Resumo?.participacoes || []).map((p) => p.user?.nome)].join(" ")
+  );
 
 const simNao = (v) => (v ? "Sim" : "Não");
 
@@ -76,7 +115,7 @@ const Avaliacao = ({ avaliacao, indice, versaoComentario }) => {
   );
 };
 
-const Trabalho = ({ submissao, indice, versaoComentario, token, permitirFeedback }) => {
+const Trabalho = ({ submissao, indice, versaoComentario, token, permitirFeedback, feedbacks, onFeedbacksChange }) => {
   const resumo = submissao.Resumo || {};
   const avaliacoes = submissao.Avaliacao || [];
   const participantes = (resumo.participacoes || []).reduce((acc, p) => {
@@ -150,7 +189,12 @@ const Trabalho = ({ submissao, indice, versaoComentario, token, permitirFeedback
       </section>
 
       {permitirFeedback && (
-        <FeedbackTrabalho token={token} submissaoId={submissao.id} feedbacksIniciais={submissao.feedbacks} />
+        <FeedbackTrabalho
+          token={token}
+          submissaoId={submissao.id}
+          feedbacks={feedbacks}
+          onChange={onFeedbacksChange}
+        />
       )}
     </article>
   );
@@ -171,6 +215,32 @@ const RelatorioResumosAvaliacoes = ({
     exibicaoComentarios === "ORIGINAL" ? "ORIGINAL" : "DEPURADO"
   );
   const descricaoFiltros = descreverFiltros(filtros);
+
+  const [busca, setBusca] = useState("");
+  const buscaAdiada = useDeferredValue(busca); // a lista pode ter milhares de trabalhos
+  const [filtroEstrelas, setFiltroEstrelas] = useState("TODOS");
+
+  // Feedbacks ficam aqui (e não em cada trabalho) para o filtro de estrelas
+  // refletir na hora o que o acessante acabou de salvar
+  const [feedbacksPorTrabalho, setFeedbacksPorTrabalho] = useState(() =>
+    Object.fromEntries(submissoes.map((s) => [s.id, s.feedbacks || []]))
+  );
+  const atualizarFeedbacks = (submissaoId, lista) =>
+    setFeedbacksPorTrabalho((atual) => ({ ...atual, [submissaoId]: lista }));
+
+  // Índice de busca calculado uma vez; a numeração original é mantida ao filtrar
+  const indexados = useMemo(
+    () => submissoes.map((s, i) => ({ submissao: s, indice: i + 1, texto: textoBusca(s) })),
+    [submissoes]
+  );
+
+  const termos = normalizar(buscaAdiada).split(/\s+/).filter(Boolean);
+  const visiveis = indexados.filter(
+    ({ submissao, texto }) =>
+      termos.every((t) => texto.includes(t)) &&
+      (!permitirFeedback || passaFiltroEstrelas(feedbacksPorTrabalho[submissao.id], filtroEstrelas))
+  );
+  const filtrando = termos.length > 0 || (permitirFeedback && filtroEstrelas !== "TODOS");
 
   return (
     <main className={styles.main}>
@@ -199,34 +269,69 @@ const RelatorioResumosAvaliacoes = ({
         </div>
       </header>
 
-      {exibicaoComentarios === "AMBOS" && (
-        <div className={`${styles.abas} ${styles.naoImprimir}`}>
-          {VERSOES_COMENTARIO.map((v) => (
-            <button
-              key={v.id}
-              type="button"
-              className={`${styles.aba} ${versaoComentario === v.id ? styles.abaAtiva : ""}`}
-              onClick={() => setVersaoComentario(v.id)}
-            >
-              {v.label}
-            </button>
-          ))}
+      <div className={`${styles.barraFiltros} ${styles.naoImprimir}`}>
+        <div className={styles.filtros}>
+          <span className={`p-input-icon-left ${styles.busca}`}>
+            <RiSearchLine size={16} className={styles.buscaIcone} />
+            <InputText
+              className={styles.buscaInput}
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              placeholder="Buscar por título, aluno ou orientador"
+              aria-label="Buscar por título, aluno ou orientador"
+            />
+          </span>
+          {permitirFeedback && (
+            <Dropdown
+              className={styles.filtroEstrelas}
+              value={filtroEstrelas}
+              options={FILTROS_ESTRELAS}
+              optionLabel="label"
+              optionValue="value"
+              onChange={(e) => setFiltroEstrelas(e.value ?? "TODOS")}
+              aria-label="Filtrar pelas estrelas"
+            />
+          )}
         </div>
-      )}
+        {filtrando && (
+          <p className={styles.contagem}>
+            Mostrando {visiveis.length} de {submissoes.length} trabalhos
+          </p>
+        )}
 
-      {submissoes.length > 0 ? (
-        submissoes.map((s, i) => (
+        {exibicaoComentarios === "AMBOS" && (
+          <div className={styles.abas}>
+            {VERSOES_COMENTARIO.map((v) => (
+              <button
+                key={v.id}
+                type="button"
+                className={`${styles.aba} ${versaoComentario === v.id ? styles.abaAtiva : ""}`}
+                onClick={() => setVersaoComentario(v.id)}
+              >
+                {v.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {visiveis.length > 0 ? (
+        visiveis.map(({ submissao, indice }) => (
           <Trabalho
-            key={s.id}
-            submissao={s}
-            indice={i + 1}
+            key={submissao.id}
+            submissao={submissao}
+            indice={indice}
             versaoComentario={versaoComentario}
             token={token}
             permitirFeedback={permitirFeedback}
+            feedbacks={feedbacksPorTrabalho[submissao.id]}
+            onFeedbacksChange={atualizarFeedbacks}
           />
         ))
       ) : (
-        <p className={styles.semDados}>Nenhum trabalho encontrado.</p>
+        <p className={styles.semDados}>
+          {filtrando ? "Nenhum trabalho corresponde à busca ou ao filtro." : "Nenhum trabalho encontrado."}
+        </p>
       )}
     </main>
   );
