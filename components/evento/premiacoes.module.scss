@@ -7,16 +7,41 @@
   min-width: 0;
 }
 
-.sectionHead {
+// Mesmo padrão de abas de configuracoes/gestor/(itens)/formularios —
+// com rolagem horizontal pra não estourar a largura no celular. A linha de
+// base vira sombra interna (em vez de border-bottom + margin -2px na aba)
+// porque o overflow cortaria o sublinhado da aba ativa.
+.abas {
   display: flex;
-  align-items: baseline;
-  gap: $gap-1;
-  margin-bottom: $gap-1;
+  gap: 0;
+  box-shadow: inset 0 -2px 0 rgba(#000, 0.1);
+  overflow-x: auto;
+}
 
-  .rule {
-    flex: 1;
-    height: 1px;
-    background: $gray-50;
+.aba {
+  display: inline-flex;
+  align-items: center;
+  gap: $gap-1;
+  flex-shrink: 0;
+  white-space: nowrap;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: $gap-2 $gap-3;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: $gray-500;
+  transition: color 0.15s, border-color 0.15s;
+
+  &:hover {
+    color: $primary-normal;
+  }
+
+  &.abaAtiva {
+    color: $primary-normal;
+    border-bottom-color: $primary-normal;
+    font-weight: 700;
   }
 }
 

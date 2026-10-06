@@ -9,18 +9,19 @@ import { useEffect, useState } from "react";
 import { getPremiacoes } from "@/app/api/client/eventos";
 import { getInstituicaoSigla } from "@/lib/instituicaoDisplay";
 
-// Premiados só aparecem quando o admin marcou algum — antes do resultado
-// final a edição tem apenas indicações e menções.
-const SECOES = [
-  { chave: "premiados", titulo: "Premiados", ocultarSeVazia: true },
+// Uma aba por tipo de premiação. A de premiados só aparece quando o admin
+// marcou algum — antes do resultado final a edição tem apenas indicações e
+// menções.
+const ABAS = [
+  { id: "premiados", label: "Premiados", ocultarSeVazia: true },
   {
-    chave: "indicados",
-    titulo: "Indicações ao Prêmio Destaque",
+    id: "indicados",
+    label: "Prêmio Destaque",
     vazia: "Nenhuma submissão indicada ao Prêmio Destaque.",
   },
   {
-    chave: "mencoes",
-    titulo: "Menções Honrosas",
+    id: "mencoes",
+    label: "Menção Honrosa",
     vazia: "Nenhuma submissão recebeu menção honrosa.",
   },
 ];
@@ -28,11 +29,15 @@ const SECOES = [
 export const Premiacoes = ({ params, evento, eventoRoot }) => {
   const [loading, setLoading] = useState(true);
   const [premiacoes, setPremiacoes] = useState(null);
+  const [abaAtiva, setAbaAtiva] = useState(null);
 
   useEffect(() => {
     const carregarDados = async () => {
       try {
-        setPremiacoes(await getPremiacoes(evento.slug));
+        const dados = await getPremiacoes(evento.slug);
+        setPremiacoes(dados);
+        // Abre direto nos premiados quando o resultado final já saiu
+        setAbaAtiva(dados.premiados?.length > 0 ? "premiados" : "indicados");
       } catch (error) {
         console.error("Erro ao carregar premiações:", error);
       } finally {
@@ -55,20 +60,31 @@ export const Premiacoes = ({ params, evento, eventoRoot }) => {
       );
     }
 
-    return SECOES.filter(
-      (secao) => !(secao.ocultarSeVazia && premiacoes[secao.chave].length === 0)
-    ).map((secao) => {
-      const itens = premiacoes[secao.chave];
-      return (
-        <section key={secao.chave} className={`${styles.eventoCard} mb-3`}>
-          <div className={styles.sectionHead}>
-            <h2 className="h-editorial-sm">{secao.titulo}</h2>
-            <span className={styles.contagem}>{itens.length}</span>
-            <div className={styles.rule}></div>
-          </div>
+    const abasVisiveis = ABAS.filter(
+      (aba) => !(aba.ocultarSeVazia && premiacoes[aba.id].length === 0)
+    );
+    const aba = abasVisiveis.find((a) => a.id === abaAtiva) ?? abasVisiveis[0];
+    const itens = premiacoes[aba.id];
 
+    return (
+      <>
+        <div className={`${styles.abas} mb-3`}>
+          {abasVisiveis.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={`${styles.aba} ${item.id === aba.id ? styles.abaAtiva : ""}`}
+              onClick={() => setAbaAtiva(item.id)}
+            >
+              {item.label}
+              <span className={styles.contagem}>{premiacoes[item.id].length}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className={styles.eventoCard}>
           {itens.length === 0 ? (
-            <p className={styles.vazia}>{secao.vazia}</p>
+            <p className={styles.vazia}>{aba.vazia}</p>
           ) : (
             itens.map((submissao) => (
               <div key={submissao.id} className={styles.pubItem}>
@@ -108,9 +124,9 @@ export const Premiacoes = ({ params, evento, eventoRoot }) => {
               </div>
             ))
           )}
-        </section>
-      );
-    });
+        </div>
+      </>
+    );
   };
 
   return (
