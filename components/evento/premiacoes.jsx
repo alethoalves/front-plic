@@ -16,7 +16,7 @@ const ABAS = [
   { id: "premiados", label: "Premiados", ocultarSeVazia: true },
   {
     id: "indicados",
-    label: "Prêmio Destaque",
+    label: "Indicados ao Prêmio Destaque",
     vazia: "Nenhuma submissão indicada ao Prêmio Destaque.",
   },
   {
