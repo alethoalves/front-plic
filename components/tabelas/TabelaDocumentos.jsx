@@ -41,6 +41,7 @@ const STATUS_DOCUMENTO_OPCOES = [
   "ACEITO",
   "RECUSADO",
   "AGUARDANDO_VALIDACAO",
+  "CANCELADO",
 ].map((status) => ({ label: formatStatusText(status), value: status }));
 
 // Status em que o documento ainda pode ser recusado pelo gestor (tudo que não é ACEITO).

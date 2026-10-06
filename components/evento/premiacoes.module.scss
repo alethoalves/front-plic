@@ -1,0 +1,114 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+@import "/styles/partials/eventoEditorial";
+
+.content {
+  min-width: 0;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  gap: $gap-1;
+  margin-bottom: $gap-1;
+
+  .rule {
+    flex: 1;
+    height: 1px;
+    background: $gray-50;
+  }
+}
+
+.contagem {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: $primary-darken;
+  background: $primary-lighten;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.vazia {
+  font-size: 0.9rem;
+  color: $gray-500;
+}
+
+// ─── Item de submissão (mesmo visual de publicacoes.module.scss) ─────────────
+.pubItem {
+  padding: $gap-2 0;
+  border-bottom: 1px solid $gray-50;
+
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+}
+
+.pubTags {
+  display: flex;
+  gap: $gap-1;
+  margin-bottom: $gap-1;
+  flex-wrap: wrap;
+
+  span {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: $primary-darken;
+    background: $primary-lighten;
+    padding: 2px 8px;
+    border-radius: 3px;
+  }
+}
+
+.pubTitleLink {
+  &:hover .pubTitle {
+    color: $primary-dark;
+    text-decoration: underline;
+  }
+}
+
+.pubTitle {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: $black-light;
+  margin-bottom: $gap-1;
+  font-family: var(--font-lato);
+}
+
+.pubMeta {
+  display: flex;
+  align-items: center;
+  gap: $gap-1;
+  font-size: 0.85rem;
+  color: $gray-500;
+  margin-bottom: $gap-1;
+
+  svg {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+    color: $primary-dark;
+  }
+}
+
+.pubLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: $primary-dark;
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  &:hover {
+    color: $primary-darken;
+    text-decoration: underline;
+  }
+}

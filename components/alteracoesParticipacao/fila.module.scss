@@ -1,0 +1,252 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+// Cards da fila de pendências do gestor
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: $gap-2;
+  border-radius: 14px;
+  background: $white-light;
+  border: 1px solid $gray-100;
+  border-left: 4px solid $warning-normal;
+  box-shadow: 0 2px 8px rgba(5, 17, 34, 0.04);
+
+  svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+}
+
+.cardTopo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: $gap-2;
+}
+
+.cardTitulo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+
+  small {
+    font-size: 0.8rem;
+    color: $gray-500;
+
+    strong {
+      color: $gray-700;
+    }
+  }
+}
+
+.seloBloco {
+  align-self: flex-start;
+  padding: 1px $gap-1;
+  border-radius: 999px;
+  background: $white-darken;
+  color: $primary-dark;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.tempo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  font-size: 0.78rem;
+  color: $gray-500;
+}
+
+.etapas {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-1;
+}
+
+.etapa {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 10px;
+  background: $gray-25;
+
+  p {
+    margin: 0;
+  }
+}
+
+.etapaTipo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: $primary-dark;
+}
+
+.etapaNumero {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: $primary-normal;
+  color: $white-light;
+  font-size: 0.72rem;
+}
+
+.envolvidos {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: $gap-1;
+}
+
+.pessoa {
+  display: inline-flex;
+  flex-direction: column;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: $white-light;
+  border: 1px solid $gray-100;
+
+  strong {
+    font-size: 0.88rem;
+    color: $gray-800;
+  }
+
+  small {
+    font-size: 0.72rem;
+    color: $gray-500;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+// Situação do aluno antes do pedido (de quem é a bolsa/vaga)
+.situacao {
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 1px $gap-1;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: $gray-50;
+  color: $gray-600;
+}
+
+.situacao_bolsa {
+  background: rgba($success-normal, 0.12);
+  color: $success-normal;
+}
+
+.situacao_fila {
+  background: $warning-lighten;
+  color: $warning-darken;
+}
+
+.situacao_voluntario {
+  background: $white-darken;
+  color: $primary-dark;
+}
+
+.pessoaDestaque {
+  border-color: $primary-light;
+  background: $white-darken;
+}
+
+.seta {
+  color: $gray-400;
+}
+
+.plano {
+  font-size: 0.78rem;
+  color: $gray-500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.motivo {
+  font-size: 0.85rem;
+  color: $gray-700;
+  font-style: italic;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.avisos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: $warning-lighten;
+    border: 1px solid $warning-light;
+    color: $warning-darken;
+    font-size: 0.8rem;
+    line-height: 1.35;
+
+    svg {
+      margin-top: 2px;
+    }
+  }
+}
+
+.cardRodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: $gap-1;
+  padding-top: 12px;
+  border-top: 1px solid $gray-50;
+
+  small {
+    color: $gray-500;
+  }
+}
+
+.lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: $gap-2;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.vazio {
+  svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $gap-1;
+  padding: $gap-5 $gap-3;
+  border-radius: 14px;
+  border: 1px dashed $gray-200;
+  color: $gray-400;
+}

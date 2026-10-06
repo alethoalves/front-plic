@@ -32,6 +32,7 @@ import { Toast } from "primereact/toast";
 import {
   ativarVinculo,
   cancelarVinculo,
+  desistirListaEspera,
   devolverBolsa,
   tornarPendenteVinculo,
   transferirBolsa,
@@ -44,6 +45,7 @@ import { LinhaTempo } from "../LinhaDoTempo";
 import { updateDataHistorico } from "@/app/api/client/historico";
 import InsertUpdateDate from "../InsertUpdateDate";
 import { buildMergedTimeline } from "@/lib/TimeLineUnificada";
+import SolicitacoesDaParticipacao from "@/components/alteracoesParticipacao/SolicitacoesDaParticipacao";
 import DocumentosRegistro from "./DocumentosRegistro";
 
 const ParticipacaoGestorController = ({
@@ -608,6 +610,53 @@ const ParticipacaoGestorController = ({
     }
   };
 
+  // Desistência da lista de espera (solicitação aprovada ainda sem cota)
+  const handleDesistirFila = async () => {
+    if (!justificativa.trim()) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Erro",
+        detail: "Informe a justificativa da desistência",
+        life: 3000,
+      });
+      return;
+    }
+    if (!dateValue) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Erro",
+        detail: "Por favor, selecione uma data",
+        life: 3000,
+      });
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await desistirListaEspera(tenant, solicitacaoBolsaId, justificativa.trim(), dateValue);
+      await fetch();
+      toast.current?.show({
+        severity: "success",
+        summary: "Sucesso",
+        detail: "Desistência da lista de espera registrada",
+        life: 3000,
+      });
+      onSuccess && (await onSuccess());
+      setSolicitacaoBolsaId(null);
+      setModalOpen(false);
+    } catch (err) {
+      console.error(err);
+      toast.current?.show({
+        severity: "error",
+        summary: "Erro",
+        detail: err?.response?.data?.message || err.message || "Falha na desistência",
+        life: 4000,
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // ================ HANDLERS PARA TRANSFERÊNCIA ================
   const loadAlunosInscricao = async () => {
     if (loadingAlunos || alunosOptions.length) return;
@@ -788,6 +837,12 @@ const ParticipacaoGestorController = ({
     devolucao: {
       titulo: "Devolver bolsa",
       onSave: handleDevolverBolsa,
+      showTextarea: true,
+      showDateInput: true,
+    },
+    desistenciaFila: {
+      titulo: "Desistir da lista de espera (o aluno continua como voluntário)",
+      onSave: handleDesistirFila,
       showTextarea: true,
       showDateInput: true,
     },
@@ -988,6 +1043,14 @@ const ParticipacaoGestorController = ({
                     </div>
                   </div>
                 </div>
+              )}
+              {item.tipo === "aluno" && (
+                <SolicitacoesDaParticipacao
+                  tenant={tenant}
+                  ano={ano}
+                  participacaoId={item.id}
+                  versao={item}
+                />
               )}
               <div className="mt-2">
                 <div className={styles.userCard}>
@@ -1237,6 +1300,23 @@ const ParticipacaoGestorController = ({
                                     )}
                                     <p>Devolver</p>
                                   </div>
+
+                                  {/* Lista de espera: solicitação aprovada ainda sem cota */}
+                                  {!vinculo.solicitacaoBolsa?.bolsaId &&
+                                    vinculo.solicitacaoBolsa?.status === "APROVADA" &&
+                                    ["APROVADO", "PENDENTE"].includes(vinculo.status) && (
+                                      <div
+                                        className={`${styles.action} ${styles.error}`}
+                                        onClick={() => {
+                                          handleOpenModal("desistenciaFila");
+                                          setSolicitacaoBolsaId(vinculo.solicitacaoBolsa?.id);
+                                        }}
+                                        title="Encerrar a vaga na lista de espera; o aluno continua como voluntário"
+                                      >
+                                        <RiSwapLine />
+                                        <p>Desistir da fila</p>
+                                      </div>
+                                    )}
                                 </div>
                               </div>
                               <div className={styles.contentCard}>

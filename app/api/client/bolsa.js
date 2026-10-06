@@ -307,6 +307,19 @@ export const devolverBolsa = async (tenantSlug, solicitacaoBolsaId, observacao, 
     throw error;
   }
 };
+// Desistência da lista de espera (solicitação aprovada ainda sem cota)
+export const desistirListaEspera = async (tenantSlug, solicitacaoBolsaId, observacao, date) => {
+  const headers = getAuthHeadersClient();
+  if (!headers) {
+    return false;
+  }
+  const response = await req.put(
+    `/private/${tenantSlug}/desistir-lista-espera`,
+    { solicitacaoBolsaId, observacao, date },
+    { headers }
+  );
+  return response.data;
+};
 export const transferirBolsa = async (tenantSlug, vinculoOrigemId, participacaoDestinoId, observacao, dataTransferencia) => {
   try {
     const headers = getAuthHeadersClient();

@@ -42,6 +42,17 @@
             font-weight: 700;
             flex: 1;
         }
+
+        .badge {
+            min-width: 22px;
+            padding: 1px 6px;
+            border-radius: 999px;
+            background-color: $error-normal;
+            color: $white-light;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-align: center;
+        }
         
         &::before {
             content: '';

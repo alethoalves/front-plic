@@ -786,7 +786,7 @@ const DocumentoDetailPage = ({ params }) => {
                       </div>
                     </div>
 
-                    {!assinatura.dataAssinatura && (
+                    {!assinatura.dataAssinatura && documento.status !== "CANCELADO" && (
                       <div className={styles.assinaturaActions}>
                         <button
                           className={styles.assinarButton}
@@ -821,6 +821,8 @@ const DocumentoDetailPage = ({ params }) => {
             >
               {documento.status === "AGUARDANDO_VALIDACAO"
                 ? "Aguarde validação do Gestor, prazo de 10 dias úteis"
+                : documento.status === "CANCELADO"
+                ? "Documento cancelado — não precisa mais ser assinado"
                 : documento.status}
             </span>
           </div>

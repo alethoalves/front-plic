@@ -58,6 +58,8 @@ const DocumentoDialog = ({
         return "Recusado";
       case "PENDENTE":
         return "Pendente";
+      case "CANCELADO":
+        return "Cancelado";
       default:
         return status;
     }

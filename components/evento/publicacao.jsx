@@ -72,11 +72,12 @@ export const Publicacao = ({ params, evento, eventoRoot }) => {
                 {publicacao.subsessao.local}
               </div>
             )}
-            {(publicacao.indicacaoPremio || publicacao.mencaoHonrosa) && (
+            {(publicacao.premio || publicacao.indicacaoPremio || publicacao.mencaoHonrosa) && (
               <div className={styles.dadoItem}>
                 <RiAwardLine />
                 {[
-                  publicacao.indicacaoPremio && "Indicado a prêmio",
+                  publicacao.premio && "Premiado",
+                  publicacao.indicacaoPremio && "Indicado ao Prêmio Destaque",
                   publicacao.mencaoHonrosa && "Menção honrosa",
                 ]
                   .filter(Boolean)

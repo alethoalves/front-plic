@@ -1,0 +1,215 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+// Ícones da página (inclusive no modal e no fantasma do arraste) com
+// tamanho fixo: sem isso, as regras globais esticam os SVGs.
+.pagina svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.navContent {
+  min-height: 100vh;
+}
+
+.content {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: $gap-2;
+}
+
+// Cabeçalho no mesmo padrão de /user/planos
+.header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: $gap-3;
+  margin-bottom: $gap-3;
+
+  .headerIcon {
+    background: linear-gradient(135deg, $primary-dark 0%, $primary-darken 100%);
+    color: $white-light;
+    padding: $gap-3;
+    border-radius: 16px;
+    display: flex;
+
+    svg {
+      width: 32px;
+      height: 32px;
+    }
+  }
+
+  .headerContent {
+    flex: 1;
+    min-width: 240px;
+
+    h6 {
+      margin: 0;
+      color: $gray-800;
+      font-size: 1.5rem;
+    }
+
+    p {
+      margin: $gap-1 0 0;
+      color: $gray-500;
+    }
+  }
+}
+
+.badgePendentes {
+  display: inline-flex;
+  align-items: center;
+  gap: $gap-1;
+  padding: 12px $gap-2;
+  border-radius: 12px;
+  border: 1px solid $warning-light;
+  background: $warning-lighten;
+  color: $warning-darken;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.comoFunciona {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: $gap-2;
+  margin-bottom: $gap-2;
+
+  @media (max-width: 760px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.passo {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px $gap-2;
+  border-radius: 12px;
+  background: $white-light;
+  border: 1px solid $gray-100;
+  color: $primary-normal;
+
+  svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  span {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.8rem;
+    color: $gray-500;
+  }
+
+  strong {
+    font-size: 0.9rem;
+    color: $gray-800;
+  }
+}
+
+// Abas no padrão do projeto (ver front-plic/CLAUDE.md)
+.abas {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid rgba(#000, 0.1);
+  margin-top: $gap-3;
+  overflow-x: auto;
+}
+
+.aba {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  padding: $gap-2 $gap-3;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: $gray-500;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+
+  &:hover {
+    color: $primary-normal;
+  }
+
+  &.abaAtiva {
+    color: $primary-normal;
+    border-bottom-color: $primary-normal;
+    font-weight: 700;
+  }
+}
+
+.abaEncerrada {
+  color: $gray-400;
+}
+
+.seloEncerrado {
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: $gray-50;
+  color: $gray-500;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+// Seção de um edital dentro da aba do ano
+.edital + .edital {
+  margin-top: $gap-5;
+}
+
+.editalCabecalho {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: $gap-1 $gap-2;
+  margin-bottom: $gap-2;
+  padding-bottom: 12px;
+  border-bottom: 1px solid $gray-100;
+
+  h5 {
+    margin: 0;
+    color: $gray-800;
+  }
+}
+
+.seloVigente {
+  padding: 2px $gap-1;
+  border-radius: 999px;
+  background: rgba($success-normal, 0.12);
+  color: $success-normal;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.avisoConsulta {
+  display: flex;
+  align-items: center;
+  gap: $gap-1;
+  margin: 0 0 $gap-2;
+  padding: 12px $gap-2;
+  border-radius: 10px;
+  background: $gray-25;
+  border: 1px solid $gray-100;
+  color: $gray-600;
+  font-size: 0.85rem;
+}
+
+.conteudoAba {
+  margin-top: $gap-3;
+}
+
+.mensagem {
+  color: $gray-500;
+  font-style: italic;
+}
+
+.mensagemErro {
+  color: $error-dark;
+  font-style: normal;
+}

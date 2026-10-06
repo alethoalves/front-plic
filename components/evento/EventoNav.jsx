@@ -9,6 +9,7 @@ import {
   RiPresentationFill,
   RiMenuLine,
   RiCloseLine,
+  RiTrophyLine,
 } from "@remixicon/react";
 import styles from "./EventoNav.module.scss";
 import { InscricaoButton } from "./InscricaoButton";
@@ -78,6 +79,16 @@ export const EventoNav = ({ params, evento, eventoRoot }) => {
             <RiArticleLine />
             Publicações
           </Link>
+          {evento?.liberarPremiacoes && (
+            <Link
+              href={`/evento/${params.eventoSlug}/edicao/${params.edicao}/premiacoes`}
+              className={styles.eventoIndexItem}
+              onClick={closeMenu}
+            >
+              <RiTrophyLine />
+              Premiações
+            </Link>
+          )}
           <Link
             href={`/evento/${params.eventoSlug}/edicao/${params.edicao}/certificado`}
             className={styles.eventoIndexItem}

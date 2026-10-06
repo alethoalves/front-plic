@@ -17,6 +17,7 @@ import {
   RiMailSendLine,
   RiPaletteLine,
   RiSave2Line,
+  RiTrophyLine,
 } from "@remixicon/react";
 import FormMoldeResumo from "@/components/Formularios/FormMoldeResumo";
 import FormCategorias from "@/components/Formularios/FormCategorias";
@@ -60,6 +61,7 @@ const CAMPOS_AVALIACAO = [
   "notaMinimaMencaoHonrosa",
   "notaMinimaPremio",
 ];
+const CAMPOS_PREMIACOES = ["liberarPremiacoes"];
 
 const isoToBR = (iso) => {
   if (!iso) return "";
@@ -285,6 +287,7 @@ const FormConfiguracoesEvento = ({ eventoSlug, initialData }) => {
       permitirSubmissoes: initialData?.permitirSubmissoes === false ? "false" : "true",
       liberarFichaAvaliacao: initialData?.liberarFichaAvaliacao ? "true" : "false",
       depurarComentarioComIA: initialData?.depurarComentarioComIA ? "true" : "false",
+      liberarPremiacoes: initialData?.liberarPremiacoes ? "true" : "false",
       metodoCalculoNota: initialData?.metodoCalculoNota || "MEDIA",
       notaMinimaMencaoHonrosa:
         initialData?.notaMinimaMencaoHonrosa != null
@@ -306,7 +309,7 @@ const FormConfiguracoesEvento = ({ eventoSlug, initialData }) => {
   // Converte o valor bruto de um campo do form pro formato esperado pela API
   const resolverCampo = async (nome, valor) => {
     if (nome === "inicio" || nome === "fim") return brToIso(valor);
-    if (["permitirSubmissoes", "liberarFichaAvaliacao", "depurarComentarioComIA"].includes(nome)) {
+    if (["permitirSubmissoes", "liberarFichaAvaliacao", "depurarComentarioComIA", "liberarPremiacoes"].includes(nome)) {
       return valor === "true";
     }
     if (["notaMinimaMencaoHonrosa", "notaMinimaPremio", "raioCheckinMetros"].includes(nome)) {
@@ -491,6 +494,30 @@ const FormConfiguracoesEvento = ({ eventoSlug, initialData }) => {
             <Select control={control} name="metodoCalculoNota" label="Método de cálculo da nota" options={METODO_CALCULO_NOTA_OPTIONS} />
             <Input control={control} name="notaMinimaMencaoHonrosa" label="Nota mínima para menção honrosa" inputType="number" />
             <Input control={control} name="notaMinimaPremio" label="Nota mínima para prêmio" inputType="number" />
+          </Secao>
+
+          <Secao
+            icon={RiTrophyLine}
+            titulo="Divulgação das premiações"
+            descricao="Publica na página da edição a lista de submissões indicadas ao Prêmio Destaque, com menção honrosa e, quando houver, as premiadas. Enquanto desmarcado, esses selos ficam ocultos nas páginas públicas."
+            status={statusSecoes.premiacoes}
+            onSalvar={() => salvarSecao("premiacoes", CAMPOS_PREMIACOES)}
+          >
+            <div className={styles.checkboxGrid}>
+              <Input control={control} name="liberarPremiacoes" label="Publicar lista de premiações" inputType="checkbox" />
+            </div>
+            {initialData?.eventoRoot?.slug && (
+              <p className="p5">
+                Página pública:{" "}
+                <a
+                  href={`/evento/${initialData.eventoRoot.slug}/edicao/${eventoSlug}/premiacoes`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  /evento/{initialData.eventoRoot.slug}/edicao/{eventoSlug}/premiacoes
+                </a>
+              </p>
+            )}
           </Secao>
 
           <FormMoldeResumo

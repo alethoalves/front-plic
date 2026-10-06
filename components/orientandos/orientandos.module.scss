@@ -1,0 +1,912 @@
+@import "/styles/partials/colors";
+@import "/styles/partials/layout";
+@import "/styles/partials/spacing";
+
+// ─── Quadro de uma inscrição ────────────────────────────────────────────────
+
+.inscricao {
+  background: $white-light;
+  border: 1px solid $gray-100;
+  border-radius: 16px;
+  padding: $gap-3;
+  box-shadow: 0 2px 8px rgba(5, 17, 34, 0.04);
+
+  & + & {
+    margin-top: $gap-3;
+  }
+}
+
+.inscricaoCabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: $gap-2;
+  margin-bottom: $gap-2;
+
+  h6 {
+    margin: 0;
+    color: $gray-800;
+  }
+
+  small {
+    color: $gray-500;
+  }
+}
+
+.dicaArrastar {
+  margin: 0;
+  padding: 4px $gap-2;
+  border-radius: 999px;
+  background: $white-darken;
+  color: $primary-dark;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.colunaVazia {
+  margin: $gap-1;
+  font-size: 0.8rem;
+  color: $gray-400;
+  font-style: italic;
+}
+
+.resumoInscricao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: $gray-600;
+}
+
+// ─── Projeto → planos de trabalho ───────────────────────────────────────────
+
+.projeto + .projeto {
+  margin-top: $gap-3;
+}
+
+.projetoTitulo {
+  display: flex;
+  align-items: center;
+  gap: $gap-1;
+  margin: 0 0 12px;
+  color: $gray-800;
+
+  span {
+    display: flex;
+    flex-direction: column;
+  }
+
+  small {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: $gray-400;
+  }
+}
+
+.planos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: $gap-2;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.plano {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-1;
+  padding: 12px;
+  border-radius: 12px;
+  background: $gray-25;
+  border: 1px solid $gray-100;
+  border-left: 4px solid $primary-normal;
+}
+
+.planoCabecalho {
+  display: flex;
+  align-items: flex-start;
+  gap: $gap-1;
+  color: $primary-normal;
+}
+
+.planoTitulo {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+
+  small {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: $gray-400;
+  }
+
+  strong {
+    font-size: 0.88rem;
+    line-height: 1.3;
+    color: $gray-800;
+  }
+}
+
+.planoParticipacoes {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-1;
+}
+
+// Etiqueta da situação do aluno (bolsista / lista de espera / voluntário…)
+.chipClasse {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: $gray-50;
+  color: $gray-600;
+}
+
+.classe_BOLSISTA {
+  background: rgba($success-normal, 0.12);
+  color: $success-normal;
+}
+
+.classe_LISTA_ESPERA {
+  background: $warning-lighten;
+  color: $warning-darken;
+  border: 1px solid $warning-light;
+}
+
+.classe_VOLUNTARIO {
+  background: $white-darken;
+  color: $primary-dark;
+}
+
+.classe_AGUARDANDO_RESULTADO {
+  background: $gray-50;
+  color: $gray-600;
+}
+
+.classe_ENCERRADO {
+  background: $gray-50;
+  color: $gray-400;
+}
+
+// ─── Card do aluno ──────────────────────────────────────────────────────────
+
+.alunoCard {
+  background: $white-light;
+  border: 1px solid $gray-100;
+  border-radius: 10px;
+  padding: $gap-1 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color 0.15s, box-shadow 0.15s, opacity 0.15s, transform 0.15s;
+}
+
+.alunoTravado {
+  background: $gray-25;
+  border-style: dashed;
+}
+
+.alunoAlvo {
+  border: 2px dashed $primary-normal;
+  background: $white-darken;
+}
+
+.alunoAlvoAtivo {
+  border-style: solid;
+  box-shadow: 0 0 0 3px rgba(5, 17, 34, 0.08);
+  transform: scale(1.01);
+}
+
+.alunoIndisponivel {
+  opacity: 0.75;
+}
+
+.alunoAlvoInvalido {
+  opacity: 1;
+  border: 2px dashed $error-normal;
+}
+
+.motivoBloqueio {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: $error-dark;
+
+  svg {
+    margin-top: 1px;
+  }
+}
+
+.alunoTopo {
+  display: flex;
+  align-items: flex-start;
+  gap: $gap-1;
+}
+
+.alunoIdentificacao {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+
+  strong {
+    font-size: 0.9rem;
+    color: $gray-800;
+  }
+
+  small {
+    font-size: 0.75rem;
+    color: $gray-500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+
+.alunoInfo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.chipStatus,
+.chipOrdem,
+.chipNota,
+.chipAlerta {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.chipStatus {
+  background: $gray-50;
+  color: $gray-600;
+}
+
+.chipOrdem {
+  background: $warning-lighten;
+  color: $warning-darken;
+  border: 1px solid $warning-light;
+}
+
+.chipNota {
+  background: $gray-25;
+  color: $gray-500;
+  border: 1px solid $gray-100;
+}
+
+.chipAlerta {
+  background: rgba($error-normal, 0.08);
+  color: $error-dark;
+}
+
+// Ficha da bolsa (arrastável)
+.bolsaToken {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px $gap-1;
+  border-radius: 8px;
+  background: rgba($success-normal, 0.1);
+  border: 1px solid rgba($success-normal, 0.35);
+  color: $success-normal;
+  user-select: none;
+}
+
+.bolsaArrastavel {
+  cursor: grab;
+
+  &:hover {
+    border-color: $success-normal;
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.bolsaArrastando {
+  opacity: 0.35;
+}
+
+.bolsaOverlay {
+  background: $white-light;
+  box-shadow: 0 10px 24px rgba(5, 17, 34, 0.18);
+  cursor: grabbing;
+  min-width: 200px;
+}
+
+.bolsaAlca {
+  color: rgba($success-normal, 0.7);
+}
+
+.bolsaTexto {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+
+  strong {
+    font-size: 0.8rem;
+  }
+
+  small {
+    font-size: 0.7rem;
+    color: $gray-500;
+  }
+}
+
+.dicaSoltar {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: $primary-dark;
+}
+
+.pendencia {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding: 4px $gap-1;
+  border-radius: 6px;
+  background: $warning-lighten;
+  color: $warning-darken;
+  font-size: 0.75rem;
+
+  small {
+    color: $gray-500;
+  }
+}
+
+.linkCancelar {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: $error-dark;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.outros {
+  margin-top: $gap-2;
+}
+
+.outrosToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $gray-500;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0;
+
+  &:hover {
+    color: $primary-normal;
+  }
+}
+
+// ─── Modal de solicitação ───────────────────────────────────────────────────
+
+.modalSolicitacao {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-2;
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+.modalCabecalho {
+  display: flex;
+  align-items: center;
+  gap: $gap-2;
+
+  h5 {
+    margin: 0;
+  }
+
+  p {
+    margin: 2px 0 0;
+    font-size: 0.85rem;
+    color: $gray-500;
+  }
+}
+
+.modalIcone {
+  display: flex;
+  padding: 12px;
+  border-radius: 12px;
+  background: $white-darken;
+  color: $primary-dark;
+}
+
+.passos {
+  display: flex;
+  gap: $gap-2;
+  border-bottom: 2px solid rgba(#000, 0.1);
+
+  span {
+    padding: 4px 0;
+    margin-bottom: -2px;
+    border-bottom: 2px solid transparent;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: $gray-400;
+  }
+
+  .passoAtivo {
+    color: $primary-normal;
+    border-bottom-color: $primary-normal;
+  }
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-2;
+}
+
+.descricao {
+  display: flex;
+  align-items: flex-start;
+  gap: $gap-1;
+  margin: 0;
+  padding: $gap-1 $gap-2;
+  border-radius: 8px;
+  background: $white-darken;
+  color: $primary-darken;
+  font-size: 0.85rem;
+  line-height: 1.4;
+
+  svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: $gray-700;
+  }
+}
+
+.ajuda {
+  color: $gray-500;
+}
+
+.escolhas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: $gap-1;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.escolha {
+  display: flex;
+  align-items: flex-start;
+  gap: $gap-1;
+  text-align: left;
+  padding: 12px;
+  border-radius: 10px;
+  border: 2px solid $gray-100;
+  background: $white-light;
+  cursor: pointer;
+  color: $gray-600;
+  transition: border-color 0.15s, background 0.15s;
+
+  span {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  strong {
+    font-size: 0.85rem;
+    color: $gray-800;
+  }
+
+  small {
+    font-size: 0.75rem;
+    color: $gray-500;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: $primary-light;
+  }
+}
+
+.escolhaAtiva {
+  border-color: $primary-normal;
+  background: $white-darken;
+  color: $primary-dark;
+}
+
+.opcaoDestino {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+
+  small {
+    color: $gray-500;
+    font-size: 0.75rem;
+  }
+}
+
+.opcaoDestinoNome {
+  display: inline-flex;
+  align-items: center;
+  gap: $gap-1;
+}
+
+.sugerido {
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba($success-normal, 0.12);
+  color: $success-normal;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.novoAluno {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: $gap-1;
+  padding: $gap-1 $gap-2;
+  border-radius: 8px;
+  border: 1px solid $gray-100;
+
+  small {
+    color: $gray-500;
+  }
+}
+
+.erroFormulario {
+  margin: 0;
+  padding: $gap-1 $gap-2;
+  border-radius: 8px;
+  background: rgba($error-normal, 0.06);
+  color: $error-dark;
+  font-size: 0.85rem;
+}
+
+.modalAcoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: $gap-1;
+}
+
+// ─── Histórico ──────────────────────────────────────────────────────────────
+
+.estadoVazio {
+  color: $gray-500;
+  font-style: italic;
+}
+
+.linhaTempo {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 $gap-2;
+  border-left: 2px solid $gray-100;
+}
+
+.itemTempo {
+  position: relative;
+  padding: 0 0 $gap-3 $gap-2;
+}
+
+.marcador {
+  position: absolute;
+  left: -$gap-2 - 7px;
+  top: 4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid $white-light;
+  background: $gray-300;
+  box-shadow: 0 0 0 1px $gray-100;
+}
+
+.marcador_PENDENTE {
+  background: $warning-normal;
+}
+
+.marcador_APROVADA {
+  background: $success-normal;
+}
+
+.marcador_RECUSADA {
+  background: $error-normal;
+}
+
+.itemConteudo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  p {
+    margin: 0;
+  }
+}
+
+.itemTopo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $gap-1;
+
+  strong {
+    color: $gray-800;
+  }
+}
+
+.origem {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: $gray-500;
+}
+
+.itemEnvolvidos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: $gray-700;
+
+  small {
+    font-weight: 400;
+    color: $gray-500;
+  }
+}
+
+.itemMotivo {
+  font-size: 0.85rem;
+}
+
+.itemDatas {
+  font-size: 0.75rem;
+  color: $gray-500;
+}
+
+.itemRecusa {
+  font-size: 0.8rem;
+  color: $error-dark;
+}
+
+.itemObservacao {
+  font-size: 0.8rem;
+  color: $gray-600;
+}
+
+
+// Ações do aluno, sempre visíveis no card
+.acoesAluno {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  padding-top: $gap-1;
+  border-top: 1px solid $gray-50;
+}
+
+.acaoAluno {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px $gap-1;
+  border-radius: 8px;
+  border: 1px solid $gray-100;
+  background: $white-light;
+  color: $gray-700;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+
+  &:hover {
+    border-color: $primary-light;
+    background: $white-darken;
+    color: $primary-dark;
+  }
+}
+
+.acao_primario {
+  border-color: $primary-light;
+  background: $white-darken;
+  color: $primary-dark;
+
+  &:hover {
+    background: $primary-normal;
+    border-color: $primary-normal;
+    color: $white-light;
+  }
+}
+
+.acao_perigo {
+  color: $error-dark;
+  border-color: rgba($error-normal, 0.35);
+
+  &:hover {
+    background: rgba($error-normal, 0.08);
+    border-color: $error-normal;
+    color: $error-dark;
+  }
+}
+
+// Documentos em aberto do aluno
+.documentosPendentes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: $gap-1;
+  border-radius: 8px;
+  background: $warning-lighten;
+  border: 1px solid $warning-light;
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: $gap-1;
+    padding: 4px 6px;
+    border-radius: 6px;
+    background: $white-light;
+  }
+}
+
+.documentosPendentesTitulo {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: $warning-darken;
+}
+
+.docTexto {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  line-height: 1.25;
+
+  strong {
+    font-size: 0.78rem;
+    color: $gray-800;
+  }
+
+  small {
+    font-size: 0.72rem;
+    color: $gray-500;
+  }
+}
+
+.docMinhaAssinatura {
+  outline: 1px solid $primary-light;
+}
+
+.docAssinar,
+.docVer {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px $gap-1;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.docAssinar {
+  background: $primary-normal;
+  color: $white-light;
+
+  &:hover {
+    background: $primary-dark;
+  }
+}
+
+.docVer {
+  color: $primary-normal;
+  border: 1px solid $gray-100;
+
+  &:hover {
+    background: $white-darken;
+  }
+}
+
+// Ficha da vaga na lista de espera (sem cota)
+.filaToken {
+  background: $warning-lighten;
+  border-color: $warning-light;
+  color: $warning-darken;
+
+  .bolsaAlca {
+    color: $warning-dark;
+  }
+}
+
+// Pedidos enviados juntos (bloco)
+.avisoBloco {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: $gap-1;
+  padding: 12px $gap-2;
+  border-radius: 10px;
+  background: $white-darken;
+  border: 1px solid $primary-light;
+  color: $primary-darken;
+  font-size: 0.85rem;
+  line-height: 1.4;
+
+  // Só o texto do aviso (filho direto): sem o ">", a regra pegava também os
+  // <span> internos do botão e o ícone ficava com 220px de largura.
+  > span {
+    flex: 1;
+    min-width: 220px;
+  }
+}
+
+.seloBloco {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: $white-darken;
+  color: $primary-dark;
+  font-size: 0.7rem;
+  font-weight: 700;
+}

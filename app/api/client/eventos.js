@@ -77,6 +77,17 @@ export const getPublicacao = async (idSubmissao) => {
     throw error;
   }
 };
+// { liberado, premiados, indicados, mencoes } — listas vazias e liberado:
+// false enquanto o admin do evento não libera a divulgação.
+export const getPremiacoes = async (eventoSlug) => {
+  try {
+    const response = await req.get(`/evenplic/getPremiacoes/${eventoSlug}`);
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao chamar a API:", error.message);
+    throw error;
+  }
+};
 export const deleteSubmissaoByUser = async (submissaoId, cpf) => {
   try {
     const response = await req.delete(

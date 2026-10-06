@@ -64,6 +64,8 @@ const Page = ({ params }) => {
     const assinados = [];
 
     docs.forEach((doc) => {
+      // Cancelado automaticamente (perdeu bolsa/participação): não precisa mais de ação
+      if (doc.status === "CANCELADO") return;
       const todasAssinaturasRealizadas = doc.assinaturas.every(
         (assinatura) => assinatura.dataAssinatura !== null
       );

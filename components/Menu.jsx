@@ -9,9 +9,23 @@ import { getEditais } from "@/app/api/client/edital";
 import { getSessoesBySlug } from "@/app/api/client/sessoes";
 import { formatarData, formatarHora } from "@/lib/formatarDatas";
 import { getCookie, setCookie } from "cookies-next";
+import {
+  EVENTO_ALTERACOES_PARTICIPACAO,
+  getContagemSolicitacoesAlteracao,
+  getRecursoSolicitacoesOrientador,
+} from "@/app/api/client/alteracaoParticipacao";
 
 const filterByPerfil = (items, perfil) =>
   items.filter((item) => !item.requiredPerfil || item.requiredPerfil === perfil);
+
+// Itens com `requiredRecurso` só aparecem quando o recurso está habilitado
+// para o tenant (enquanto não carrega, ficam ocultos).
+const filterByRecurso = (items, recursos) =>
+  items.filter((item) => !item.requiredRecurso || recursos[item.requiredRecurso] === true);
+
+const CARREGAR_RECURSO = {
+  solicitacoesOrientador: getRecursoSolicitacoesOrientador,
+};
 
 const Menu = ({ onClick, itensMenu, existeEdital, gestor = false }) => {
   const pathname = usePathname();
@@ -24,10 +38,28 @@ const Menu = ({ onClick, itensMenu, existeEdital, gestor = false }) => {
   // (group.dynamicItens) pra suportar mais de um grupo dinâmico no futuro.
   const [itensDinamicos, setItensDinamicos] = useState({});
 
+  const [recursos, setRecursos] = useState({});
+
   useEffect(() => {
     const perfil = getCookie("perfilSelecionado") ?? null;
-    setFilteredMenu(filterByPerfil(itensMenu, perfil));
-  }, [itensMenu]);
+    setFilteredMenu(filterByRecurso(filterByPerfil(itensMenu, perfil), recursos));
+  }, [itensMenu, recursos]);
+
+  useEffect(() => {
+    const chaves = [...new Set(itensMenu.map((item) => item.requiredRecurso).filter(Boolean))];
+    if (!tenant || chaves.length === 0) return;
+    let ativo = true;
+    Promise.all(
+      chaves.map((chave) =>
+        (CARREGAR_RECURSO[chave] ? CARREGAR_RECURSO[chave](tenant) : Promise.resolve(false))
+          .then((habilitado) => [chave, habilitado])
+          .catch(() => [chave, false])
+      )
+    ).then((pares) => ativo && setRecursos(Object.fromEntries(pares)));
+    return () => {
+      ativo = false;
+    };
+  }, [itensMenu, tenant]);
 
   useEffect(() => {
     const chaves = itensMenu
@@ -92,6 +124,26 @@ const Menu = ({ onClick, itensMenu, existeEdital, gestor = false }) => {
     }
   }, [gestor, tenant]);
 
+  // Contadores exibidos ao lado de itens com `badgeKey` (ex.: solicitações
+  // pendentes dos orientadores). Atualizados por evento, sem polling.
+  const [badges, setBadges] = useState({});
+  const usaBadgeAlteracoes = itensMenu.some((item) => item.badgeKey === "alteracoesParticipacao");
+
+  useEffect(() => {
+    if (!gestor || !ano || !tenant || !usaBadgeAlteracoes) return;
+    let ativo = true;
+    const atualizar = () =>
+      getContagemSolicitacoesAlteracao(tenant, ano)
+        .then((pendentes) => ativo && setBadges((prev) => ({ ...prev, alteracoesParticipacao: pendentes })))
+        .catch((error) => console.error("Erro ao contar solicitações pendentes:", error));
+    atualizar();
+    window.addEventListener(EVENTO_ALTERACOES_PARTICIPACAO, atualizar);
+    return () => {
+      ativo = false;
+      window.removeEventListener(EVENTO_ALTERACOES_PARTICIPACAO, atualizar);
+    };
+  }, [gestor, ano, tenant, usaBadgeAlteracoes]);
+
   const renderMenuItem = (item, i, isGroupItem = false) => {
     const Icon = item.icon;
     const resolvedPath = item.path
@@ -118,6 +170,11 @@ const Menu = ({ onClick, itensMenu, existeEdital, gestor = false }) => {
         >
           <div className={styles.icon}>{Icon && <Icon />}</div>
           <p>{item.title}</p>
+          {item.badgeKey && badges[item.badgeKey] > 0 && (
+            <span className={styles.badge} title={`${badges[item.badgeKey]} pendente(s)`}>
+              {badges[item.badgeKey]}
+            </span>
+          )}
         </li>
       </Link>
     );
