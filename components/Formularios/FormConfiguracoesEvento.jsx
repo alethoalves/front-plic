@@ -25,6 +25,7 @@ import FormCriteriosAvaliacao from "@/components/Formularios/FormCriteriosAvalia
 import FormSessoes from "@/components/Formularios/FormSessoes";
 import FormAtividades from "@/components/Formularios/FormAtividades";
 import FormCertificados from "@/components/Formularios/FormCertificados";
+import FormAnaisEvento from "@/components/Formularios/FormAnaisEvento";
 
 //COMPONENTES
 import Button from "@/components/Button";
@@ -187,6 +188,7 @@ const ABAS = [
   { id: "sessoes", label: "Sessões" },
   { id: "atividades", label: "Atividades" },
   { id: "certificados", label: "Certificados" },
+  { id: "anais", label: "Anais" },
 ];
 
 const FormConfiguracoesEvento = ({ eventoSlug, initialData }) => {
@@ -591,6 +593,8 @@ const FormConfiguracoesEvento = ({ eventoSlug, initialData }) => {
           )}
         </>
       )}
+
+      {abaAtiva === "anais" && <FormAnaisEvento eventoSlug={eventoSlug} />}
     </div>
   );
 };

@@ -16,6 +16,7 @@ import {
   RiExternalLinkLine,
   RiFileExcelLine,
   RiFileList3Line,
+  RiFilePdf2Line,
   RiFileWordLine,
   RiGroupLine,
   RiPresentationFill,
@@ -612,15 +613,30 @@ const Page = ({ params }) => {
           ? `Exportar dados da instituição ${selectedTenant.tenant}`
           : "Exportar dados gerais do evento"}
       </p>
-      <Button
-        onClick={gerarWordEvento}
-        icon={RiFileWordLine}
-        className="btn-secondary mt-2"
-        type="button"
-        disabled={isDownloading}
-      >
-        {isDownloading ? "Exportando..." : "Anais do Evento (.docx)"}
-      </Button>
+      {/* Os Anais do evento inteiro (PDF e Word diagramados) são gerados no
+          servidor e ficam salvos, na aba Anais das Configurações. O .docx
+          simples, montado aqui no navegador, ficou só pro recorte por
+          instituição. */}
+      {selectedTenant ? (
+        <Button
+          onClick={gerarWordEvento}
+          icon={RiFileWordLine}
+          className="btn-secondary mt-2"
+          type="button"
+          disabled={isDownloading}
+        >
+          {isDownloading ? "Exportando..." : "Resumos da instituição (.docx)"}
+        </Button>
+      ) : (
+        <Button
+          onClick={() => router.push(`/evento/${params.eventoSlug}/admin/configuracoes?aba=anais`)}
+          icon={RiFilePdf2Line}
+          className="btn-secondary mt-2"
+          type="button"
+        >
+          Anais do Evento (PDF e Word)
+        </Button>
+      )}
       <Button
         onClick={() => gerarRelatorioSubmissoes(filtroInstituicaoAtual())}
         icon={RiFileExcelLine}
