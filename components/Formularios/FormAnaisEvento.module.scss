@@ -37,6 +37,51 @@
     }
 }
 
+.listaVolumes {
+    list-style: none;
+    margin: $gap-1 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    li {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: $gap-1;
+    }
+}
+
+.volumes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $gap-2;
+}
+
+.volume {
+    flex: 1 1 220px;
+    display: flex;
+    flex-direction: column;
+    gap: $gap-1;
+}
+
+.tabelaVolumes {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid $gray-50;
+}
+
+.linhaVolume {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: $gap-1 $gap-2;
+    padding: $gap-1 0;
+    border-bottom: 1px solid $gray-50;
+}
+
 .avisoDesatualizado {
     margin-top: $gap-1;
     padding: $gap-1;

@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import { Dropdown } from "primereact/dropdown";
+import { InputText } from "primereact/inputtext";
 import {
   RiBookOpenLine,
   RiDeleteBinLine,
@@ -12,6 +14,7 @@ import {
   RiImageAddLine,
   RiImageLine,
   RiSave2Line,
+  RiStackLine,
 } from "@remixicon/react";
 
 import styleSecao from "@/components/Formularios/FormConfiguracoesEvento.module.scss";
@@ -149,11 +152,171 @@ const MOTIVOS_DESATUALIZADO = {
   resumos: "resumos ou autores foram incluídos ou alterados",
   configuracao: "as configurações dos Anais mudaram",
   evento: "dados do evento (nome, local, datas, ISBN, cor ou divulgação das premiações) mudaram",
+  volumes: "a divisão em volumes mudou",
+};
+
+// ---------------------------------------------------------------------------
+// Divisão do PDF em volumes. Na tela: quantidade, nome de cada volume e o
+// volume de cada grande área (índice 0-based); na API: [{ nome,
+// grandesAreas: [id] }] na ordem dos volumes, ou null pra arquivo único.
+// ---------------------------------------------------------------------------
+
+const MAX_VOLUMES = 10;
+
+const divisaoInicial = (volumes) => {
+  if (!Array.isArray(volumes) || volumes.length < 2) return { quantidade: 1, nomes: [], atribuicao: {} };
+  const atribuicao = {};
+  volumes.forEach((volume, indice) => (volume.grandesAreas || []).forEach((id) => (atribuicao[id] = indice)));
+  return { quantidade: volumes.length, nomes: volumes.map((volume) => volume.nome || ""), atribuicao };
+};
+
+const volumesDaDivisao = (divisao) => {
+  if (divisao.quantidade < 2) return null;
+  return Array.from({ length: divisao.quantidade }, (_, indice) => ({
+    nome: divisao.nomes[indice]?.trim() || null,
+    grandesAreas: Object.entries(divisao.atribuicao)
+      .filter(([, volume]) => volume === indice)
+      .map(([id]) => Number(id)),
+  }));
+};
+
+// Distribui as grandes áreas (na ordem alfabética, sem embaralhar) em volumes
+// de tamanho parecido: cada uma vai pro volume onde cai o meio dela na soma
+// acumulada de trabalhos.
+const distribuir = (grandesAreas, quantidade) => {
+  const total = grandesAreas.reduce((soma, ga) => soma + ga.trabalhos, 0) || 1;
+  const porVolume = total / quantidade;
+  let acumulado = 0;
+  const atribuicao = {};
+  for (const ga of grandesAreas) {
+    atribuicao[ga.id] = Math.min(quantidade - 1, Math.floor((acumulado + ga.trabalhos / 2) / porVolume));
+    acumulado += ga.trabalhos;
+  }
+  return atribuicao;
+};
+
+const SecaoVolumes = ({ grandesAreas, divisao, onChange }) => {
+  const { quantidade, nomes, atribuicao } = divisao;
+  const opcoesQuantidade = [
+    { value: 1, label: "Arquivo único (sem volumes)" },
+    ...Array.from({ length: MAX_VOLUMES - 1 }, (_, i) => ({ value: i + 2, label: `${i + 2} volumes` })),
+  ];
+  const opcoesVolume = Array.from({ length: quantidade }, (_, i) => ({ value: i, label: `Volume ${i + 1}` }));
+
+  const mudarQuantidade = (nova) => {
+    if (nova < 2) return onChange({ quantidade: 1, nomes, atribuicao: {} });
+    // Sem divisão anterior, já sugere uma; com, só traz pra dentro do limite.
+    const novaAtribuicao =
+      quantidade < 2
+        ? distribuir(grandesAreas, nova)
+        : Object.fromEntries(Object.entries(atribuicao).map(([id, volume]) => [id, Math.min(volume, nova - 1)]));
+    return onChange({ quantidade: nova, nomes, atribuicao: novaAtribuicao });
+  };
+
+  const resumo = opcoesVolume.map(({ value }) => {
+    const doVolume = grandesAreas.filter((ga) => atribuicao[ga.id] === value);
+    return { areas: doVolume.length, trabalhos: doVolume.reduce((soma, ga) => soma + ga.trabalhos, 0) };
+  });
+  const semVolume = quantidade >= 2 ? grandesAreas.filter((ga) => atribuicao[ga.id] === undefined) : [];
+
+  return (
+    <section className={styleSecao.section}>
+      <div className={styleSecao.sectionHead}>
+        <div className={styleSecao.sectionIcon}>
+          <RiStackLine />
+        </div>
+        <div>
+          <h6>Volumes do PDF</h6>
+          <p>
+            Divide o PDF em vários arquivos, agrupando grandes áreas. Cada volume recomeça a
+            numeração de páginas e tem folha de rosto, ficha, sumário e índice de autores próprios
+            (apresentação e expediente só no Volume 1); a citação passa a indicar o volume. O Word
+            continua um arquivo único.
+          </p>
+        </div>
+      </div>
+      <div className={styleSecao.sectionGrid}>
+        <div className={styles.linha}>
+          <Dropdown
+            value={quantidade}
+            options={opcoesQuantidade}
+            onChange={(e) => mudarQuantidade(e.value)}
+            className={styleSecao.eventoInput}
+            aria-label="Quantidade de volumes"
+          />
+          {quantidade >= 2 && (
+            <Button
+              className="btn-secondary"
+              type="button"
+              onClick={() => onChange({ ...divisao, atribuicao: distribuir(grandesAreas, quantidade) })}
+            >
+              Distribuir automaticamente
+            </Button>
+          )}
+        </div>
+
+        {quantidade >= 2 && (
+          <>
+            <div className={styles.volumes}>
+              {opcoesVolume.map(({ value, label }) => (
+                <div key={value} className={styles.volume}>
+                  <p className="p5">
+                    <strong>{label}</strong> · {resumo[value].areas} grandes áreas ·{" "}
+                    {resumo[value].trabalhos} trabalhos
+                  </p>
+                  <InputText
+                    value={nomes[value] || ""}
+                    placeholder="Nome do volume (opcional)"
+                    maxLength={200}
+                    onChange={(e) => {
+                      const novos = [...nomes];
+                      novos[value] = e.target.value;
+                      onChange({ ...divisao, nomes: novos });
+                    }}
+                    className={`${styleSecao.eventoInput} w-100`}
+                  />
+                </div>
+              ))}
+            </div>
+            <p className={styleSecao.dica}>
+              Sem nome, a folha de rosto do volume lista as grandes áreas dele.
+            </p>
+
+            <div className={styles.tabelaVolumes}>
+              {grandesAreas.map((ga) => (
+                <div key={ga.id} className={styles.linhaVolume}>
+                  <span className="p5">
+                    {ga.nome} <span className={styleSecao.dica}>({ga.trabalhos} trabalhos)</span>
+                  </span>
+                  <Dropdown
+                    value={atribuicao[ga.id] ?? null}
+                    options={opcoesVolume}
+                    placeholder="Escolha o volume"
+                    onChange={(e) => onChange({ ...divisao, atribuicao: { ...atribuicao, [ga.id]: e.value } })}
+                    className={styleSecao.eventoInput}
+                    aria-label={`Volume de ${ga.nome}`}
+                  />
+                </div>
+              ))}
+            </div>
+            {semVolume.length > 0 && (
+              <p className={styles.avisoDesatualizado}>
+                Sem volume: {semVolume.map((ga) => ga.nome).join(", ")}. Todas as grandes áreas
+                precisam estar em algum volume para gerar o PDF.
+              </p>
+            )}
+          </>
+        )}
+      </div>
+    </section>
+  );
 };
 
 const CartaoArquivo = ({ arquivo, anais, gerando, motivos, desabilitado, onGerar }) => {
   const { campos } = arquivo;
-  const url = anais?.[campos.url];
+  // PDF em volumes: sem pdfUrl, com a lista de volumes e o .zip.
+  const volumes = arquivo.formato === "pdf" && Array.isArray(anais?.pdfVolumes) ? anais.pdfVolumes : null;
+  const url = volumes ? anais?.pdfZipUrl : anais?.[campos.url];
   const esteGerando = gerando === arquivo.formato;
   return (
     <div className={styles.cartaoArquivo}>
@@ -170,7 +333,8 @@ const CartaoArquivo = ({ arquivo, anais, gerando, motivos, desabilitado, onGerar
         <p className="p5 mt-1">
           Gerado em {formatarDataHora(anais[campos.data])}
           {anais[campos.total] != null && ` · ${anais[campos.total]} trabalhos`}
-          {campos.paginas && anais[campos.paginas] != null && ` · ${anais[campos.paginas]} páginas`}.
+          {campos.paginas && anais[campos.paginas] != null && ` · ${anais[campos.paginas]} páginas`}
+          {volumes && ` em ${volumes.length} volumes`}.
         </p>
       ) : (
         <p className="p5 mt-1">Ainda não gerado.</p>
@@ -181,10 +345,26 @@ const CartaoArquivo = ({ arquivo, anais, gerando, motivos, desabilitado, onGerar
           desde a geração. Gere de novo para incluir as mudanças.
         </p>
       )}
+      {volumes && !esteGerando && (
+        <ul className={styles.listaVolumes}>
+          {volumes.map((volume) => (
+            <li key={volume.numero}>
+              <a href={volume.url} target="_blank" rel="noreferrer" className={styles.linkPdf}>
+                <RiExternalLinkLine /> Volume {volume.numero}
+                {volume.nome ? ` — ${volume.nome}` : ""}
+              </a>
+              <span className={styleSecao.dica}>
+                {volume.trabalhos} trabalhos · {volume.paginas} páginas
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
       <div className={styles.acoesGeracao}>
         {url && !esteGerando && (
           <a href={url} target="_blank" rel="noreferrer" className={styles.linkPdf}>
-            <RiExternalLinkLine /> {arquivo.formato === "pdf" ? "Abrir" : "Baixar"} {arquivo.rotulo}
+            <RiExternalLinkLine />{" "}
+            {volumes ? "Baixar todos (.zip)" : `${arquivo.formato === "pdf" ? "Abrir" : "Baixar"} ${arquivo.rotulo}`}
           </a>
         )}
         <Button
@@ -209,6 +389,10 @@ const FormAnaisEvento = ({ eventoSlug }) => {
   const [statusSalvar, setStatusSalvar] = useState({});
   const [erroGerar, setErroGerar] = useState("");
   const [enviandoImagem, setEnviandoImagem] = useState(null);
+  // A divisão em volumes fica fora do react-hook-form (estrutura dinâmica);
+  // volumesAlterados faz o papel do isDirty dela.
+  const [divisao, setDivisao] = useState(divisaoInicial(null));
+  const [volumesAlterados, setVolumesAlterados] = useState(false);
 
   const { control, watch, setValue, getValues, reset, formState } = useForm({
     defaultValues: valoresIniciais(null),
@@ -222,7 +406,10 @@ const FormAnaisEvento = ({ eventoSlug }) => {
 
   useEffect(() => {
     carregar()
-      .then((dados) => reset(valoresIniciais(dados)))
+      .then((dados) => {
+        reset(valoresIniciais(dados));
+        setDivisao(divisaoInicial(dados?.anais?.volumes));
+      })
       .catch(() => setErroCarregar("Erro ao carregar os Anais do evento."))
       .finally(() => setCarregando(false));
   }, [carregar, reset]);
@@ -245,6 +432,7 @@ const FormAnaisEvento = ({ eventoSlug }) => {
         .split("\n")
         .map((nome) => nome.trim())
         .filter(Boolean),
+      volumes: volumesDaDivisao(divisao),
     };
   };
 
@@ -255,6 +443,7 @@ const FormAnaisEvento = ({ eventoSlug }) => {
       const dados = await salvarAnaisEvento(eventoSlug, payload());
       setEstado(dados);
       reset(getValues());
+      setVolumesAlterados(false);
       setStatusSalvar({ success: true });
       return true;
     } catch (error) {
@@ -268,7 +457,7 @@ const FormAnaisEvento = ({ eventoSlug }) => {
   // Salva antes de gerar, pra o arquivo sair com o que está na tela.
   const salvarEGerar = async (formato) => {
     setErroGerar("");
-    if (!estado?.anais || formState.isDirty) {
+    if (!estado?.anais || formState.isDirty || volumesAlterados) {
       const ok = await salvar();
       if (!ok) {
         setErroGerar("Corrija as configurações abaixo antes de gerar os arquivos.");
@@ -397,6 +586,15 @@ const FormAnaisEvento = ({ eventoSlug }) => {
           />
         </div>
       </section>
+
+      <SecaoVolumes
+        grandesAreas={estado?.grandesAreas || []}
+        divisao={divisao}
+        onChange={(nova) => {
+          setDivisao(nova);
+          setVolumesAlterados(true);
+        }}
+      />
 
       <section className={styleSecao.section}>
         <div className={styleSecao.sectionHead}>
