@@ -2,6 +2,97 @@
 @import "./styles/partials/layout";
 @import "./styles/partials/spacing";
 
+// ─── Abas (mesmo padrão de formularios/page.module.scss) ─────────────────────
+
+.abas {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid rgba(#000, 0.1);
+  margin-top: $gap-3;
+}
+
+.aba {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  padding: $gap-2 $gap-3;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: $gray-500;
+  transition: color 0.15s, border-color 0.15s;
+
+  &:hover {
+    color: $primary-normal;
+  }
+
+  &.abaAtiva {
+    color: $primary-normal;
+    border-bottom-color: $primary-normal;
+    font-weight: 700;
+  }
+}
+
+// ─── Lista de modelos ────────────────────────────────────────────────────────
+
+.filtro {
+  display: flex;
+  align-items: center;
+  gap: $gap-1;
+  font-size: 0.9rem;
+  color: $gray-600;
+}
+
+.titulo {
+  font-weight: 700;
+  color: $gray-700;
+}
+
+.descricao {
+  font-size: 0.85rem;
+  color: $gray-500;
+  margin-top: 2px;
+  // descrições longas (ex.: Termo de Compromisso) não estouram a linha
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.listaUsos {
+  margin: 0 0 0 $gap-2;
+  font-size: 0.85rem;
+  color: $gray-600;
+}
+
+.acoes {
+  display: flex;
+  gap: 0;
+  white-space: nowrap;
+
+  // a regra global `svg, img { width: 100% }` também pega os ícones
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.linhaArquivada {
+  opacity: 0.6;
+}
+
+.oculto {
+  display: none !important;
+}
+
+.inputCheio {
+  width: 100%;
+  margin-top: $gap-1;
+}
+
+// ─── Substituição de aluno ───────────────────────────────────────────────────
+
 .content {
   margin-top: $gap-3;
   display: flex;

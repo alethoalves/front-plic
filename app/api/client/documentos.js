@@ -244,3 +244,78 @@ export const validarDocumento = async (tenantSlug, payload) => {
     throw error;
   }
 };
+
+/**************************
+ * MODELOS DE DOCUMENTO (gestão pelo gestor)
+ **************************/
+
+export const listarModelosDocumento = async (tenantSlug, { incluirArquivados = false } = {}) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return [];
+    const response = await req.get(`/private/${tenantSlug}/documentos/modelos`, {
+      headers,
+      params: incluirArquivados ? { incluirArquivados: true } : {},
+    });
+    return response.data.templates;
+  } catch (error) {
+    console.error("Erro ao listar modelos de documento:", error.message);
+    throw error;
+  }
+};
+
+export const getModeloDocumento = async (tenantSlug, id) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return null;
+    const response = await req.get(`/private/${tenantSlug}/documentos/modelos/${id}`, { headers });
+    return response.data.template;
+  } catch (error) {
+    console.error("Erro ao buscar modelo de documento:", error.message);
+    throw error;
+  }
+};
+
+export const atualizarModeloDocumento = async (tenantSlug, id, dados) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+    const response = await req.put(`/private/${tenantSlug}/documentos/modelos/${id}`, dados, { headers });
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao atualizar modelo de documento:", error.message);
+    throw error;
+  }
+};
+
+export const duplicarModeloDocumento = async (tenantSlug, id, titulo) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return null;
+    const response = await req.post(
+      `/private/${tenantSlug}/documentos/modelos/${id}/duplicar`,
+      { titulo },
+      { headers }
+    );
+    return response.data.template;
+  } catch (error) {
+    console.error("Erro ao duplicar modelo de documento:", error.message);
+    throw error;
+  }
+};
+
+export const arquivarModeloDocumento = async (tenantSlug, id, arquivado) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return false;
+    const response = await req.put(
+      `/private/${tenantSlug}/documentos/modelos/${id}/arquivar`,
+      { arquivado },
+      { headers }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao arquivar modelo de documento:", error.message);
+    throw error;
+  }
+};
