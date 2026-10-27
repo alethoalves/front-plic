@@ -302,6 +302,7 @@ const Page = ({ params }) => {
             emptyMessage="Nenhum modelo encontrado."
             onRowClick={(e) => setModeloAbertoId(e.data.id)}
             rowClassName={(m) => `clickable-row ${m.arquivado ? styles.linhaArquivada : ""}`}
+            className={styles.tabela}
           >
             <Column
               header="Modelo"
@@ -317,11 +318,13 @@ const Page = ({ params }) => {
             />
             <Column
               header="Tipo"
+              style={{ width: "120px" }}
               body={(m) => TIPOS_DOCUMENTO[m.tipoDocumento] ?? m.tipoDocumento}
             />
-            <Column header="Documentos" field="totalRegistros" />
+            <Column header="Documentos" field="totalRegistros" style={{ width: "130px" }} />
             <Column
               header="Gera automaticamente"
+              style={{ width: "26%" }}
               body={(m) =>
                 m.usos.length === 0 ? (
                   <span className={styles.descricao}>—</span>
@@ -336,6 +339,7 @@ const Page = ({ params }) => {
             />
             <Column
               header="Ações"
+              style={{ width: "150px" }}
               body={(m) => (
                 <div className={styles.acoes} onClick={(e) => e.stopPropagation()}>
                   <Button

@@ -44,6 +44,23 @@
   color: $gray-600;
 }
 
+// A regra global `.p-datatable td, th { white-space: nowrap }` (globals.css)
+// faz as descrições longas esticarem a 1ª coluna e empurrarem as outras pra
+// fora da tela. Aqui as larguras são fixas e o texto quebra linha.
+.tabela {
+  :global(table) {
+    table-layout: fixed;
+    width: 100%;
+  }
+
+  // colunas sem largura (Modelo) dividem o espaço que sobra
+  :global(td) {
+    white-space: normal;
+    overflow-wrap: break-word;
+    vertical-align: top;
+  }
+}
+
 .titulo {
   font-weight: 700;
   color: $gray-700;
