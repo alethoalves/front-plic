@@ -9,6 +9,7 @@ import { Toast } from "primereact/toast";
 import { Card } from "primereact/card";
 import {
   generateAndDownloadCertificatePDF,
+  generateAndDownloadCertificadoFuncaoPDF,
   getCertificados,
 } from "@/app/api/client/certificado";
 import { getUltimaAvaliacaoDepurada } from "@/app/api/client/eventos";
@@ -641,6 +642,24 @@ export const CertificadoConteudo = ({ params, eventoId }) => {
       if (response.status === "success") {
         // Formatar os dados para exibição
         const certificadosFormatados = response.data.flatMap((item) => {
+          if (item.viaFuncao) {
+            // Certificado por função (organizador, monitor...) — sem trabalho
+            // nem ficha de avaliação, baixado pelo código
+            return [
+              {
+                id: `funcao-${item.id}`,
+                titulo: item.titulo,
+                evento: item.evento,
+                edicao: item.edicao,
+                tipo: item.tipo,
+                data: new Date(item.dataEmissao).toLocaleDateString("pt-BR"),
+                participantes: [item.nome],
+                codigo: item.codigo,
+                eventoId: item.eventoId,
+                viaFuncao: true,
+              },
+            ];
+          }
           if (item.viaCodigo) {
             // Certificado buscado por código
             return [
@@ -698,6 +717,11 @@ export const CertificadoConteudo = ({ params, eventoId }) => {
 
   const handleDownload = async (certificado) => {
     try {
+      if (certificado.viaFuncao) {
+        await generateAndDownloadCertificadoFuncaoPDF(eventoId, certificado.codigo);
+        showSuccess("Download iniciado com sucesso!");
+        return;
+      }
       await generateAndDownloadCertificatePDF(
         eventoId,
         certificado.tipo,
@@ -801,7 +825,7 @@ export const CertificadoConteudo = ({ params, eventoId }) => {
                       </p>
                     )}
                     <p className={styles.participantes}>
-                      <strong>Participantes:</strong>{" "}
+                      <strong>{certificado.viaFuncao ? "Nome:" : "Participantes:"}</strong>{" "}
                       {certificado.participantes.join(", ")}
                     </p>
                     <div className={styles.certificadoMeta}>
@@ -823,22 +847,24 @@ export const CertificadoConteudo = ({ params, eventoId }) => {
                       Baixar Certificado
                     </button>
                     {/* Botão Ver Ficha de Avaliação */}
-                    <button
-                      className={styles.avaliacaoButton}
-                      onClick={() => handleVerFichaAvaliacao(certificado)}
-                      disabled={loadingAvaliacao[certificado.id]}
-                    >
-                      {loadingAvaliacao[certificado.id] ? (
-                        <>
-                          <ProgressSpinner
-                            style={{ width: "16px", height: "16px" }}
-                          />
-                          Gerando Ficha...
-                        </>
-                      ) : (
-                        <>Ver Ficha de Avaliação</>
-                      )}
-                    </button>
+                    {!certificado.viaFuncao && (
+                      <button
+                        className={styles.avaliacaoButton}
+                        onClick={() => handleVerFichaAvaliacao(certificado)}
+                        disabled={loadingAvaliacao[certificado.id]}
+                      >
+                        {loadingAvaliacao[certificado.id] ? (
+                          <>
+                            <ProgressSpinner
+                              style={{ width: "16px", height: "16px" }}
+                            />
+                            Gerando Ficha...
+                          </>
+                        ) : (
+                          <>Ver Ficha de Avaliação</>
+                        )}
+                      </button>
+                    )}
                   </div>
                 </Card>
               ))}

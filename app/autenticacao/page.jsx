@@ -528,6 +528,7 @@ const CertificateValidationPage = () => {
   };
 
   const getCertificateTypeText = (data) => {
+    if (data.tipo === "funcao") return data.certificado?.funcao || "Função";
     const tipo = data.tipo || data.certificado?.tipo;
 
     switch (tipo) {
@@ -560,10 +561,42 @@ const CertificateValidationPage = () => {
         );
       case "planoDeTrabalho":
         return <PlanoDeTrabalhoDetails data={apiData} />;
+      case "funcao":
+        return <FuncaoDetails data={apiData} />;
       default:
         return null;
     }
   };
+
+  // Componente para detalhes de certificado por função (organizador, monitor...)
+  const FuncaoDetails = ({ data }) => (
+    <div className={styles.apiDetails}>
+      <h4>Informações Detalhadas - Certificado de {data.funcao}</h4>
+
+      <div className={styles.detailsGrid}>
+        <div className={styles.detailItem}>
+          <strong>Nome:</strong>
+          <span style={{ fontWeight: "bold", color: "#333" }}>
+            {data.nomeDestinatario}
+          </span>
+        </div>
+
+        <div className={styles.detailItem}>
+          <strong>Atuação:</strong>
+          <span>Função: {data.funcao}</span>
+          {data.cargaHoraria && <span>Carga horária: {data.cargaHoraria}h</span>}
+        </div>
+
+        {data.evento && (
+          <div className={styles.detailItem}>
+            <strong>Evento:</strong>
+            <span>{data.evento.nomeEvento}</span>
+            <span>Edição: {data.evento.edicaoEvento}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 
   // Componente para detalhes de submissão
   const SubmissaoDetails = ({ data }) => {

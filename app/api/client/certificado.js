@@ -57,7 +57,45 @@ export const CAMPOS_POR_TIPO = {
     { key: "avaliador", label: "Nome do avaliador" },
     { key: "qntAvaliacoes", label: "Quantidade de avaliações" },
   ],
+  FUNCAO: [
+    { key: "nome", label: "Nome" },
+    { key: "cpf", label: "CPF" },
+    { key: "funcao", label: "Função" },
+    { key: "cargaHoraria", label: "Carga horária" },
+  ],
 };
+
+// Espelha funcaoComGenero de api-plic/src/services/certificadoTexto.js —
+// junta "Monitor"/"Monitora" em "Monitor(a)" pra prévia do modelo.
+const juntarPalavra = (m, f) => {
+  if (m === f) return m;
+  let i = 0;
+  while (i < m.length && i < f.length && m[i] === f[i]) i++;
+  const sufixoM = m.slice(i);
+  const sufixoF = f.slice(i);
+  if (i > 0 && sufixoM.length <= 1 && sufixoF.length >= 1 && sufixoF.length <= 2) {
+    return `${m}(${sufixoF})`;
+  }
+  return null;
+};
+
+export const funcaoComGenero = (masculino, feminino) => {
+  const m = (masculino || "").trim();
+  const f = (feminino || "").trim();
+  if (!f || m === f) return m;
+  if (!m) return f;
+
+  const palavrasM = m.split(/\s+/);
+  const palavrasF = f.split(/\s+/);
+  if (palavrasM.length === palavrasF.length) {
+    const juntas = palavrasM.map((p, idx) => juntarPalavra(p, palavrasF[idx]));
+    if (juntas.every(Boolean)) return juntas.join(" ");
+  }
+  return `${m}/${f}`;
+};
+
+export const formatarCargaHoraria = (horas) =>
+  horas ? `, com carga horária de ${horas} ${horas === 1 ? "hora" : "horas"}` : "";
 
 export const CAMPOS_COMUNS = [
   { key: "nomeEvento", label: "Nome do evento" },
@@ -80,6 +118,8 @@ const CAMPOS_AMOSTRA = {
   categoria: "na categoria EXEMPLO",
   avaliador: "FULANO AVALIADOR",
   qntAvaliacoes: "5",
+  nome: "FULANA DE TAL",
+  cpf: "000.000.000-00",
 };
 
 // timeZone: 'UTC' pelo mesmo motivo do backend (certificadoTexto.js) —
@@ -89,14 +129,15 @@ const formatarDataPreview = (data) =>
 
 // Resolve o texto (ainda com placeholders) pra prévia: campos específicos do
 // tipo usam dado de exemplo, campos comuns (nomeEvento/periodo) usam o
-// evento real já que esses sempre existem.
-export const resolverTextoPreview = (texto, tipo, evento) => {
+// evento real já que esses sempre existem. valoresReais sobrepõe a amostra
+// quando o valor é conhecido na tela (ex.: a função do modelo por função).
+export const resolverTextoPreview = (texto, tipo, evento, valoresReais = {}) => {
   let resolvido = texto || "";
 
   for (const campo of CAMPOS_POR_TIPO[tipo] || []) {
     resolvido = resolvido
       .split(`<<[${campo.key}]>>`)
-      .join(CAMPOS_AMOSTRA[campo.key] ?? `[${campo.label}]`);
+      .join(valoresReais[campo.key] ?? CAMPOS_AMOSTRA[campo.key] ?? `[${campo.label}]`);
   }
 
   const periodo =
@@ -331,5 +372,118 @@ export const validarCertificado = async (codigo) => {
     }
     console.error("Erro na validação:", error.message);
     throw error;
+  }
+};
+
+/**************************
+ * Certificados por função (organizador, monitor...) — modelos livres do
+ * evento + lista de CPFs, ver api-plic certificadoFuncaoController.js
+**************************/
+
+const mensagemErro = (error, padrao) =>
+  error.response?.data?.message || error.message || padrao;
+
+const chamarAdminEvento = async (metodo, url, body, padrao) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) throw new Error("Token de autenticação não encontrado.");
+    const response =
+      metodo === "get" || metodo === "delete"
+        ? await req[metodo](url, { headers })
+        : await req[metodo](url, body, { headers });
+    return response.data;
+  } catch (error) {
+    console.error(padrao, error.response?.data || error.message);
+    throw new Error(mensagemErro(error, padrao));
+  }
+};
+
+export const getModelosCertificadoFuncao = async (eventoSlug) =>
+  (await chamarAdminEvento("get", `/evenplic/${eventoSlug}/certificadosFuncao`, null,
+    "Erro ao carregar modelos de certificado por função.")).modelos;
+
+export const criarModeloCertificadoFuncao = async (eventoSlug, dados) =>
+  (await chamarAdminEvento("post", `/evenplic/${eventoSlug}/certificadosFuncao`, dados,
+    "Erro ao criar modelo.")).modelo;
+
+export const atualizarModeloCertificadoFuncao = async (eventoSlug, modeloId, dados) =>
+  (await chamarAdminEvento("put", `/evenplic/${eventoSlug}/certificadosFuncao/${modeloId}`, dados,
+    "Erro ao salvar modelo.")).modelo;
+
+export const excluirModeloCertificadoFuncao = async (eventoSlug, modeloId) =>
+  chamarAdminEvento("delete", `/evenplic/${eventoSlug}/certificadosFuncao/${modeloId}`, null,
+    "Erro ao excluir modelo.");
+
+export const uploadImagemModeloCertificadoFuncao = async (eventoSlug, modeloId, formData) => {
+  try {
+    const token = getAuthToken();
+    if (!token) throw new Error("Token de autenticação não encontrado.");
+    const response = await req.put(
+      `/evenplic/${eventoSlug}/certificadosFuncao/${modeloId}/imagem`,
+      formData,
+      { headers: { Authorization: `Token ${token}`, "Content-Type": "multipart/form-data" } }
+    );
+    return response.data.modelo;
+  } catch (error) {
+    console.error("Erro ao enviar imagem:", error.response?.data || error.message);
+    throw new Error(mensagemErro(error, "Erro ao enviar imagem. Tente novamente."));
+  }
+};
+
+export const consultarCpfCertificadoFuncao = async (eventoSlug, modeloId, cpf) =>
+  chamarAdminEvento("post", `/evenplic/${eventoSlug}/certificadosFuncao/${modeloId}/consultarCpf`, { cpf },
+    "Erro ao consultar CPF.");
+
+export const getPessoasCertificadoFuncao = async (eventoSlug, modeloId) =>
+  (await chamarAdminEvento("get", `/evenplic/${eventoSlug}/certificadosFuncao/${modeloId}/pessoas`, null,
+    "Erro ao carregar a lista.")).pessoas;
+
+export const adicionarPessoaCertificadoFuncao = async (eventoSlug, modeloId, dados) =>
+  (await chamarAdminEvento("post", `/evenplic/${eventoSlug}/certificadosFuncao/${modeloId}/pessoas`, dados,
+    "Erro ao adicionar pessoa.")).pessoa;
+
+export const atualizarPessoaCertificadoFuncao = async (eventoSlug, modeloId, certificadoId, dados) =>
+  (await chamarAdminEvento("put", `/evenplic/${eventoSlug}/certificadosFuncao/${modeloId}/pessoas/${certificadoId}`, dados,
+    "Erro ao salvar pessoa.")).pessoa;
+
+export const removerPessoaCertificadoFuncao = async (eventoSlug, modeloId, certificadoId) =>
+  chamarAdminEvento("delete", `/evenplic/${eventoSlug}/certificadosFuncao/${modeloId}/pessoas/${certificadoId}`, null,
+    "Erro ao remover pessoa.");
+
+const nomeArquivoSeguro = (texto) =>
+  (texto || "certificado")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9]+/g, "_")
+    .replace(/^_|_$/g, "")
+    .toLowerCase();
+
+// Público (só o código): usado no download do admin e na busca por CPF.
+export const generateAndDownloadCertificadoFuncaoPDF = async (eventoId, codigo) => {
+  try {
+    const response = await req.get(`/evenplic/evento/${eventoId}/generateCertificadoFuncao/${codigo}`);
+    const { status, html, nome } = response.data;
+    if (status !== "success" || !html) {
+      throw new Error("Erro ao obter o HTML do certificado.");
+    }
+
+    const container = document.createElement("div");
+    container.innerHTML = html;
+    container.style.width = "1123px";
+    container.style.height = "794px";
+    container.style.position = "relative";
+    document.body.appendChild(container);
+
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    const canvas = await html2canvas(container, { scale: 2 });
+    document.body.removeChild(container);
+
+    const pdf = new jsPDF("landscape", "px", [canvas.width, canvas.height]);
+    pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
+    pdf.save(`certificado_${nomeArquivoSeguro(nome)}_${codigo}.pdf`);
+  } catch (error) {
+    console.error("Erro ao gerar certificado por função:", error.response?.data || error.message);
+    throw new Error(mensagemErro(error, "Erro ao gerar ou baixar o certificado. Tente novamente."));
   }
 };

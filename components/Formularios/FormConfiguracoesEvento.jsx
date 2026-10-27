@@ -25,6 +25,7 @@ import FormCriteriosAvaliacao from "@/components/Formularios/FormCriteriosAvalia
 import FormSessoes from "@/components/Formularios/FormSessoes";
 import FormAtividades from "@/components/Formularios/FormAtividades";
 import FormCertificados from "@/components/Formularios/FormCertificados";
+import FormCertificadosFuncao from "@/components/Formularios/FormCertificadosFuncao";
 import FormAnaisEvento from "@/components/Formularios/FormAnaisEvento";
 
 //COMPONENTES
@@ -591,6 +592,7 @@ const FormConfiguracoesEvento = ({ eventoSlug, initialData }) => {
               evento={initialData}
             />
           )}
+          <FormCertificadosFuncao eventoSlug={eventoSlug} evento={initialData} />
         </>
       )}
 
