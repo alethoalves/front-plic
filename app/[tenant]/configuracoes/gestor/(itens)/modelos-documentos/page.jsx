@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  RiAddLine,
   RiArchiveLine,
   RiFileCopyLine,
   RiInboxUnarchiveLine,
@@ -8,7 +9,8 @@ import {
 } from "@remixicon/react";
 
 import Header from "@/components/Header";
-import ModeloDocumentoDialog, { TIPOS_DOCUMENTO } from "@/components/ModeloDocumentoDialog";
+import ModeloDocumentoDialog from "@/components/modeloDocumento/ModeloDocumentoDialog";
+import { TIPOS_DOCUMENTO } from "@/components/modeloDocumento/constantes";
 import { Dropdown } from "primereact/dropdown";
 import { Button } from "primereact/button";
 import { Toast } from "primereact/toast";
@@ -255,7 +257,7 @@ const Page = ({ params }) => {
       <Header
         className="mb-3"
         titulo="Modelos de Documentos"
-        subtitulo="Veja, edite e organize os modelos de documento"
+        subtitulo="Crie, edite e organize os modelos de documento"
         descricao="Modelos arquivados deixam de aparecer nas telas de gerar documentos e de cotas, mas os documentos já gerados continuam valendo."
       />
 
@@ -274,15 +276,23 @@ const Page = ({ params }) => {
 
       {abaAtiva === "modelos" && (
         <div className="mt-3">
-          <div className={`${styles.filtro} mb-2`}>
-            <Checkbox
-              inputId="mostrar-arquivados"
-              checked={mostrarArquivados}
-              onChange={(e) => setMostrarArquivados(e.checked)}
+          <div className="flex-space mb-2">
+            <div className={styles.filtro}>
+              <Checkbox
+                inputId="mostrar-arquivados"
+                checked={mostrarArquivados}
+                onChange={(e) => setMostrarArquivados(e.checked)}
+              />
+              <label htmlFor="mostrar-arquivados">
+                Mostrar arquivados ({totalArquivados})
+              </label>
+            </div>
+            <Button
+              icon={<RiAddLine size={18} />}
+              label="Novo modelo"
+              className={styles.botaoNovo}
+              onClick={() => setModeloAbertoId("novo")}
             />
-            <label htmlFor="mostrar-arquivados">
-              Mostrar arquivados ({totalArquivados})
-            </label>
           </div>
 
           <DataTable

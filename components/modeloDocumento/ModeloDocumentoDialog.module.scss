@@ -1,0 +1,265 @@
+@import "./styles/partials/colors";
+@import "./styles/partials/layout";
+@import "./styles/partials/spacing";
+
+.conteudo {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-2;
+}
+
+.secao {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-1;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $gap-2;
+}
+
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-1;
+  font-weight: 700;
+  color: $gray-600;
+  font-size: 0.9rem;
+
+  :global(.p-inputtext) {
+    font-weight: 400;
+    width: 100%;
+  }
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $gap-2;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.campoLabel {
+  color: $gray-700;
+}
+
+.meta {
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: $gray-500;
+}
+
+.usos {
+  background: $warning-lighten;
+  border: 1px solid $warning-light;
+  border-radius: 6px;
+  padding: $gap-1 $gap-2;
+  font-size: 0.9rem;
+  color: $gray-700;
+
+  ul {
+    margin: $gap-1 0 0 $gap-3;
+  }
+}
+
+// ─── Escolha do tipo (modelo novo) ───────────────────────────────────────────
+
+.escolhaTipo {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-2;
+}
+
+.opcoesTipo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $gap-2;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.opcaoTipo {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-1;
+  text-align: left;
+  padding: $gap-3;
+  border: 2px solid $gray-200;
+  border-radius: 8px;
+  background: $white-light;
+  cursor: pointer;
+  transition: border-color 0.15s;
+
+  strong {
+    font-size: 1.1rem;
+    color: $gray-700;
+  }
+
+  span {
+    font-size: 0.9rem;
+    color: $gray-500;
+  }
+
+  &:hover {
+    border-color: $primary-normal;
+  }
+}
+
+// ─── Regras ──────────────────────────────────────────────────────────────────
+
+.regras {
+  font-size: 0.9rem;
+  color: $gray-600;
+
+  summary {
+    cursor: pointer;
+    font-weight: 700;
+  }
+}
+
+.listaRegras {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-1;
+  margin-top: $gap-1;
+}
+
+.linha {
+  display: flex;
+  align-items: center;
+  gap: $gap-1;
+}
+
+.dropdownAcao {
+  max-width: 360px;
+}
+
+// ─── Termo ───────────────────────────────────────────────────────────────────
+
+// Abas: mesmo padrão de configuracoes/gestor/formularios/page.module.scss
+.abas {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid rgba(#000, 0.1);
+  margin-top: $gap-1;
+}
+
+.aba {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  padding: $gap-1 $gap-3;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: $gray-500;
+  transition: color 0.15s, border-color 0.15s;
+
+  &:hover {
+    color: $primary-normal;
+  }
+
+  &.abaAtiva {
+    color: $primary-normal;
+    border-bottom-color: $primary-normal;
+    font-weight: 700;
+  }
+}
+
+.variaveis {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $gap-1;
+}
+
+.alerta {
+  background: $warning-lighten;
+  border-left: 4px solid $warning-dark;
+  padding: $gap-1 $gap-2;
+  font-size: 0.9rem;
+  color: $gray-700;
+}
+
+.editorHtml {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $gap-2;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.painel {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-1;
+  min-width: 0;
+}
+
+.codigo,
+.preview {
+  width: 100%;
+  height: 60vh;
+  border: 1px solid $gray-200;
+  border-radius: 6px;
+}
+
+.codigo {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  padding: $gap-1;
+  resize: vertical;
+  white-space: pre;
+  overflow: auto;
+}
+
+.preview {
+  background: $white-light;
+}
+
+// ─── Formulário ──────────────────────────────────────────────────────────────
+
+.camposLeitura {
+  margin: $gap-1 0 $gap-1 $gap-3;
+  font-size: 0.9rem;
+
+  ul {
+    margin-left: $gap-3;
+  }
+}
+
+// ─── Rodapé ──────────────────────────────────────────────────────────────────
+
+.rodape {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: $gap-2;
+  flex-wrap: wrap;
+}
+
+.mensagensRodape {
+  flex: 1;
+  text-align: left;
+  font-size: 0.85rem;
+}
+
+.aviso {
+  color: $warning-darken;
+}
+
+.erro {
+  color: $error-dark;
+}

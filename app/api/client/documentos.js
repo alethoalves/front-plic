@@ -264,6 +264,18 @@ export const listarModelosDocumento = async (tenantSlug, { incluirArquivados = f
   }
 };
 
+export const criarModeloDocumento = async (tenantSlug, dados) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return null;
+    const response = await req.post(`/private/${tenantSlug}/documentos/modelos`, dados, { headers });
+    return response.data.template;
+  } catch (error) {
+    console.error("Erro ao criar modelo de documento:", error.message);
+    throw error;
+  }
+};
+
 export const getModeloDocumento = async (tenantSlug, id) => {
   try {
     const headers = getAuthHeadersClient();

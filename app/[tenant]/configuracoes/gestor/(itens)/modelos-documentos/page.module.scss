@@ -78,6 +78,13 @@
   }
 }
 
+.botaoNovo svg {
+  // a regra global `svg, img { width: 100% }` também pega o ícone
+  width: 18px;
+  height: 18px;
+  margin-right: $gap-1;
+}
+
 .linhaArquivada {
   opacity: 0.6;
 }

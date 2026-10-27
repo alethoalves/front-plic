@@ -1,0 +1,105 @@
+@import "./styles/partials/colors";
+@import "./styles/partials/layout";
+@import "./styles/partials/spacing";
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: $gap-2;
+
+  // a regra global `svg, img { width: 100% }` também pega os ícones
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  > .campo {
+    align-self: stretch;
+  }
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-1;
+  padding: $gap-2;
+  border: 1px solid $gray-200;
+  border-radius: 6px;
+  background: $white-light;
+}
+
+.grupo {
+  background: $gray-25;
+}
+
+.cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: $gap-2;
+}
+
+.tipo {
+  min-width: 260px;
+}
+
+.acoes {
+  display: flex;
+  gap: 0;
+}
+
+.rotulo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: $gray-600;
+
+  :global(.p-inputtext) {
+    font-weight: 400;
+    width: 100%;
+  }
+}
+
+.linha {
+  display: flex;
+  align-items: center;
+  gap: $gap-1;
+  font-size: 0.9rem;
+  color: $gray-600;
+}
+
+.extras {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $gap-2;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.opcoes {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.opcao {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  max-width: 420px;
+
+  :global(.p-inputtext) {
+    flex: 1;
+  }
+}
+
+.erro {
+  color: $error-dark;
+}
