@@ -32,6 +32,7 @@ import {
   excluirModeloCertificadoFuncao,
   uploadImagemModeloCertificadoFuncao,
   consultarCpfCertificadoFuncao,
+  buscarUsuariosCertificadoFuncao,
   getPessoasCertificadoFuncao,
   adicionarPessoaCertificadoFuncao,
   atualizarPessoaCertificadoFuncao,
@@ -53,6 +54,10 @@ const mascararCpf = (valor) => {
     .replace(/^(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
     .replace(/\.(\d{3})(\d)/, ".$1-$2");
 };
+
+// Campo único da aba Pessoas: com letra é busca por nome, só número é CPF
+const temLetra = (texto) => /\p{L}/u.test(texto);
+const contarLetras = (texto) => (texto.match(/\p{L}/gu) || []).length;
 
 // "" → null (limpa), senão inteiro positivo; undefined = inválido
 const lerCargaHoraria = (valor) => {
@@ -290,8 +295,12 @@ const ORIGEM_NOME = {
 const ListaPessoas = ({ eventoSlug, evento, modelo, onTotalAlterado }) => {
   const [pessoas, setPessoas] = useState(null);
   const [erroLista, setErroLista] = useState("");
-  const [cpf, setCpf] = useState("");
-  const [consulta, setConsulta] = useState(null); // { cpf, nome, origem, jaNaLista }
+  const [busca, setBusca] = useState("");
+  // { cpf, nome, origem, jaNaLista } pela consulta de CPF, ou
+  // { userId, nome, origem: "usuario", cpfMascarado } pela busca por nome
+  const [consulta, setConsulta] = useState(null);
+  const [sugestoes, setSugestoes] = useState(null);
+  const [buscandoNomes, setBuscandoNomes] = useState(false);
   const [nome, setNome] = useState("");
   const [carga, setCarga] = useState("");
   const [consultando, setConsultando] = useState(false);
@@ -301,7 +310,8 @@ const ListaPessoas = ({ eventoSlug, evento, modelo, onTotalAlterado }) => {
   const [editando, setEditando] = useState(null); // { id, nome, carga }
   const [erroEdit, setErroEdit] = useState("");
   const [baixando, setBaixando] = useState({});
-  const cpfRef = useRef();
+  const buscaRef = useRef();
+  const modoNome = temLetra(busca);
 
   useEffect(() => {
     let ativo = true;
@@ -312,6 +322,28 @@ const ListaPessoas = ({ eventoSlug, evento, modelo, onTotalAlterado }) => {
       ativo = false;
     };
   }, [eventoSlug, modelo.id]);
+
+  // Busca por nome (só quem tem conta), com espera curta entre teclas
+  useEffect(() => {
+    const termo = busca.trim();
+    if (!modoNome || consulta || contarLetras(termo) < 3) {
+      setSugestoes(null);
+      setBuscandoNomes(false);
+      return;
+    }
+    let ativo = true;
+    setBuscandoNomes(true);
+    const timer = setTimeout(() => {
+      buscarUsuariosCertificadoFuncao(eventoSlug, modelo.id, termo)
+        .then((lista) => ativo && setSugestoes(lista))
+        .catch((err) => ativo && setErroAdd(err.message))
+        .finally(() => ativo && setBuscandoNomes(false));
+    }, 350);
+    return () => {
+      ativo = false;
+      clearTimeout(timer);
+    };
+  }, [busca, modoNome, consulta, eventoSlug, modelo.id]);
 
   const atualizarLista = (fn) => {
     const nova = fn(pessoas || []);
@@ -326,8 +358,29 @@ const ListaPessoas = ({ eventoSlug, evento, modelo, onTotalAlterado }) => {
     setErroAdd("");
   };
 
+  const escolherUsuario = (usuario) => {
+    setConsulta({
+      userId: usuario.id,
+      nome: usuario.nome,
+      origem: "usuario",
+      cpfMascarado: usuario.cpfMascarado,
+      jaNaLista: null,
+    });
+    setNome(usuario.nome);
+    setCarga("");
+    setErroAdd("");
+    setSugestoes(null);
+  };
+
   const handleConsultar = async (e) => {
     e.preventDefault();
+    if (modoNome) {
+      // Enter na busca por nome: com um único resultado, já escolhe
+      const disponiveis = (sugestoes || []).filter((u) => !u.jaNaLista);
+      if (sugestoes?.length === 1 && disponiveis.length === 1) escolherUsuario(disponiveis[0]);
+      return;
+    }
+    const cpf = busca;
     if (apenasNumeros(cpf).length !== 11) {
       setErroAdd("Digite os 11 dígitos do CPF.");
       return;
@@ -359,7 +412,7 @@ const ListaPessoas = ({ eventoSlug, evento, modelo, onTotalAlterado }) => {
     setErroAdd("");
     try {
       const pessoa = await adicionarPessoaCertificadoFuncao(eventoSlug, modelo.id, {
-        cpf: consulta.cpf,
+        ...(consulta.userId ? { userId: consulta.userId } : { cpf: consulta.cpf }),
         nome: nome.trim(),
         cargaHoraria,
       });
@@ -367,8 +420,8 @@ const ListaPessoas = ({ eventoSlug, evento, modelo, onTotalAlterado }) => {
         [...lista, pessoa].sort((a, b) => a.nomeDestinatario.localeCompare(b.nomeDestinatario, "pt-BR"))
       );
       limparConsulta();
-      setCpf("");
-      cpfRef.current?.focus();
+      setBusca("");
+      buscaRef.current?.focus();
     } catch (err) {
       setErroAdd(err.message);
     } finally {
@@ -446,26 +499,67 @@ const ListaPessoas = ({ eventoSlug, evento, modelo, onTotalAlterado }) => {
       )}
 
       <form onSubmit={handleConsultar} className={styles.linhaCampos}>
-        <label className={`${styles.campo} ${styles.campoCpf}`}>
-          <span>CPF</span>
+        <label className={`${styles.campo} ${styles.campoBusca}`}>
+          <span>CPF ou nome</span>
           <input
-            ref={cpfRef}
+            ref={buscaRef}
             className={styles.input}
-            value={cpf}
+            value={busca}
             onChange={(e) => {
-              setCpf(mascararCpf(e.target.value));
+              const valor = e.target.value;
+              setBusca(temLetra(valor) ? valor : mascararCpf(valor));
               if (consulta) limparConsulta();
             }}
-            placeholder="000.000.000-00"
-            inputMode="numeric"
+            placeholder="000.000.000-00 ou nome de quem tem conta"
+            autoComplete="off"
           />
         </label>
         <div className={styles.botaoLinha}>
-          <Button icon={RiSearchLine} className="btn-secondary" type="submit" disabled={consultando}>
-            {consultando ? "Consultando..." : "Consultar"}
+          <Button
+            icon={RiSearchLine}
+            className="btn-secondary"
+            type="submit"
+            disabled={consultando || modoNome}
+            title={modoNome ? "A busca por nome é automática — escolha na lista abaixo" : undefined}
+          >
+            {consultando ? "Consultando..." : "Consultar CPF"}
           </Button>
         </div>
       </form>
+      <p className={styleSecao.dica}>
+        Nome: busca entre quem já tem conta no PLIC. CPF: para quem não tem — o nome é consultado
+        automaticamente.
+      </p>
+
+      {modoNome && !consulta && (buscandoNomes || sugestoes) && (
+        <div className={styles.sugestoes}>
+          {buscandoNomes && <p className={styleSecao.dica}>Buscando...</p>}
+          {!buscandoNomes && sugestoes?.length === 0 && (
+            <p className={styleSecao.dica}>
+              Ninguém com conta no PLIC tem esse nome. Se a pessoa não tem cadastro, digite o CPF.
+            </p>
+          )}
+          {!buscandoNomes &&
+            sugestoes?.map((usuario) => (
+              <button
+                key={usuario.id}
+                type="button"
+                className={styles.sugestao}
+                disabled={usuario.jaNaLista}
+                onClick={() => escolherUsuario(usuario)}
+              >
+                <span className={styles.itemNome}>{usuario.nome}</span>
+                <span className={styles.itemMeta}>
+                  CPF {usuario.cpfMascarado}
+                  {usuario.jaNaLista ? " · já está na lista" : ""}
+                </span>
+              </button>
+            ))}
+          {!buscandoNomes && sugestoes?.length === 10 && (
+            <p className={styleSecao.dica}>Mostrando os 10 primeiros — digite mais do nome para refinar.</p>
+          )}
+        </div>
+      )}
 
       {consulta && consulta.jaNaLista && (
         <p className={styles.aviso}>
@@ -499,6 +593,7 @@ const ListaPessoas = ({ eventoSlug, evento, modelo, onTotalAlterado }) => {
             </label>
           </div>
           <p className={styleSecao.dica}>
+            CPF {consulta.cpfMascarado || mascararCpf(consulta.cpf)}.{" "}
             {ORIGEM_NOME[consulta.origem] ||
               "Não encontramos o nome deste CPF — digite o nome completo."}{" "}
             Confira antes de confirmar: é assim que o nome vai sair no certificado.

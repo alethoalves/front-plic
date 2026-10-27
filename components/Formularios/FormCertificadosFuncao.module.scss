@@ -61,8 +61,47 @@
 .campoCurto {
     flex: 0 1 180px;
 }
-.campoCpf {
-    flex: 0 1 240px;
+.campoBusca {
+    flex: 1 1 280px;
+    max-width: 420px;
+}
+
+// Resultados da busca por nome
+.sugestoes {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid $gray-50;
+    border-radius: 6px;
+    margin-top: $gap-1;
+    max-width: 520px;
+    overflow: hidden;
+    > p {
+        padding: $gap-1 $gap-2;
+        margin-top: 0;
+    }
+}
+.sugestao {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: $gap-1 $gap-2;
+    border: none;
+    border-bottom: 1px solid $gray-50;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color ease 0.2s;
+    &:last-child {
+        border-bottom: none;
+    }
+    &:hover:enabled {
+        background-color: $white-darken;
+    }
+    &:disabled {
+        cursor: default;
+        opacity: 0.6;
+    }
 }
 
 .input {

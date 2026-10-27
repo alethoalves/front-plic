@@ -434,6 +434,14 @@ export const consultarCpfCertificadoFuncao = async (eventoSlug, modeloId, cpf) =
   chamarAdminEvento("post", `/evenplic/${eventoSlug}/certificadosFuncao/${modeloId}/consultarCpf`, { cpf },
     "Erro ao consultar CPF.");
 
+export const buscarUsuariosCertificadoFuncao = async (eventoSlug, modeloId, nome) =>
+  (await chamarAdminEvento(
+    "get",
+    `/evenplic/${eventoSlug}/certificadosFuncao/${modeloId}/buscarUsuarios?nome=${encodeURIComponent(nome)}`,
+    null,
+    "Erro ao buscar por nome."
+  )).usuarios;
+
 export const getPessoasCertificadoFuncao = async (eventoSlug, modeloId) =>
   (await chamarAdminEvento("get", `/evenplic/${eventoSlug}/certificadosFuncao/${modeloId}/pessoas`, null,
     "Erro ao carregar a lista.")).pessoas;
