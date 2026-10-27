@@ -147,7 +147,9 @@ export const resolverTextoPreview = (texto, tipo, evento, valoresReais = {}) => 
 
   resolvido = resolvido
     .split("<<[nomeEvento]>>")
-    .join(evento?.nomeEvento ?? "[Nome do evento]");
+    // Mesma normalização do backend (certificadoTexto.js): o nome cadastrado
+    // pode ter quebra de linha, e a prévia usa white-space: pre-wrap
+    .join(evento?.nomeEvento ? evento.nomeEvento.replace(/\s+/g, " ").trim() : "[Nome do evento]");
   resolvido = resolvido.split("<<[periodo]>>").join(periodo);
 
   return resolvido;
