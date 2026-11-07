@@ -154,7 +154,7 @@ const Auth = ({
         }
       }
     } else {
-      router.push("/"); // Redireciona para a home caso o perfil não seja reconhecido
+      router.push("/entrar"); // Volta para a seleção de instituição caso o perfil não seja reconhecido
     }
   };
 

@@ -56,12 +56,12 @@ const ClientSelect = ({ tenants }) => {
               <span className={styles.selectedLogo}>
                 <Image
                   src={resolveEventoImageSrc(selectedTenant.pathLogo)}
-                  alt={selectedTenant.name || "Instituição"}
+                  alt={selectedTenant.nome || "Instituição"}
                   fill
                   sizes="24"
                 />
               </span>
-              <span>{selectedTenant.name || "Selecione uma instituição"}</span>
+              <span>{selectedTenant.nome || "Selecione uma instituição"}</span>
             </>
           ) : (
             "Escolha uma instituição"
@@ -84,7 +84,7 @@ const ClientSelect = ({ tenants }) => {
                 <span className={styles.itemLogo}>
                   <Image
                     src={resolveEventoImageSrc(tenant.pathLogo)}
-                    alt={tenant.name || "Logo"}
+                    alt={tenant.nome || "Logo"}
                     fill
                     sizes="32"
                   />
