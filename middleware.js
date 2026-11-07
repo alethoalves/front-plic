@@ -5,10 +5,17 @@ import { cookies } from "next/headers";
 import { getTenant } from "./app/api/server/getTenant";
 import { pingAdminEvento, pingAluno, pingAvaliador, pingAvaliadorTenant, pingGestor, pingOrientador, pingRoot, pingUser } from "./app/api/server/pings";
 import { getEditais, getEventoBySlug, getEventoRootBySlug } from "./app/api/serverReq";
+import { isLandingPath } from "./lib/landing.mjs";
 
 export const middleware = async (request) => {
   // Recebe um request, extrai a URL e identifica o tenant a partir do caminho.
   const url = new URL(request.url);
+
+  // Landing (reescrita para contato.plic.app.br no next.config) e a seleção de
+  // instituição: não são rotas de tenant, então saem antes de qualquer consulta.
+  if (isLandingPath(url.pathname) || url.pathname === "/entrar") {
+    return NextResponse.next();
+  }
   const tenantMatch = url.pathname.match(/^\/([^\/]*)/);
   const tenant = tenantMatch ? tenantMatch[1] : null;
 
@@ -27,7 +34,7 @@ export const middleware = async (request) => {
   urlToPublic.pathname = `/public`;
 
   const urlToRoot = new URL(request.url);
-  urlToRoot.pathname = `/`;
+  urlToRoot.pathname = `/entrar`; // seleção de instituição
 
   const urlToAvaliador = new URL(request.url);
   urlToAvaliador.pathname = `/avaliador/home`;

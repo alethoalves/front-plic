@@ -1,6 +1,6 @@
 import Image from "next/image";
 import styles from "./page.module.scss";
-import { getTenants } from "./api/server/getTenant";
+import { getTenants } from "@/app/api/server/getTenant";
 import ClientSelect from "@/components/ClientSelect";
 
 // Sem isso o Next gera essa página estaticamente no build e a lista de
