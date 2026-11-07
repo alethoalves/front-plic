@@ -113,10 +113,9 @@ const Page = ({ params }) => {
     );
 
     try {
-      await toggleStatusAvaliadorAno({
+      await toggleStatusAvaliadorAno(params.tenant, {
         userId: rowData.user.id,
         ano: Number(params.ano),
-        tenantId: tenant.id,
       });
       await atualizarAvaliadores(params.tenant, setAvaliadores, setTodasAreas);
     } catch (err) {
