@@ -69,12 +69,14 @@ export const recusarConvitePorToken = async (token) => {
   }
 };
 
-export const toggleStatusAvaliadorAno = async (payload) => {
+export const toggleStatusAvaliadorAno = async (tenantSlug, payload) => {
   try {
+    const headers = getAuthHeadersClient();
+    if (!headers) throw new Error("Sessão expirada");
     const { data } = await req.post(
-      `/avaliador/toggle-status`,
+      `/private/${tenantSlug}/avaliador/toggle-status`,
       payload,
-      
+      { headers }
     );
     
     if (data.status === 'success') {
