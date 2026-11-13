@@ -94,8 +94,22 @@ export const funcaoComGenero = (masculino, feminino) => {
   return `${m}/${f}`;
 };
 
-export const formatarCargaHoraria = (horas) =>
-  horas ? `, com carga horária de ${horas} ${horas === 1 ? "hora" : "horas"}` : "";
+export const formatarCargaHoraria = (horas, idioma = "pt") => {
+  if (!horas) return "";
+  return idioma === "en"
+    ? `, with a workload of ${horas} ${horas === 1 ? "hour" : "hours"}`
+    : `, com carga horária de ${horas} ${horas === 1 ? "hora" : "horas"}`;
+};
+
+// Versão em inglês de um modelo/layout de certificado: existe quando texto e
+// imagem em inglês foram cadastrados (mesma regra de temVersaoIngles na API).
+export const temVersaoIngles = (modelo) =>
+  Boolean(modelo?.textoIngles?.trim() && modelo?.imagemFundoIngles);
+
+// Sufixo do arquivo e query string do idioma para os downloads
+const sufixoIdioma = (idioma) => (idioma === "en" ? "_en" : "");
+const queryIdioma = (idioma, temOutrosParametros = false) =>
+  idioma === "en" ? `${temOutrosParametros ? "&" : "?"}idioma=en` : "";
 
 export const CAMPOS_COMUNS = [
   { key: "nomeEvento", label: "Nome do evento" },
@@ -107,6 +121,21 @@ export const CAMPOS_COMUNS = [
 // Cada valor já inclui a frase ao redor exatamente como o backend monta em
 // generateCertificate/getAvaliadorCertificateData (ex.: "area" já vem como
 // "na área de ...", não só o nome da área).
+const CAMPOS_AMOSTRA_INGLES = {
+  tituloResumo: "TÍTULO DE EXEMPLO DO TRABALHO",
+  autores: "FULANO DE TAL",
+  coautores: " co-authored by CICLANO DE TAL,",
+  orientadores: " under the supervision of BELTRANO ORIENTADOR,",
+  colaboradores: " and with the collaboration of SICRANO,",
+  area: "in the field of EXAMPLE SCIENCES",
+  grandeArea: "in the major field of EXAMPLE",
+  categoria: "in the category EXEMPLO",
+  avaliador: "FULANO AVALIADOR",
+  qntAvaliacoes: "5",
+  nome: "FULANA DE TAL",
+  cpf: "000.000.000-00",
+};
+
 const CAMPOS_AMOSTRA = {
   tituloResumo: "TÍTULO DE EXEMPLO DO TRABALHO",
   autores: "FULANO DE TAL",
@@ -124,25 +153,31 @@ const CAMPOS_AMOSTRA = {
 
 // timeZone: 'UTC' pelo mesmo motivo do backend (certificadoTexto.js) —
 // inicio/fim são gravados à meia-noite UTC.
-const formatarDataPreview = (data) =>
-  new Date(data).toLocaleDateString("pt-BR", { timeZone: "UTC" });
+const formatarDataPreview = (data, idioma = "pt") =>
+  idioma === "en"
+    ? new Date(data).toLocaleDateString("en-US", { timeZone: "UTC", month: "long", day: "numeric", year: "numeric" })
+    : new Date(data).toLocaleDateString("pt-BR", { timeZone: "UTC" });
 
 // Resolve o texto (ainda com placeholders) pra prévia: campos específicos do
 // tipo usam dado de exemplo, campos comuns (nomeEvento/periodo) usam o
 // evento real já que esses sempre existem. valoresReais sobrepõe a amostra
 // quando o valor é conhecido na tela (ex.: a função do modelo por função).
-export const resolverTextoPreview = (texto, tipo, evento, valoresReais = {}) => {
+// idioma "en" usa as frases da versão em inglês (mesmas de FRASES.en na API).
+export const resolverTextoPreview = (texto, tipo, evento, valoresReais = {}, idioma = "pt") => {
   let resolvido = texto || "";
+  const amostra = idioma === "en" ? CAMPOS_AMOSTRA_INGLES : CAMPOS_AMOSTRA;
 
   for (const campo of CAMPOS_POR_TIPO[tipo] || []) {
     resolvido = resolvido
       .split(`<<[${campo.key}]>>`)
-      .join(valoresReais[campo.key] ?? CAMPOS_AMOSTRA[campo.key] ?? `[${campo.label}]`);
+      .join(valoresReais[campo.key] ?? amostra[campo.key] ?? `[${campo.label}]`);
   }
 
+  const inicio = evento?.inicio && formatarDataPreview(evento.inicio, idioma);
+  const fim = evento?.fim && formatarDataPreview(evento.fim, idioma);
   const periodo =
-    evento?.inicio && evento?.fim
-      ? `${formatarDataPreview(evento.inicio)} a ${formatarDataPreview(evento.fim)}`
+    inicio && fim
+      ? idioma === "en" ? `from ${inicio} to ${fim}` : `${inicio} a ${fim}`
       : `${evento?.edicaoEvento ?? "[Período do evento]"}`;
 
   resolvido = resolvido
@@ -155,14 +190,15 @@ export const resolverTextoPreview = (texto, tipo, evento, valoresReais = {}) => 
   return resolvido;
 };
 
-export const updateTextoCertificado = async (eventoSlug, idCertificado, texto) => {
+// idioma "en" grava o texto da versão em inglês (textoIngles)
+export const updateTextoCertificado = async (eventoSlug, idCertificado, texto, idioma = "pt") => {
   try {
     const headers = getAuthHeadersClient();
     if (!headers) throw new Error("Token de autenticação não encontrado.");
 
     const response = await req.put(
       `/evenplic/${eventoSlug}/certificados/${idCertificado}/texto`,
-      { texto },
+      idioma === "en" ? { textoIngles: texto } : { texto },
       { headers }
     );
 
@@ -173,7 +209,7 @@ export const updateTextoCertificado = async (eventoSlug, idCertificado, texto) =
   }
 };
 
-export const uploadAndSaveCertificateImage = async (eventoSlug, idCertificado, formData) => {
+export const uploadAndSaveCertificateImage = async (eventoSlug, idCertificado, formData, idioma = "pt") => {
   try {
     const token = getAuthToken(); // Obtenha o token diretamente
     if (!token) {
@@ -187,7 +223,7 @@ export const uploadAndSaveCertificateImage = async (eventoSlug, idCertificado, f
 
 
     const response = await req.put(
-      `/evenplic/${eventoSlug}/uploadAndSaveCertificateImage/${idCertificado}`,
+      `/evenplic/${eventoSlug}/uploadAndSaveCertificateImage/${idCertificado}${queryIdioma(idioma)}`,
       formData,
       { headers } // Envie os cabeçalhos
     );
@@ -217,7 +253,7 @@ export const getLayoutCertificados = async (eventoSlug) => {
   }
 }; 
 
-export const generateAndDownloadAvaliadorCertificatePDF = async (eventoSlug) => {
+export const generateAndDownloadAvaliadorCertificatePDF = async (eventoSlug, idioma = "pt") => {
   try {
     // Obtenha os cabeçalhos de autenticação
     const headers = getAuthHeadersClientAvaliador();
@@ -226,7 +262,7 @@ export const generateAndDownloadAvaliadorCertificatePDF = async (eventoSlug) => 
     }
 
     // Chame a API para obter o HTML do certificado
-    const response = await req.get(`evenplic/evento/${eventoSlug}/generateAvaliadorCertificate`, {
+    const response = await req.get(`evenplic/evento/${eventoSlug}/generateAvaliadorCertificate${queryIdioma(idioma)}`, {
       headers,
     });
 
@@ -263,10 +299,22 @@ export const generateAndDownloadAvaliadorCertificatePDF = async (eventoSlug) => 
     pdf.addImage(imgData, "PNG", 0, 0, canvasWidth, canvasHeight);
 
     // Inicia o download do PDF
-    pdf.save(`certificado_${eventoSlug}.pdf`);
+    pdf.save(`certificado_${eventoSlug}${sufixoIdioma(idioma)}.pdf`);
   } catch (error) {
     console.error("Erro ao gerar ou baixar o certificado PDF:", error.message);
-    throw new Error(error.response.data.message||"Erro ao gerar ou baixar o certificado. Tente novamente.");
+    throw new Error(error.response?.data?.message || "Erro ao gerar ou baixar o certificado. Tente novamente.");
+  }
+};
+
+// Tipos de certificado do evento (pelo slug da edição) com versão em inglês
+// configurada. Em caso de erro devolve [] — o botão em inglês só não aparece.
+export const getTiposCertificadoIngles = async (edicaoSlug) => {
+  try {
+    const response = await req.get(`/evenplic/evento/${edicaoSlug}/tiposCertificadoIngles`);
+    return response.data.tipos || [];
+  } catch (error) {
+    console.error("Erro ao verificar certificados em inglês:", error.message);
+    return [];
   }
 };
 
@@ -277,7 +325,10 @@ export const getUserSubmissions = async (eventoId) => {
     const response = await req.get(`/evenplic/${eventoId}/getUserSubmissions`, {
       headers,
     });
-    return response.data.submissoes;
+    // tiposIngles: tipos de certificado que também podem ser baixados em
+    // inglês — anexado a cada submissão pra não mudar o formato do retorno
+    const tiposIngles = response.data.tiposIngles || [];
+    return response.data.submissoes?.map((sub) => ({ ...sub, tiposIngles }));
   } catch (error) {
     if (error.response && error.response.status === 404) {
       console.error("Cargos não encontrados:", error.message);
@@ -308,7 +359,7 @@ export const getCertificados = async (eventoId, tipoBusca, valor) => {
     throw error;
   }
 };
-export const generateAndDownloadCertificatePDF = async (eventoId, tipo, submissaoId, codigo = null) => {
+export const generateAndDownloadCertificatePDF = async (eventoId, tipo, submissaoId, codigo = null, idioma = "pt") => {
   try {
     const headers = getAuthHeadersClient();
    
@@ -319,6 +370,7 @@ export const generateAndDownloadCertificatePDF = async (eventoId, tipo, submissa
     if (codigo) {
       url += `?codigo=${codigo}`;
     }
+    url += queryIdioma(idioma, Boolean(codigo));
 
     const response = await req.get(url, {
       headers: headers || {} // Envia headers se disponível, senão envia vazio
@@ -350,11 +402,11 @@ export const generateAndDownloadCertificatePDF = async (eventoId, tipo, submissa
     const imgData = canvas.toDataURL("image/png");
 
     pdf.addImage(imgData, "PNG", 0, 0, canvasWidth, canvasHeight);
-    pdf.save(`certificado_${eventoId}.pdf`);
+    pdf.save(`certificado_${eventoId}${sufixoIdioma(idioma)}.pdf`);
     
   } catch (error) {
     console.error("Erro ao gerar ou baixar o certificado PDF:", error.message);
-    throw new Error("Erro ao gerar ou baixar o certificado. Tente novamente.");
+    throw new Error(error.response?.data?.message || "Erro ao gerar ou baixar o certificado. Tente novamente.");
   }
 };
 
@@ -416,12 +468,12 @@ export const excluirModeloCertificadoFuncao = async (eventoSlug, modeloId) =>
   chamarAdminEvento("delete", `/evenplic/${eventoSlug}/certificadosFuncao/${modeloId}`, null,
     "Erro ao excluir modelo.");
 
-export const uploadImagemModeloCertificadoFuncao = async (eventoSlug, modeloId, formData) => {
+export const uploadImagemModeloCertificadoFuncao = async (eventoSlug, modeloId, formData, idioma = "pt") => {
   try {
     const token = getAuthToken();
     if (!token) throw new Error("Token de autenticação não encontrado.");
     const response = await req.put(
-      `/evenplic/${eventoSlug}/certificadosFuncao/${modeloId}/imagem`,
+      `/evenplic/${eventoSlug}/certificadosFuncao/${modeloId}/imagem${queryIdioma(idioma)}`,
       formData,
       { headers: { Authorization: `Token ${token}`, "Content-Type": "multipart/form-data" } }
     );
@@ -469,9 +521,11 @@ const nomeArquivoSeguro = (texto) =>
     .toLowerCase();
 
 // Público (só o código): usado no download do admin e na busca por CPF.
-export const generateAndDownloadCertificadoFuncaoPDF = async (eventoId, codigo) => {
+export const generateAndDownloadCertificadoFuncaoPDF = async (eventoId, codigo, idioma = "pt") => {
   try {
-    const response = await req.get(`/evenplic/evento/${eventoId}/generateCertificadoFuncao/${codigo}`);
+    const response = await req.get(
+      `/evenplic/evento/${eventoId}/generateCertificadoFuncao/${codigo}${queryIdioma(idioma)}`
+    );
     const { status, html, nome } = response.data;
     if (status !== "success" || !html) {
       throw new Error("Erro ao obter o HTML do certificado.");
@@ -491,7 +545,7 @@ export const generateAndDownloadCertificadoFuncaoPDF = async (eventoId, codigo) 
 
     const pdf = new jsPDF("landscape", "px", [canvas.width, canvas.height]);
     pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
-    pdf.save(`certificado_${nomeArquivoSeguro(nome)}_${codigo}.pdf`);
+    pdf.save(`certificado_${nomeArquivoSeguro(nome)}_${codigo}${sufixoIdioma(idioma)}.pdf`);
   } catch (error) {
     console.error("Erro ao gerar certificado por função:", error.response?.data || error.message);
     throw new Error(mensagemErro(error, "Erro ao gerar ou baixar o certificado. Tente novamente."));

@@ -21,7 +21,10 @@ import {
   getStatusCheckin,
   iniciarCheckinOutraSubmissao,
 } from "@/app/api/client/checkin";
-import { generateAndDownloadCertificatePDF } from "@/app/api/client/certificado";
+import {
+  generateAndDownloadCertificatePDF,
+  getTiposCertificadoIngles,
+} from "@/app/api/client/certificado";
 import { formatarData, formatarHora } from "@/lib/formatarDatas";
 import Button from "@/components/Button";
 import styles from "./checkin.module.scss";
@@ -100,6 +103,8 @@ const CheckinStatusCard = ({ eventoSlug, checkinToken, resultadoInicial }) => {
   const [erroCertificado, setErroCertificado] = useState({});
   const [iniciandoOutra, setIniciandoOutra] = useState({});
   const [erroOutra, setErroOutra] = useState({});
+  // Tipos de certificado do evento com versão em inglês configurada
+  const [tiposIngles, setTiposIngles] = useState([]);
   const pollRef = useRef(null);
 
   const buscarStatus = async () => {
@@ -113,14 +118,17 @@ const CheckinStatusCard = ({ eventoSlug, checkinToken, resultadoInicial }) => {
     }
   };
 
-  const handleBaixarCertificado = async (tipo) => {
-    setBaixando((prev) => ({ ...prev, [tipo]: true }));
+  const handleBaixarCertificado = async (tipo, idioma = "pt") => {
+    const chave = `${tipo}-${idioma}`;
+    setBaixando((prev) => ({ ...prev, [chave]: true }));
     setErroCertificado((prev) => ({ ...prev, [tipo]: "" }));
     try {
       await generateAndDownloadCertificatePDF(
         resultado.eventoId,
         tipo,
         resultado.submissaoId,
+        null,
+        idioma,
       );
     } catch (error) {
       setErroCertificado((prev) => ({
@@ -129,7 +137,7 @@ const CheckinStatusCard = ({ eventoSlug, checkinToken, resultadoInicial }) => {
           error.message ?? "Erro ao gerar o certificado. Tente novamente.",
       }));
     } finally {
-      setBaixando((prev) => ({ ...prev, [tipo]: false }));
+      setBaixando((prev) => ({ ...prev, [chave]: false }));
     }
   };
 
@@ -174,6 +182,16 @@ const CheckinStatusCard = ({ eventoSlug, checkinToken, resultadoInicial }) => {
     return () => clearInterval(pollRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resultado?.status]);
+
+  // Só depois da avaliação há certificado pra baixar
+  useEffect(() => {
+    if (resultado?.status !== "AVALIADA") return;
+    let ativo = true;
+    getTiposCertificadoIngles(eventoSlug).then((tipos) => ativo && setTiposIngles(tipos));
+    return () => {
+      ativo = false;
+    };
+  }, [resultado?.status, eventoSlug]);
 
   useEffect(() => {
     if (!resultado?.checkinAt || resultado.status === "AVALIADA") return;
@@ -304,10 +322,20 @@ const CheckinStatusCard = ({ eventoSlug, checkinToken, resultadoInicial }) => {
                       icon={RiDownloadLine}
                       className="btn-primary w-100"
                       onClick={() => handleBaixarCertificado(item.tipo)}
-                      loading={baixando[item.tipo]}
+                      loading={baixando[`${item.tipo}-pt`]}
                     >
                       {item.label}
                     </Button>
+                    {tiposIngles.includes(item.tipo) && (
+                      <Button
+                        icon={RiDownloadLine}
+                        className="btn-secondary w-100 mt-1"
+                        onClick={() => handleBaixarCertificado(item.tipo, "en")}
+                        loading={baixando[`${item.tipo}-en`]}
+                      >
+                        {item.label} (em inglês)
+                      </Button>
+                    )}
                     {erroCertificado[item.tipo] && (
                       <p className={styles.erro}>
                         {erroCertificado[item.tipo]}

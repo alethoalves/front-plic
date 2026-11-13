@@ -113,3 +113,40 @@
         }
     }
 }
+
+// Abas Português / Inglês do modal (mesmo padrão de
+// configuracoes/gestor/(itens)/formularios/page.module.scss)
+.abas {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid rgba(#000, 0.1);
+    margin-top: $gap-2;
+}
+.aba {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    padding: $gap-1 $gap-3;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: $gray-500;
+    transition: color 0.15s, border-color 0.15s;
+    &:hover { color: $primary-normal; }
+    &.abaAtiva { color: $primary-normal; border-bottom-color: $primary-normal; font-weight: 700; }
+}
+.avisoIdioma {
+    font-size: 0.85rem;
+    color: $gray-500;
+}
+.badgeIngles {
+    display: inline-block;
+    margin-left: $gap-1;
+    padding: 0 $gap-1;
+    border-radius: $gap-1;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: $success-dark;
+    background: rgba($success-normal, 0.12);
+}
