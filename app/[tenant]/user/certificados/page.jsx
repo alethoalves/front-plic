@@ -38,7 +38,10 @@ import {
   updateAreaPlanoDeTrabalho,
   updatePlanoDeTrabalho,
 } from "@/app/api/client/planoDeTrabalho";
-import { generateAndDownloadCertificatePlanoPDF } from "@/app/api/client/certificadoPlanoDeTrabalho";
+import {
+  generateAndDownloadCertificatePlanoPDF,
+  getTiposCertificadoComIngles,
+} from "@/app/api/client/certificadoPlanoDeTrabalho";
 import { abrirArquivoPrivado, urlDownloadResposta } from "@/app/api/client/arquivos";
 
 const Page = ({ params }) => {
@@ -161,16 +164,25 @@ const Page = ({ params }) => {
       setUpdatingPlano(null);
     }
   };
-  const [generatingCertificate, setGeneratingCertificate] = useState(null); // Novo estado para controlar o loading do certificado
+  // "<planoId>-<idioma>" do certificado sendo gerado (controla o loading)
+  const [generatingCertificate, setGeneratingCertificate] = useState(null);
+  // Versão em inglês do certificado de conclusão configurada pelo gestor?
+  const [conclusaoEmIngles, setConclusaoEmIngles] = useState(false);
 
-  // Função para emitir certificado - você precisará implementar a lógica real
-  const handleEmitirCertificado = async (plano) => {
-    setGeneratingCertificate(plano.id); // Inicia o loading para este plano específico
+  useEffect(() => {
+    let ativo = true;
+    getTiposCertificadoComIngles(params.tenant).then(
+      (tipos) => ativo && setConclusaoEmIngles(tipos.includes("CONCLUSAO"))
+    );
+    return () => {
+      ativo = false;
+    };
+  }, [params.tenant]);
+
+  const handleEmitirCertificado = async (plano, idioma = "pt") => {
+    setGeneratingCertificate(`${plano.id}-${idioma}`);
     try {
-      console.log("Emitindo certificado para o plano:", plano.id);
-
-      // Chama a função de geração de certificado
-      await generateAndDownloadCertificatePlanoPDF(params.tenant, plano.id);
+      await generateAndDownloadCertificatePlanoPDF(params.tenant, plano.id, idioma);
 
       toast.current.show({
         severity: "success",
@@ -581,7 +593,7 @@ const Page = ({ params }) => {
                         </div>
                       </div>
 
-                      {/* BOTÃO DE EMITIR CERTIFICADO - ADICIONADO AQUI */}
+                      {/* Emissão do certificado de conclusão (+ versão em inglês, se configurada) */}
                       <div className={styles.certificadoSection}>
                         <Button
                           className={styles.certificadoButton}
@@ -589,9 +601,9 @@ const Page = ({ params }) => {
                             e.stopPropagation();
                             handleEmitirCertificado(plano);
                           }}
-                          disabled={generatingCertificate === plano.id} // Desabilita o botão durante o loading
+                          disabled={Boolean(generatingCertificate)}
                         >
-                          {generatingCertificate === plano.id ? (
+                          {generatingCertificate === `${plano.id}-pt` ? (
                             <>
                               <RiLoader4Line
                                 size={16}
@@ -606,6 +618,31 @@ const Page = ({ params }) => {
                             </>
                           )}
                         </Button>
+                        {conclusaoEmIngles && (
+                          <Button
+                            className={styles.certificadoButton}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEmitirCertificado(plano, "en");
+                            }}
+                            disabled={Boolean(generatingCertificate)}
+                          >
+                            {generatingCertificate === `${plano.id}-en` ? (
+                              <>
+                                <RiLoader4Line
+                                  size={16}
+                                  className={styles.loadingSpinner}
+                                />
+                                Gerando Certificado...
+                              </>
+                            ) : (
+                              <>
+                                <RiFileDownloadLine size={16} />
+                                Emitir em inglês
+                              </>
+                            )}
+                          </Button>
+                        )}
                       </div>
 
                       {/* Atividades do Plano */}

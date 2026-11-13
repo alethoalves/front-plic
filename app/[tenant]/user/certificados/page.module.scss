@@ -605,3 +605,9 @@
     cursor: not-allowed;
   }
 }
+// Botões de emissão (português + inglês, quando houver versão em inglês)
+.certificadoSection {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 $gap-2;
+}

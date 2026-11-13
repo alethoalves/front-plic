@@ -14,6 +14,8 @@ import styles from "./EditorTextoCertificado.module.scss";
 const LARGURA = 1123;
 const ALTURA = 794;
 
+// exemploEn: como o valor sai na versão em inglês (só área/grande área são
+// traduzidas; título, nomes, edital e instituição ficam como cadastrados)
 const MARCADORES = [
   { chave: "<<[tituloPlano]>>", label: "Título do plano", exemplo: "TÍTULO DO PLANO DE TRABALHO", negrito: true },
   { chave: "<<[alunos]>>", label: "Alunos", exemplo: "NOME DO ALUNO", negrito: true },
@@ -22,9 +24,19 @@ const MARCADORES = [
   { chave: "<<[edital]>>", label: "Edital", exemplo: "PIBIC" },
   { chave: "<<[anoEdital]>>", label: "Ano do edital", exemplo: "2025" },
   { chave: "<<[instituicao]>>", label: "Instituição", exemplo: "Universidade" },
-  { chave: "<<[area]>>", label: "Área", exemplo: "Ciência da Computação" },
-  { chave: "<<[grandeArea]>>", label: "Grande área", exemplo: "Ciências Exatas e da Terra" },
+  { chave: "<<[area]>>", label: "Área", exemplo: "Ciência da Computação", exemploEn: "Computer Science" },
+  {
+    chave: "<<[grandeArea]>>",
+    label: "Grande área",
+    exemplo: "Ciências Exatas e da Terra",
+    exemploEn: "Exact and Earth Sciences",
+  },
 ];
+
+const AUTENTICIDADE = {
+  pt: "A autenticidade deste certificado pode ser verificada informando o código XXXXXX no endereço www.plic.app.br/autenticacao.",
+  en: "The authenticity of this certificate can be verified with the code XXXXXX at www.plic.app.br/autenticacao.",
+};
 
 const REGEX_MARCADORES = new RegExp(
   `(${MARCADORES.map((m) => m.chave.replace(/[[\]]/g, "\\$&")).join("|")})`,
@@ -32,23 +44,33 @@ const REGEX_MARCADORES = new RegExp(
 );
 
 // Texto com os marcadores trocados por valores de exemplo (React escapa o resto)
-const TextoPrevia = ({ texto }) =>
+const TextoPrevia = ({ texto, idioma }) =>
   texto.split(REGEX_MARCADORES).map((parte, i) => {
     const marcador = MARCADORES.find((m) => m.chave === parte);
     if (!marcador) return parte;
-    return marcador.negrito ? <strong key={i}>{marcador.exemplo}</strong> : <span key={i}>{marcador.exemplo}</span>;
+    const exemplo = (idioma === "en" && marcador.exemploEn) || marcador.exemplo;
+    return marcador.negrito ? <strong key={i}>{exemplo}</strong> : <span key={i}>{exemplo}</span>;
   });
 
-const EditorTextoCertificado = ({ tenant, layout, onSalvo }) => {
-  const [texto, setTexto] = useState(layout.texto || "");
-  const [posicaoX, setPosicaoX] = useState(layout.posicaoTextoX ?? 50);
-  const [posicaoY, setPosicaoY] = useState(layout.posicaoTextoY ?? 360);
+// idioma "en" edita a versão em inglês (textoIngles + posição própria, que
+// por padrão é a mesma do português).
+const EditorTextoCertificado = ({ tenant, layout, onSalvo, idioma = "pt" }) => {
+  const ingles = idioma === "en";
+  const textoSalvo = (ingles ? layout.textoIngles : layout.texto) || "";
+  const xSalvo = ingles ? layout.posicaoTextoXIngles ?? layout.posicaoTextoX : layout.posicaoTextoX;
+  const ySalvo = ingles ? layout.posicaoTextoYIngles ?? layout.posicaoTextoY : layout.posicaoTextoY;
+  const imagem = ingles ? layout.imagemFundoIngles : layout.imagemFundo;
+
+  const [texto, setTexto] = useState(textoSalvo);
+  const [posicaoX, setPosicaoX] = useState(xSalvo ?? 50);
+  const [posicaoY, setPosicaoY] = useState(ySalvo ?? 360);
   const [salvando, setSalvando] = useState(false);
   const [mensagem, setMensagem] = useState(null);
   const textareaRef = useRef(null);
 
-  const alterado =
-    texto !== (layout.texto || "") || posicaoX !== layout.posicaoTextoX || posicaoY !== layout.posicaoTextoY;
+  const alterado = texto !== textoSalvo || posicaoX !== xSalvo || posicaoY !== ySalvo;
+  // Em inglês, texto vazio é permitido (apaga a versão em inglês)
+  const textoValido = ingles ? texto.trim().length === 0 || texto.trim().length >= 10 : texto.trim().length >= 10;
 
   // Insere o marcador onde está o cursor (ou no fim, se o campo não tem foco)
   const inserirMarcador = (chave) => {
@@ -67,13 +89,21 @@ const EditorTextoCertificado = ({ tenant, layout, onSalvo }) => {
     setSalvando(true);
     setMensagem(null);
     try {
-      const atualizado = await updateLayoutCertificado(tenant, layout.id, {
-        texto,
-        posicaoTextoX: posicaoX ?? 0,
-        posicaoTextoY: posicaoY ?? 0,
-      });
+      // A rota exige o texto/posição do português; na aba Inglês reenvia os
+      // valores já salvos do português junto com os da versão em inglês
+      const dados = ingles
+        ? {
+            texto: layout.texto || "",
+            posicaoTextoX: layout.posicaoTextoX ?? 0,
+            posicaoTextoY: layout.posicaoTextoY ?? 0,
+            textoIngles: texto.trim() ? texto : null,
+            posicaoTextoXIngles: posicaoX ?? 0,
+            posicaoTextoYIngles: posicaoY ?? 0,
+          }
+        : { texto, posicaoTextoX: posicaoX ?? 0, posicaoTextoY: posicaoY ?? 0 };
+      const atualizado = await updateLayoutCertificado(tenant, layout.id, dados);
       onSalvo?.(atualizado);
-      setMensagem({ tipo: "sucesso", texto: "Texto salvo." });
+      setMensagem({ tipo: "sucesso", texto: ingles ? "Texto em inglês salvo." : "Texto salvo." });
     } catch (error) {
       setMensagem({ tipo: "erro", texto: error?.response?.data?.message || "Erro ao salvar o texto." });
     } finally {
@@ -86,11 +116,11 @@ const EditorTextoCertificado = ({ tenant, layout, onSalvo }) => {
 
   return (
     <div className={styles.editor}>
-      <label className={styles.label} htmlFor="textoCertificado">
-        Texto do certificado
+      <label className={styles.label} htmlFor={`textoCertificado-${idioma}`}>
+        {ingles ? "Texto do certificado em inglês" : "Texto do certificado"}
       </label>
       <InputTextarea
-        id="textoCertificado"
+        id={`textoCertificado-${idioma}`}
         ref={textareaRef}
         className={styles.textarea}
         value={texto}
@@ -98,6 +128,11 @@ const EditorTextoCertificado = ({ tenant, layout, onSalvo }) => {
         rows={5}
         autoResize
         maxLength={3000}
+        placeholder={
+          ingles
+            ? "Ex.: We certify that <<[alunos]>> completed the research project <<[tituloPlano]>>, under the supervision of <<[orientadores]>>..."
+            : undefined
+        }
       />
 
       <p className={`${styles.ajuda} mt-1`}>Clique para inserir um campo no texto, na posição do cursor:</p>
@@ -111,11 +146,11 @@ const EditorTextoCertificado = ({ tenant, layout, onSalvo }) => {
 
       <div className={`${styles.posicoes} mt-2`}>
         <div>
-          <label className={styles.label} htmlFor="posicaoX">
+          <label className={styles.label} htmlFor={`posicaoX-${idioma}`}>
             Margem lateral (px)
           </label>
           <InputNumber
-            inputId="posicaoX"
+            inputId={`posicaoX-${idioma}`}
             value={posicaoX}
             onValueChange={(e) => setPosicaoX(e.value)}
             min={0}
@@ -125,11 +160,11 @@ const EditorTextoCertificado = ({ tenant, layout, onSalvo }) => {
           />
         </div>
         <div>
-          <label className={styles.label} htmlFor="posicaoY">
+          <label className={styles.label} htmlFor={`posicaoY-${idioma}`}>
             Distância do topo (px)
           </label>
           <InputNumber
-            inputId="posicaoY"
+            inputId={`posicaoY-${idioma}`}
             value={posicaoY}
             onValueChange={(e) => setPosicaoY(e.value)}
             min={0}
@@ -143,7 +178,7 @@ const EditorTextoCertificado = ({ tenant, layout, onSalvo }) => {
       <p className={`${styles.label} mt-2`}>Prévia (com dados de exemplo)</p>
       <div
         className={styles.previa}
-        style={layout.imagemFundo ? { backgroundImage: `url("${layout.imagemFundo}")` } : undefined}
+        style={imagem ? { backgroundImage: `url("${imagem}")` } : undefined}
       >
         <div
           className={styles.previaTexto}
@@ -154,12 +189,9 @@ const EditorTextoCertificado = ({ tenant, layout, onSalvo }) => {
           }}
         >
           <div className={styles.previaCorpo}>
-            <TextoPrevia texto={texto} />
+            <TextoPrevia texto={texto} idioma={idioma} />
           </div>
-          <div className={styles.previaAutenticidade}>
-            A autenticidade deste certificado pode ser verificada informando o código XXXXXX no endereço
-            www.plic.app.br/autenticacao.
-          </div>
+          <div className={styles.previaAutenticidade}>{AUTENTICIDADE[idioma]}</div>
         </div>
       </div>
 
@@ -170,9 +202,9 @@ const EditorTextoCertificado = ({ tenant, layout, onSalvo }) => {
           className="btn-primary"
           type="button"
           loading={salvando}
-          disabled={!alterado || texto.trim().length < 10}
+          disabled={!alterado || !textoValido}
         >
-          Salvar texto
+          {ingles ? "Salvar texto em inglês" : "Salvar texto"}
         </Button>
         {mensagem && (
           <p className={mensagem.tipo === "erro" ? styles.erro : styles.sucesso}>{mensagem.texto}</p>
