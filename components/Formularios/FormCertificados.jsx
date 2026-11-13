@@ -12,6 +12,7 @@ import {
   uploadAndSaveCertificateImage,
   updateTextoCertificado,
   resolverTextoPreview,
+  temVersaoIngles,
   CAMPOS_POR_TIPO,
   CAMPOS_COMUNS,
 } from "@/app/api/client/certificado";
@@ -43,6 +44,16 @@ const DESCRICAO_POR_TIPO = {
   MENCAO: "Certificado de Menção Honrosa",
 };
 
+// Cada layout tem uma versão em português e, opcionalmente, uma em inglês
+// (imagem e texto próprios; a posição do texto é a mesma). A versão em inglês
+// fica disponível pra download quando tem imagem e texto.
+const IDIOMAS = [
+  { id: "pt", label: "Português" },
+  { id: "en", label: "Inglês" },
+];
+const CAMPO_TEXTO = { pt: "texto", en: "textoIngles" };
+const CAMPO_IMAGEM = { pt: "imagemFundo", en: "imagemFundoIngles" };
+
 // Layouts de certificado (imagem de fundo + texto) por tipo, pra este
 // evento — cada tipo tem no máximo um layout (@@unique([eventoId, tipo])).
 // Migrado de app/evento/[eventoSlug]/admin/certificados/ pra virar uma aba
@@ -54,7 +65,16 @@ const FormCertificados = ({ eventoSlug, initialCertificados, evento }) => {
   const [selectedCertificado, setSelectedCertificado] = useState(null);
   const [error, setError] = useState("");
   const [isUploading, setIsUploading] = useState(false);
-  const [textoCertificado, setTextoCertificado] = useState("");
+  const [idioma, setIdioma] = useState("pt");
+  // Texto em edição de cada idioma (trocar de aba não perde o que foi digitado)
+  const [textos, setTextos] = useState({ pt: "", en: "" });
+  const textoCertificado = textos[idioma];
+  const setTextoCertificado = (valor) =>
+    setTextos((atual) => ({
+      ...atual,
+      [idioma]: typeof valor === "function" ? valor(atual[idioma]) : valor,
+    }));
+  const imagemAtual = selectedCertificado?.[CAMPO_IMAGEM[idioma]];
   const [isSavingTexto, setIsSavingTexto] = useState(false);
   const [errorTexto, setErrorTexto] = useState("");
   const fileInputRef = useRef();
@@ -64,7 +84,8 @@ const FormCertificados = ({ eventoSlug, initialCertificados, evento }) => {
     setTipoCertificado(certificado.tipo);
     setSelectedCertificado(certificado);
     setError("");
-    setTextoCertificado(certificado.texto || "");
+    setIdioma("pt");
+    setTextos({ pt: certificado.texto || "", en: certificado.textoIngles || "" });
     setErrorTexto("");
   };
 
@@ -72,7 +93,7 @@ const FormCertificados = ({ eventoSlug, initialCertificados, evento }) => {
     setIsModalOpen(false);
     setSelectedCertificado(null);
     setError("");
-    setTextoCertificado("");
+    setTextos({ pt: "", en: "" });
     setErrorTexto("");
   };
 
@@ -87,7 +108,8 @@ const FormCertificados = ({ eventoSlug, initialCertificados, evento }) => {
       const response = await updateTextoCertificado(
         eventoSlug,
         selectedCertificado.id,
-        textoCertificado
+        textoCertificado,
+        idioma
       );
       const atualizado = response.certificado;
       setCertificados((prev) =>
@@ -117,20 +139,22 @@ const FormCertificados = ({ eventoSlug, initialCertificados, evento }) => {
       const response = await uploadAndSaveCertificateImage(
         eventoSlug,
         selectedCertificado.id,
-        formData
+        formData,
+        idioma
       );
 
+      const campo = CAMPO_IMAGEM[idioma];
       setCertificados((prev) =>
         prev.map((cert) =>
           cert.id === selectedCertificado.id
-            ? { ...cert, imagemFundo: response.fileUrl }
+            ? { ...cert, [campo]: response.fileUrl }
             : cert
         )
       );
 
       setSelectedCertificado((prev) => ({
         ...prev,
-        imagemFundo: response.fileUrl,
+        [campo]: response.fileUrl,
       }));
 
       setError("");
@@ -180,7 +204,10 @@ const FormCertificados = ({ eventoSlug, initialCertificados, evento }) => {
                 )}
               </div>
               <div className={styles.descricao}>
-                <p>{DESCRICAO_POR_TIPO[item.tipo] || "Certificado de Menção Honrosa"}</p>
+                <p>
+                  {DESCRICAO_POR_TIPO[item.tipo] || "Certificado de Menção Honrosa"}
+                  {temVersaoIngles(item) && <span className={styles.badgeIngles}>EN</span>}
+                </p>
               </div>
             </div>
           ))}
@@ -191,13 +218,39 @@ const FormCertificados = ({ eventoSlug, initialCertificados, evento }) => {
         <div className={`${styles.icon} mb-2`}>{<RiMedalLine />}</div>
         <h4>{TITULO_POR_TIPO[tipoCertificado] || "Menção Honrosa"}</h4>
 
+        <div className={styles.abas}>
+          {IDIOMAS.map((aba) => (
+            <button
+              key={aba.id}
+              type="button"
+              className={`${styles.aba} ${idioma === aba.id ? styles.abaAtiva : ""}`}
+              onClick={() => {
+                setIdioma(aba.id);
+                setError("");
+                setErrorTexto("");
+              }}
+            >
+              {aba.label}
+            </button>
+          ))}
+        </div>
+        {idioma === "en" && (
+          <p className={`${styles.avisoIdioma} mt-2`}>
+            Versão opcional. Com imagem e texto preenchidos, aparece o botão
+            &quot;Baixar em inglês&quot; para quem tem este certificado (mesmo
+            código de autenticação). Use uma imagem de fundo com título e cargos
+            em inglês. Título do trabalho e categoria saem como cadastrados; área
+            e grande área são traduzidas automaticamente.
+          </p>
+        )}
+
         <div className={`${styles.bgCertificado} mt-2`} onClick={handleDivClick}>
           <div className={styles.certificadoImg}>
-            {selectedCertificado?.imagemFundo ? (
+            {imagemAtual ? (
               <Image
                 priority
                 fill
-                src={selectedCertificado.imagemFundo}
+                src={imagemAtual}
                 alt={`Certificado ${selectedCertificado.tipo}`}
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 style={{ objectFit: "cover" }}
@@ -206,7 +259,7 @@ const FormCertificados = ({ eventoSlug, initialCertificados, evento }) => {
               <RiImageAddLine />
             )}
           </div>
-          {selectedCertificado?.imagemFundo && (
+          {imagemAtual && (
             <div
               className={styles.certificadoTextoOverlay}
               style={{
@@ -215,7 +268,7 @@ const FormCertificados = ({ eventoSlug, initialCertificados, evento }) => {
                 width: `calc(100% - ${(((selectedCertificado?.posicaoTextoX ?? 50) / CERTIFICADO_LARGURA) * 100 * 2).toFixed(2)}%)`,
               }}
             >
-              {resolverTextoPreview(textoCertificado, tipoCertificado, evento)}
+              {resolverTextoPreview(textoCertificado, tipoCertificado, evento, {}, idioma)}
             </div>
           )}
           <input
@@ -226,7 +279,7 @@ const FormCertificados = ({ eventoSlug, initialCertificados, evento }) => {
             onChange={handleFileChange}
           />
         </div>
-        {selectedCertificado?.imagemFundo && (
+        {imagemAtual && (
           <p className={styles.previewLabel}>
             Prévia com dados de exemplo (nome/período do evento são reais) —
             clique na imagem pra trocar o fundo
@@ -237,7 +290,7 @@ const FormCertificados = ({ eventoSlug, initialCertificados, evento }) => {
 
         <div className={`${styleTextarea.textareaLabel} mt-3`}>
           <p>
-            Texto do certificado&nbsp;
+            {idioma === "en" ? "Texto do certificado em inglês" : "Texto do certificado"}&nbsp;
             ({textoCertificado.length}/{TEXTO_MAX_LENGTH})
           </p>
           <textarea
@@ -245,7 +298,11 @@ const FormCertificados = ({ eventoSlug, initialCertificados, evento }) => {
             value={textoCertificado}
             maxLength={TEXTO_MAX_LENGTH}
             onChange={(e) => setTextoCertificado(e.target.value)}
-            placeholder="Texto exibido no certificado. Use os campos abaixo para inserir dados que variam por pessoa/edição."
+            placeholder={
+              idioma === "en"
+                ? "Ex.: We certify that <<[autores]>> presented the work <<[tituloResumo]>>... Os campos abaixo funcionam igual ao português."
+                : "Texto exibido no certificado. Use os campos abaixo para inserir dados que variam por pessoa/edição."
+            }
           />
         </div>
 
@@ -271,7 +328,7 @@ const FormCertificados = ({ eventoSlug, initialCertificados, evento }) => {
             onClick={handleSalvarTexto}
             disabled={isSavingTexto}
           >
-            {isSavingTexto ? "Salvando..." : "Salvar texto"}
+            {isSavingTexto ? "Salvando..." : idioma === "en" ? "Salvar texto em inglês" : "Salvar texto"}
           </Button>
         </div>
         {errorTexto && <p className={styleSecao.statusErro}>{errorTexto}</p>}

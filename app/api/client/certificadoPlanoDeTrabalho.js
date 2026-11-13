@@ -7,7 +7,8 @@ import jsPDF from "jspdf";
  * Certificados Planos de Trabalho
 **************************/
 
-export const uploadAndSaveCertificateImagePlano = async (tenantSlug, idCertificado, formData) => {
+// idioma "en" grava a imagem de fundo da versão em inglês
+export const uploadAndSaveCertificateImagePlano = async (tenantSlug, idCertificado, formData, idioma = "pt") => {
   try {
     const token = getAuthToken(); // Obtenha o token diretamente
     if (!token) {
@@ -21,7 +22,7 @@ export const uploadAndSaveCertificateImagePlano = async (tenantSlug, idCertifica
 
 
     const response = await req.put(
-      `/private/${tenantSlug}/layouts/${idCertificado}/upload`,
+      `/private/${tenantSlug}/layouts/${idCertificado}/upload${idioma === "en" ? "?idioma=en" : ""}`,
       formData,
       { headers } // Envie os cabeçalhos
     );
@@ -33,7 +34,8 @@ export const uploadAndSaveCertificateImagePlano = async (tenantSlug, idCertifica
   }
 };
 
-// Texto e posição do texto do layout: { texto, posicaoTextoX, posicaoTextoY }
+// Texto e posição do texto do layout: { texto, posicaoTextoX, posicaoTextoY,
+// textoIngles?, posicaoTextoXIngles?, posicaoTextoYIngles? }
 export const updateLayoutCertificado = async (tenantSlug, idCertificado, dados) => {
   const headers = getAuthHeadersClient();
   const response = await req.put(`/private/${tenantSlug}/layouts/${idCertificado}`, dados, { headers });
@@ -149,13 +151,13 @@ export const getCertificados = async (eventoId, tipoBusca, valor) => {
     throw error;
   }
 };
-export const generateAndDownloadCertificatePlanoPDF = async (tenantSlug, planoId) => {
+export const generateAndDownloadCertificatePlanoPDF = async (tenantSlug, planoId, idioma = "pt") => {
   try {
     const headers = getAuthHeadersClient();
    
 
     // Construir a URL com parâmetros opcionais
-    let url = `/private/${tenantSlug}/planos/${planoId}/certificado/CONCLUSAO`;
+    let url = `/private/${tenantSlug}/planos/${planoId}/certificado/CONCLUSAO${idioma === "en" ? "?idioma=en" : ""}`;
     
     
 
@@ -189,10 +191,25 @@ export const generateAndDownloadCertificatePlanoPDF = async (tenantSlug, planoId
     const imgData = canvas.toDataURL("image/png");
 
     pdf.addImage(imgData, "PNG", 0, 0, canvasWidth, canvasHeight);
-    pdf.save(`certificado_conclusao.pdf`);
+    pdf.save(`certificado_conclusao${idioma === "en" ? "_en" : ""}.pdf`);
     return response
   } catch (error) {
     console.error("Erro ao gerar ou baixar o certificado PDF:", error.message);
     throw error;
+  }
+};
+
+// Tipos de certificado da instituição com versão em inglês configurada
+// (ex.: ["CONCLUSAO"]). Em caso de erro devolve [] — o botão em inglês
+// simplesmente não aparece.
+export const getTiposCertificadoComIngles = async (tenantSlug) => {
+  try {
+    const headers = getAuthHeadersClient();
+    if (!headers) return [];
+    const response = await req.get(`/private/${tenantSlug}/certificados/ingles`, { headers });
+    return response.data.tipos || [];
+  } catch (error) {
+    console.error("Erro ao verificar certificados em inglês:", error.message);
+    return [];
   }
 };

@@ -44,7 +44,10 @@ import {
   updatePlanoDeTrabalho,
   updateTituloPlanoDeTrabalho,
 } from "@/app/api/client/planoDeTrabalho";
-import { generateAndDownloadCertificatePlanoPDF } from "@/app/api/client/certificadoPlanoDeTrabalho";
+import {
+  generateAndDownloadCertificatePlanoPDF,
+  getTiposCertificadoComIngles,
+} from "@/app/api/client/certificadoPlanoDeTrabalho";
 import { abrirArquivoPrivado, urlDownloadResposta } from "@/app/api/client/arquivos";
 import Link from "next/link";
 
@@ -70,7 +73,20 @@ const Page = ({ params }) => {
   const [filteredAreas, setFilteredAreas] = useState([]);
   const [updatingPlano, setUpdatingPlano] = useState(null);
   const [openAreaDropdowns, setOpenAreaDropdowns] = useState({});
+  // "<planoId>-<idioma>" do certificado sendo gerado (controla o loading)
   const [generatingCertificate, setGeneratingCertificate] = useState(null);
+  // Versão em inglês do certificado de conclusão configurada pelo gestor?
+  const [conclusaoEmIngles, setConclusaoEmIngles] = useState(false);
+
+  useEffect(() => {
+    let ativo = true;
+    getTiposCertificadoComIngles(params.tenant).then(
+      (tipos) => ativo && setConclusaoEmIngles(tipos.includes("CONCLUSAO"))
+    );
+    return () => {
+      ativo = false;
+    };
+  }, [params.tenant]);
 
   // Novos estados para edição de título
   const [editingTitulo, setEditingTitulo] = useState(null);
@@ -249,11 +265,10 @@ const Page = ({ params }) => {
   };
 
   // Função para emitir certificado
-  const handleEmitirCertificado = async (plano) => {
-    setGeneratingCertificate(plano.id);
+  const handleEmitirCertificado = async (plano, idioma = "pt") => {
+    setGeneratingCertificate(`${plano.id}-${idioma}`);
     try {
-      console.log("Emitindo certificado para o plano:", plano.id);
-      await generateAndDownloadCertificatePlanoPDF(params.tenant, plano.id);
+      await generateAndDownloadCertificatePlanoPDF(params.tenant, plano.id, idioma);
 
       toast.current.show({
         severity: "success",
@@ -1068,9 +1083,9 @@ const Page = ({ params }) => {
                             e.stopPropagation();
                             handleEmitirCertificado(plano);
                           }}
-                          disabled={generatingCertificate === plano.id}
+                          disabled={Boolean(generatingCertificate)}
                         >
-                          {generatingCertificate === plano.id ? (
+                          {generatingCertificate === `${plano.id}-pt` ? (
                             <>
                               <RiLoader4Line
                                 size={16}
@@ -1085,6 +1100,31 @@ const Page = ({ params }) => {
                             </>
                           )}
                         </Button>
+                        {conclusaoEmIngles && (
+                          <Button
+                            className={styles.certificadoButton}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEmitirCertificado(plano, "en");
+                            }}
+                            disabled={Boolean(generatingCertificate)}
+                          >
+                            {generatingCertificate === `${plano.id}-en` ? (
+                              <>
+                                <RiLoader4Line
+                                  size={16}
+                                  className={styles.loadingSpinner}
+                                />
+                                Gerando Certificado...
+                              </>
+                            ) : (
+                              <>
+                                <RiFileDownloadLine size={16} />
+                                Emitir em inglês
+                              </>
+                            )}
+                          </Button>
+                        )}
                       </div>
 
                       {/* Seção de Atividades - RENDERIZA MESMO SEM ATIVIDADES */}

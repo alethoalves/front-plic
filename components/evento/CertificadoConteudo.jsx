@@ -657,6 +657,7 @@ export const CertificadoConteudo = ({ params, eventoId }) => {
                 codigo: item.codigo,
                 eventoId: item.eventoId,
                 viaFuncao: true,
+                temIngles: Boolean(item.temIngles),
               },
             ];
           }
@@ -675,6 +676,7 @@ export const CertificadoConteudo = ({ params, eventoId }) => {
                 eventoId: item.eventoId,
                 submissaoId: item.submissaoId,
                 viaCodigo: true,
+                temIngles: Boolean(item.temIngles),
               },
             ];
           } else {
@@ -693,6 +695,7 @@ export const CertificadoConteudo = ({ params, eventoId }) => {
                 eventoId: item.eventoId,
                 submissaoId: item.submissaoId,
                 viaCodigo: false,
+                temIngles: Boolean(tipoCert.temIngles),
               }));
           }
         });
@@ -715,10 +718,11 @@ export const CertificadoConteudo = ({ params, eventoId }) => {
     }
   };
 
-  const handleDownload = async (certificado) => {
+  // idioma "en" baixa a versão em inglês (mesmo código de autenticação)
+  const handleDownload = async (certificado, idioma = "pt") => {
     try {
       if (certificado.viaFuncao) {
-        await generateAndDownloadCertificadoFuncaoPDF(eventoId, certificado.codigo);
+        await generateAndDownloadCertificadoFuncaoPDF(eventoId, certificado.codigo, idioma);
         showSuccess("Download iniciado com sucesso!");
         return;
       }
@@ -726,7 +730,8 @@ export const CertificadoConteudo = ({ params, eventoId }) => {
         eventoId,
         certificado.tipo,
         certificado.submissaoId,
-        certificado.viaCodigo ? certificado.codigo : null
+        certificado.viaCodigo ? certificado.codigo : null,
+        idioma
       );
       showSuccess("Download iniciado com sucesso!");
     } catch (error) {
@@ -846,6 +851,14 @@ export const CertificadoConteudo = ({ params, eventoId }) => {
                     >
                       Baixar Certificado
                     </button>
+                    {certificado.temIngles && (
+                      <button
+                        className={styles.downloadButton}
+                        onClick={() => handleDownload(certificado, "en")}
+                      >
+                        Baixar em inglês
+                      </button>
+                    )}
                     {/* Botão Ver Ficha de Avaliação */}
                     {!certificado.viaFuncao && (
                       <button

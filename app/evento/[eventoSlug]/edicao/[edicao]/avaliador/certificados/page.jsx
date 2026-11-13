@@ -1,18 +1,33 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import styles from "./page.module.scss";
-import { generateAndDownloadAvaliadorCertificatePDF } from "@/app/api/client/certificado";
+import {
+  generateAndDownloadAvaliadorCertificatePDF,
+  getTiposCertificadoIngles,
+} from "@/app/api/client/certificado";
 
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  // Versão em inglês do certificado de avaliador configurada no evento?
+  const [temIngles, setTemIngles] = useState(false);
 
-  const handleDownloadCertificate = async (eventoSlug) => {
+  useEffect(() => {
+    let ativo = true;
+    getTiposCertificadoIngles(params.edicao).then(
+      (tipos) => ativo && setTemIngles(tipos.includes("AVALIADOR"))
+    );
+    return () => {
+      ativo = false;
+    };
+  }, [params.edicao]);
+
+  const handleDownloadCertificate = async (eventoSlug, idioma = "pt") => {
     try {
       setLoading(true);
       setError(null);
-      await generateAndDownloadAvaliadorCertificatePDF(eventoSlug);
+      await generateAndDownloadAvaliadorCertificatePDF(eventoSlug, idioma);
       alert("Certificado baixado com sucesso!");
     } catch (error) {
       console.error("Erro ao baixar o certificado:", error);
@@ -74,6 +89,20 @@ const Page = ({ params }) => {
                 {loading ? "Gerando..." : "Baixar Certificado"}
                 <span className={styles.downloadIcon}>↓</span>
               </button>
+              {temIngles && (
+                <button
+                  className={`${styles.downloadButton} mt-1`}
+                  disabled={loading}
+                  onClick={(e) => {
+                    // O card inteiro baixa em português
+                    e.stopPropagation();
+                    if (!loading) handleDownloadCertificate(params.edicao, "en");
+                  }}
+                >
+                  {loading ? "Gerando..." : "Baixar em inglês"}
+                  <span className={styles.downloadIcon}>↓</span>
+                </button>
+              )}
             </div>
           </div>
 

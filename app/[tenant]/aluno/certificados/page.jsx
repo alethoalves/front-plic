@@ -16,6 +16,21 @@ import {
   RiStarLine,
 } from "@remixicon/react";
 
+// Certificados de uma submissão: apresentação sempre; os demais conforme o
+// resultado. Cada um ganha também a versão em inglês quando o admin do evento
+// configurou o layout em inglês daquele tipo (item.tiposIngles).
+const TIPOS_CERTIFICADO = [
+  { tipo: "EXPOSITOR", label: "Certificado de apresentação", Icone: RiPresentationFill, mostrar: () => true },
+  { tipo: "PREMIADO", label: "Certificado de Premiado", Icone: RiShieldStarFill, mostrar: (item) => item.premio },
+  {
+    tipo: "INDICADO",
+    label: "Certificado de Indicado ao Prêmio",
+    Icone: RiMedalLine,
+    mostrar: (item) => item.indicacaoPremio,
+  },
+  { tipo: "MENCAO", label: "Certificado de Menção Honrosa", Icone: RiStarLine, mostrar: (item) => item.mencaoHonrosa },
+];
+
 const Page = ({ params }) => {
   const [loading, setLoading] = useState(false);
   const [eventos, setEventos] = useState([]);
@@ -59,10 +74,11 @@ const Page = ({ params }) => {
     };
     fetchSubmissoes();
   }, [isModalEventoOpen, eventoSelecionado]);
-  const handleCertificateDownload = async (eventoId, tipo, id) => {
+  const handleCertificateDownload = async (eventoId, tipo, id, idioma = "pt") => {
     try {
-      setLoadingCertificate(id); // Define o ID do certificado em carregamento
-      await generateAndDownloadCertificatePDF(eventoId, tipo, id);
+      // Só o certificado clicado mostra "Carregando..."
+      setLoadingCertificate(`${id}-${tipo}-${idioma}`);
+      await generateAndDownloadCertificatePDF(eventoId, tipo, id, null, idioma);
       setLoadingCertificate(null); // Limpa o estado de carregamento após a conclusão
     } catch (error) {
       console.error("Erro ao baixar o certificado:", error);
@@ -117,109 +133,40 @@ const Page = ({ params }) => {
                       </div>
                     </div>
 
-                    {
-                      <div className={styles.premios}>
-                        {/* Certificado de Apresentação */}
-                        <div
-                          className={`${styles.squareHeader} ${
-                            loadingCertificate === item.id ? styles.loading : ""
-                          }`}
-                          onClick={() =>
-                            !loadingCertificate &&
-                            handleCertificateDownload(
-                              eventoSelecionado.id,
-                              "EXPOSITOR",
-                              item.id
-                            )
-                          }
-                        >
-                          <RiPresentationFill />
-                          {loadingCertificate === item.id ? (
-                            <p>Carregando...</p>
-                          ) : (
-                            <p>Certificado de apresentação</p>
-                          )}
-                        </div>
-
-                        {/* Certificado de Premiado */}
-                        {item.premio && (
-                          <div
-                            className={`${styles.squareHeader} ${
-                              loadingCertificate === item.id
-                                ? styles.loading
-                                : ""
-                            }`}
-                            onClick={() =>
-                              !loadingCertificate &&
-                              handleCertificateDownload(
-                                eventoSelecionado.id,
-                                "PREMIADO",
-                                item.id
-                              )
+                    <div className={styles.premios}>
+                      {TIPOS_CERTIFICADO.filter((cert) => cert.mostrar(item)).flatMap(
+                        ({ tipo, label, Icone }) =>
+                          ["pt", ...(item.tiposIngles?.includes(tipo) ? ["en"] : [])].map(
+                            (idioma) => {
+                              const chave = `${item.id}-${tipo}-${idioma}`;
+                              return (
+                                <div
+                                  key={chave}
+                                  className={`${styles.squareHeader} ${
+                                    loadingCertificate === chave ? styles.loading : ""
+                                  }`}
+                                  onClick={() =>
+                                    !loadingCertificate &&
+                                    handleCertificateDownload(
+                                      eventoSelecionado.id,
+                                      tipo,
+                                      item.id,
+                                      idioma
+                                    )
+                                  }
+                                >
+                                  <Icone />
+                                  {loadingCertificate === chave ? (
+                                    <p>Carregando...</p>
+                                  ) : (
+                                    <p>{idioma === "en" ? `${label} (em inglês)` : label}</p>
+                                  )}
+                                </div>
+                              );
                             }
-                          >
-                            <RiShieldStarFill />
-                            {loadingCertificate === item.id ? (
-                              <p>Carregando...</p>
-                            ) : (
-                              <p>Certificado de Premiado</p>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Certificado de Indicado ao Prêmio */}
-                        {item.indicacaoPremio && (
-                          <div
-                            className={`${styles.squareHeader} ${
-                              loadingCertificate === item.id
-                                ? styles.loading
-                                : ""
-                            }`}
-                            onClick={() =>
-                              !loadingCertificate &&
-                              handleCertificateDownload(
-                                eventoSelecionado.id,
-                                "INDICADO",
-                                item.id
-                              )
-                            }
-                          >
-                            <RiMedalLine />
-                            {loadingCertificate === item.id ? (
-                              <p>Carregando...</p>
-                            ) : (
-                              <p>Certificado de Indicado ao Prêmio</p>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Certificado de Menção Honrosa */}
-                        {item.mencaoHonrosa && (
-                          <div
-                            className={`${styles.squareHeader} ${
-                              loadingCertificate === item.id
-                                ? styles.loading
-                                : ""
-                            }`}
-                            onClick={() =>
-                              !loadingCertificate &&
-                              handleCertificateDownload(
-                                eventoSelecionado.id,
-                                "MENCAO",
-                                item.id
-                              )
-                            }
-                          >
-                            <RiStarLine />
-                            {loadingCertificate === item.id ? (
-                              <p>Carregando...</p>
-                            ) : (
-                              <p>Certificado de Menção Honrosa</p>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    }
+                          )
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>

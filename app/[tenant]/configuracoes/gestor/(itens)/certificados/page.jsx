@@ -34,6 +34,15 @@ import {
   uploadCertificateImage, // Esta função precisa ser criada na API
 } from "@/app/api/client/certificadoPlanoDeTrabalho";
 
+// Cada layout tem a versão em português e, opcionalmente, uma em inglês
+// (imagem, texto e posição próprios). Com imagem e texto em inglês, quem
+// emite o certificado vê também o botão "Baixar em inglês".
+const IDIOMAS = [
+  { id: "pt", label: "Português" },
+  { id: "en", label: "Inglês" },
+];
+const CAMPO_IMAGEM = { pt: "imagemFundo", en: "imagemFundoIngles" };
+
 const Page = ({ params }) => {
   //ESTADOS
   //de busca,loading ou erro
@@ -52,6 +61,8 @@ const Page = ({ params }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [newCertificadoTipo, setNewCertificadoTipo] = useState("PARTICIPACAO");
   const [isCreating, setIsCreating] = useState(false);
+  const [idioma, setIdioma] = useState("pt");
+  const imagemAtual = selectedCertificado?.[CAMPO_IMAGEM[idioma]];
 
   //REF
   const fileInputRef = useRef();
@@ -81,6 +92,7 @@ const Page = ({ params }) => {
     setIsModalOpen(true);
     setTipoCertificado(certificado.tipo);
     setSelectedCertificado(certificado);
+    setIdioma("pt");
     setError("");
   };
 
@@ -172,26 +184,20 @@ const Page = ({ params }) => {
       const response = await uploadAndSaveCertificateImagePlano(
         params.tenant,
         selectedCertificado.id,
-        formData
+        formData,
+        idioma
       );
 
-      // Atualiza a lista de certificados
+      // Atualiza a lista de certificados (imagem do idioma da aba aberta)
+      const campo = CAMPO_IMAGEM[idioma];
+      const url = response.fileUrl || response.imageUrl || response.url;
       const updatedCertificados = certificados.map((cert) =>
-        cert.id === selectedCertificado.id
-          ? {
-              ...cert,
-              imagemFundo:
-                response.fileUrl || response.imageUrl || response.url,
-            }
-          : cert
+        cert.id === selectedCertificado.id ? { ...cert, [campo]: url } : cert
       );
       setCertificados(updatedCertificados);
 
       // Atualiza o certificado selecionado no modal
-      setSelectedCertificado((prev) => ({
-        ...prev,
-        imagemFundo: response.fileUrl || response.imageUrl || response.url,
-      }));
+      setSelectedCertificado((prev) => ({ ...prev, [campo]: url }));
 
       setError("");
 
@@ -223,13 +229,42 @@ const Page = ({ params }) => {
       </div>
       <h4>{tipoCertificado === "CONCLUSAO" ? "Conclusão" : "Avaliador"}</h4>
 
+      {selectedCertificado?.tipo === "CONCLUSAO" && (
+        <>
+          <div className={styles.abas}>
+            {IDIOMAS.map((aba) => (
+              <button
+                key={aba.id}
+                type="button"
+                className={`${styles.aba} ${idioma === aba.id ? styles.abaAtiva : ""}`}
+                onClick={() => {
+                  setIdioma(aba.id);
+                  setError("");
+                }}
+              >
+                {aba.label}
+              </button>
+            ))}
+          </div>
+          {idioma === "en" && (
+            <p className={`${styles.avisoIdioma} mt-2`}>
+              Versão opcional. Com imagem e texto em inglês, o aluno e o orientador
+              veem também o botão &quot;Baixar em inglês&quot; (mesmo código de
+              autenticação). Use uma imagem de fundo com título e cargos em inglês.
+              Título do plano, edital e instituição saem como cadastrados; área e
+              grande área são traduzidas automaticamente.
+            </p>
+          )}
+        </>
+      )}
+
       <div className={`${styles.bgCertificado} mt-2`} onClick={handleDivClick}>
         <div className={styles.certificadoImg}>
-          {selectedCertificado?.imagemFundo ? (
+          {imagemAtual ? (
             <Image
               priority
               fill
-              src={selectedCertificado.imagemFundo}
+              src={imagemAtual}
               alt={`Certificado ${selectedCertificado.tipo}`}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               style={{ objectFit: "contain" }}
@@ -237,7 +272,7 @@ const Page = ({ params }) => {
           ) : (
             <div className={styles.uploadArea}>
               <RiImageAddLine size={48} />
-              <p>Clique para adicionar imagem de fundo</p>
+              <p>Clique para adicionar imagem de fundo{idioma === "en" ? " em inglês" : ""}</p>
               <span>Formatos: JPG, PNG, SVG (Máx: 5MB)</span>
             </div>
           )}
@@ -272,19 +307,25 @@ const Page = ({ params }) => {
         </ul>
       </div>
 
-      {selectedCertificado?.tipo === "CONCLUSAO" && (
-        <EditorTextoCertificado
-          key={selectedCertificado.id}
-          tenant={params.tenant}
-          layout={selectedCertificado}
-          onSalvo={(atualizado) => {
-            setSelectedCertificado((prev) => ({ ...prev, ...atualizado }));
-            setCertificados((prev) =>
-              prev.map((c) => (c.id === atualizado.id ? { ...c, ...atualizado } : c))
-            );
-          }}
-        />
-      )}
+      {/* Os dois editores ficam montados (só um visível) pra trocar de aba
+          sem perder o que foi digitado */}
+      {selectedCertificado?.tipo === "CONCLUSAO" &&
+        IDIOMAS.map((aba) => (
+          <div key={aba.id} style={{ display: idioma === aba.id ? "block" : "none" }}>
+            <EditorTextoCertificado
+              key={`${selectedCertificado.id}-${aba.id}`}
+              tenant={params.tenant}
+              layout={selectedCertificado}
+              idioma={aba.id}
+              onSalvo={(atualizado) => {
+                setSelectedCertificado((prev) => ({ ...prev, ...atualizado }));
+                setCertificados((prev) =>
+                  prev.map((c) => (c.id === atualizado.id ? { ...c, ...atualizado } : c))
+                );
+              }}
+            />
+          </div>
+        ))}
     </Modal>
   );
 
@@ -414,6 +455,7 @@ const Page = ({ params }) => {
               </p>
               <span className={styles.status}>
                 {item.imagemFundo ? "Imagem adicionada" : "Sem imagem"}
+                {item.textoIngles?.trim() && item.imagemFundoIngles ? " · versão em inglês" : ""}
               </span>
             </div>
           </div>

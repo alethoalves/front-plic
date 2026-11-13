@@ -38,6 +38,7 @@ import {
   atualizarPessoaCertificadoFuncao,
   removerPessoaCertificadoFuncao,
   generateAndDownloadCertificadoFuncaoPDF,
+  temVersaoIngles,
 } from "@/app/api/client/certificado";
 
 const TEXTO_MAX_LENGTH = 3000;
@@ -69,12 +70,23 @@ const lerCargaHoraria = (valor) => {
 
 /* --------------------------- Aba "Modelo" --------------------------- */
 
+// Versão em inglês do modelo (opcional): imagem, texto e nome da função
+// próprios; posição do texto, carga horária e "liberado" são os mesmos.
+const IDIOMAS = [
+  { id: "pt", label: "Português" },
+  { id: "en", label: "Inglês" },
+];
+const CAMPO_TEXTO = { pt: "texto", en: "textoIngles" };
+
 const EditorModelo = ({ eventoSlug, evento, modelo, onAtualizado, onExcluido }) => {
+  const [idioma, setIdioma] = useState("pt");
   const [form, setForm] = useState(() => ({
     funcaoMasculino: modelo.funcaoMasculino,
     funcaoFeminino: modelo.funcaoFeminino,
+    funcaoIngles: modelo.funcaoIngles || "",
     cargaHorariaPadrao: modelo.cargaHorariaPadrao ?? "",
     texto: modelo.texto || "",
+    textoIngles: modelo.textoIngles || "",
     posicaoTextoX: modelo.posicaoTextoX ?? 80,
     posicaoTextoY: modelo.posicaoTextoY ?? 260,
     liberado: modelo.liberado,
@@ -93,15 +105,20 @@ const EditorModelo = ({ eventoSlug, evento, modelo, onAtualizado, onExcluido }) 
 
   const funcaoImpressa = funcaoComGenero(form.funcaoMasculino, form.funcaoFeminino);
   const cargaPadrao = lerCargaHoraria(form.cargaHorariaPadrao);
+  const campoTexto = CAMPO_TEXTO[idioma];
+  const textoAtual = form[campoTexto];
+  const imagemAtual = idioma === "en" ? modelo.imagemFundoIngles : modelo.imagemFundo;
+  const funcaoNoIdioma = idioma === "en" ? form.funcaoIngles.trim() || funcaoImpressa : funcaoImpressa;
 
   // Insere o campo onde o cursor está (não só no fim, como no FormCertificados)
   const handleInserirCampo = (chave) => {
     const marcador = `<<[${chave}]>>`;
     const el = textareaRef.current;
     setForm((atual) => {
-      const inicio = el?.selectionStart ?? atual.texto.length;
-      const fim = el?.selectionEnd ?? atual.texto.length;
-      return { ...atual, texto: atual.texto.slice(0, inicio) + marcador + atual.texto.slice(fim) };
+      const texto = atual[campoTexto];
+      const inicio = el?.selectionStart ?? texto.length;
+      const fim = el?.selectionEnd ?? texto.length;
+      return { ...atual, [campoTexto]: texto.slice(0, inicio) + marcador + texto.slice(fim) };
     });
     setStatus({});
   };
@@ -118,6 +135,8 @@ const EditorModelo = ({ eventoSlug, evento, modelo, onAtualizado, onExcluido }) 
         funcaoFeminino: form.funcaoFeminino,
         cargaHorariaPadrao: cargaPadrao,
         texto: form.texto,
+        funcaoIngles: form.funcaoIngles,
+        textoIngles: form.textoIngles.trim() ? form.textoIngles : null,
         posicaoTextoX: Number(form.posicaoTextoX),
         posicaoTextoY: Number(form.posicaoTextoY),
         liberado: form.liberado,
@@ -137,7 +156,7 @@ const EditorModelo = ({ eventoSlug, evento, modelo, onAtualizado, onExcluido }) 
     setEnviandoImagem(true);
     setErroImagem("");
     try {
-      onAtualizado(await uploadImagemModeloCertificadoFuncao(eventoSlug, modelo.id, formData));
+      onAtualizado(await uploadImagemModeloCertificadoFuncao(eventoSlug, modelo.id, formData, idioma));
     } catch (err) {
       setErroImagem(err.message);
     } finally {
@@ -180,13 +199,49 @@ const EditorModelo = ({ eventoSlug, evento, modelo, onAtualizado, onExcluido }) 
         estiver sem carga horária própria na lista; se ficar vazia, a frase da carga horária some.
       </p>
 
+      <div className={stylesCert.abas}>
+        {IDIOMAS.map((aba) => (
+          <button
+            key={aba.id}
+            type="button"
+            className={`${stylesCert.aba} ${idioma === aba.id ? stylesCert.abaAtiva : ""}`}
+            onClick={() => {
+              setIdioma(aba.id);
+              setErroImagem("");
+            }}
+          >
+            {aba.label}
+          </button>
+        ))}
+      </div>
+      {idioma === "en" && (
+        <>
+          <p className={`${stylesCert.avisoIdioma} mt-2`}>
+            Versão opcional. Com imagem e texto em inglês, aparece o botão &quot;Baixar em inglês&quot;
+            (mesmo código de autenticação). Posição do texto, carga horária e liberação são as mesmas do português.
+          </p>
+          <div className={`${styles.linhaCampos} mt-2`}>
+            <label className={styles.campo}>
+              <span>Função em inglês</span>
+              <input
+                className={styles.input}
+                value={form.funcaoIngles}
+                onChange={set("funcaoIngles")}
+                placeholder="Ex.: Monitor, Organizing Committee Member"
+                maxLength={80}
+              />
+            </label>
+          </div>
+        </>
+      )}
+
       <div className={`${stylesCert.bgCertificado} mt-2`} onClick={() => fileInputRef.current.click()}>
         <div className={stylesCert.certificadoImg}>
-          {modelo.imagemFundo ? (
+          {imagemAtual ? (
             <Image
               priority
               fill
-              src={modelo.imagemFundo}
+              src={imagemAtual}
               alt={`Certificado de ${funcaoImpressa}`}
               sizes="(max-width: 768px) 100vw, 50vw"
               style={{ objectFit: "cover" }}
@@ -203,10 +258,16 @@ const EditorModelo = ({ eventoSlug, evento, modelo, onAtualizado, onExcluido }) 
             width: `calc(100% - ${((x / CERTIFICADO_LARGURA) * 100 * 2).toFixed(2)}%)`,
           }}
         >
-          {resolverTextoPreview(form.texto, "FUNCAO", evento, {
-            funcao: funcaoImpressa,
-            cargaHoraria: formatarCargaHoraria(cargaPadrao),
-          })}
+          {resolverTextoPreview(
+            textoAtual,
+            "FUNCAO",
+            evento,
+            {
+              funcao: funcaoNoIdioma,
+              cargaHoraria: formatarCargaHoraria(cargaPadrao, idioma),
+            },
+            idioma
+          )}
         </div>
         <input
           type="file"
@@ -217,7 +278,7 @@ const EditorModelo = ({ eventoSlug, evento, modelo, onAtualizado, onExcluido }) 
         />
       </div>
       <p className={stylesCert.previewLabel}>
-        Prévia com nome de exemplo — clique na imagem para {modelo.imagemFundo ? "trocar" : "enviar"} o fundo (JPG, PNG ou SVG, proporção A4 deitada)
+        Prévia com nome de exemplo — clique na imagem para {imagemAtual ? "trocar" : "enviar"} o fundo{idioma === "en" ? " em inglês" : ""} (JPG, PNG ou SVG, proporção A4 deitada)
       </p>
       {enviandoImagem && <p className={stylesCert.uploading}>Enviando arquivo...</p>}
       {erroImagem && <p className={styleSecao.statusErro}>{erroImagem}</p>}
@@ -235,15 +296,19 @@ const EditorModelo = ({ eventoSlug, evento, modelo, onAtualizado, onExcluido }) 
 
       <div className={`${styleTextarea.textareaLabel} mt-2`}>
         <p>
-          Texto do certificado&nbsp;({form.texto.length}/{TEXTO_MAX_LENGTH})
+          {idioma === "en" ? "Texto do certificado em inglês" : "Texto do certificado"}&nbsp;({textoAtual.length}/{TEXTO_MAX_LENGTH})
         </p>
         <textarea
           ref={textareaRef}
           className={styleTextarea.textarea}
-          value={form.texto}
+          value={textoAtual}
           maxLength={TEXTO_MAX_LENGTH}
-          onChange={set("texto")}
-          placeholder="Texto exibido no certificado. Use os campos abaixo para inserir dados de cada pessoa."
+          onChange={set(campoTexto)}
+          placeholder={
+            idioma === "en"
+              ? "Ex.: We certify that <<[nome]>> served as <<[funcao]>> at <<[nomeEvento]>>, held <<[periodo]>><<[cargaHoraria]>>."
+              : "Texto exibido no certificado. Use os campos abaixo para inserir dados de cada pessoa."
+          }
         />
       </div>
       <div className={`${stylesCert.campos} mt-1`}>
@@ -259,7 +324,7 @@ const EditorModelo = ({ eventoSlug, evento, modelo, onAtualizado, onExcluido }) 
         ))}
       </div>
       <p className={styleSecao.dica}>
-        &quot;Carga horária&quot; já entra com a vírgula e a frase (&quot;, com carga horária de 20 horas&quot;), e some quando não houver.
+        &quot;Carga horária&quot; já entra com a vírgula e a frase ({idioma === "en" ? <>&quot;, with a workload of 20 hours&quot;</> : <>&quot;, com carga horária de 20 horas&quot;</>}), e some quando não houver.{idioma === "en" && <> &quot;Período&quot; sai como &quot;from March 3, 2026 to March 5, 2026&quot;.</>}
       </p>
 
       <label className={`${styles.checkbox} mt-2`}>
@@ -465,14 +530,15 @@ const ListaPessoas = ({ eventoSlug, evento, modelo, onTotalAlterado }) => {
     }
   };
 
-  const handleBaixar = async (pessoa) => {
-    setBaixando((atual) => ({ ...atual, [pessoa.id]: true }));
+  const handleBaixar = async (pessoa, idioma = "pt") => {
+    const chave = `${pessoa.id}-${idioma}`;
+    setBaixando((atual) => ({ ...atual, [chave]: true }));
     try {
-      await generateAndDownloadCertificadoFuncaoPDF(evento.id, pessoa.codigo);
+      await generateAndDownloadCertificadoFuncaoPDF(evento.id, pessoa.codigo, idioma);
     } catch (err) {
       setErroLista(err.message);
     } finally {
-      setBaixando((atual) => ({ ...atual, [pessoa.id]: false }));
+      setBaixando((atual) => ({ ...atual, [chave]: false }));
     }
   };
 
@@ -676,11 +742,22 @@ const ListaPessoas = ({ eventoSlug, evento, modelo, onTotalAlterado }) => {
                     type="button"
                     className={styles.botaoPrimario}
                     onClick={() => handleBaixar(pessoa)}
-                    disabled={baixando[pessoa.id]}
+                    disabled={baixando[`${pessoa.id}-pt`]}
                     title="Baixar PDF"
                   >
-                    <RiDownload2Line size={14} /> {baixando[pessoa.id] ? "Gerando..." : "PDF"}
+                    <RiDownload2Line size={14} /> {baixando[`${pessoa.id}-pt`] ? "Gerando..." : "PDF"}
                   </button>
+                  {temVersaoIngles(modelo) && (
+                    <button
+                      type="button"
+                      className={styles.botaoPrimario}
+                      onClick={() => handleBaixar(pessoa, "en")}
+                      disabled={baixando[`${pessoa.id}-en`]}
+                      title="Baixar PDF em inglês"
+                    >
+                      <RiDownload2Line size={14} /> {baixando[`${pessoa.id}-en`] ? "Gerando..." : "EN"}
+                    </button>
+                  )}
                   <button
                     type="button"
                     className={styles.icone}
